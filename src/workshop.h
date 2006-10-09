@@ -115,9 +115,7 @@ void plan_put(struct plan **plan_r);
 /** an operator is a job being executed */
 struct operator {
     struct operator *next;
-    struct queue *queue;
     struct job *job;
-    struct library *library;
     struct plan *plan;
     pid_t pid;
     int stderr_fd, stdout_fd;
