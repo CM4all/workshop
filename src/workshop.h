@@ -89,6 +89,7 @@ struct library;
 
 /** a plan describes how to perform a specific job */
 struct plan {
+    struct library *library;
     char *name;
     char **argv;
     unsigned argc;
@@ -105,8 +106,7 @@ void library_close(struct library **library_r);
 int library_get(struct library *library, const char *name,
                 struct plan **plan_r);
 
-void library_put(struct library *library,
-                 struct plan **plan_r);
+void plan_put(struct plan **plan_r);
 
 /* operator.c */
 
@@ -128,8 +128,7 @@ int workplace_open(struct poll *p, struct workplace **workplace_r);
 void workplace_close(struct workplace **workplace_r);
 
 int workplace_start(struct workplace *workplace,
-                    struct job *job, struct library *library,
-                    struct plan *plan);
+                    struct job *job, struct plan *plan);
 
 int workplace_is_empty(const struct workplace *workplace);
 

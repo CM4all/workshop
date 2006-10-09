@@ -359,6 +359,8 @@ int library_get(struct library *library, const char *name,
             if (ret != 0)
                 return ret;
 
+            plan->library = library;
+
             if (entry->plan->ref == 0)
                 /* free memory of old plan only if there are no
                    references on it anymore */
@@ -373,6 +375,8 @@ int library_get(struct library *library, const char *name,
         ret = load_plan_config(path, name, &plan);
         if (ret != 0)
             return ret;
+
+        plan->library = library;
 
         ret = add_plan(library, plan, st.st_mtime);
         if (ret != 0) {
@@ -402,9 +406,9 @@ int library_get(struct library *library, const char *name,
     return 0;
 }
 
-void library_put(struct library *library,
-                 struct plan **plan_r) {
+void plan_put(struct plan **plan_r) {
     struct plan *plan;
+    struct library *library;
 
     assert(plan_r != NULL);
     assert(*plan_r != NULL);
@@ -412,7 +416,10 @@ void library_put(struct library *library,
     plan = *plan_r;
     *plan_r = NULL;
 
+    library = plan->library;
+
     assert(plan->ref > 0);
+    assert(library != NULL);
     assert(library->ref > 0);
 
     --plan->ref;

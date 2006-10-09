@@ -61,10 +61,9 @@ static int start_job(struct instance *instance, struct job *job,
                      struct plan *plan) {
     int ret;
 
-    ret = workplace_start(instance->workplace,
-                          job, instance->library, plan);
+    ret = workplace_start(instance->workplace, job, plan);
     if (ret != 0) {
-        library_put(instance->library, &plan);
+        plan_put(&plan);
         job_done(&job, -1);
     }
 
@@ -87,7 +86,7 @@ static void claim_and_start_job(struct instance *instance, struct job *job) {
 
     ret = job_claim(&job);
     if (ret <= 0) {
-        library_put(instance->library, &plan);
+        plan_put(&plan);
         return;
     }
 
