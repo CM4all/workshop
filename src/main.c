@@ -138,6 +138,8 @@ int main(int argc, char **argv) {
 
     setup_signal_handlers();
 
+    stdin_null();
+
     daemonize(&config);
 
     /* main loop */

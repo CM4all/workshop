@@ -33,6 +33,8 @@ void config_dispose(struct config *config);
 
 /* daemon.c */
 
+int stdin_null(void);
+
 void daemonize(struct config *config);
 
 /* poll.c */

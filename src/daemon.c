@@ -1,5 +1,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -11,6 +13,24 @@
 #include "workshop.h"
 
 #define log(level, ...) do { if (verbose >= (level)) { printf(__VA_ARGS__); fflush(stdout); } } while (0)
+
+int stdin_null(void) {
+    int fd, ret;
+
+    fd = open("/dev/null", O_RDONLY);
+    if (fd < 0) {
+        fprintf(stderr, "failed to open /dev/null: %s", strerror(errno));
+        return errno;
+    }
+
+    ret = dup2(fd, 0);
+    if (ret < 0)
+        abort();
+
+    close(fd);
+
+    return 0;
+}
 
 void daemonize(struct config *config) {
     int ret, parentfd = -1, loggerfd = -1;
