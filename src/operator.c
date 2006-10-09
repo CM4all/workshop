@@ -16,6 +16,7 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/wait.h>
+#include <poll.h>
 
 struct workplace {
     struct poll *poll;
@@ -58,12 +59,96 @@ static void free_operator(struct operator **operator_r) {
     operator = *operator_r;
     *operator_r = NULL;
 
+    if (operator->stdout_fd >= 0) {
+        poll_remove(operator->workplace->poll, operator->stdout_fd);
+        close(operator->stdout_fd);
+    }
+
+    if (operator->stderr_fd >= 0) {
+        poll_remove(operator->workplace->poll, operator->stderr_fd);
+        close(operator->stderr_fd);
+    }
+
     free(operator);
+}
+
+static void stdout_callback(struct pollfd *pollfd, void *ctx) {
+    struct operator *operator = (struct operator*)ctx;
+    char buffer[512];
+    ssize_t nbytes, i;
+    unsigned progress = 0, p;
+
+    (void)pollfd;
+
+    nbytes = read(operator->stdout_fd, buffer, sizeof(buffer));
+    if (nbytes <= 0) {
+        poll_remove(operator->workplace->poll, operator->stdout_fd);
+        close(operator->stdout_fd);
+        operator->stdout_fd = -1;
+        return;
+    }
+
+    for (i = 0; i < nbytes; ++i) {
+        char ch = buffer[i];
+
+        if (ch == '\r' || ch == '\n') {
+            if (operator->stdout_length > 0) {
+                operator->stdout_buffer[operator->stdout_length] = 0;
+                p = (unsigned)strtoul(operator->stdout_buffer, NULL, 10);
+                if (p <= 100)
+                    progress = p;
+            }
+
+            operator->stdout_length = 0;
+        } else if (ch >= '0' && ch <= '9' &&
+                   operator->stdout_length < sizeof(operator->stdout_buffer) - 1) {
+            operator->stdout_buffer[operator->stdout_length++] = ch;
+        }
+    }
+
+    if (progress > 0) {
+        job_set_progress(operator->job, progress);
+        fprintf(stderr, "progress=%u\n", progress);
+    }
+}
+
+static void stderr_callback(struct pollfd *pollfd, void *ctx) {
+    struct operator *operator = (struct operator*)ctx;
+    char buffer[512];
+    ssize_t nbytes, i;
+
+    (void)pollfd;
+
+    nbytes = read(operator->stderr_fd, buffer, sizeof(buffer));
+    if (nbytes <= 0) {
+        poll_remove(operator->workplace->poll, operator->stderr_fd);
+        close(operator->stderr_fd);
+        operator->stderr_fd = -1;
+        return;
+    }
+
+    for (i = 0; i < nbytes; ++i) {
+        char ch = buffer[i];
+
+        if (ch == '\r' || ch == '\n') {
+            if (operator->stderr_length > 0) {
+                operator->stderr_buffer[operator->stderr_length] = 0;
+                /* XXX */
+                fprintf(stderr, "STDERR='%s'\n", operator->stderr_buffer);
+            }
+
+            operator->stderr_length = 0;
+        } else if (ch > 0 && (ch & ~0x7f) == 0 &&
+                   operator->stderr_length < sizeof(operator->stderr_buffer) - 1) {
+            operator->stderr_buffer[operator->stderr_length++] = ch;
+        }
+    }
 }
 
 int workplace_start(struct workplace *workplace,
                     struct job *job, struct plan *plan) {
     struct operator *operator;
+    int ret, stdout_fds[2], stderr_fds[2];
 
     assert(plan != NULL);
     assert(plan->argv != NULL);
@@ -73,12 +158,41 @@ int workplace_start(struct workplace *workplace,
     if (operator == NULL)
         return errno;
 
+    operator->workplace = workplace;
+    operator->stdout_fd = -1;
+    operator->stderr_fd = -1;
+
+    ret = pipe(stdout_fds);
+    if (ret < 0) {
+        fprintf(stderr, "pipe() failed: %s\n", strerror(errno));
+        free_operator(&operator);
+        return -1;
+    }
+
+    operator->stdout_fd = stdout_fds[0];
+    poll_add(workplace->poll, operator->stdout_fd, POLLIN,
+             stdout_callback, operator);
+
+    ret = pipe(stderr_fds);
+    if (ret < 0) {
+        fprintf(stderr, "pipe() failed: %s\n", strerror(errno));
+        free_operator(&operator);
+        close(stdout_fds[1]);
+        return -1;
+    }
+
+    operator->stderr_fd = stderr_fds[0];
+    poll_add(workplace->poll, operator->stderr_fd, POLLIN,
+             stderr_callback, operator);
+
     operator->job = job;
     operator->plan = plan;
     operator->pid = fork();
     if (operator->pid < 0) {
         fprintf(stderr, "fork() failed: %s\n", strerror(errno));
         free_operator(&operator);
+        close(stdout_fds[1]);
+        close(stderr_fds[1]);
         return -1;
     }
 
@@ -97,10 +211,25 @@ int workplace_start(struct workplace *workplace,
         for (i = 0; i < plan->argc; ++i)
             argv[i] = plan->argv[i];
 
+        /* connect pipes */
+
+        dup2(stdout_fds[1], 1);
+        dup2(stderr_fds[1], 2);
+
+        close(stdout_fds[0]);
+        close(stdout_fds[1]);
+        close(stderr_fds[0]);
+        close(stderr_fds[1]);
+
+        /* execute plan */
+
         execv(argv[0], argv);
         fprintf(stderr, "execv() failed: %s\n", strerror(errno));
         exit(1);
     }
+
+    close(stdout_fds[1]);
+    close(stderr_fds[1]);
 
     operator->next = workplace->head;
     workplace->head = operator;

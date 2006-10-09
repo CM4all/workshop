@@ -114,16 +114,24 @@ void plan_put(struct plan **plan_r);
 
 /* operator.c */
 
+struct workplace;
+
 /** an operator is a job being executed */
 struct operator {
     struct operator *next;
+    struct workplace *workplace;
     struct job *job;
     struct plan *plan;
     pid_t pid;
-    int stderr_fd, stdout_fd;
-};
 
-struct workplace;
+    int stdout_fd;
+    char stdout_buffer[64];
+    size_t stdout_length;
+
+    int stderr_fd;
+    char stderr_buffer[512];
+    size_t stderr_length;
+};
 
 int workplace_open(struct poll *p, struct workplace **workplace_r);
 
