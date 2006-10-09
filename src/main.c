@@ -62,11 +62,10 @@ static int start_job(struct instance *instance, struct job *job,
     int ret;
 
     ret = workplace_start(instance->workplace,
-                          instance->queue, job,
-                          instance->library, plan);
+                          job, instance->library, plan);
     if (ret != 0) {
         library_put(instance->library, &plan);
-        queue_done(instance->queue, &job, -1);
+        job_done(&job, -1);
     }
 
     return 0;
@@ -82,11 +81,11 @@ static void claim_and_start_job(struct instance *instance, struct job *job) {
     ret = library_get(instance->library, job->plan_name, &plan);
     if (ret != 0) {
         fprintf(stderr, "library_get() failed\n");
-        queue_skip(instance->queue, &job);
+        job_skip(&job);
         return;
     }
 
-    ret = queue_claim(instance->queue, &job);
+    ret = job_claim(&job);
     if (ret <= 0) {
         library_put(instance->library, &plan);
         return;
@@ -94,7 +93,7 @@ static void claim_and_start_job(struct instance *instance, struct job *job) {
 
     ret = start_job(instance, job, plan);
     if (ret != 0)
-        queue_rollback(instance->queue, &job);
+        job_rollback(&job);
 }
 
 int main(int argc, char **argv) {

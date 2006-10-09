@@ -206,6 +206,7 @@ static int get_next_job(struct queue *queue, struct job **job_r) {
 
     assert(row < PQntuples(res));
 
+    job->queue = queue;
     job->id = my_strdup(PQgetvalue(res, row, 0));
     job->plan_name = my_strdup(PQgetvalue(res, row, 1));
     /* XXX job->args = strdup(PQgetvalue(res, row, 2)); */
@@ -241,7 +242,9 @@ int queue_get(struct queue *queue, struct job **job_r) {
     return get_next_job(queue, job_r);
 }
 
-int queue_claim(struct queue *queue, struct job **job_r) {
+int job_claim(struct job **job_r) {
+    struct job *job;
+    struct queue *queue;
     const char *values[2];
     PGresult *res;
     int ret;
@@ -249,8 +252,11 @@ int queue_claim(struct queue *queue, struct job **job_r) {
     assert(job_r != NULL);
     assert(*job_r != NULL);
 
+    job = *job_r;
+    queue = job->queue;
+
     values[0] = queue->node_name;
-    values[1] = (*job_r)->id;
+    values[1] = job->id;
 
     res = PQexecParams(queue->conn,
                        "UPDATE jobs SET node_name=$1 WHERE id=$2 AND node_name IS NULL",
@@ -272,9 +278,7 @@ int queue_claim(struct queue *queue, struct job **job_r) {
     return ret;
 }
 
-void queue_skip(struct queue *queue, struct job **job_r) {
-    (void)queue;
-
+void job_skip(struct job **job_r) {
     free_job(job_r);
 }
 
@@ -297,10 +301,8 @@ static int rollback_job(struct queue *queue, const char *id) {
     return ret;
 }
 
-int queue_rollback(struct queue *queue, struct job **job_r) {
+int job_rollback(struct job **job_r) {
     struct job *job;
-
-    (void)queue;
 
     assert(job_r != NULL);
     assert(*job_r != NULL);
@@ -308,7 +310,7 @@ int queue_rollback(struct queue *queue, struct job **job_r) {
     job = *job_r;
     *job_r = NULL;
 
-    rollback_job(queue, job->id);
+    rollback_job(job->queue, job->id);
 
     free_job(&job);
 
@@ -340,10 +342,8 @@ static int set_job_done(struct queue *queue, const char *id, int status) {
     return ret;
 }
 
-int queue_done(struct queue *queue, struct job **job_r, int status) {
+int job_done(struct job **job_r, int status) {
     struct job *job;
-
-    (void)queue;
 
     assert(job_r != NULL);
     assert(*job_r != NULL);
@@ -351,7 +351,7 @@ int queue_done(struct queue *queue, struct job **job_r, int status) {
     job = *job_r;
     *job_r = NULL;
 
-    set_job_done(queue, job->id, status);
+    set_job_done(job->queue, job->id, status);
 
     free_job(&job);
 

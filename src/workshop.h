@@ -55,13 +55,14 @@ void poll_poll(struct poll *poll);
 
 /* queue.c */
 
+struct queue;
+
 struct job {
+    struct queue *queue;
     char *id, *plan_name, *syslog_server;
     char **args;
     unsigned num_args;
 };
-
-struct queue;
 
 int queue_open(const char *node_name,
                const char *conninfo, struct poll *poll,
@@ -73,13 +74,13 @@ void queue_flush(struct queue *queue);
 
 int queue_get(struct queue *queue, struct job **job_r);
 
-int queue_claim(struct queue *queue, struct job **job_r);
+int job_claim(struct job **job_r);
 
-void queue_skip(struct queue *queue, struct job **job_r);
+void job_skip(struct job **job_r);
 
-int queue_rollback(struct queue *queue, struct job **job_r);
+int job_rollback(struct job **job_r);
 
-int queue_done(struct queue *queue, struct job **job_r, int status);
+int job_done(struct job **job_r, int status);
 
 /* plan.c */
 
@@ -127,8 +128,7 @@ int workplace_open(struct poll *p, struct workplace **workplace_r);
 void workplace_close(struct workplace **workplace_r);
 
 int workplace_start(struct workplace *workplace,
-                    struct queue *queue, struct job *job,
-                    struct library *library,
+                    struct job *job, struct library *library,
                     struct plan *plan);
 
 int workplace_is_empty(const struct workplace *workplace);

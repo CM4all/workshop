@@ -62,8 +62,7 @@ static void free_operator(struct operator **operator_r) {
 }
 
 int workplace_start(struct workplace *workplace,
-                    struct queue *queue, struct job *job,
-                    struct library *library,
+                    struct job *job, struct library *library,
                     struct plan *plan) {
     struct operator *operator;
 
@@ -75,7 +74,6 @@ int workplace_start(struct workplace *workplace,
     if (operator == NULL)
         return errno;
 
-    operator->queue = queue;
     operator->job = job;
     operator->library = library;
     operator->plan = plan;
@@ -149,7 +147,7 @@ void workplace_waitpid(struct workplace *workplace) {
 
         library_put(operator->library, &operator->plan);
 
-        queue_done(operator->queue, &operator->job, status);
+        job_done(&operator->job, status);
 
         *operator_p = operator->next;
         free_operator(&operator);
