@@ -282,6 +282,31 @@ void job_skip(struct job **job_r) {
     free_job(job_r);
 }
 
+int job_set_progress(struct job *job, unsigned progress) {
+    char progress_s[32];
+    const char *params[2];
+    PGresult *res;
+    int ret;
+
+    snprintf(progress_s, sizeof(progress_s), "%u", progress);
+    params[0] = job->id;
+    params[1] = progress_s;
+
+    res = PQexecParams(job->queue->conn,
+                       "UPDATE jobs SET progress=$2 WHERE id=$1",
+                       2, NULL, params, NULL, NULL, 0);
+    if (PQresultStatus(res) != PGRES_COMMAND_OK) {
+        fprintf(stderr, "UPDATE/progress on jobs failed: %s\n",
+                PQerrorMessage(job->queue->conn));
+        PQclear(res);
+        return -1;
+    }
+
+    ret = atoi(PQcmdTuples(res));
+    PQclear(res);
+    return ret;
+}
+
 static int rollback_job(struct queue *queue, const char *id) {
     PGresult *res;
     int ret;

@@ -78,6 +78,8 @@ int job_claim(struct job **job_r);
 
 void job_skip(struct job **job_r);
 
+int job_set_progress(struct job *job, unsigned progress);
+
 int job_rollback(struct job **job_r);
 
 int job_done(struct job **job_r, int status);
