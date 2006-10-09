@@ -32,7 +32,7 @@ CREATE TABLE jobs (
         node_timeout TIMESTAMP NULL,
 
         -- how much is done? 0 to 100 percent
-        percent_done INT NOT NULL DEFAULT 0,
+        progress INT NOT NULL DEFAULT 0,
 
         -- the time this job was completed
         time_done TIMESTAMP NULL,

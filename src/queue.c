@@ -283,7 +283,7 @@ static int rollback_job(struct queue *queue, const char *id) {
     int ret;
 
     res = PQexecParams(queue->conn,
-                       "UPDATE jobs SET node_name=NULL, percent_done=0 WHERE id=$1",
+                       "UPDATE jobs SET node_name=NULL, progress=0 WHERE id=$1",
                        1, NULL, &id, NULL, NULL, 0);
     if (PQresultStatus(res) != PGRES_COMMAND_OK) {
         fprintf(stderr, "UPDATE/done on jobs failed: %s\n",
@@ -326,7 +326,7 @@ static int set_job_done(struct queue *queue, const char *id, int status) {
     params[1] = status_string;
 
     res = PQexecParams(queue->conn,
-                       "UPDATE jobs SET time_done=NOW(), percent_done=100, status=$2 WHERE id=$1",
+                       "UPDATE jobs SET time_done=NOW(), progress=100, status=$2 WHERE id=$1",
                        2, NULL, params, NULL, NULL, 0);
     if (PQresultStatus(res) != PGRES_COMMAND_OK) {
         fprintf(stderr, "UPDATE/done on jobs failed: %s\n",
