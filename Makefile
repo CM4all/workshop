@@ -6,6 +6,7 @@ override CFLAGS += -Wall -W -Werror -std=gnu99 -Wmissing-prototypes -Wwrite-stri
 INCLUDES = -I/usr/include/cm4all/libfox-0
 
 SOURCES = src/main.c src/config.c src/daemon.c src/poll.c src/queue.c src/plan.c src/operator.c src/syslog.c
+HEADERS = src/workshop.h src/syslog.h
 OBJECTS = $(patsubst %.c,%.o,$(SOURCES))
 LIBS = -lcm4all-fox -lpq
 
@@ -17,5 +18,5 @@ clean:
 src/cm4all-workshop: $(OBJECTS)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
-$(OBJECTS): %.o: %.c src/workshop.h src/syslog.h
+$(OBJECTS): %.o: %.c $(HEADERS)
 	$(CC) -c -o $@ $< $(CFLAGS) $(INCLUDES) $(INCLUDES)
