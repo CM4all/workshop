@@ -27,6 +27,8 @@ struct config {
 
 extern int verbose;
 
+#define log(level, ...) do { if (verbose >= (level)) { printf(__VA_ARGS__); fflush(stdout); } } while (0)
+
 /** read configuration options from the command line */
 void parse_cmdline(struct config *config, int argc, char **argv);
 

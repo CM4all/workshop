@@ -40,10 +40,8 @@ static void queue_callback(struct pollfd *pollfd, void *ctx) {
     PQconsumeInput(queue->conn);
 
     while ((notify = PQnotifies(queue->conn)) != NULL) {
-        if (verbose >= 3)
-            fprintf(stderr,
-                    "ASYNC NOTIFY of '%s' received from backend pid %d\n",
-                    notify->relname, notify->be_pid);
+        log(3, "ASYNC NOTIFY of '%s' received from backend pid %d\n",
+            notify->relname, notify->be_pid);
         if (strcmp(notify->relname, "new_job") == 0)
             queue->ready = 1;
         PQfreemem(notify);

@@ -104,8 +104,7 @@ int main(int argc, char **argv) {
 
     config_get(&config, argc, argv);
 
-    if (verbose >= 1)
-        printf("cm4all-workshop v" VERSION "\n");
+    log(1, "cm4all-workshop v" VERSION "\n");
 
     /* set up */
 
