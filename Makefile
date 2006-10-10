@@ -10,10 +10,13 @@ HEADERS = src/workshop.h src/syslog.h src/strarray.h src/strhash.h
 OBJECTS = $(patsubst %.c,%.o,$(SOURCES))
 LIBS = -lcm4all-fox -lpq
 
-all: src/cm4all-workshop
+all: src/cm4all-workshop doc/workshop.html
+
+doc/workshop.html: doc/workshop.xml
+	xsltproc -o $@ /usr/share/sgml/docbook/stylesheet/xsl/nwalsh/html/docbook.xsl $<
 
 clean:
-	rm -f src/*.o src/cm4all-workshop
+	rm -f src/*.o src/cm4all-workshop doc/workshop.html
 
 check: t/test-pg_decode_array
 	./t/test-pg_decode_array

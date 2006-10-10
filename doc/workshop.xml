@@ -1,0 +1,325 @@
+<?xml version='1.0' encoding="utf-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+               "docbook/dtd/xml/4.2/docbookx.dtd">
+<book>
+  <title><filename>workshop</filename></title>
+
+  <bookinfo>
+    <author>
+      <firstname>Max</firstname>
+      <surname>Kellermann</surname>
+      <email>mk@cm4all.com</email>
+    </author>
+  </bookinfo>
+
+  <preface id="preface">
+    <title>
+      Was ist <filename>workshop</filename>?
+    </title>
+    <para>
+      <filename>workshop</filename> ist ein Unix-Daemon, der
+      Arbeitsaufträge aus einer Queue (PostgreSQL) holt und diese
+      ausführt.  Dabei können mehrere Instanzen über das Netzwerk
+      verteilt aus derselben Queue gespeist werden, um den Durchsatz
+      zu erhöhen.
+    </para>
+  </preface>
+
+  <chapter id="installation">
+    <title>Installation und Konfiguration</title>
+    <para>
+      Siehe Debian-Paket.
+    </para>
+  </chapter>
+
+  <chapter id="concept">
+    <title>Konzept</title>
+
+    <para>
+      Die Queue (eine PostgreSQL-Tabelle) enthält eine Liste von
+      <emphasis>Jobs</emphasis> (Arbeitsaufträgen).  Jeder Daemon
+      überwacht diese Liste.
+    </para>
+
+    <para>
+      Jedem Job ist ein <emphasis>Plan</emphasis> zugeordnet.  Dieser
+      muss bereits auf dem Server installiert sein - ist das nicht der
+      Fall, nimmt der Daemon diesen Job nicht an.  Der Plan
+      beschreibt, wie der Job ausgeführt wird.
+    </para>
+  </chapter>
+
+  <chapter id="benutzung">
+    <title>Benutzung</title>
+
+    <section id="plan-dev">
+      <title>Plans entwickeln</title>
+
+      <para>
+        In <filename>/etc/cm4all/workshop/plans/</filename> legt man
+        die Konfigurationsdatei mit dem Namen des Plan an.  Beispiel:
+      </para>
+
+      <programlisting>exec /usr/bin/my-plan --foo
+user "bar"
+nice 5</programlisting>
+
+      <para>
+        Das Programm <filename>/usr/bin/my-plan</filename> wird also
+        ausgeführt, als Unix-User "bar" und mit einer Priorität von 5
+        (Default ist 10).  Das Protokoll wird im Kapitel "Referenz"
+        beschrieben.
+      </para>
+
+      <table id="plan_options">
+        <title>Optionen in der Plan-Konfiguration</title>
+        <tgroup cols="2">
+          <tbody>
+            <row>
+              <entry>
+                <varname>exec</varname>
+                <varname>PROGRAM</varname>
+                <varname>ARG1</varname> ...
+              </entry>
+              <entry>
+                Kommandozeile.  Der Programmname muß absolut sein, da
+                keine Auswertung des <varname>PATH</varname> erfolgt.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <varname>user</varname>
+                <varname>USERNAME</varname>
+              </entry>
+              <entry>
+                Name des Unix-User, mit dessen Rechten der Prozess
+                gestartet wird.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <varname>nice</varname>
+                <varname>PRIO</varname>
+              </entry>
+              <entry>
+                Absolute Priorität des Prozesses, von -20 bis +19.
+                Von negativen (hohe) Prioritäten wird abgeraten.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <varname>chroot</varname>
+                <varname>PATH</varname>
+              </entry>
+              <entry>
+                Der Prozess wird im Changeroot gefangen.  Das Programm
+                in der <varname>exec</varname>-Zeile muß folglich
+                relativ zum Changeroot sein.
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+
+    <section id="start-job">
+      <title>Job starten</title>
+
+      <para>
+        Ein Job besteht aus einer Zeile in der PostgreSQL-Tabelle
+        "jobs".  Beispiel:
+      </para>
+
+      <programlisting>INSERT INTO jobs(plan_name,args) VALUES('foo', ARRAY['--bar', '/var/www/vol01/foo/bar'])</programlisting>
+
+      <para>
+        Daß der Job bearbeitet wird, kann in den Spalten
+        <varname>node_name</varname> und <varname>progress</varname>
+        abgelesen werden.  Nach Abschluß sind auch die Spalten
+        <varname>time_done</varname> und <varname>status</varname>
+        interessant.  Eine genaue Beschreibung aller Spalten ist im
+        Kapitel "Referenz" zu finden.
+      </para>
+    </section>
+  </chapter>
+
+  <chapter id="reference">
+    <title>Referenz</title>
+
+    <section id="plan-protocol">
+      <title>Plan-Protokoll</title>
+
+      <para>
+        Das Environment ist leer, und Standard Input kommt aus
+        <filename>/dev/null</filename>.  Es gibt nur 2 offene File
+        Handles: 1 (normalerweise <varname>stdout</varname>) und 2
+        (<varname>stderr</varname>).
+      </para>
+
+      <para>
+        Nach <varname>stdout</varname> schickt der Prozess seine
+        Progress-Daten, d.h. eine Zahl von 0 bis 100 in jeder Zeile.
+        Diese wird am Zeilenende sofort in die Datenbank geschrieben.
+      </para>
+
+      <para>
+        <varname>stderr</varname> kann für Fehlermeldungen oder
+        sonstige zu loggende Meldungen benutzt werden.  Sie erscheinen
+        entweder auf einem Syslog-Server (wenn das im Job so
+        konfiguriert ist) oder im Log des
+        <filename>workshop</filename>-Daemon.
+      </para>
+
+      <para>
+        Der Exit-Code muß bei Erfolg 0 sein.
+      </para>
+    </section>
+
+    <section id="tables">
+      <title>Datenbank-Tabellen</title>
+
+      <table id="table_jobs">
+        <title>Tabelle "jobs"</title>
+        <tgroup cols="2">
+          <tbody>
+            <row>
+              <entry>
+                <varname>id</varname>
+              </entry>
+              <entry>
+                Job-ID.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <varname>description</varname>
+              </entry>
+              <entry>
+                Menschenlesbare Beschreibung.  Wird von
+                <filename>workshop</filename> nicht benutzt.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <varname>time_created</varname>
+              </entry>
+              <entry>
+                Zeitpunkt des Auftrags.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <varname>priority</varname>
+              </entry>
+              <entry>
+                Priorität, kleinere Zahl heißt höhere Priorität.
+                Default ist 0.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <varname>plan_name</varname>
+              </entry>
+              <entry>
+                Name des Plan.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <varname>args</varname>
+              </entry>
+              <entry>
+                Zusätzliche Argumente an das Plan-Programm.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <varname>syslog_server</varname>
+              </entry>
+              <entry>
+                Wenn diese Spalte gesetzt ist, werden an diese Adresse
+                alle Zeilen aus <varname>stderr</varname> mit dem
+                Syslog-Protokoll geschickt (UDP, siehe RFC 3164).
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <varname>node_name</varname>
+              </entry>
+              <entry>
+                Name der Node, die diesen Job gerade ausführt.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <varname>node_timeout</varname>
+              </entry>
+              <entry>
+                Wenn dieser Zeitpunkt überschritten ist, kann
+                <varname>node_name</varname> als NULL angesehen
+                werden.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <varname>progress</varname>
+              </entry>
+              <entry>
+                Fortschritt der Job-Ausführung in Prozent.  Auch wenn
+                der Wert 100 ist, darf nicht angenommen werden, daß
+                der Job vollständig ausgeführt ist.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <varname>time_done</varname>
+              </entry>
+              <entry>
+                Zeitpunkt zu dem der Job fertiggestellt wurde.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <varname>exit_status</varname>
+              </entry>
+              <entry>
+                Exit-Code des Plan-Prozesses.
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+  </chapter>
+
+  <chapter id="security">
+    <title>Sicherheit</title>
+
+    <para>
+      Bei <filename>workshop</filename> handelt es sich um einen
+      Dienst, der aufgrund von Remote-Daten Programme ausführt.  Das
+      kann zu einem erheblichen Sicherheitsproblem werden, wenn die
+      Datenbank kompromittiert wird.
+    </para>
+
+    <para>
+      Dabei ist <filename>workshop</filename> nicht das Ziel der
+      Angriffe (höchstens in Form von Denial of Service), sondern die
+      <emphasis>Plans</emphasis>.  Diese sollten so programmiert
+      werden, daß Angriffe nicht möglich sind.  Dazu gehört
+      u.a. genaue Prüfung der Eingaben auf Validität, möglichst nicht
+      mit Dateinamen arbeiten sondern mit Codes und IDs, keine
+      generischen Interfaces bieten die Daten manipulieren sondern nur
+      ganz konkrete Routinen zur Erledigung eines einzelnen Jobs.
+      Außerdem sollten die Jobs mit den geringstmöglichen Privilegien
+      ausgeführt werden, damit der potentielle Schaden im Falle eines
+      erfolgreichen Angriffs irgendwie begrenzt wird.
+    </para>
+
+    <para>
+      Die größte Verantwortung zur Wahrung der Sicherheit liegt
+      folglich beim Plan-Autor.
+    </para>
+  </chapter>
+
+</book>
