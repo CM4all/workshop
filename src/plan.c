@@ -324,6 +324,7 @@ static int load_plan_config(const char *path, const char *name,
 
     plan->uid = 65534;
     plan->gid = 65534;
+    plan->priority = 10;
 
     plan->name = strdup(name);
     if (plan->name == NULL) {
