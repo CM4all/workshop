@@ -69,6 +69,9 @@ void strhash_close(struct strhash **sh_r) {
         }
     }
 
+    if (sh->slots != NULL)
+        free(sh->slots);
+
     free(sh);
 }
 
