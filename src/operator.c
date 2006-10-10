@@ -8,6 +8,7 @@
 
 #include "workshop.h"
 #include "syslog.h"
+#include "strhash.h"
 
 #include <assert.h>
 #include <sys/stat.h>
@@ -163,6 +164,8 @@ int workplace_start(struct workplace *workplace,
                     struct job *job, struct plan *plan) {
     struct operator *operator;
     int ret, stdout_fds[2], stderr_fds[2];
+    struct strarray argv;
+    unsigned i;
 
     assert(plan != NULL);
     assert(plan->argv != NULL);
@@ -230,23 +233,19 @@ int workplace_start(struct workplace *workplace,
         return -1;
     }
 
+    strarray_init(&argv);
+    for (i = 0; i < plan->argc; ++i)
+        strarray_append(&argv, plan->argv[i]);
+
+    for (i = 0; i < job->args.num; ++i)
+        strarray_append(&argv, job->args.values[i]);
+
+    strarray_append(&argv, NULL);
+
     if (operator->pid == 0) {
         /* in the operator process */
 
-        char **argv;
-        unsigned i;
-
         clearenv();
-
-        argv = calloc(plan->argc + job->args.num + 1, sizeof(argv[0]));
-        if (argv == NULL)
-            abort();
-
-        for (i = 0; i < plan->argc; ++i)
-            argv[i] = plan->argv[i];
-
-        for (i = 0; i < job->args.num; ++i)
-            argv[plan->argc + i] = job->args.values[i];
 
         /* chroot */
 
@@ -310,10 +309,12 @@ int workplace_start(struct workplace *workplace,
 
         /* execute plan */
 
-        execv(argv[0], argv);
+        execv(argv.values[0], argv.values);
         fprintf(stderr, "execv() failed: %s\n", strerror(errno));
         exit(1);
     }
+
+    strarray_free(&argv);
 
     close(stdout_fds[1]);
     if (job->syslog_server != NULL)
