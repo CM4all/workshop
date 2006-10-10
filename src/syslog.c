@@ -17,6 +17,7 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 struct syslog_client {
     int fd;
@@ -90,6 +91,13 @@ int syslog_open(const char *me, const char *ident,
 
     ret = connect(syslog->fd, ai->ai_addr, ai->ai_addrlen);
     freeaddrinfo(ai);
+    if (ret < 0) {
+        int save_errno = errno;
+        syslog_close(&syslog);
+        return save_errno;
+    }
+
+    ret = fcntl(syslog->fd, F_SETFD, 1);
     if (ret < 0) {
         int save_errno = errno;
         syslog_close(&syslog);
