@@ -18,6 +18,9 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <poll.h>
+#include <grp.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 
 struct workplace {
     const char *node_name;
@@ -238,6 +241,40 @@ int workplace_start(struct workplace *workplace,
 
         for (i = 0; i < plan->argc; ++i)
             argv[i] = plan->argv[i];
+
+        /* priority */
+
+        ret = setpriority(PRIO_PROCESS, getpid(), plan->priority);
+        if (ret < 0) {
+            fprintf(stderr, "setpriority() failed: %s\n", strerror(errno));
+            exit(1);
+        }
+
+        /* UID / GID */
+
+        if (geteuid() == 0) {
+            ret = setgroups(0, &plan->gid);
+            if (ret < 0) {
+                fprintf(stderr, "setgroups() failed: %s\n", strerror(errno));
+                exit(1);
+            }
+        }
+
+        if (getegid() != plan->gid || getuid() != plan->gid) {
+            ret = setregid(plan->gid, plan->gid);
+            if (ret < 0) {
+                fprintf(stderr, "setregid() failed: %s\n", strerror(errno));
+                exit(1);
+            }
+        }
+
+        if (geteuid() != plan->uid || getuid() != plan->uid) {
+            ret = setreuid(plan->uid, plan->uid);
+            if (ret < 0) {
+                fprintf(stderr, "setreuid() failed: %s\n", strerror(errno));
+                exit(1);
+            }
+        }
 
         /* connect pipes */
 

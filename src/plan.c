@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <pwd.h>
 
 struct plan_entry {
     struct plan *plan;
@@ -247,6 +248,33 @@ static int parse_plan_config(struct plan *plan, FILE *file) {
                 return ENOMEM;
 
             plan->argv = argv;
+        } else {
+            p = next_word(&p);
+            if (p != NULL) {
+                fprintf(stderr, "line %u: too many arguments\n",
+                        line_no);
+                return -1;
+            }
+
+            if (strcmp(key, "user") == 0) {
+                struct passwd *pw;
+
+                pw = getpwnam(value);
+                if (pw == NULL) {
+                    fprintf(stderr, "line %u: no such user '%s'\n",
+                            line_no, value);
+                    return -1;
+                }
+
+                plan->uid = pw->pw_uid;
+                plan->gid = pw->pw_gid;
+            } else if (strcmp(key, "nice") == 0) {
+                plan->priority = atoi(value);
+            } else {
+                fprintf(stderr, "line %u: unknown option '%s'\n",
+                        line_no, key);
+                return -1;
+            }
         }
     }
 
