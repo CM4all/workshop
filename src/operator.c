@@ -190,7 +190,12 @@ int workplace_start(struct workplace *workplace,
              stdout_callback, operator);
 
     if (job->syslog_server != NULL) {
-        ret = syslog_open(workplace->node_name, plan->name, 1,
+        char ident[256];
+
+        snprintf(ident, sizeof(ident), "%s[%s]",
+                 plan->name, job->id);
+
+        ret = syslog_open(workplace->node_name, ident, 1,
                           job->syslog_server,
                           &operator->syslog);
         if (ret != 0) {
