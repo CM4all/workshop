@@ -328,6 +328,10 @@ int workplace_is_empty(const struct workplace *workplace) {
     return workplace->head == NULL;
 }
 
+int workplace_is_full(const struct workplace *workplace) {
+    return workplace->head != NULL;
+}
+
 static struct operator **find_operator_by_pid(struct workplace *workplace,
                                               pid_t pid) {
     struct operator **operator_p, *operator;

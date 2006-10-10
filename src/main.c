@@ -144,7 +144,7 @@ int main(int argc, char **argv) {
     while (!should_exit || !workplace_is_empty(instance.workplace)) {
         /* handle job queue */
 
-        if (!should_exit) {
+        if (!should_exit && !workplace_is_full(instance.workplace)) {
             while (1) {
                 struct job *job;
 

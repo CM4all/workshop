@@ -148,4 +148,6 @@ int workplace_start(struct workplace *workplace,
 
 int workplace_is_empty(const struct workplace *workplace);
 
+int workplace_is_full(const struct workplace *workplace);
+
 void workplace_waitpid(struct workplace *workplace);
