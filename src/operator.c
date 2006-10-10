@@ -320,6 +320,9 @@ int workplace_start(struct workplace *workplace,
     operator->next = workplace->head;
     workplace->head = operator;
 
+    log(2, "job %s (plan '%s') running as pid %d\n",
+        job->id, plan->name, operator->pid);
+
     return 0;
 }
 
@@ -359,15 +362,15 @@ void workplace_waitpid(struct workplace *workplace) {
         assert(operator != NULL);
 
         if (WIFSIGNALED(status))
-            log(1, "job %s, pid %d died from signal %d%s\n",
+            log(1, "job %s (pid %d) died from signal %d%s\n",
                 operator->job->id, pid,
                 WTERMSIG(status),
                 WCOREDUMP(status) ? " (core dumped)" : "");
         else if (WEXITSTATUS(status) == 0)
-            log(3, "job %s, pid %d exited with success\n",
+            log(3, "job %s (pid %d) exited with success\n",
                 operator->job->id, pid);
         else
-            log(2, "job %s, pid %d exited with status %d\n",
+            log(2, "job %s (pid %d) exited with status %d\n",
                 operator->job->id, pid,
                 WEXITSTATUS(status));
 
