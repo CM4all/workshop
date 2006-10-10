@@ -131,6 +131,7 @@ struct operator {
     int stdout_fd;
     char stdout_buffer[64];
     size_t stdout_length;
+    unsigned progress;
 
     int stderr_fd;
     char stderr_buffer[256];
