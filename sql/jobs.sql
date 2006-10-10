@@ -36,8 +36,8 @@ CREATE TABLE jobs (
 
         -- the time this job was completed
         time_done TIMESTAMP NULL,
-        -- the waitpid() status value
-        status INT NULL
+        -- the process' exit code
+        exit_status INT NULL
 );
 
 -- this index is used when determining the next free job

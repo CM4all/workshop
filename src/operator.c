@@ -463,7 +463,7 @@ static struct operator **find_operator_by_pid(struct workplace *workplace,
 
 void workplace_waitpid(struct workplace *workplace) {
     pid_t pid;
-    int status;
+    int status, exit_status;
     struct operator **operator_p, *operator;
 
     while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
@@ -474,22 +474,25 @@ void workplace_waitpid(struct workplace *workplace) {
         operator = *operator_p;
         assert(operator != NULL);
 
-        if (WIFSIGNALED(status))
+        exit_status = WEXITSTATUS(status);
+
+        if (WIFSIGNALED(status)) {
             log(1, "job %s (pid %d) died from signal %d%s\n",
                 operator->job->id, pid,
                 WTERMSIG(status),
                 WCOREDUMP(status) ? " (core dumped)" : "");
-        else if (WEXITSTATUS(status) == 0)
+            exit_status = -1;
+        } else if (exit_status == 0)
             log(3, "job %s (pid %d) exited with success\n",
                 operator->job->id, pid);
         else
             log(2, "job %s (pid %d) exited with status %d\n",
                 operator->job->id, pid,
-                WEXITSTATUS(status));
+                exit_status);
 
         plan_put(&operator->plan);
 
-        job_done(&operator->job, status);
+        job_done(&operator->job, exit_status);
 
         *operator_p = operator->next;
         free_operator(&operator);

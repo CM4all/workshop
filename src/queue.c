@@ -366,7 +366,7 @@ static int set_job_done(struct queue *queue, const char *id, int status) {
     params[1] = status_string;
 
     res = PQexecParams(queue->conn,
-                       "UPDATE jobs SET time_done=NOW(), progress=100, status=$2 WHERE id=$1",
+                       "UPDATE jobs SET time_done=NOW(), progress=100, exit_status=$2 WHERE id=$1",
                        2, NULL, params, NULL, NULL, 0);
     if (PQresultStatus(res) != PGRES_COMMAND_OK) {
         fprintf(stderr, "UPDATE/done on jobs failed: %s\n",
