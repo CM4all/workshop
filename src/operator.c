@@ -37,7 +37,7 @@ int workplace_open(const char *node_name, struct poll *p,
     if (workplace == NULL)
         return errno;
 
-    workplace->node_name = strdup(node_name);
+    workplace->node_name = node_name;
     if (workplace->node_name == NULL) {
         workplace_close(&workplace);
         return ENOMEM;
