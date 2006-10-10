@@ -1,3 +1,11 @@
+/*
+ * $Id$
+ *
+ * Dynamic string hash.
+ *
+ * author: Max Kellermann <mk@cm4all.com>
+ */
+
 #include "strhash.h"
 
 #include <assert.h>
