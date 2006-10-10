@@ -180,6 +180,8 @@ int workplace_start(struct workplace *workplace,
     operator->workplace = workplace;
     operator->stdout_fd = -1;
     operator->stderr_fd = -1;
+    operator->job = job;
+    operator->plan = plan;
 
     ret = pipe(stdout_fds);
     if (ret < 0) {
@@ -225,8 +227,16 @@ int workplace_start(struct workplace *workplace,
                  stderr_callback, operator);
     }
 
-    operator->job = job;
-    operator->plan = plan;
+    /* build command line */
+
+    strarray_init(&argv);
+    for (i = 0; i < plan->argc; ++i)
+        strarray_append(&argv, plan->argv[i]);
+
+    for (i = 0; i < job->args.num; ++i)
+        strarray_append(&argv, job->args.values[i]);
+
+    strarray_append(&argv, NULL);
 
     /* fork */
 
@@ -239,15 +249,6 @@ int workplace_start(struct workplace *workplace,
             close(stderr_fds[1]);
         return -1;
     }
-
-    strarray_init(&argv);
-    for (i = 0; i < plan->argc; ++i)
-        strarray_append(&argv, plan->argv[i]);
-
-    for (i = 0; i < job->args.num; ++i)
-        strarray_append(&argv, job->args.values[i]);
-
-    strarray_append(&argv, NULL);
 
     if (operator->pid == 0) {
         /* in the operator process */
