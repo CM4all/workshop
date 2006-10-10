@@ -171,6 +171,8 @@ int workplace_start(struct workplace *workplace,
     assert(plan->argv != NULL);
     assert(plan->argc > 0);
 
+    /* create operator object */
+
     operator = (struct operator*)calloc(1, sizeof(*operator));
     if (operator == NULL)
         return errno;
@@ -185,6 +187,8 @@ int workplace_start(struct workplace *workplace,
         free_operator(&operator);
         return -1;
     }
+
+    /* create stdout/stderr pipes */
 
     operator->stdout_fd = stdout_fds[0];
     poll_add(workplace->poll, operator->stdout_fd, POLLIN,
@@ -223,6 +227,9 @@ int workplace_start(struct workplace *workplace,
 
     operator->job = job;
     operator->plan = plan;
+
+    /* fork */
+
     operator->pid = fork();
     if (operator->pid < 0) {
         fprintf(stderr, "fork() failed: %s\n", strerror(errno));
