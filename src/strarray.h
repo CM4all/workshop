@@ -1,0 +1,23 @@
+/*
+ * $Id$
+ *
+ * Dynamic string array.
+ *
+ * author: Max Kellermann <mk@cm4all.com>
+ */
+
+#ifndef __STRARRAY_H
+#define __STRARRAY_H
+
+struct strarray {
+    unsigned num, max;
+    char **values;
+};
+
+void strarray_init(struct strarray *a);
+
+void strarray_free(struct strarray *a);
+
+void strarray_append(struct strarray *a, const char *v);
+
+#endif
