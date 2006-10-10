@@ -406,6 +406,8 @@ int library_get(struct library *library, const char *name,
         if (st.st_mtime != entry->mtime) {
             /* .. but it's not up to date */
 
+            log(6, "reloading plan '%s'\n", name);
+
             ret = load_plan_config(path, name, &plan);
             if (ret != 0)
                 return ret;
@@ -422,6 +424,8 @@ int library_get(struct library *library, const char *name,
         }
     } else {
         /* not in cache, load it from disk */
+
+        log(6, "loading plan '%s'\n", name);
         
         ret = load_plan_config(path, name, &plan);
         if (ret != 0)
