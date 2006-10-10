@@ -40,7 +40,7 @@ static void queue_callback(struct pollfd *pollfd, void *ctx) {
     PQconsumeInput(queue->conn);
 
     while ((notify = PQnotifies(queue->conn)) != NULL) {
-        log(3, "ASYNC NOTIFY of '%s' received from backend pid %d\n",
+        log(6, "async notify '%s' received from backend pid %d\n",
             notify->relname, notify->be_pid);
         if (strcmp(notify->relname, "new_job") == 0)
             queue->ready = 1;
@@ -258,6 +258,8 @@ int job_claim(struct job **job_r) {
     job = *job_r;
     queue = job->queue;
 
+    log(6, "attempting to claim job %s\n", job->id);
+
     values[0] = queue->node_name;
     values[1] = job->id;
 
@@ -275,8 +277,12 @@ int job_claim(struct job **job_r) {
     ret = atoi(PQcmdTuples(res));
     PQclear(res);
 
-    if (ret == 0)
+    if (ret == 0) {
+        log(6, "job %s was not claimed\n", job->id);
         free_job(job_r);
+    }
+
+    log(6, "job %s claimed\n", job->id);
 
     return ret;
 }
@@ -290,6 +296,8 @@ int job_set_progress(struct job *job, unsigned progress) {
     const char *params[2];
     PGresult *res;
     int ret;
+
+    log(5, "job %s progress=%u\n", job->id, progress);
 
     snprintf(progress_s, sizeof(progress_s), "%u", progress);
     params[0] = job->id;
@@ -338,6 +346,8 @@ int job_rollback(struct job **job_r) {
     job = *job_r;
     *job_r = NULL;
 
+    log(6, "rolling back job %s\n", job->id);
+
     rollback_job(job->queue, job->id);
 
     free_job(&job);
@@ -378,6 +388,8 @@ int job_done(struct job **job_r, int status) {
 
     job = *job_r;
     *job_r = NULL;
+
+    log(6, "job %s done with status %d\n", job->id, status);
 
     set_job_done(job->queue, job->id, status);
 

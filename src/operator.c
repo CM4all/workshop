@@ -121,10 +121,8 @@ static void stdout_callback(struct pollfd *pollfd, void *ctx) {
         }
     }
 
-    if (progress > 0) {
+    if (progress > 0)
         job_set_progress(operator->job, progress);
-        fprintf(stderr, "progress=%u\n", progress);
-    }
 }
 
 static void stderr_callback(struct pollfd *pollfd, void *ctx) {
