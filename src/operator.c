@@ -358,6 +358,19 @@ void workplace_waitpid(struct workplace *workplace) {
         operator = *operator_p;
         assert(operator != NULL);
 
+        if (WIFSIGNALED(status))
+            log(1, "job %s, pid %d died from signal %d%s\n",
+                operator->job->id, pid,
+                WTERMSIG(status),
+                WCOREDUMP(status) ? " (core dumped)" : "");
+        else if (WEXITSTATUS(status) == 0)
+            log(3, "job %s, pid %d exited with success\n",
+                operator->job->id, pid);
+        else
+            log(2, "job %s, pid %d exited with status %d\n",
+                operator->job->id, pid,
+                WEXITSTATUS(status));
+
         plan_put(&operator->plan);
 
         job_done(&operator->job, status);
