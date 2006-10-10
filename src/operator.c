@@ -179,7 +179,7 @@ int workplace_start(struct workplace *workplace,
              stdout_callback, operator);
 
     if (job->syslog_server != NULL) {
-        ret = syslog_open("foo", "bar", 1, job->syslog_server, &operator->syslog);
+        ret = syslog_open("foo", plan->name, 1, job->syslog_server, &operator->syslog);
         if (ret != 0) {
             if (ret > 0)
                 fprintf(stderr, "syslog_open(%s) failed: %s\n",
