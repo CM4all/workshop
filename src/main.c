@@ -168,6 +168,13 @@ int main(int argc, char **argv) {
             child_exited = 0;
             workplace_waitpid(instance.workplace);
         }
+
+        /* informational message */
+
+        if (should_exit == 1 && !workplace_is_empty(instance.workplace)) {
+            should_exit = 2;
+            log(1, "waiting for operators to finish\n");
+        }
     }
 
     /* cleanup */
