@@ -130,7 +130,8 @@ int main(int argc, char **argv) {
         exit(2);
     }
 
-    ret = workplace_open(instance.poll, &instance.workplace);
+    ret = workplace_open(config.node_name, instance.poll,
+                         &instance.workplace);
     if (ret != 0) {
         fprintf(stderr, "failed to open workplace\n");
         exit(2);

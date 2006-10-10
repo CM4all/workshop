@@ -20,16 +20,24 @@
 #include <poll.h>
 
 struct workplace {
+    const char *node_name;
     struct poll *poll;
     struct operator *head;
 };
 
-int workplace_open(struct poll *p, struct workplace **workplace_r) {
+int workplace_open(const char *node_name, struct poll *p,
+                   struct workplace **workplace_r) {
     struct workplace *workplace;
 
     workplace = (struct workplace*)calloc(1, sizeof(*workplace));
     if (workplace == NULL)
         return errno;
+
+    workplace->node_name = strdup(node_name);
+    if (workplace->node_name == NULL) {
+        workplace_close(&workplace);
+        return ENOMEM;
+    }
 
     workplace->poll = p;
 
@@ -179,7 +187,9 @@ int workplace_start(struct workplace *workplace,
              stdout_callback, operator);
 
     if (job->syslog_server != NULL) {
-        ret = syslog_open("foo", plan->name, 1, job->syslog_server, &operator->syslog);
+        ret = syslog_open(workplace->node_name, plan->name, 1,
+                          job->syslog_server,
+                          &operator->syslog);
         if (ret != 0) {
             if (ret > 0)
                 fprintf(stderr, "syslog_open(%s) failed: %s\n",
