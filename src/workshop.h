@@ -129,8 +129,9 @@ struct operator {
     size_t stdout_length;
 
     int stderr_fd;
-    char stderr_buffer[512];
+    char stderr_buffer[256];
     size_t stderr_length;
+    struct syslog_client *syslog;
 };
 
 int workplace_open(struct poll *p, struct workplace **workplace_r);

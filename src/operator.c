@@ -7,6 +7,7 @@
  */
 
 #include "workshop.h"
+#include "syslog.h"
 
 #include <assert.h>
 #include <sys/stat.h>
@@ -69,6 +70,9 @@ static void free_operator(struct operator **operator_r) {
         close(operator->stderr_fd);
     }
 
+    if (operator->syslog != NULL)
+        syslog_close(&operator->syslog);
+
     free(operator);
 }
 
@@ -119,6 +123,8 @@ static void stderr_callback(struct pollfd *pollfd, void *ctx) {
 
     (void)pollfd;
 
+    assert(operator->syslog != NULL);
+
     nbytes = read(operator->stderr_fd, buffer, sizeof(buffer));
     if (nbytes <= 0) {
         poll_remove(operator->workplace->poll, operator->stderr_fd);
@@ -133,8 +139,7 @@ static void stderr_callback(struct pollfd *pollfd, void *ctx) {
         if (ch == '\r' || ch == '\n') {
             if (operator->stderr_length > 0) {
                 operator->stderr_buffer[operator->stderr_length] = 0;
-                /* XXX */
-                fprintf(stderr, "STDERR='%s'\n", operator->stderr_buffer);
+                syslog_log(operator->syslog, 6, operator->stderr_buffer);
             }
 
             operator->stderr_length = 0;
@@ -173,17 +178,29 @@ int workplace_start(struct workplace *workplace,
     poll_add(workplace->poll, operator->stdout_fd, POLLIN,
              stdout_callback, operator);
 
-    ret = pipe(stderr_fds);
-    if (ret < 0) {
-        fprintf(stderr, "pipe() failed: %s\n", strerror(errno));
-        free_operator(&operator);
-        close(stdout_fds[1]);
-        return -1;
-    }
+    if (job->syslog_server != NULL) {
+        ret = syslog_open("foo", "bar", 1, job->syslog_server, &operator->syslog);
+        if (ret != 0) {
+            if (ret > 0)
+                fprintf(stderr, "syslog_open(%s) failed: %s\n",
+                        job->syslog_server, strerror(ret));
+            free_operator(&operator);
+            close(stdout_fds[1]);
+            return -1;
+        }
 
-    operator->stderr_fd = stderr_fds[0];
-    poll_add(workplace->poll, operator->stderr_fd, POLLIN,
-             stderr_callback, operator);
+        ret = pipe(stderr_fds);
+        if (ret < 0) {
+            fprintf(stderr, "pipe() failed: %s\n", strerror(errno));
+            free_operator(&operator);
+            close(stdout_fds[1]);
+            return -1;
+        }
+
+        operator->stderr_fd = stderr_fds[0];
+        poll_add(workplace->poll, operator->stderr_fd, POLLIN,
+                 stderr_callback, operator);
+    }
 
     operator->job = job;
     operator->plan = plan;
@@ -192,7 +209,8 @@ int workplace_start(struct workplace *workplace,
         fprintf(stderr, "fork() failed: %s\n", strerror(errno));
         free_operator(&operator);
         close(stdout_fds[1]);
-        close(stderr_fds[1]);
+        if (job->syslog_server != NULL)
+            close(stderr_fds[1]);
         return -1;
     }
 
@@ -214,12 +232,15 @@ int workplace_start(struct workplace *workplace,
         /* connect pipes */
 
         dup2(stdout_fds[1], 1);
-        dup2(stderr_fds[1], 2);
+        if (job->syslog_server != NULL)
+            dup2(stderr_fds[1], 2);
 
         close(stdout_fds[0]);
         close(stdout_fds[1]);
-        close(stderr_fds[0]);
-        close(stderr_fds[1]);
+        if (job->syslog_server != NULL) {
+            close(stderr_fds[0]);
+            close(stderr_fds[1]);
+        }
 
         /* execute plan */
 
@@ -229,7 +250,8 @@ int workplace_start(struct workplace *workplace,
     }
 
     close(stdout_fds[1]);
-    close(stderr_fds[1]);
+    if (job->syslog_server != NULL)
+        close(stderr_fds[1]);
 
     operator->next = workplace->head;
     workplace->head = operator;
