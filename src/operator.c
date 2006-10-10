@@ -160,6 +160,94 @@ static void stderr_callback(struct pollfd *pollfd, void *ctx) {
     }
 }
 
+static int splice_string(char **pp, size_t start, size_t end,
+                         const char *replacement) {
+    char *p = *pp, *n;
+    size_t end_length = strlen(p + end);
+    size_t replacement_length = strlen(replacement);
+
+    assert(end >= start);
+    assert(replacement != NULL);
+
+    n = (char*)malloc(start + replacement_length + end_length + 1);
+    if (n == NULL)
+        return errno;
+
+    memcpy(n, p, start);
+    memcpy(n + start, replacement, replacement_length);
+    memcpy(n + start + replacement_length, p + end, end_length);
+    n[start + replacement_length + end_length] = 0;
+
+    free(p);
+    *pp = n;
+    return 0;
+}
+
+static int expand_vars(char **pp, struct strhash *vars) {
+    int ret;
+    char key[64];
+    char *v = *pp, *p = v, *dollar, *end;
+    const char *expanded;
+
+    while (1) {
+        dollar = strchr(p, '$');
+        if (dollar == NULL)
+            break;
+
+        if (dollar[1] == '{') {
+            end = strchr(dollar + 2, '}');
+            if (end == NULL)
+                break;
+
+            if ((size_t)(end - dollar - 2) < sizeof(key)) {
+                memcpy(key, dollar + 2, end - dollar - 2);
+                key[end - dollar - 2] = 0;
+
+                expanded = strhash_get(vars, key);
+                if (expanded == NULL)
+                    expanded = "";
+            } else {
+                expanded = "";
+            }
+
+            ret = splice_string(pp, dollar - v, end + 1 - v, expanded);
+            if (ret != 0)
+                return ret;
+
+            p = *pp + (p - v) + strlen(expanded);
+            v = *pp;
+        }
+    }
+
+    return 0;
+}
+
+static int expand_operator_vars(const struct operator *operator,
+                                struct strarray *argv) {
+                                
+    int ret;
+    struct strhash *vars;
+    unsigned i;
+
+    ret = strhash_open(64, &vars);
+    if (ret != 0)
+        return ret;
+
+    strhash_set(vars, "0", argv->values[0]);
+    strhash_set(vars, "JOB", operator->job->id);
+    strhash_set(vars, "PLAN", operator->plan->name);
+
+    for (i = 1; i < argv->num; ++i) {
+        assert(argv->values[i] != NULL);
+        ret = expand_vars(&argv->values[i], vars);
+        if (ret != 0)
+            break;
+    }
+
+    strhash_close(&vars);
+    return ret;
+}
+
 int workplace_start(struct workplace *workplace,
                     struct job *job, struct plan *plan) {
     struct operator *operator;
@@ -235,6 +323,16 @@ int workplace_start(struct workplace *workplace,
 
     for (i = 0; i < job->args.num; ++i)
         strarray_append(&argv, job->args.values[i]);
+
+    ret = expand_operator_vars(operator, &argv);
+    if (ret != 0) {
+        strarray_free(&argv);
+        free_operator(&operator);
+        close(stdout_fds[1]);
+        if (job->syslog_server != NULL)
+            close(stderr_fds[1]);
+        return -1;
+    }
 
     strarray_append(&argv, NULL);
 
