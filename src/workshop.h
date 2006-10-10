@@ -6,6 +6,8 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
+#include "strarray.h"
+
 #include <sys/types.h>
 
 #define VERSION "0.1.0"
@@ -62,8 +64,7 @@ struct queue;
 struct job {
     struct queue *queue;
     char *id, *plan_name, *syslog_server;
-    char **args;
-    unsigned num_args;
+    struct strarray args;
 };
 
 int queue_open(const char *node_name,

@@ -21,7 +21,7 @@ CREATE TABLE jobs (
         -- which plan executes this job?
         plan_name VARCHAR(64) NOT NULL,
         -- command line arguments appended to the plan executable
-        args VARCHAR(4096) NULL,
+        args VARCHAR(4096)[] NULL,
 
         -- syslog server which receives stderr output
         syslog_server VARCHAR(256) NULL,

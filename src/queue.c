@@ -7,6 +7,7 @@
  */
 
 #include "workshop.h"
+#include "pgutil.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -179,11 +180,8 @@ static void free_job(struct job **job_r) {
         free(job->plan_name);
     if (job->syslog_server != NULL)
         free(job->syslog_server);
-    if (job->args != NULL) {
-        if (job->args[0] != NULL)
-            free(job->args[0]);
-        free(job->args);
-    }
+
+    strarray_free(&job->args);
 
     free(job);
 }
@@ -191,7 +189,7 @@ static void free_job(struct job **job_r) {
 static int get_next_job(struct queue *queue, struct job **job_r) {
     struct job *job;
     PGresult *res;
-    int row;
+    int row, ret;
 
     assert(queue != NULL);
     assert(queue->result != NULL);
@@ -209,7 +207,14 @@ static int get_next_job(struct queue *queue, struct job **job_r) {
     job->queue = queue;
     job->id = my_strdup(PQgetvalue(res, row, 0));
     job->plan_name = my_strdup(PQgetvalue(res, row, 1));
-    /* XXX job->args = strdup(PQgetvalue(res, row, 2)); */
+
+    ret = pg_decode_array(PQgetvalue(res, row, 2), &job->args);
+    if (ret != 0) {
+        fprintf(stderr, "pg_decode_array() failed\n");
+        free_job(&job);
+        return -1;
+    }
+
     job->syslog_server = my_strdup(PQgetvalue(res, row, 3));
 
     if (job->id == NULL || job->plan_name == NULL) {

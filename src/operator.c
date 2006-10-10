@@ -235,12 +235,15 @@ int workplace_start(struct workplace *workplace,
 
         clearenv();
 
-        argv = calloc(plan->argc + 1, sizeof(argv[0]));
+        argv = calloc(plan->argc + job->args.num + 1, sizeof(argv[0]));
         if (argv == NULL)
             abort();
 
         for (i = 0; i < plan->argc; ++i)
             argv[i] = plan->argv[i];
+
+        for (i = 0; i < job->args.num; ++i)
+            argv[plan->argc + i] = job->args.values[i];
 
         /* chroot */
 
