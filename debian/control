@@ -1,0 +1,14 @@
+Source: cm4all-workshop
+Section: non-free/admin
+Priority: optional
+Maintainer: Max Kellermann <mk@cm4all.com>
+Build-Depends: cdbs (>= 0.4.6), debhelper (>= 4), gcc (>= 4), libpq-dev (>= 8), libcm4all-fox-dev (>= 0.1.7)
+Standards-Version: 3.6.1
+
+Package: cm4all-workshop
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: Distributed job scheduler
+ cm4all-workshop is a daemon which reads jobs from a database queue
+ (PostgreSQL) and executes them.  Multiple instances distributed over
+ a network can read the queue at the same time.
