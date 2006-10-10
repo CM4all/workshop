@@ -304,6 +304,10 @@ int workplace_start(struct workplace *workplace,
             close(stderr_fds[1]);
         }
 
+        /* session */
+
+        setsid();
+
         /* execute plan */
 
         execv(argv[0], argv);
