@@ -242,6 +242,15 @@ int workplace_start(struct workplace *workplace,
         for (i = 0; i < plan->argc; ++i)
             argv[i] = plan->argv[i];
 
+        /* chroot */
+
+        if (plan->chroot != NULL) {
+            ret = chroot(plan->chroot);
+            fprintf(stderr, "chroot('%s') failed: %s\n",
+                    plan->chroot, strerror(errno));
+            exit(1);
+        }
+
         /* priority */
 
         ret = setpriority(PRIO_PROCESS, getpid(), plan->priority);

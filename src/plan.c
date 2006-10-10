@@ -54,6 +54,9 @@ static void free_plan(struct plan **plan_r) {
         free(plan->argv);
     }
 
+    if (plan->chroot != NULL)
+        free(plan->chroot);
+
     free(plan);
 }
 
@@ -256,7 +259,27 @@ static int parse_plan_config(struct plan *plan, FILE *file) {
                 return -1;
             }
 
-            if (strcmp(key, "user") == 0) {
+            if (strcmp(key, "chroot") == 0) {
+                int ret;
+                struct stat st;
+
+                ret = stat(value, &st);
+                if (ret < 0) {
+                    fprintf(stderr, "line %u: failed to stat '%s': %s\n",
+                            line_no, value, strerror(errno));
+                    return -1;
+                }
+
+                if (!S_ISDIR(st.st_mode)) {
+                    fprintf(stderr, "line %u: not a directory: %s\n",
+                            line_no, value);
+                    return -1;
+                }
+
+                plan->chroot = strdup(value);
+                if (plan->chroot == NULL)
+                    return errno;
+            } else if (strcmp(key, "user") == 0) {
                 struct passwd *pw;
 
                 pw = getpwnam(value);

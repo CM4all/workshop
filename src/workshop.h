@@ -97,6 +97,7 @@ struct plan {
     char *name;
     char **argv;
     unsigned argc;
+    char *chroot;
     uid_t uid;
     gid_t gid;
     int priority;
