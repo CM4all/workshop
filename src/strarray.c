@@ -42,9 +42,13 @@ void strarray_append(struct strarray *a, const char *v) {
             abort();
     }
 
-    a->values[a->num] = strdup(v);
-    if (a->values[a->num] == NULL)
-        abort();
+    if (v == NULL) {
+        a->values[a->num] = NULL;
+    } else {
+        a->values[a->num] = strdup(v);
+        if (a->values[a->num] == NULL)
+            abort();
+    }
 
     ++a->num;
 }
