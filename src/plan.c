@@ -299,8 +299,8 @@ static int load_plan_config(const char *path, const char *name,
     if (plan == NULL)
         return ENOMEM;
 
-    plan->uid = 65535;
-    plan->gid = 65535;
+    plan->uid = 65534;
+    plan->gid = 65534;
 
     plan->name = strdup(name);
     if (plan->name == NULL) {
