@@ -136,7 +136,7 @@ static int fill_queue(struct queue *queue) {
     assert(queue->result_num == 0);
 
     queue->result = PQexec(queue->conn, "SELECT id,plan_name,args,syslog_server "
-                           "FROM jobs WHERE node_name IS NULL "
+                           "FROM jobs WHERE node_name IS NULL AND status IS NULL "
                            "ORDER BY priority,time_created LIMIT 1");
     if (PQresultStatus(queue->result) != PGRES_TUPLES_OK) {
         fprintf(stderr, "SELECT on jobs failed: %s\n",
