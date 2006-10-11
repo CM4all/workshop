@@ -15,6 +15,7 @@
 #include <errno.h>
 #include <string.h>
 #include <poll.h>
+#include <time.h>
 
 struct queue {
     char *node_name;
@@ -22,6 +23,7 @@ struct queue {
     int fd;
     struct poll *poll;
     int ready;
+    time_t next_expire_check;
     PGresult *result;
     int result_row, result_num;
 };
@@ -224,6 +226,7 @@ static int get_next_job(struct queue *queue, struct job **job_r) {
 
 int queue_get(struct queue *queue, struct job **job_r) {
     int ret;
+    time_t now;
 
     if (queue->result != NULL) {
         if (queue->result_row < PQntuples(queue->result)) {
@@ -236,13 +239,18 @@ int queue_get(struct queue *queue, struct job **job_r) {
     if (!queue->ready)
         return 0;
 
-    ret = pg_expire_jobs(queue->conn, queue->node_name);
-    if (ret < 0)
-        return -1;
+    now = time(NULL);
+    if (now >= queue->next_expire_check) {
+        queue->next_expire_check = now + 60;
 
-    if (ret > 0) {
-        log(2, "released %d expired jobs\n", ret);
-        pg_notify(queue->conn);
+        ret = pg_expire_jobs(queue->conn, queue->node_name);
+        if (ret < 0)
+            return -1;
+
+        if (ret > 0) {
+            log(2, "released %d expired jobs\n", ret);
+            pg_notify(queue->conn);
+        }
     }
 
     ret = fill_queue(queue);
