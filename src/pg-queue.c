@@ -115,7 +115,8 @@ int pg_rollback_job(PGconn *conn, const char *id) {
     int ret;
 
     res = PQexecParams(conn,
-                       "UPDATE jobs SET node_name=NULL, node_timeout=NULL, progress=0 WHERE id=$1",
+                       "UPDATE jobs SET node_name=NULL, node_timeout=NULL, progress=0 "
+                       "WHERE id=$1 AND node_name IS NOT NULL AND time_done IS NULL",
                        1, NULL, &id, NULL, NULL, 0);
     if (PQresultStatus(res) != PGRES_COMMAND_OK) {
         fprintf(stderr, "UPDATE/done on jobs failed: %s\n",
