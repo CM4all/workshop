@@ -188,11 +188,11 @@ nice 5</programlisting>
       </para>
     </section>
 
-    <section id="tables">
-      <title>Datenbank-Tabellen</title>
+    <section id="table_jobs">
+      <title>Tabelle "jobs"</title>
 
-      <table id="table_jobs">
-        <title>Tabelle "jobs"</title>
+      <table id="table_jobs_columns">
+        <title>Spalten in der Tabelle "jobs"</title>
         <tgroup cols="2">
           <tbody>
             <row>
@@ -315,6 +315,29 @@ nice 5</programlisting>
         dafür verantwortlich, das Ergebnis auszuwerten und den
         Datensatz zu löschen.
       </para>
+
+      <para>
+        Dem Client sind nur 3 Operationen erlaubt:
+      </para>
+
+      <itemizedlist>
+        <listitem>
+          Hinzufügen von Datensätzen (nur
+          <varname>description</varname>, <varname>priority</varname>,
+          <varname>plan_name</varname>, <varname>args</varname>,
+          <varname>syslog_server</varname> dürfen gesetzt werden)
+        </listitem>
+
+        <listitem>
+          Löschen von Datensätzen, die noch nicht zugewiesen sind,
+          d.h. "node_name IS NULL".
+        </listitem>
+
+        <listitem>
+          Löschen von Datensätzen, die abgeschlossen sind,
+          d.h. "time_done IS NOT NULL".
+        </listitem>
+      </itemizedlist>
     </section>
   </chapter>
 
