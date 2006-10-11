@@ -164,10 +164,10 @@ nice 5</programlisting>
       <title>Plan-Protokoll</title>
 
       <para>
-        Das Environment ist leer, und Standard Input kommt aus
-        <filename>/dev/null</filename>.  Es gibt nur 2 offene File
-        Handles: 1 (normalerweise <varname>stdout</varname>) und 2
-        (<varname>stderr</varname>).
+        Das Environment ist leer.  Es gibt nur 2 offene File Handles:
+        1 (normalerweise <varname>stdout</varname>) und 2
+        (<varname>stderr</varname>).  File Handle 0
+        (<varname>stdin</varname>) gibt es nicht.
       </para>
 
       <para>
