@@ -53,7 +53,6 @@ int queue_open(const char *node_name,
                const char *conninfo, struct poll *p,
                struct queue **queue_r) {
     struct queue *queue;
-    PGresult *res;
     int ret;
 
     queue = (struct queue*)calloc(1, sizeof(*queue));
@@ -95,8 +94,6 @@ int queue_open(const char *node_name,
         queue_close(&queue);
         return -1;
     }
-
-    PQclear(res);
 
     queue->fd = PQsocket(queue->conn);
     queue->poll = p;
