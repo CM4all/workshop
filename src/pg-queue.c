@@ -11,6 +11,21 @@
 #include <assert.h>
 #include <stdlib.h>
 
+int pg_listen(PGconn *conn) {
+    PGresult *res;
+
+    res = PQexec(conn, "LISTEN new_job");
+    if (PQresultStatus(res) != PGRES_COMMAND_OK) {
+        fprintf(stderr, "LISTEN new_job failed: %s\n",
+                PQerrorMessage(conn));
+        PQclear(res);
+        return -1;
+    }
+
+    PQclear(res);
+    return 0;
+}
+
 int pg_notify(PGconn *conn) {
     PGresult *res;
 

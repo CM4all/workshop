@@ -90,11 +90,8 @@ int queue_open(const char *node_name,
         pg_notify(queue->conn);
     }
 
-    res = PQexec(queue->conn, "LISTEN new_job");
-    if (PQresultStatus(res) != PGRES_COMMAND_OK) {
-        fprintf(stderr, "LISTEN command failed: %s",
-                PQerrorMessage(queue->conn));
-        PQclear(res);
+    ret = pg_listen(queue->conn);
+    if (ret < 0) {
         queue_close(&queue);
         return -1;
     }

@@ -11,6 +11,8 @@
 
 #include <postgresql/libpq-fe.h>
 
+int pg_listen(PGconn *conn);
+
 int pg_notify(PGconn *conn);
 
 int pg_release_jobs(PGconn *conn, const char *node_name);
