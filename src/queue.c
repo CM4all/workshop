@@ -84,7 +84,7 @@ int queue_open(const char *node_name,
     }
 
     if (ret > 0)
-        log(3, "released %d stale jobs\n", ret);
+        log(2, "released %d stale jobs\n", ret);
 
     res = PQexec(queue->conn, "LISTEN new_job");
     if (PQresultStatus(res) != PGRES_COMMAND_OK) {
