@@ -126,7 +126,8 @@ int main(int argc, char **argv) {
         exit(2);
     }
 
-    ret = workplace_open(config.node_name, instance.poll,
+    ret = workplace_open(config.node_name, config.concurrency,
+                         instance.poll,
                          &instance.workplace);
     if (ret != 0) {
         fprintf(stderr, "failed to open workplace\n");

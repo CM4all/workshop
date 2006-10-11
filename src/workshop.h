@@ -139,7 +139,8 @@ struct operator {
     struct syslog_client *syslog;
 };
 
-int workplace_open(const char *node_name, struct poll *p,
+int workplace_open(const char *node_name, unsigned max_operators,
+                   struct poll *p,
                    struct workplace **workplace_r);
 
 void workplace_close(struct workplace **workplace_r);

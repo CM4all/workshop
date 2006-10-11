@@ -27,11 +27,15 @@ struct workplace {
     const char *node_name;
     struct poll *poll;
     struct operator *head;
+    unsigned max_operators, num_operators;
 };
 
-int workplace_open(const char *node_name, struct poll *p,
+int workplace_open(const char *node_name, unsigned max_operators,
+                   struct poll *p,
                    struct workplace **workplace_r) {
     struct workplace *workplace;
+
+    assert(max_operators > 0);
 
     workplace = (struct workplace*)calloc(1, sizeof(*workplace));
     if (workplace == NULL)
@@ -43,6 +47,7 @@ int workplace_open(const char *node_name, struct poll *p,
         return ENOMEM;
     }
 
+    workplace->max_operators = max_operators;
     workplace->poll = p;
 
     *workplace_r = workplace;
@@ -59,6 +64,7 @@ void workplace_close(struct workplace **workplace_r) {
     *workplace_r = NULL;
 
     assert(workplace->head == NULL);
+    assert(workplace->num_operators == 0);
 
     free(workplace);
 }
@@ -429,6 +435,7 @@ int workplace_start(struct workplace *workplace,
 
     operator->next = workplace->head;
     workplace->head = operator;
+    ++workplace->num_operators;
 
     log(2, "job %s (plan '%s') running as pid %d\n",
         job->id, plan->name, operator->pid);
@@ -441,7 +448,7 @@ int workplace_is_empty(const struct workplace *workplace) {
 }
 
 int workplace_is_full(const struct workplace *workplace) {
-    return workplace->head != NULL;
+    return workplace->num_operators >= workplace->max_operators;
 }
 
 static struct operator **find_operator_by_pid(struct workplace *workplace,
@@ -495,6 +502,7 @@ void workplace_waitpid(struct workplace *workplace) {
 
         job_done(&operator->job, exit_status);
 
+        --workplace->num_operators;
         *operator_p = operator->next;
         free_operator(&operator);
     }
