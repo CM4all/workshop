@@ -134,7 +134,7 @@ struct operator {
     unsigned progress;
 
     int stderr_fd;
-    char stderr_buffer[256];
+    char stderr_buffer[512];
     size_t stderr_length;
     struct syslog_client *syslog;
 };
