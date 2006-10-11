@@ -6,7 +6,7 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#include "pgutil.h"
+#include "pg-util.h"
 #include "strarray.h"
 
 #include <stdlib.h>

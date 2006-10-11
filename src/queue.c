@@ -7,7 +7,7 @@
  */
 
 #include "workshop.h"
-#include "pgutil.h"
+#include "pg-util.h"
 
 #include <assert.h>
 #include <stdlib.h>
