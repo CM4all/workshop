@@ -144,19 +144,17 @@ int main(int argc, char **argv) {
     while (!should_exit || !workplace_is_empty(instance.workplace)) {
         /* handle job queue */
 
-        if (!should_exit && !workplace_is_full(instance.workplace)) {
-            while (1) {
-                struct job *job;
+        while (!should_exit && !workplace_is_full(instance.workplace)) {
+            struct job *job;
 
-                ret = queue_get(instance.queue, &job);
-                if (ret <= 0)
-                    break;
+            ret = queue_get(instance.queue, &job);
+            if (ret <= 0)
+                break;
 
-                claim_and_start_job(&instance, job);
-            }
-
-            queue_flush(instance.queue);
+            claim_and_start_job(&instance, job);
         }
+
+        queue_flush(instance.queue);
 
         /* poll file handles */
 
