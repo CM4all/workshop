@@ -57,17 +57,20 @@ int pg_select_new_jobs(PGconn *conn, PGresult **res_r) {
     return ret;
 }
 
-int pg_claim_job(PGconn *conn, const char *job_id, const char *node_name) {
-    const char *values[2];
+int pg_claim_job(PGconn *conn, const char *job_id, const char *node_name,
+                 const char *timeout) {
+    const char *values[3];
     PGresult *res;
     int ret;
 
     values[0] = node_name;
     values[1] = job_id;
+    values[2] = timeout;
 
     res = PQexecParams(conn,
-                       "UPDATE jobs SET node_name=$1 WHERE id=$2 AND node_name IS NULL",
-                       2, NULL, values, NULL, NULL, 0);
+                       "UPDATE jobs SET node_name=$1, node_timeout=NOW()+$3::INTERVAL "
+                       "WHERE id=$2 AND node_name IS NULL",
+                       3, NULL, values, NULL, NULL, 0);
     if (PQresultStatus(res) != PGRES_COMMAND_OK) {
         fprintf(stderr, "UPDATE/claim on jobs failed: %s\n",
                 PQerrorMessage(conn));
@@ -80,19 +83,21 @@ int pg_claim_job(PGconn *conn, const char *job_id, const char *node_name) {
     return ret;
 }
 
-int pg_set_job_progress(PGconn *conn, const char *job_id, unsigned progress) {
+int pg_set_job_progress(PGconn *conn, const char *job_id, unsigned progress,
+                        const char *timeout) {
     char progress_s[32];
-    const char *params[2];
+    const char *params[3];
     PGresult *res;
     int ret;
 
     snprintf(progress_s, sizeof(progress_s), "%u", progress);
     params[0] = job_id;
     params[1] = progress_s;
+    params[2] = timeout;
 
     res = PQexecParams(conn,
-                       "UPDATE jobs SET progress=$2 WHERE id=$1",
-                       2, NULL, params, NULL, NULL, 0);
+                       "UPDATE jobs SET progress=$2, node_timeout=NOW()+$3::INTERVAL WHERE id=$1",
+                       3, NULL, params, NULL, NULL, 0);
     if (PQresultStatus(res) != PGRES_COMMAND_OK) {
         fprintf(stderr, "UPDATE/progress on jobs failed: %s\n",
                 PQerrorMessage(conn));
@@ -110,7 +115,7 @@ int pg_rollback_job(PGconn *conn, const char *id) {
     int ret;
 
     res = PQexecParams(conn,
-                       "UPDATE jobs SET node_name=NULL, progress=0 WHERE id=$1",
+                       "UPDATE jobs SET node_name=NULL, node_timeout=NULL, progress=0 WHERE id=$1",
                        1, NULL, &id, NULL, NULL, 0);
     if (PQresultStatus(res) != PGRES_COMMAND_OK) {
         fprintf(stderr, "UPDATE/done on jobs failed: %s\n",
