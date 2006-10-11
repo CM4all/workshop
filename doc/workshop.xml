@@ -96,7 +96,8 @@ nice 5</programlisting>
                 Prozess diese Zeitspanne lang keine Reaktion zeigt,
                 wird angenommen, dass er seine Aufgabe nicht mehr
                 erfüllen wird, und der Job wird wieder für eine andere
-                Node freigegeben.
+                Node freigegeben.  Beispiel: "20 minutes" oder "2
+                hours".
               </entry>
             </row>
             <row>
