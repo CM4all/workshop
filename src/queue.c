@@ -233,6 +233,9 @@ int queue_get(struct queue *queue, struct job **job_r) {
     int ret;
     time_t now;
 
+    /* is there an old result?  if yes, consume this one first before
+       acquiring a new one */
+
     if (queue->result != NULL) {
         if (queue->result_row < PQntuples(queue->result)) {
             return get_next_job(queue, job_r);
@@ -240,6 +243,8 @@ int queue_get(struct queue *queue, struct job **job_r) {
             return 0;
         }
     }
+
+    /* check expired jobs from all other nodes except us */
 
     now = time(NULL);
     if (now >= queue->next_expire_check) {
@@ -255,8 +260,12 @@ int queue_get(struct queue *queue, struct job **job_r) {
         }
     }
 
+    /* continue only if we got a "new_job" notify from PostgreSQL */
+
     if (!queue->ready)
         return 0;
+
+    /* request a new job list from the database */
 
     ret = fill_queue(queue);
     if (ret <= 0)
