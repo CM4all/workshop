@@ -1,5 +1,5 @@
 #include "../src/strarray.h"
-#include "../src/pgutil.h"
+#include "../src/pg-util.h"
 
 #include <stdlib.h>
 #include <stdio.h>
