@@ -16,7 +16,8 @@ int pg_release_jobs(PGconn *conn, const char *node_name) {
     int ret;
 
     res = PQexecParams(conn,
-                       "UPDATE jobs SET node_name=NULL WHERE node_name=$1 AND time_done IS NULL AND exit_status IS NULL",
+                       "UPDATE jobs SET node_name=NULL, node_timeout=NULL, progress=0 "
+                       "WHERE node_name=$1 AND time_done IS NULL AND exit_status IS NULL",
                        1, NULL, &node_name, NULL, NULL, 0);
     if (PQresultStatus(res) != PGRES_COMMAND_OK) {
         fprintf(stderr, "UPDATE/claim on jobs failed: %s\n",
