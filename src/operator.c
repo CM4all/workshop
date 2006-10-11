@@ -258,8 +258,7 @@ int workplace_start(struct workplace *workplace,
     unsigned i;
 
     assert(plan != NULL);
-    assert(plan->argv != NULL);
-    assert(plan->argc > 0);
+    assert(plan->argv.num > 0);
 
     /* create operator object */
 
@@ -320,8 +319,8 @@ int workplace_start(struct workplace *workplace,
     /* build command line */
 
     strarray_init(&argv);
-    for (i = 0; i < plan->argc; ++i)
-        strarray_append(&argv, plan->argv[i]);
+    for (i = 0; i < plan->argv.num; ++i)
+        strarray_append(&argv, plan->argv.values[i]);
 
     for (i = 0; i < job->args.num; ++i)
         strarray_append(&argv, job->args.values[i]);

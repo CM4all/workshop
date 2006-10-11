@@ -44,15 +44,7 @@ static void free_plan(struct plan **plan_r) {
     if (plan->name != NULL)
         free(plan->name);
 
-    if (plan->argv != NULL) {
-        unsigned i;
-
-        for (i = 0; i < plan->argc; ++i)
-            if (plan->argv[i] != NULL)
-                free(plan->argv[i]);
-
-        free(plan->argv);
-    }
+    strarray_free(&plan->argv);
 
     if (plan->timeout != NULL)
         free(plan->timeout);
@@ -219,41 +211,16 @@ static int parse_plan_config(struct plan *plan, FILE *file) {
         }
 
         if (strcmp(key, "exec") == 0) {
-            char **argv;
-
-            if (plan->argv != NULL) {
+            if (plan->argv.num > 0) {
                 fprintf(stderr, "line %u: 'exec' already specified\n",
                         line_no);
                 return -1;
             }
 
-            assert(plan->argc == 0);
-
-            plan->argv = calloc(256, sizeof(plan->argv[0]));
-            if (plan->argv == NULL)
-                return ENOMEM;
-
             while (value != NULL) {
-                if (plan->argc >= 256) {
-                    fprintf(stderr, "line %u: too many arguments\n",
-                            line_no);
-                    return -1;
-                }
-
-                plan->argv[plan->argc] = strdup(value);
-                if (plan->argv[plan->argc] == NULL)
-                    return ENOMEM;
-
-                ++plan->argc;
-
+                strarray_append(&plan->argv, value);
                 value = next_word(&p);
             }
-
-            argv = realloc(plan->argv, plan->argc * sizeof(argv[0]));
-            if (argv == NULL)
-                return ENOMEM;
-
-            plan->argv = argv;
         } else {
             p = next_word(&p);
             if (p != NULL) {
@@ -308,7 +275,7 @@ static int parse_plan_config(struct plan *plan, FILE *file) {
         }
     }
 
-    if (plan->argv == NULL) {
+    if (plan->argv.num == 0) {
         fprintf(stderr, "no 'exec'\n");
         return -1;
     }
@@ -454,18 +421,18 @@ int library_get(struct library *library, const char *name,
         }
     }
 
-    if (plan->argc == 0 || plan->argv == NULL ||
-        plan->argv[0] == NULL || plan->argv[0][0] == 0)
+    if (plan->argv.num == 0 ||
+        plan->argv.values[0] == NULL || plan->argv.values[0][0] == 0)
         return ENOENT;
 
     /* check if the executable exists; it would not if the Debian
        package has been deinstalled, but the plan's config file is
        still there */
 
-    ret = stat(plan->argv[0], &st);
+    ret = stat(plan->argv.values[0], &st);
     if (ret < 0) {
         fprintf(stderr, "failed to stat '%s': %s\n",
-                plan->argv[0], strerror(errno));
+                plan->argv.values[0], strerror(errno));
         return ENOENT;
     }
 

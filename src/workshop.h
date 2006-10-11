@@ -99,8 +99,7 @@ struct library;
 struct plan {
     struct library *library;
     char *name;
-    char **argv;
-    unsigned argc;
+    struct strarray argv;
     char *timeout, *chroot;
     uid_t uid;
     gid_t gid;
