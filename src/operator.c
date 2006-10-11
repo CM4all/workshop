@@ -113,7 +113,10 @@ static void stdout_callback(struct pollfd *pollfd, void *ctx) {
     for (i = 0; i < nbytes; ++i) {
         char ch = buffer[i];
 
-        if (ch == '\r' || ch == '\n') {
+        if (ch >= '0' && ch <= '9' &&
+            operator->stdout_length < sizeof(operator->stdout_buffer) - 1) {
+            operator->stdout_buffer[operator->stdout_length++] = ch;
+        } else {
             if (operator->stdout_length > 0) {
                 operator->stdout_buffer[operator->stdout_length] = 0;
                 p = (unsigned)strtoul(operator->stdout_buffer, NULL, 10);
@@ -122,9 +125,6 @@ static void stdout_callback(struct pollfd *pollfd, void *ctx) {
             }
 
             operator->stdout_length = 0;
-        } else if (ch >= '0' && ch <= '9' &&
-                   operator->stdout_length < sizeof(operator->stdout_buffer) - 1) {
-            operator->stdout_buffer[operator->stdout_length++] = ch;
         }
     }
 
