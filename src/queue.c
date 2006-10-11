@@ -241,9 +241,6 @@ int queue_get(struct queue *queue, struct job **job_r) {
         }
     }
 
-    if (!queue->ready)
-        return 0;
-
     now = time(NULL);
     if (now >= queue->next_expire_check) {
         queue->next_expire_check = now + 60;
@@ -257,6 +254,9 @@ int queue_get(struct queue *queue, struct job **job_r) {
             pg_notify(queue->conn);
         }
     }
+
+    if (!queue->ready)
+        return 0;
 
     ret = fill_queue(queue);
     if (ret <= 0)
