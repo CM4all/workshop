@@ -52,6 +52,7 @@ int queue_open(const char *node_name,
                struct queue **queue_r) {
     struct queue *queue;
     PGresult *res;
+    int ret;
 
     queue = (struct queue*)calloc(1, sizeof(*queue));
     if (queue == NULL)
@@ -75,6 +76,15 @@ int queue_open(const char *node_name,
         queue_close(&queue);
         return -1;
     }
+
+    ret = pg_release_jobs(queue->conn, queue->node_name);
+    if (ret < 0) {
+        queue_close(&queue);
+        return -1;
+    }
+
+    if (ret > 0)
+        log(3, "released %d stale jobs\n", ret);
 
     res = PQexec(queue->conn, "LISTEN new_job");
     if (PQresultStatus(res) != PGRES_COMMAND_OK) {
