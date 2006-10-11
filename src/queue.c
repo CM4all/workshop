@@ -65,6 +65,8 @@ int queue_open(const char *node_name,
         return -1;
     }
 
+    /* connect to PostgreSQL */
+
     queue->conn = PQconnectdb(conninfo);
     if (queue->conn == NULL) {
         queue_close(&queue);
@@ -78,6 +80,9 @@ int queue_open(const char *node_name,
         return -1;
     }
 
+    /* release jobs which might be claimed by a former instance of
+       us */
+
     ret = pg_release_jobs(queue->conn, queue->node_name);
     if (ret < 0) {
         queue_close(&queue);
@@ -89,17 +94,23 @@ int queue_open(const char *node_name,
         pg_notify(queue->conn);
     }
 
+    /* listen on notifications */
+
     ret = pg_listen(queue->conn);
     if (ret < 0) {
         queue_close(&queue);
         return -1;
     }
 
+    /* poll on libpq file descriptor */
+
     queue->fd = PQsocket(queue->conn);
     queue->poll = p;
     poll_add(queue->poll, queue->fd, POLLIN, queue_callback, queue);
 
     queue->ready = 1;
+
+    /* done */
 
     *queue_r = queue;
     return 0;
