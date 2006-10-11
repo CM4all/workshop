@@ -83,8 +83,10 @@ int queue_open(const char *node_name,
         return -1;
     }
 
-    if (ret > 0)
+    if (ret > 0) {
         log(2, "released %d stale jobs\n", ret);
+        pg_notify(queue->conn);
+    }
 
     res = PQexec(queue->conn, "LISTEN new_job");
     if (PQresultStatus(res) != PGRES_COMMAND_OK) {
@@ -238,8 +240,10 @@ int queue_get(struct queue *queue, struct job **job_r) {
     if (ret < 0)
         return -1;
 
-    if (ret > 0)
+    if (ret > 0) {
         log(2, "released %d expired jobs\n", ret);
+        pg_notify(queue->conn);
+    }
 
     ret = fill_queue(queue);
     if (ret <= 0)
@@ -303,6 +307,8 @@ int job_rollback(struct job **job_r) {
     pg_rollback_job(job->queue->conn, job->id);
 
     free_job(&job);
+
+    pg_notify(job->queue->conn);
 
     return 0;
 }
