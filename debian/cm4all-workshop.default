@@ -1,0 +1,15 @@
+# -*- shell-script -*-
+
+NODE_NAME=`hostname -f`
+
+# How many jobs are handled at the same time?
+CONCURRENCY=2
+
+# PostgreSQL connection info
+#DATABASE="dbname=workshop"
+
+# Process which receives the daemon's log messages 
+#LOGGER="logger -p daemon.info -t cm4all-workshop"
+
+# Other options
+#OPTIONS="-v"
