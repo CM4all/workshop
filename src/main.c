@@ -101,8 +101,6 @@ int main(int argc, char **argv) {
 
     config_get(&config, argc, argv);
 
-    log(1, "cm4all-workshop v" VERSION "\n");
-
     /* set up */
 
     memset(&instance, 0, sizeof(instance));
@@ -139,6 +137,8 @@ int main(int argc, char **argv) {
     stdin_null();
 
     daemonize(&config);
+
+    log(1, "cm4all-workshop v" VERSION "\n");
 
     /* main loop */
 
