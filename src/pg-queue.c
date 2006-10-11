@@ -92,6 +92,7 @@ int pg_select_new_jobs(PGconn *conn, PGresult **res_r) {
 
     res = PQexec(conn, "SELECT id,plan_name,args,syslog_server "
                  "FROM jobs WHERE node_name IS NULL AND exit_status IS NULL "
+                 "AND (scheduled_time IS NULL OR NOW() >= scheduled_time) "
                  "ORDER BY priority,time_created");
     if (PQresultStatus(res) != PGRES_TUPLES_OK) {
         fprintf(stderr, "SELECT on jobs failed: %s\n",

@@ -223,6 +223,15 @@ nice 5</programlisting>
             </row>
             <row>
               <entry>
+                <varname>scheduled_time</varname>
+              </entry>
+              <entry>
+                Zu diesem Zeitpunkt soll der Job frühestens ausgeführt
+                werden.
+              </entry>
+            </row>
+            <row>
+              <entry>
                 <varname>priority</varname>
               </entry>
               <entry>
@@ -324,9 +333,11 @@ nice 5</programlisting>
       <itemizedlist>
         <listitem>
           Hinzufügen von Datensätzen (nur
-          <varname>description</varname>, <varname>priority</varname>,
-          <varname>plan_name</varname>, <varname>args</varname>,
-          <varname>syslog_server</varname> dürfen gesetzt werden)
+          <varname>description</varname>,
+          <varname>scheduled_time</varname>,
+          <varname>priority</varname>, <varname>plan_name</varname>,
+          <varname>args</varname>, <varname>syslog_server</varname>
+          dürfen gesetzt werden)
         </listitem>
 
         <listitem>

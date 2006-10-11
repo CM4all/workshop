@@ -15,6 +15,8 @@ CREATE TABLE jobs (
 
         -- the time this job was created
         time_created TIMESTAMP NOT NULL DEFAULT NOW(),
+        -- the job will not be executed before this time
+        scheduled_time TIMESTAMP NULL,
         -- priority of this job; negative value means higher priority
         priority INT NOT NULL DEFAULT 0,
 
