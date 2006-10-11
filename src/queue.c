@@ -234,6 +234,13 @@ int queue_get(struct queue *queue, struct job **job_r) {
     if (!queue->ready)
         return 0;
 
+    ret = pg_expire_jobs(queue->conn, queue->node_name);
+    if (ret < 0)
+        return -1;
+
+    if (ret > 0)
+        log(2, "released %d expired jobs\n", ret);
+
     ret = fill_queue(queue);
     if (ret <= 0)
         return -1;

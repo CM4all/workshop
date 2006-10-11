@@ -13,6 +13,8 @@
 
 int pg_release_jobs(PGconn *conn, const char *node_name);
 
+int pg_expire_jobs(PGconn *conn, const char *except_node_name);
+
 int pg_select_new_jobs(PGconn *conn, PGresult **res_r);
 
 int pg_claim_job(PGconn *conn, const char *job_id, const char *node_name,

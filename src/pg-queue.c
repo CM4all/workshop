@@ -30,6 +30,28 @@ int pg_release_jobs(PGconn *conn, const char *node_name) {
     return ret;
 }
 
+int pg_expire_jobs(PGconn *conn, const char *except_node_name) {
+    PGresult *res;
+    int ret;
+
+    res = PQexecParams(conn,
+                       "UPDATE jobs SET node_name=NULL, node_timeout=NULL, progress=0 "
+                       "WHERE time_done IS NULL AND "
+                       "node_name IS NOT NULL AND node_name <> $1 AND "
+                       "node_timeout IS NOT NULL AND NOW() > node_timeout",
+                       1, NULL, &except_node_name, NULL, NULL, 0);
+    if (PQresultStatus(res) != PGRES_COMMAND_OK) {
+        fprintf(stderr, "UPDATE/expire on jobs failed: %s\n",
+                PQerrorMessage(conn));
+        PQclear(res);
+        return -1;
+    }
+
+    ret = atoi(PQcmdTuples(res));
+    PQclear(res);
+    return ret;
+}
+
 int pg_select_new_jobs(PGconn *conn, PGresult **res_r) {
     PGresult *res;
     int ret;
