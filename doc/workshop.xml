@@ -289,6 +289,19 @@ nice 5</programlisting>
           </tbody>
         </tgroup>
       </table>
+
+      <para>
+        Ob ein Job fertig ist, kann man herausfinden, indem man die
+        Spalte <varname>time_done</varname> oder
+        <varname>exit_status</varname> auf not-NULL prüft.
+      </para>
+
+      <para>
+        Alte (bearbeitete) Datensätze werden nicht automatisch
+        entfernt.  Derjenige, der den Job in Auftrag gegeben hat, ist
+        dafür verantwortlich, das Ergebnis auszuwerten und den
+        Datensatz zu löschen.
+      </para>
     </section>
   </chapter>
 
