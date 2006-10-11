@@ -54,6 +54,9 @@ static void free_plan(struct plan **plan_r) {
         free(plan->argv);
     }
 
+    if (plan->timeout != NULL)
+        free(plan->timeout);
+
     if (plan->chroot != NULL)
         free(plan->chroot);
 
@@ -259,7 +262,11 @@ static int parse_plan_config(struct plan *plan, FILE *file) {
                 return -1;
             }
 
-            if (strcmp(key, "chroot") == 0) {
+            if (strcmp(key, "timeout") == 0) {
+                plan->timeout = strdup(value);
+                if (plan->timeout == NULL)
+                    return errno;
+            } else if (strcmp(key, "chroot") == 0) {
                 int ret;
                 struct stat st;
 
@@ -304,6 +311,12 @@ static int parse_plan_config(struct plan *plan, FILE *file) {
     if (plan->argv == NULL) {
         fprintf(stderr, "no 'exec'\n");
         return -1;
+    }
+
+    if (plan->timeout == NULL) {
+        plan->timeout = strdup("10 minutes");
+        if (plan->timeout == NULL)
+            return errno;
     }
 
     return 0;

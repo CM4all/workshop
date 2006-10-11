@@ -241,7 +241,7 @@ int queue_get(struct queue *queue, struct job **job_r) {
     return get_next_job(queue, job_r);
 }
 
-int job_claim(struct job **job_r) {
+int job_claim(struct job **job_r, const char *timeout) {
     struct job *job;
     int ret;
 
@@ -253,7 +253,7 @@ int job_claim(struct job **job_r) {
     log(6, "attempting to claim job %s\n", job->id);
 
     ret = pg_claim_job(job->queue->conn, job->id, job->queue->node_name,
-                       "10 minutes");
+                       timeout);
     if (ret < 0) {
         free_job(job_r);
         return -1;
@@ -274,11 +274,12 @@ void job_skip(struct job **job_r) {
     free_job(job_r);
 }
 
-int job_set_progress(struct job *job, unsigned progress) {
+int job_set_progress(struct job *job, unsigned progress,
+                     const char *timeout) {
     log(5, "job %s progress=%u\n", job->id, progress);
 
     return pg_set_job_progress(job->queue->conn, job->id, progress,
-                               "10 minutes");
+                               timeout);
 }
 
 int job_rollback(struct job **job_r) {

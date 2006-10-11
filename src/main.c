@@ -81,7 +81,7 @@ static void claim_and_start_job(struct instance *instance, struct job *job) {
         return;
     }
 
-    ret = job_claim(&job);
+    ret = job_claim(&job, plan->timeout);
     if (ret <= 0) {
         plan_put(&plan);
         return;

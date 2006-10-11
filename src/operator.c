@@ -123,7 +123,7 @@ static void stdout_callback(struct pollfd *pollfd, void *ctx) {
     }
 
     if (progress > 0 && progress != operator->progress) {
-        job_set_progress(operator->job, progress);
+        job_set_progress(operator->job, progress, operator->plan->timeout);
         operator->progress = progress;
     }
 }

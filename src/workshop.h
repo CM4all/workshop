@@ -79,11 +79,12 @@ void queue_flush(struct queue *queue);
 
 int queue_get(struct queue *queue, struct job **job_r);
 
-int job_claim(struct job **job_r);
+int job_claim(struct job **job_r, const char *timeout);
 
 void job_skip(struct job **job_r);
 
-int job_set_progress(struct job *job, unsigned progress);
+int job_set_progress(struct job *job, unsigned progress,
+                     const char *timeout);
 
 int job_rollback(struct job **job_r);
 
@@ -100,7 +101,7 @@ struct plan {
     char *name;
     char **argv;
     unsigned argc;
-    char *chroot;
+    char *timeout, *chroot;
     uid_t uid;
     gid_t gid;
     int priority;

@@ -88,6 +88,19 @@ nice 5</programlisting>
             </row>
             <row>
               <entry>
+                <varname>timeout</varname>
+                <varname>INTERVAL</varname>
+              </entry>
+              <entry>
+                Setzt das Timeout für diesen Plan fest.  Wenn der
+                Prozess diese Zeitspanne lang keine Reaktion zeigt,
+                wird angenommen, dass er seine Aufgabe nicht mehr
+                erfüllen wird, und der Job wird wieder für eine andere
+                Node freigegeben.
+              </entry>
+            </row>
+            <row>
+              <entry>
                 <varname>user</varname>
                 <varname>USERNAME</varname>
               </entry>
