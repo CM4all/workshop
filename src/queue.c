@@ -8,14 +8,13 @@
 
 #include "workshop.h"
 #include "pg-util.h"
+#include "pg-queue.h"
 
 #include <assert.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
 #include <poll.h>
-
-#include <postgresql/libpq-fe.h>
 
 struct queue {
     char *node_name;
@@ -131,30 +130,17 @@ void queue_flush(struct queue *queue) {
 
 /** query new jobs from the database */
 static int fill_queue(struct queue *queue) {
+    int ret;
+
     assert(queue->result == NULL);
     assert(queue->result_row == 0);
     assert(queue->result_num == 0);
 
-    queue->result = PQexec(queue->conn, "SELECT id,plan_name,args,syslog_server "
-                           "FROM jobs WHERE node_name IS NULL AND exit_status IS NULL "
-                           "ORDER BY priority,time_created");
-    if (PQresultStatus(queue->result) != PGRES_TUPLES_OK) {
-        fprintf(stderr, "SELECT on jobs failed: %s\n",
-                PQerrorMessage(queue->conn));
-        PQclear(queue->result);
-        queue->result = NULL;
-        return -1;
-    }
+    ret = pg_select_new_jobs(queue->conn, &queue->result);
+    if (ret <= 0)
+        return ret;
 
-    queue->result_num = PQntuples(queue->result);
-
-    if (queue->result_num == 0) {
-        PQclear(queue->result);
-        queue->result = NULL;
-        return 0;
-    }
-
-    return 1;
+    return queue->result_num = ret;
 }
 
 static char *my_strdup(const char *p) {
@@ -247,39 +233,25 @@ int queue_get(struct queue *queue, struct job **job_r) {
 
 int job_claim(struct job **job_r) {
     struct job *job;
-    struct queue *queue;
-    const char *values[2];
-    PGresult *res;
     int ret;
 
     assert(job_r != NULL);
     assert(*job_r != NULL);
 
     job = *job_r;
-    queue = job->queue;
 
     log(6, "attempting to claim job %s\n", job->id);
 
-    values[0] = queue->node_name;
-    values[1] = job->id;
-
-    res = PQexecParams(queue->conn,
-                       "UPDATE jobs SET node_name=$1 WHERE id=$2 AND node_name IS NULL",
-                       2, NULL, values, NULL, NULL, 0);
-    if (PQresultStatus(res) != PGRES_COMMAND_OK) {
-        fprintf(stderr, "UPDATE/claim on jobs failed: %s\n",
-                PQerrorMessage(queue->conn));
-        PQclear(res);
+    ret = pg_claim_job(job->queue->conn, job->id, job->queue->node_name);
+    if (ret < 0) {
         free_job(job_r);
         return -1;
     }
 
-    ret = atoi(PQcmdTuples(res));
-    PQclear(res);
-
     if (ret == 0) {
         log(6, "job %s was not claimed\n", job->id);
         free_job(job_r);
+        return 0;
     }
 
     log(6, "job %s claimed\n", job->id);
@@ -292,49 +264,9 @@ void job_skip(struct job **job_r) {
 }
 
 int job_set_progress(struct job *job, unsigned progress) {
-    char progress_s[32];
-    const char *params[2];
-    PGresult *res;
-    int ret;
-
     log(5, "job %s progress=%u\n", job->id, progress);
 
-    snprintf(progress_s, sizeof(progress_s), "%u", progress);
-    params[0] = job->id;
-    params[1] = progress_s;
-
-    res = PQexecParams(job->queue->conn,
-                       "UPDATE jobs SET progress=$2 WHERE id=$1",
-                       2, NULL, params, NULL, NULL, 0);
-    if (PQresultStatus(res) != PGRES_COMMAND_OK) {
-        fprintf(stderr, "UPDATE/progress on jobs failed: %s\n",
-                PQerrorMessage(job->queue->conn));
-        PQclear(res);
-        return -1;
-    }
-
-    ret = atoi(PQcmdTuples(res));
-    PQclear(res);
-    return ret;
-}
-
-static int rollback_job(struct queue *queue, const char *id) {
-    PGresult *res;
-    int ret;
-
-    res = PQexecParams(queue->conn,
-                       "UPDATE jobs SET node_name=NULL, progress=0 WHERE id=$1",
-                       1, NULL, &id, NULL, NULL, 0);
-    if (PQresultStatus(res) != PGRES_COMMAND_OK) {
-        fprintf(stderr, "UPDATE/done on jobs failed: %s\n",
-                PQerrorMessage(queue->conn));
-        PQclear(res);
-        return -1;
-    }
-
-    ret = atoi(PQcmdTuples(res));
-    PQclear(res);
-    return ret;
+    return pg_set_job_progress(job->queue->conn, job->id, progress);
 }
 
 int job_rollback(struct job **job_r) {
@@ -348,36 +280,11 @@ int job_rollback(struct job **job_r) {
 
     log(6, "rolling back job %s\n", job->id);
 
-    rollback_job(job->queue, job->id);
+    pg_rollback_job(job->queue->conn, job->id);
 
     free_job(&job);
 
     return 0;
-}
-
-static int set_job_done(struct queue *queue, const char *id, int status) {
-    char status_string[16];
-    const char *params[2];
-    PGresult *res;
-    int ret;
-
-    snprintf(status_string, sizeof(status_string), "%d", status);
-    params[0] = id;
-    params[1] = status_string;
-
-    res = PQexecParams(queue->conn,
-                       "UPDATE jobs SET time_done=NOW(), progress=100, exit_status=$2 WHERE id=$1",
-                       2, NULL, params, NULL, NULL, 0);
-    if (PQresultStatus(res) != PGRES_COMMAND_OK) {
-        fprintf(stderr, "UPDATE/done on jobs failed: %s\n",
-                PQerrorMessage(queue->conn));
-        PQclear(res);
-        return -1;
-    }
-
-    ret = atoi(PQcmdTuples(res));
-    PQclear(res);
-    return ret;
 }
 
 int job_done(struct job **job_r, int status) {
@@ -391,7 +298,7 @@ int job_done(struct job **job_r, int status) {
 
     log(6, "job %s done with status %d\n", job->id, status);
 
-    set_job_done(job->queue, job->id, status);
+    pg_set_job_done(job->queue->conn, job->id, status);
 
     free_job(&job);
 
