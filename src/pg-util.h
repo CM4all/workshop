@@ -9,3 +9,5 @@
 struct strarray;
 
 int pg_decode_array(const char *p, struct strarray *a);
+
+char *pg_encode_array(const struct strarray *a);

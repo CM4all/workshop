@@ -103,3 +103,41 @@ int pg_decode_array(const char *p, struct strarray *a) {
 
     return 0;
 }
+
+char *pg_encode_array(const struct strarray *a) {
+    size_t max_length = 3;
+    unsigned i;
+    char *result, *p;
+    const char *src;
+
+    if (a == NULL)
+        return NULL;
+
+    if (a->num == 0)
+        return strdup("{}");
+
+    for (i = 0; i < a->num; ++i)
+        max_length += 3 + 2 * strlen(a->values[i]);
+
+    result = p = (char*)malloc(max_length);
+
+    *p++ = '{';
+
+    for (i = 0; i < a->num; ++i) {
+        if (i > 0)
+            *p++ = ',';
+        *p++ = '"';
+        src = a->values[i];
+        while (*src) {
+            if (*src == '\\' || *src == '"')
+                *p++ = '\\';
+            *p++ = *src++;
+        }
+        *p++ = '"';
+    }
+
+    *p++ = '}';
+    *p++ = 0;
+
+    return result;
+}

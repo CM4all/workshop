@@ -18,10 +18,14 @@ doc/workshop.html: doc/workshop.xml
 clean:
 	rm -f src/*.o src/cm4all-workshop doc/workshop.html
 
-check: t/test-pg_decode_array
+check: t/test-pg_decode_array t/test-pg_encode_array
 	./t/test-pg_decode_array
+	./t/test-pg_encode_array
 
 t/test-pg_decode_array: t/test-pg_decode_array.o src/pg-util.o src/strarray.o
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+t/test-pg_encode_array: t/test-pg_encode_array.o src/pg-util.o src/strarray.o
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 src/cm4all-workshop: $(OBJECTS)
