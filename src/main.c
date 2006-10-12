@@ -54,6 +54,7 @@ static void setup_signal_handlers(void) {
     sigaction(SIGINT, &sa, NULL);
 
     sa.sa_handler = child_signal_handler;
+    sa.sa_flags = SA_NOCLDSTOP;
     sigaction(SIGCHLD, &sa, NULL);
 }
 
