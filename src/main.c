@@ -49,9 +49,9 @@ static void setup_signal_handlers(void) {
 
     memset(&sa, 0, sizeof(sa));
     sa.sa_handler = exit_signal_handler;
-
     sigaction(SIGTERM, &sa, NULL);
     sigaction(SIGINT, &sa, NULL);
+    sigaction(SIGQUIT, &sa, NULL);
 
     sa.sa_handler = SIG_IGN;
     sa.sa_flags = SA_RESTART;
