@@ -20,4 +20,6 @@ void strarray_free(struct strarray *a);
 
 void strarray_append(struct strarray *a, const char *v);
 
+int strarray_contains(struct strarray *a, const char *v);
+
 #endif
