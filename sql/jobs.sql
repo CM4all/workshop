@@ -45,7 +45,8 @@ CREATE TABLE jobs (
 );
 
 -- this index is used when determining the next free job
-CREATE INDEX jobs_sorted ON jobs(priority, time_created);
+CREATE INDEX jobs_sorted ON jobs(priority, time_created)
+        WHERE node_name IS NULL AND time_done IS NULL AND exit_status IS NULL;
 
 -- 
 CREATE INDEX jobs_name ON jobs(name);
