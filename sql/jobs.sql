@@ -10,6 +10,8 @@ DROP TABLE jobs;
 CREATE TABLE jobs (
         id SERIAL,
 
+        -- non-unique name of the job
+        name VARCHAR(64) NULL,
         -- human readable long description of this job
         description VARCHAR(4096) NULL,
 
@@ -44,6 +46,9 @@ CREATE TABLE jobs (
 
 -- this index is used when determining the next free job
 CREATE INDEX jobs_sorted ON jobs(priority, time_created);
+
+-- 
+CREATE INDEX jobs_name ON jobs(name);
 
 -- notify all cm4all-workshop daemons when a new job is added
 CREATE RULE new_job AS ON INSERT TO jobs DO NOTIFY new_job;

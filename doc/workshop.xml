@@ -206,6 +206,16 @@ nice 5</programlisting>
             </row>
             <row>
               <entry>
+                <varname>name</varname>
+              </entry>
+              <entry>
+                Ein optional vom Auftraggeber zugeteilter Name,
+                z.B. die ID eines Kunden-Accounts.  Wird von
+                <filename>workshop</filename> nicht benutzt.
+              </entry>
+            </row>
+            <row>
+              <entry>
                 <varname>description</varname>
               </entry>
               <entry>
@@ -333,6 +343,7 @@ nice 5</programlisting>
       <itemizedlist>
         <listitem>
           Hinzufügen von Datensätzen (nur
+          <varname>name</varname>,
           <varname>description</varname>,
           <varname>scheduled_time</varname>,
           <varname>priority</varname>, <varname>plan_name</varname>,
