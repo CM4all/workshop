@@ -115,7 +115,8 @@ void poll_poll(struct poll *p, int timeout) {
     int ret;
     unsigned i;
 
-    assert(p->num > 0);
+    if (p->num == 0)
+        timeout = 1;
 
     /* poll all registered file handles */
 
