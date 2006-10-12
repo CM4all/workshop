@@ -145,6 +145,14 @@ int main(int argc, char **argv) {
     while (!should_exit || !workplace_is_empty(instance.workplace)) {
         /* handle job queue */
 
+        ret = queue_fill(instance.queue,
+                         library_plan_names(instance.library),
+                         workplace_plan_names(instance.workplace));
+        if (ret == 0)
+            ret = queue_fill(instance.queue,
+                             library_plan_names(instance.library),
+                             NULL);
+
         while (!should_exit && !workplace_is_full(instance.workplace)) {
             struct job *job;
 

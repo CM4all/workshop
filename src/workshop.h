@@ -77,6 +77,9 @@ void queue_close(struct queue **queue_r);
 
 void queue_flush(struct queue *queue);
 
+int queue_fill(struct queue *queue, const char *plans_include,
+               const char *plans_exclude);
+
 int queue_get(struct queue *queue, struct job **job_r);
 
 int job_claim(struct job **job_r, const char *timeout);
@@ -111,6 +114,8 @@ int library_open(const char *path, struct library **library_r);
 
 void library_close(struct library **library_r);
 
+const char *library_plan_names(struct library *library);
+
 int library_get(struct library *library, const char *name,
                 struct plan **plan_r);
 
@@ -144,6 +149,8 @@ int workplace_open(const char *node_name, unsigned max_operators,
                    struct workplace **workplace_r);
 
 void workplace_close(struct workplace **workplace_r);
+
+const char *workplace_plan_names(struct workplace *workplace);
 
 int workplace_start(struct workplace *workplace,
                     struct job *job, struct plan *plan);

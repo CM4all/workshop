@@ -8,6 +8,7 @@
  */
 
 #include "workshop.h"
+#include "pg-util.h"
 
 #include <assert.h>
 #include <sys/stat.h>
@@ -17,6 +18,8 @@
 #include <errno.h>
 #include <string.h>
 #include <pwd.h>
+#include <time.h>
+#include <dirent.h>
 
 struct plan_entry {
     struct plan *plan;
@@ -28,6 +31,8 @@ struct library {
     struct plan_entry *plans;
     unsigned num_plans, max_plans;
     unsigned ref;
+    char *plan_names;
+    time_t mtime, next_update;
 };
 
 static void free_plan(struct plan **plan_r) {
@@ -118,7 +123,95 @@ void library_close(struct library **library_r) {
         free(library->plans);
     }
 
+    if (library->plan_names)
+        free(library->plan_names);
+
     free(library);
+}
+
+static int is_valid_plan_name(const char *name);
+
+static int update_plan_names(struct library *library) {
+    const time_t now = time(NULL);
+    int ret;
+    struct stat st;
+    DIR *dir;
+    struct dirent *ent;
+    char path[1024];
+    struct strarray plan_names;
+
+    /* check directory time stamp */
+
+    ret = stat(library->path, &st);
+    if (ret < 0) {
+        fprintf(stderr, "failed to stat '%s': %s\n",
+                library->path, strerror(errno));
+        return -1;
+    }
+
+    if (!S_ISDIR(st.st_mode)) {
+        fprintf(stderr, "not a directory: %s\n", library->path);
+        return -1;
+    }
+
+    if (st.st_mtime == library->mtime &&
+        now < library->next_update) {
+        assert(library->plan_names != NULL);
+        return 0;
+    }
+
+    log(6, "updating plan list\n");
+
+    library->mtime = st.st_mtime;
+    library->next_update = now + 60;
+
+    /* read directory */
+
+    strarray_init(&plan_names);
+
+    dir = opendir(library->path);
+    if (dir == NULL) {
+        fprintf(stderr, "failed to opendir '%s': %s\n",
+                library->path, strerror(errno));
+        return -1;
+    }
+
+    while ((ent = readdir(dir)) != NULL) {
+        if (!is_valid_plan_name(ent->d_name))
+            continue;
+
+        snprintf(path, sizeof(path), "%s/%s", library->path, ent->d_name);
+        ret = stat(path, &st);
+        if (ret < 0) {
+            fprintf(stderr, "failed to stat '%s': %s\n",
+                    path, strerror(errno));
+            continue;
+        }
+
+        if (!S_ISREG(st.st_mode))
+            continue;
+
+        strarray_append(&plan_names, ent->d_name);
+    }
+
+    closedir(dir);
+
+    if (library->plan_names != NULL)
+        free(library->plan_names);
+
+    library->plan_names = pg_encode_array(&plan_names);
+
+    strarray_free(&plan_names);
+
+    return 0;
+}
+
+const char *library_plan_names(struct library *library) {
+    update_plan_names(library);
+
+    return library->plan_names == NULL
+        ? "{}"
+        : library->plan_names;
 }
 
 static int find_plan_by_name(struct library *library, const char *name) {

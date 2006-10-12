@@ -9,6 +9,7 @@
 #include "workshop.h"
 #include "syslog.h"
 #include "strhash.h"
+#include "pg-util.h"
 
 #include <assert.h>
 #include <sys/stat.h>
@@ -28,6 +29,7 @@ struct workplace {
     struct poll *poll;
     struct operator *head;
     unsigned max_operators, num_operators;
+    char *plan_names;
 };
 
 int workplace_open(const char *node_name, unsigned max_operators,
@@ -66,7 +68,33 @@ void workplace_close(struct workplace **workplace_r) {
     assert(workplace->head == NULL);
     assert(workplace->num_operators == 0);
 
+    if (workplace->plan_names != NULL)
+        free(workplace->plan_names);
+
     free(workplace);
+}
+
+const char *workplace_plan_names(struct workplace *workplace) {
+    struct strarray plan_names;
+    struct operator *operator;
+
+    strarray_init(&plan_names);
+
+    for (operator = workplace->head; operator != NULL;
+         operator = operator->next)
+        if (!strarray_contains(&plan_names, operator->plan->name))
+            strarray_append(&plan_names, operator->plan->name);
+
+    if (workplace->plan_names != NULL)
+        free(workplace->plan_names);
+
+    workplace->plan_names = pg_encode_array(&plan_names);
+
+    strarray_free(&plan_names);
+
+    return workplace->plan_names == NULL
+        ? "{}"
+        : workplace->plan_names;
 }
 
 static void free_operator(struct operator **operator_r) {

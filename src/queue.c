@@ -147,17 +147,51 @@ void queue_flush(struct queue *queue) {
     queue->result_num = 0;
 }
 
-/** query new jobs from the database */
-static int fill_queue(struct queue *queue) {
+int queue_fill(struct queue *queue, const char *plans_include,
+               const char *plans_exclude) {
     int ret;
+    time_t now;
 
     assert(queue->result == NULL);
     assert(queue->result_row == 0);
     assert(queue->result_num == 0);
+    assert(plans_include != NULL && *plans_include == '{');
+    assert(plans_exclude == NULL || *plans_exclude == '{');
 
-    ret = pg_select_new_jobs(queue->conn, &queue->result);
-    if (ret <= 0)
+    /* check expired jobs from all other nodes except us */
+
+    now = time(NULL);
+    if (now >= queue->next_expire_check) {
+        queue->next_expire_check = now + 60;
+
+        ret = pg_expire_jobs(queue->conn, queue->node_name);
+        if (ret < 0)
+            return -1;
+
+        if (ret > 0) {
+            log(2, "released %d expired jobs\n", ret);
+            pg_notify(queue->conn);
+        }
+    }
+
+    /* continue only if we got a "new_job" notify from PostgreSQL */
+
+    if (!queue->ready || strcmp(plans_include, "{}") == 0)
+        return 0;
+
+    if (plans_exclude == NULL)
+        plans_exclude = "{}";
+
+    log(7, "requesting new jobs from database; plans_include=%s plans_exclude=%s\n",
+        plans_include, plans_exclude);
+
+    ret = pg_select_new_jobs(queue->conn, plans_include, plans_exclude,
+                             &queue->result);
+    if (ret <= 0) {
+        if (strcmp(plans_exclude, "{}") == 0)
+            queue->ready = 0;
         return ret;
+    }
 
     return queue->result_num = ret;
 }
@@ -230,46 +264,9 @@ static int get_next_job(struct queue *queue, struct job **job_r) {
 }
 
 int queue_get(struct queue *queue, struct job **job_r) {
-    int ret;
-    time_t now;
-
-    /* is there an old result?  if yes, consume this one first before
-       acquiring a new one */
-
-    if (queue->result != NULL) {
-        if (queue->result_row < PQntuples(queue->result)) {
-            return get_next_job(queue, job_r);
-        } else {
-            return 0;
-        }
-    }
-
-    /* check expired jobs from all other nodes except us */
-
-    now = time(NULL);
-    if (now >= queue->next_expire_check) {
-        queue->next_expire_check = now + 60;
-
-        ret = pg_expire_jobs(queue->conn, queue->node_name);
-        if (ret < 0)
-            return -1;
-
-        if (ret > 0) {
-            log(2, "released %d expired jobs\n", ret);
-            pg_notify(queue->conn);
-        }
-    }
-
-    /* continue only if we got a "new_job" notify from PostgreSQL */
-
-    if (!queue->ready)
+    if (queue->result == NULL ||
+        queue->result_row >= PQntuples(queue->result))
         return 0;
-
-    /* request a new job list from the database */
-
-    ret = fill_queue(queue);
-    if (ret <= 0)
-        return -1;
 
     return get_next_job(queue, job_r);
 }

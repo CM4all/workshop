@@ -83,17 +83,28 @@ int pg_expire_jobs(PGconn *conn, const char *except_node_name) {
     return ret;
 }
 
-int pg_select_new_jobs(PGconn *conn, PGresult **res_r) {
+int pg_select_new_jobs(PGconn *conn,
+                       const char *plans_include, const char *plans_exclude,
+                       PGresult **res_r) {
+    const char *params[2];
     PGresult *res;
     int ret;
 
+    assert(plans_include != NULL && *plans_include == '{');
+    assert(plans_exclude != NULL && *plans_exclude == '{');
     assert(res_r != NULL);
     assert(*res_r == NULL);
 
-    res = PQexec(conn, "SELECT id,plan_name,args,syslog_server "
-                 "FROM jobs WHERE node_name IS NULL AND exit_status IS NULL "
-                 "AND (scheduled_time IS NULL OR NOW() >= scheduled_time) "
-                 "ORDER BY priority,time_created");
+    params[0] = plans_include;
+    params[1] = plans_exclude;
+
+    res = PQexecParams(conn, "SELECT id,plan_name,args,syslog_server "
+                       "FROM jobs WHERE node_name IS NULL AND exit_status IS NULL "
+                       "AND (scheduled_time IS NULL OR NOW() >= scheduled_time) "
+                       "AND plan_name = ANY ($1::VARCHAR[]) "
+                       "AND plan_name <> ALL ($2::VARCHAR[]) "
+                       "ORDER BY priority,time_created",
+                       2, NULL, params, NULL, NULL, 0);
     if (PQresultStatus(res) != PGRES_TUPLES_OK) {
         fprintf(stderr, "SELECT on jobs failed: %s\n",
                 PQerrorMessage(conn));
