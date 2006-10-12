@@ -200,6 +200,8 @@ int main(int argc, char **argv) {
 
     /* cleanup */
 
+    log(5, "cleaning up\n");
+
     workplace_close(&instance.workplace);
 
     queue_close(&instance.queue);
@@ -209,4 +211,6 @@ int main(int argc, char **argv) {
     library_close(&instance.library);
 
     config_dispose(&config);
+
+    log(4, "exiting\n");
 }
