@@ -96,7 +96,6 @@ int main(int argc, char **argv) {
     struct config config;
     struct instance instance;
     int ret;
-    long next_scheduled;
 
     /* configuration */
 
@@ -166,9 +165,15 @@ int main(int argc, char **argv) {
 
         queue_flush(instance.queue);
 
+        queue_next_scheduled(instance.queue,
+                             library_plan_names(instance.library),
+                             &ret);
+        if (ret > 0)
+            log(3, "next scheduled job is in %d seconds\n", ret);
+
         /* poll file handles */
 
-        poll_poll(instance.poll, -1);
+        poll_poll(instance.poll, ret);
 
         /* check child processes */
 

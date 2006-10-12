@@ -24,6 +24,10 @@ struct queue {
     struct poll *poll;
     int ready;
     time_t next_expire_check;
+
+    int next_scheduled_valid;
+    time_t next_scheduled;
+
     PGresult *result;
     int result_row, result_num;
 };
@@ -137,6 +141,40 @@ void queue_close(struct queue **queue_r) {
     free(queue);
 }
 
+int queue_next_scheduled(struct queue *queue, const char *plans_include,
+                         int *span_r) {
+    int ret;
+    long span;
+
+    if (queue->next_scheduled_valid) {
+        if (queue->next_scheduled == 0) {
+            *span_r = -1;
+            return 0;
+        } else {
+            *span_r = (int)(queue->next_scheduled - time(NULL) + 1);
+            if (*span_r < 0)
+                *span_r = 0;
+            return 1;
+        }
+    }
+
+    ret = pg_next_scheduled_job(queue->conn, plans_include, &span);
+    if (ret > 0 && span > 0) {
+        if (span > 600)
+            span = 600;
+
+        *span_r = (int)span + 1;
+        queue->next_scheduled = time(NULL) + span;
+    } else {
+        *span_r = -1;
+        queue->next_scheduled = 0;
+    }
+
+    queue->next_scheduled = 1;
+
+    return ret;
+}
+
 void queue_flush(struct queue *queue) {
     if (queue->result == NULL)
         return;
@@ -176,8 +214,13 @@ int queue_fill(struct queue *queue, const char *plans_include,
 
     /* continue only if we got a "new_job" notify from PostgreSQL */
 
-    if (!queue->ready || strcmp(plans_include, "{}") == 0)
+    if ((!queue->ready && (queue->next_scheduled == 0 ||
+                           now < queue->next_scheduled)) ||
+        strcmp(plans_include, "{}") == 0)
         return 0;
+
+    queue->next_scheduled_valid = 0;
+    queue->next_scheduled = 0;
 
     if (plans_exclude == NULL)
         plans_exclude = "{}";

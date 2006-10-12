@@ -19,6 +19,9 @@ int pg_release_jobs(PGconn *conn, const char *node_name);
 
 int pg_expire_jobs(PGconn *conn, const char *except_node_name);
 
+int pg_next_scheduled_job(PGconn *conn, const char *plans_include,
+                          long *span_r);
+
 int pg_select_new_jobs(PGconn *conn,
                        const char *plans_include, const char *plans_exclude,
                        PGresult **res_r);

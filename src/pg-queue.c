@@ -83,6 +83,45 @@ int pg_expire_jobs(PGconn *conn, const char *except_node_name) {
     return ret;
 }
 
+int pg_next_scheduled_job(PGconn *conn, const char *plans_include,
+                          long *span_r) {
+    PGresult *res;
+    int ret;
+    const char *value;
+
+    assert(plans_include != NULL && *plans_include == '{');
+
+    res = PQexecParams(conn, "SELECT EXTRACT(EPOCH FROM (MIN(scheduled_time) - NOW())) "
+                       "FROM jobs WHERE node_name IS NULL AND exit_status IS NULL "
+                       "AND scheduled_time IS NOT NULL AND NOW() < scheduled_time "
+                       "AND plan_name = ANY ($1::TEXT[]) ",
+                       1, NULL, &plans_include, NULL, NULL, 0);
+    if (PQresultStatus(res) != PGRES_TUPLES_OK) {
+        fprintf(stderr, "SELECT on jobs failed: %s\n",
+                PQerrorMessage(conn));
+        PQclear(res);
+        return -1;
+    }
+
+    ret = PQntuples(res);
+    if (ret == 0) {
+        PQclear(res);
+        return 0;
+    }
+
+    value = PQgetvalue(res, 0, 0);
+    if (value == NULL || *value == 0) {
+        PQclear(res);
+        return 0;
+    }
+
+    *span_r = strtoul(value, NULL, 0);
+
+    PQclear(res);
+
+    return 1;
+}
+
 int pg_select_new_jobs(PGconn *conn,
                        const char *plans_include, const char *plans_exclude,
                        PGresult **res_r) {
