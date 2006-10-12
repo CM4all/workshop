@@ -96,6 +96,7 @@ int main(int argc, char **argv) {
     struct config config;
     struct instance instance;
     int ret;
+    long next_scheduled;
 
     /* configuration */
 
@@ -167,7 +168,7 @@ int main(int argc, char **argv) {
 
         /* poll file handles */
 
-        poll_poll(instance.poll);
+        poll_poll(instance.poll, -1);
 
         /* check child processes */
 

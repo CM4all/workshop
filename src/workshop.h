@@ -57,7 +57,7 @@ void poll_add(struct poll *poll, int fd, short events,
 
 void poll_remove(struct poll *poll, int fd);
 
-void poll_poll(struct poll *poll);
+void poll_poll(struct poll *poll, int timeout);
 
 /* queue.c */
 

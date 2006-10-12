@@ -111,7 +111,7 @@ void poll_remove(struct poll *p, int fd) {
     }
 }
 
-void poll_poll(struct poll *p) {
+void poll_poll(struct poll *p, int timeout) {
     int ret;
     unsigned i;
 
@@ -119,7 +119,7 @@ void poll_poll(struct poll *p) {
 
     /* poll all registered file handles */
 
-    ret = poll(p->fds, p->num, -1);
+    ret = poll(p->fds, p->num, timeout);
     assert(ret != 0);
 
     if (ret < 0) {
