@@ -207,7 +207,7 @@ int queue_next_scheduled(struct queue *queue, const char *plans_include,
             *span_r = -1;
             return 0;
         } else {
-            *span_r = (int)(queue->next_scheduled - time(NULL) + 1);
+            *span_r = (int)(queue->next_scheduled - time(NULL) + 2);
             if (*span_r < 0)
                 *span_r = 0;
             return 1;
@@ -219,7 +219,7 @@ int queue_next_scheduled(struct queue *queue, const char *plans_include,
         if (span > 600)
             span = 600;
 
-        *span_r = (int)span + 1;
+        *span_r = (int)span + 2;
         queue->next_scheduled = time(NULL) + span;
     } else {
         *span_r = -1;
