@@ -32,6 +32,8 @@ struct queue {
     int result_row, result_num;
 };
 
+static int queue_reconnect(struct queue *queue);
+
 /** the poll() callback handler; this function handles notifies sent
     by the PostgreSQL server */
 static void queue_callback(struct pollfd *pollfd, void *ctx) {
@@ -43,6 +45,12 @@ static void queue_callback(struct pollfd *pollfd, void *ctx) {
     assert(pollfd->fd == queue->fd);
 
     PQconsumeInput(queue->conn);
+
+    if (PQstatus(queue->conn) != CONNECTION_OK) {
+        log(2, "connection to PostgreSQL lost; trying to reconnect\n");
+        queue_reconnect(queue);
+        return;
+    }
 
     while ((notify = PQnotifies(queue->conn)) != NULL) {
         log(6, "async notify '%s' received from backend pid %d\n",
@@ -141,6 +149,51 @@ void queue_close(struct queue **queue_r) {
     free(queue);
 }
 
+static int queue_reconnect(struct queue *queue) {
+    int ret;
+
+    /* unregister old socket */
+
+    if (queue->fd >= 0)
+        poll_remove(queue->poll, queue->fd);
+
+    /* reconnect */
+
+    PQreset(queue->conn);
+
+    if (PQstatus(queue->conn) != CONNECTION_OK) {
+        queue->fd = -1;
+        log(2, "reconnect to PostgreSQL failed: %s\n",
+            PQerrorMessage(queue->conn));
+        return -1;
+    }
+
+    /* listen on notifications */
+
+    ret = pg_listen(queue->conn);
+    if (ret < 0)
+        log(1, "re-LISTEN failed\n");
+
+    /* register new socket */
+
+    queue->fd = PQsocket(queue->conn);
+    poll_add(queue->poll, queue->fd, POLLIN, queue_callback, queue);
+
+    /* reset some state variables */
+
+    queue->next_scheduled_valid = 0;
+    queue->ready = 1;
+
+    return 0;
+}
+
+static int queue_autoreconnect(struct queue *queue) {
+    if (PQstatus(queue->conn) == CONNECTION_OK)
+        return 0;
+
+    return queue_reconnect(queue);
+}
+
 int queue_next_scheduled(struct queue *queue, const char *plans_include,
                          int *span_r) {
     int ret;
@@ -195,6 +248,10 @@ int queue_fill(struct queue *queue, const char *plans_include,
     assert(queue->result_num == 0);
     assert(plans_include != NULL && *plans_include == '{');
     assert(plans_exclude == NULL || *plans_exclude == '{');
+
+    ret = queue_autoreconnect(queue);
+    if (ret < 0)
+        return -1;
 
     /* check expired jobs from all other nodes except us */
 
@@ -357,12 +414,17 @@ int job_set_progress(struct job *job, unsigned progress,
 
 int job_rollback(struct job **job_r) {
     struct job *job;
+    int ret;
 
     assert(job_r != NULL);
     assert(*job_r != NULL);
 
     job = *job_r;
     *job_r = NULL;
+
+    ret = queue_autoreconnect(job->queue);
+    if (ret < 0)
+        return -1;
 
     log(6, "rolling back job %s\n", job->id);
 
@@ -377,12 +439,17 @@ int job_rollback(struct job **job_r) {
 
 int job_done(struct job **job_r, int status) {
     struct job *job;
+    int ret;
 
     assert(job_r != NULL);
     assert(*job_r != NULL);
 
     job = *job_r;
     *job_r = NULL;
+
+    ret = queue_autoreconnect(job->queue);
+    if (ret < 0)
+        return -1;
 
     log(6, "job %s done with status %d\n", job->id, status);
 
