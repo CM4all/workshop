@@ -131,7 +131,9 @@ void poll_poll(struct poll *p, int timeout) {
 
     /* execute callbacks */
 
-    for (i = 0; ret > 0 && i < p->num; ++i) {
+    for (i = p->num; ret > 0 && i > 0;) {
+        --i;
+
         if (p->fds[i].revents != 0) {
             p->info[i].callback(&p->fds[i], p->info[i].ctx);
             --ret;
