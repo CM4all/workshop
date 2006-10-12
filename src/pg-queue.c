@@ -115,7 +115,7 @@ int pg_next_scheduled_job(PGconn *conn, const char *plans_include,
         return 0;
     }
 
-    *span_r = strtoul(value, NULL, 0);
+    *span_r = strtol(value, NULL, 0);
 
     PQclear(res);
 
