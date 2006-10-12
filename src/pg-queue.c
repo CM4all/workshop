@@ -101,8 +101,8 @@ int pg_select_new_jobs(PGconn *conn,
     res = PQexecParams(conn, "SELECT id,plan_name,args,syslog_server "
                        "FROM jobs WHERE node_name IS NULL AND exit_status IS NULL "
                        "AND (scheduled_time IS NULL OR NOW() >= scheduled_time) "
-                       "AND plan_name = ANY ($1::VARCHAR[]) "
-                       "AND plan_name <> ALL ($2::VARCHAR[]) "
+                       "AND plan_name = ANY ($1::TEXT[]) "
+                       "AND plan_name <> ALL ($2::TEXT[]) "
                        "ORDER BY priority,time_created",
                        2, NULL, params, NULL, NULL, 0);
     if (PQresultStatus(res) != PGRES_TUPLES_OK) {
