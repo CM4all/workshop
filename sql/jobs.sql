@@ -48,7 +48,11 @@ CREATE TABLE jobs (
 CREATE INDEX jobs_sorted ON jobs(priority, time_created)
         WHERE node_name IS NULL AND time_done IS NULL AND exit_status IS NULL;
 
--- 
+-- for finding jobs to release
+CREATE INDEX jobs_release ON jobs(node_name, node_timeout)
+        WHERE node_name IS NOT NULL AND time_done IS NULL AND exit_status IS NULL;
+
+-- for finding a job by its name
 CREATE INDEX jobs_name ON jobs(name);
 
 -- notify all cm4all-workshop daemons when a new job is added
