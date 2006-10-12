@@ -137,6 +137,8 @@ void queue_close(struct queue **queue_r) {
     queue = *queue_r;
     *queue_r = NULL;
 
+    queue_flush(queue);
+
     if (queue->poll != NULL)
         poll_remove(queue->poll, queue->fd);
 
@@ -159,6 +161,7 @@ static int queue_reconnect(struct queue *queue) {
 
     /* reconnect */
 
+    queue_flush(queue);
     PQreset(queue->conn);
 
     if (PQstatus(queue->conn) != CONNECTION_OK) {
