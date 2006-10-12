@@ -187,6 +187,26 @@ nice 5</programlisting>
       <para>
         Der Exit-Code muß bei Erfolg 0 sein.
       </para>
+
+      <para>
+        <filename>workshop</filename> versucht, Jobs nur einmal
+        auszuführen.  Unter bestimmten (seltenen) Fehlerbedingungen
+        kann es aber theoretisch sein, daß ein Job doppelt ausgeführt
+        wird.  Es ist guter Stil, wenn sich ein Plan durch sowas nicht
+        durcheinander bringen läßt.
+      </para>
+
+      <para>
+        Man sollte versuchen, Plans transaktionell zu schreiben.  Dazu
+        gehört zum Beispiel, Zieldateien nicht direkt zu schreiben,
+        sondern erst als temporäre Datei, und sie bei Erfolg
+        umzubenennen.
+      </para>
+
+      <para>
+        Ein Plan sollte sowohl im Erfolgsfall als auch im Fehlerfall
+        beim Beenden aufräumen, z.B. temporäre Dateien löschen.
+      </para>
     </section>
 
     <section id="table_jobs">
