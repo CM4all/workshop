@@ -119,7 +119,7 @@ void poll_poll(struct poll *p, int timeout) {
 
     /* poll all registered file handles */
 
-    ret = poll(p->fds, p->num, timeout);
+    ret = poll(p->fds, p->num, timeout * 1000);
 
     if (ret < 0) {
         if (errno == EINTR)
