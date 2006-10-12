@@ -93,7 +93,7 @@ int pg_next_scheduled_job(PGconn *conn, const char *plans_include,
 
     res = PQexecParams(conn, "SELECT EXTRACT(EPOCH FROM (MIN(scheduled_time) - NOW())) "
                        "FROM jobs WHERE node_name IS NULL AND exit_status IS NULL "
-                       "AND scheduled_time IS NOT NULL AND NOW() < scheduled_time "
+                       "AND scheduled_time IS NOT NULL "
                        "AND plan_name = ANY ($1::TEXT[]) ",
                        1, NULL, &plans_include, NULL, NULL, 0);
     if (PQresultStatus(res) != PGRES_TUPLES_OK) {

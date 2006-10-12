@@ -215,7 +215,10 @@ int queue_next_scheduled(struct queue *queue, const char *plans_include,
     }
 
     ret = pg_next_scheduled_job(queue->conn, plans_include, &span);
-    if (ret > 0 && span > 0) {
+    if (ret > 0) {
+        if (span < 0)
+            span = 0;
+
         /* try to avoid rounding errors: always add 2 seconds */
         span += 2;
 
