@@ -237,7 +237,8 @@ nice 5</programlisting>
               </entry>
               <entry>
                 Zu diesem Zeitpunkt soll der Job frühestens ausgeführt
-                werden.
+                werden.  Hierbei zählt die Uhrzeit des
+                Datenbankservers.
               </entry>
             </row>
             <row>
