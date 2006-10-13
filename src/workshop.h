@@ -116,6 +116,8 @@ int library_open(const char *path, struct library **library_r);
 
 void library_close(struct library **library_r);
 
+int library_update(struct library *library);
+
 const char *library_plan_names(struct library *library);
 
 int library_get(struct library *library, const char *name,

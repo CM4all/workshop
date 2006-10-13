@@ -693,7 +693,7 @@ static int library_update_plans(struct library *library) {
     return 0;
 }
 
-static int library_auto_update_plans(struct library *library) {
+int library_update(struct library *library) {
     const time_t now = time(NULL);
     int ret;
     struct stat st;
@@ -736,8 +736,6 @@ int library_get(struct library *library, const char *name,
 
     if (!is_valid_plan_name(name))
         return ENOENT;
-
-    library_auto_update_plans(library);
 
     ret = find_plan_by_name(library, name);
     if (ret < 0)

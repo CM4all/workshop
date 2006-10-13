@@ -151,6 +151,10 @@ int main(int argc, char **argv) {
     /* main loop */
 
     while (!should_exit || !workplace_is_empty(instance.workplace)) {
+        /* check for new/updated plans */
+
+        library_update(instance.library);
+
         /* handle job queue */
 
         ret = queue_fill(instance.queue,
