@@ -155,16 +155,22 @@ static int update_plan_names(struct library *library) {
         return -1;
     }
 
-    if (st.st_mtime == library->mtime &&
-        now < library->next_update) {
-        assert(library->plan_names != NULL);
+    if (library->plan_names != NULL &&
+        st.st_mtime == library->mtime &&
+        now < library->next_update)
         return 0;
-    }
 
     log(6, "updating plan list\n");
 
     library->mtime = st.st_mtime;
     library->next_update = now + 60;
+
+    /* free old data */
+
+    if (library->plan_names != NULL) {
+        free(library->plan_names);
+        library->plan_names = NULL;
+    }
 
     /* read directory */
 
@@ -196,9 +202,6 @@ static int update_plan_names(struct library *library) {
     }
 
     closedir(dir);
-
-    if (library->plan_names != NULL)
-        free(library->plan_names);
 
     library->plan_names = pg_encode_array(&plan_names);
 
