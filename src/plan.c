@@ -26,12 +26,17 @@ struct plan_entry {
     struct plan *plan;
     int deinstalled;
     time_t mtime, disabled_until;
+    unsigned generation;
 };
 
 struct library {
     char *path;
+
     struct plan_entry *plans;
     unsigned num_plans, max_plans;
+    time_t next_plans_check;
+    unsigned generation;
+
     unsigned ref;
     char *plan_names;
     time_t mtime, next_update;
@@ -504,6 +509,22 @@ static int check_plan_mtime(struct library *library, struct plan_entry *entry) {
         return errno;
     }
 
+    if (!S_ISREG(st.st_mode)) {
+        if (entry->plan != NULL) {
+            /* free memory of old plan only if there are no
+               references on it anymore */
+            if (entry->plan->ref == 0)
+                free_plan(&entry->plan);
+            else
+                entry->plan = NULL;
+        }
+
+        entry->mtime = 0;
+
+        disable_plan(library, entry, 60);
+        return ENOENT;
+    }
+
     if (st.st_mtime != entry->mtime) {
         entry->disabled_until = 0;
 
@@ -588,16 +609,9 @@ static int load_plan_entry(struct library *library,
     return 0;
 }
 
-int library_get(struct library *library, const char *name,
-                struct plan **plan_r) {
+static int library_update_plan(struct library *library,
+                               struct plan_entry *entry) {
     int ret;
-    struct plan_entry *entry;
-
-    if (!is_valid_plan_name(name))
-        return ENOENT;
-
-    entry = make_plan_entry(library, name);
-    assert(entry != NULL);
 
     ret = check_plan_mtime(library, entry);
     if (ret != 0)
@@ -610,6 +624,128 @@ int library_get(struct library *library, const char *name,
     }
 
     ret = validate_plan(entry);
+    if (ret != 0)
+        return ret;
+
+    return 0;
+}
+
+static void library_remove_plan(struct library *library, unsigned i) {
+    struct plan_entry *entry;
+
+    assert(i < library->num_plans);
+
+    entry = &library->plans[i];
+
+    if (entry->name != NULL)
+        free(entry->name);
+
+    if (entry->plan != NULL && entry->plan->ref == 0)
+        free_plan(&entry->plan);
+
+    --library->num_plans;
+    memmove(entry, entry + 1,
+            sizeof(*entry) * (library->num_plans - i));
+}
+
+static int library_update_plans(struct library *library) {
+    DIR *dir;
+    struct dirent *ent;
+    unsigned i;
+
+    /* read list of plans from file system, update our list */
+
+    dir = opendir(library->path);
+    if (dir == NULL) {
+        fprintf(stderr, "failed to opendir '%s': %s\n",
+                library->path, strerror(errno));
+        return -1;
+    }
+
+    ++library->generation;
+
+    while ((ent = readdir(dir)) != NULL) {
+        struct plan_entry *entry;
+
+        if (!is_valid_plan_name(ent->d_name))
+            continue;
+
+        entry = make_plan_entry(library, ent->d_name);
+        assert(entry != NULL);
+
+        library_update_plan(library, entry);
+        entry->generation = library->generation;
+    }
+
+    closedir(dir);
+
+    /* remove all plans */
+
+    for (i = library->num_plans; i > 0;) {
+        struct plan_entry *entry = &library->plans[--i];
+
+        if (entry->generation != library->generation) {
+            library_remove_plan(library, i);
+            library->next_update = 0;
+        }
+    }
+
+    return 0;
+}
+
+static int library_auto_update_plans(struct library *library) {
+    const time_t now = time(NULL);
+    int ret;
+    struct stat st;
+
+    /* check directory time stamp */
+
+    ret = stat(library->path, &st);
+    if (ret < 0) {
+        fprintf(stderr, "failed to stat '%s': %s\n",
+                library->path, strerror(errno));
+        return -1;
+    }
+
+    if (!S_ISDIR(st.st_mode)) {
+        fprintf(stderr, "not a directory: %s\n", library->path);
+        return -1;
+    }
+
+    if (st.st_mtime == library->mtime && now < library->next_plans_check)
+        return 0;
+
+    /* do it */
+
+    ret = library_update_plans(library);
+    if (ret != 0)
+        return ret;
+        
+    /* update mtime */
+
+    library->mtime = st.st_mtime;
+    library->next_plans_check = now + 60;
+
+    return 0;
+}
+
+int library_get(struct library *library, const char *name,
+                struct plan **plan_r) {
+    int ret;
+    struct plan_entry *entry;
+
+    if (!is_valid_plan_name(name))
+        return ENOENT;
+
+    library_auto_update_plans(library);
+
+    ret = find_plan_by_name(library, name);
+    if (ret < 0)
+        return ENOENT;
+
+    entry = &library->plans[ret];
+
+    ret = library_update_plan(library, entry);
     if (ret != 0)
         return ret;
 
