@@ -130,6 +130,21 @@ void library_close(struct library **library_r) {
     free(library);
 }
 
+static int find_plan_by_name(struct library *library, const char *name);
+
+static int plan_name_is_disabled(struct library *library, const char *name,
+                                 time_t now) {
+    int ret;
+    struct plan_entry *entry;
+
+    ret = find_plan_by_name(library, name);
+    if (ret < 0)
+        return 0;
+
+    entry = &library->plans[ret];
+    return entry->disabled_until > 0 && now < entry->disabled_until;
+}
+
 static int is_valid_plan_name(const char *name);
 
 static int update_plan_names(struct library *library) {
@@ -196,6 +211,9 @@ static int update_plan_names(struct library *library) {
         }
 
         if (!S_ISREG(st.st_mode))
+            continue;
+
+        if (plan_name_is_disabled(library, ent->d_name, now))
             continue;
 
         strarray_append(&plan_names, ent->d_name);
