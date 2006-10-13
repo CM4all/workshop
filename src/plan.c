@@ -455,85 +455,65 @@ static void disable_plan(struct library *library,
     library->next_update = 0;
 }
 
-int library_get(struct library *library, const char *name,
-                struct plan **plan_r) {
+static struct plan_entry *make_plan_entry(struct library *library, const char *name) {
+    int ret;
+
+    ret = find_plan_by_name(library, name);
+    if (ret >= 0)
+        return &library->plans[ret];
+
+    return add_plan_entry(library, name);
+}
+
+static int check_plan_mtime(struct library *library, struct plan_entry *entry) {
     int ret;
     char path[1024];
     struct stat st;
-    struct plan_entry *entry;
-    struct plan *plan;
-
-    if (!is_valid_plan_name(name))
-        return ENOENT;
 
     snprintf(path, sizeof(path), "%s/%s",
-             library->path, name);
+             library->path, entry->name);
     ret = stat(path, &st);
     if (ret < 0) {
         if (ret != ENOENT)
             fprintf(stderr, "failed to stat '%s': %s\n",
                     path, strerror(errno));
+
+        entry->mtime = 0;
+
         return errno;
     }
 
-    ret = find_plan_by_name(library, name);
-    if (ret >= 0) {
-        /* plan is already in cache */
+    if (st.st_mtime != entry->mtime) {
+        entry->disabled_until = 0;
 
-        entry = &library->plans[ret];
-        plan = entry->plan;
+        if (entry->plan != NULL && entry->plan->ref == 0)
+            /* free memory of old plan only if there are no
+               references on it anymore */
+            free_plan(&entry->plan);
 
-        if (st.st_mtime != entry->mtime)
-            entry->disabled_until = 0;
-
-        if (entry->disabled_until > 0) {
-            if (time(NULL) < entry->disabled_until)
-                /* this plan is temporarily disabled due to previous errors */
-                return ENOENT;
-
-            entry->disabled_until = 0;
-        }
-
-        if (entry->plan == NULL || st.st_mtime != entry->mtime) {
-            /* .. but it's not up to date */
-
-            log(6, "reloading plan '%s'\n", name);
-
-            ret = load_plan_config(path, name, &plan);
-            if (ret != 0)
-                return ret;
-
-            plan->library = library;
-
-            if (entry->plan != NULL && entry->plan->ref == 0)
-                /* free memory of old plan only if there are no
-                   references on it anymore */
-                free_plan(&entry->plan);
-
-            entry->mtime = st.st_mtime;
-            entry->plan = plan;
-        }
-    } else {
-        /* not in cache, load it from disk */
-
-        log(6, "loading plan '%s'\n", name);
-
-        entry = add_plan_entry(library, name);
         entry->mtime = st.st_mtime;
-
-        ret = load_plan_config(path, name, &plan);
-        if (ret != 0) {
-            disable_plan(library, entry, 600);
-            return ret;
-        }
-
-        plan->library = library;
-
-        entry->plan = plan;
     }
 
+    if (entry->disabled_until > 0) {
+        if (time(NULL) < entry->disabled_until)
+            /* this plan is temporarily disabled due to previous errors */
+            return ENOENT;
+
+        entry->disabled_until = 0;
+    }
+
+    return 0;
+}
+
+static int validate_plan(struct plan_entry *entry) {
+    const struct plan *plan = entry->plan;
+    int ret;
+    struct stat st;
+
+    assert(plan != NULL);
     assert(plan->argv.num > 0);
     assert(plan->argv.values[0] != NULL && plan->argv.values[0][0] != 0);
+    assert(plan->library != NULL);
 
     /* check if the executable exists; it would not if the Debian
        package has been deinstalled, but the plan's config file is
@@ -547,14 +527,53 @@ int library_get(struct library *library, const char *name,
         if (errno == ENOENT)
             entry->deinstalled = 1;
         else
-            disable_plan(library, entry, 60);
+            disable_plan(plan->library, entry, 60);
         return ENOENT;
     }
 
     entry->deinstalled = 0;
 
-    *plan_r = plan;
-    ++plan->ref;
+    return 0;
+}
+
+int library_get(struct library *library, const char *name,
+                struct plan **plan_r) {
+    int ret;
+    struct plan_entry *entry;
+
+    if (!is_valid_plan_name(name))
+        return ENOENT;
+
+    entry = make_plan_entry(library, name);
+    assert(entry != NULL);
+
+    ret = check_plan_mtime(library, entry);
+    if (ret != 0)
+        return ret;
+
+    if (entry->plan == NULL) {
+        char path[1024];
+
+        log(6, "loading plan '%s'\n", name);
+
+        snprintf(path, sizeof(path), "%s/%s",
+                 library->path, entry->name);
+
+        ret = load_plan_config(path, name, &entry->plan);
+        if (ret != 0) {
+            disable_plan(library, entry, 600);
+            return ret;
+        }
+
+        entry->plan->library = library;
+    }
+
+    ret = validate_plan(entry);
+    if (ret != 0)
+        return ret;
+
+    *plan_r = entry->plan;
+    ++entry->plan->ref;
     ++library->ref;
     return 0;
 }
