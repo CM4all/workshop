@@ -5,7 +5,7 @@ CFLAGS = -O0 -g
 override CFLAGS += -Wall -W -Werror -std=gnu99 -Wmissing-prototypes -Wwrite-strings -Wcast-qual -Wfloat-equal -Wshadow -Wpointer-arith -Wbad-function-cast -Wsign-compare -Wmissing-declarations -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls -Wnested-externs -Winline -Wdisabled-optimization -Wno-long-long -Wstrict-prototypes -Wundef
 INCLUDES = -I/usr/include/cm4all/libfox-0
 
-SOURCES = src/main.c src/config.c src/daemon.c src/poll.c src/queue.c src/plan.c src/plan-loader.c src/operator.c src/syslog.c src/strarray.c src/strhash.c src/pg-util.c src/pg-queue.c
+SOURCES = src/main.c src/config.c src/daemon.c src/poll.c src/queue.c src/plan.c src/plan-loader.c src/plan-library.c src/plan-update.c src/operator.c src/syslog.c src/strarray.c src/strhash.c src/pg-util.c src/pg-queue.c
 HEADERS = src/workshop.h src/syslog.h src/strarray.h src/strhash.h src/pg-util.h src/pg-queue.h
 OBJECTS = $(patsubst %.c,%.o,$(SOURCES))
 LIBS = -lcm4all-fox -lpq
