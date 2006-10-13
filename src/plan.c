@@ -135,97 +135,34 @@ void library_close(struct library **library_r) {
     free(library);
 }
 
-static int find_plan_by_name(struct library *library, const char *name);
-
-static int plan_name_is_disabled(struct library *library, const char *name,
-                                 time_t now) {
-    int ret;
-    struct plan_entry *entry;
-
-    ret = find_plan_by_name(library, name);
-    if (ret < 0)
-        return 0;
-
-    entry = &library->plans[ret];
+static int plan_is_disabled(const struct plan_entry *entry, time_t now) {
     return entry->disabled_until > 0 && now < entry->disabled_until;
 }
 
-static int is_valid_plan_name(const char *name);
-
 static int update_plan_names(struct library *library) {
     const time_t now = time(NULL);
-    int ret;
-    struct stat st;
-    DIR *dir;
-    struct dirent *ent;
-    char path[1024];
     struct strarray plan_names;
+    unsigned i;
+    const struct plan_entry *entry;
 
-    /* check directory time stamp */
-
-    ret = stat(library->path, &st);
-    if (ret < 0) {
-        fprintf(stderr, "failed to stat '%s': %s\n",
-                library->path, strerror(errno));
-        return -1;
-    }
-
-    if (!S_ISDIR(st.st_mode)) {
-        fprintf(stderr, "not a directory: %s\n", library->path);
-        return -1;
-    }
-
-    if (library->plan_names != NULL &&
-        st.st_mtime == library->mtime &&
-        now < library->next_update)
+    if (library->plan_names != NULL && now < library->next_update)
         return 0;
 
-    log(6, "updating plan list\n");
-
-    library->mtime = st.st_mtime;
     library->next_update = now + 60;
 
-    /* free old data */
-
-    if (library->plan_names != NULL) {
-        free(library->plan_names);
-        library->plan_names = NULL;
-    }
-
-    /* read directory */
+    /* collect new list */
 
     strarray_init(&plan_names);
 
-    dir = opendir(library->path);
-    if (dir == NULL) {
-        fprintf(stderr, "failed to opendir '%s': %s\n",
-                library->path, strerror(errno));
-        return -1;
+    for (i = 0; i < library->num_plans; ++i) {
+        entry = &library->plans[i];
+
+        if (!plan_is_disabled(entry, now))
+            strarray_append(&plan_names, entry->name);
     }
 
-    while ((ent = readdir(dir)) != NULL) {
-        if (!is_valid_plan_name(ent->d_name))
-            continue;
-
-        snprintf(path, sizeof(path), "%s/%s", library->path, ent->d_name);
-        ret = stat(path, &st);
-        if (ret < 0) {
-            fprintf(stderr, "failed to stat '%s': %s\n",
-                    path, strerror(errno));
-            continue;
-        }
-
-        if (!S_ISREG(st.st_mode))
-            continue;
-
-        if (plan_name_is_disabled(library, ent->d_name, now))
-            continue;
-
-        strarray_append(&plan_names, ent->d_name);
-    }
-
-    closedir(dir);
-
+    if (library->plan_names != NULL)
+        free(library->plan_names);
     library->plan_names = pg_encode_array(&plan_names);
 
     strarray_free(&plan_names);
