@@ -65,9 +65,22 @@ static void setup_signal_handlers(void) {
     sigaction(SIGCHLD, &sa, NULL);
 }
 
-static int start_job(struct instance *instance, struct job *job,
-                     struct plan *plan) {
+static int start_job(struct instance *instance, struct job *job) {
     int ret;
+    struct plan *plan;
+
+    ret = library_get(instance->library, job->plan_name, &plan);
+    if (ret != 0) {
+        fprintf(stderr, "library_get('%s') failed\n", job->plan_name);
+        job_rollback(&job);
+        return ret;
+    }
+
+    ret = job_set_progress(job, 0, plan->timeout);
+    if (ret < 0) {
+        job_rollback(&job);
+        return ret;
+    }
 
     ret = workplace_start(instance->workplace, job, plan);
     if (ret != 0) {
@@ -76,28 +89,6 @@ static int start_job(struct instance *instance, struct job *job,
     }
 
     return 0;
-}
-
-static void claim_and_start_job(struct instance *instance, struct job *job) {
-    int ret;
-    struct plan *plan;
-
-    ret = library_get(instance->library, job->plan_name, &plan);
-    if (ret != 0) {
-        fprintf(stderr, "library_get('%s') failed\n", job->plan_name);
-        job_skip(&job);
-        return;
-    }
-
-    ret = job_claim(&job, plan->timeout);
-    if (ret <= 0) {
-        plan_put(&plan);
-        return;
-    }
-
-    ret = start_job(instance, job, plan);
-    if (ret != 0)
-        job_rollback(&job);
 }
 
 int main(int argc, char **argv) {
@@ -168,11 +159,11 @@ int main(int argc, char **argv) {
         while (!should_exit && !workplace_is_full(instance.workplace)) {
             struct job *job;
 
-            ret = queue_get(instance.queue, &job);
+            ret = queue_get(instance.queue, "5 minutes", &job);
             if (ret <= 0)
                 break;
 
-            claim_and_start_job(&instance, job);
+            start_job(&instance, job);
         }
 
         queue_flush(instance.queue);

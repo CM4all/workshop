@@ -372,26 +372,21 @@ static int get_next_job(struct queue *queue, struct job **job_r) {
     return 1;
 }
 
-int queue_get(struct queue *queue, struct job **job_r) {
+int queue_get(struct queue *queue, const char *timeout, struct job **job_r) {
+    int ret;
+    struct job *job;
+
     if (queue->result == NULL ||
         queue->result_row >= PQntuples(queue->result))
         return 0;
 
-    return get_next_job(queue, job_r);
-}
-
-int job_claim(struct job **job_r, const char *timeout) {
-    struct job *job;
-    int ret;
-
-    assert(job_r != NULL);
-    assert(*job_r != NULL);
-
-    job = *job_r;
+    ret = get_next_job(queue, &job);
+    if (ret <= 0)
+        return ret;
 
     log(6, "attempting to claim job %s\n", job->id);
 
-    ret = pg_claim_job(job->queue->conn, job->id, job->queue->node_name,
+    ret = pg_claim_job(queue->conn, job->id, queue->node_name,
                        timeout);
     if (ret < 0) {
         free_job(job_r);
@@ -406,11 +401,8 @@ int job_claim(struct job **job_r, const char *timeout) {
 
     log(6, "job %s claimed\n", job->id);
 
-    return ret;
-}
-
-void job_skip(struct job **job_r) {
-    free_job(job_r);
+    *job_r = job;
+    return 1;
 }
 
 int job_set_progress(struct job *job, unsigned progress,

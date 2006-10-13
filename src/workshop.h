@@ -83,11 +83,7 @@ void queue_flush(struct queue *queue);
 int queue_fill(struct queue *queue, const char *plans_include,
                const char *plans_exclude);
 
-int queue_get(struct queue *queue, struct job **job_r);
-
-int job_claim(struct job **job_r, const char *timeout);
-
-void job_skip(struct job **job_r);
+int queue_get(struct queue *queue, const char *timeout, struct job **job_r);
 
 int job_set_progress(struct job *job, unsigned progress,
                      const char *timeout);
