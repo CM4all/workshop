@@ -82,8 +82,8 @@ const char *workplace_plan_names(struct workplace *workplace) {
 
     for (operator = workplace->head; operator != NULL;
          operator = operator->next)
-        if (!strarray_contains(&plan_names, operator->plan->name))
-            strarray_append(&plan_names, operator->plan->name);
+        if (!strarray_contains(&plan_names, operator->job->plan_name))
+            strarray_append(&plan_names, operator->job->plan_name);
 
     if (workplace->plan_names != NULL)
         free(workplace->plan_names);
@@ -271,7 +271,7 @@ static int expand_operator_vars(const struct operator *operator,
 
     strhash_set(vars, "0", argv->values[0]);
     strhash_set(vars, "JOB", operator->job->id);
-    strhash_set(vars, "PLAN", operator->plan->name);
+    strhash_set(vars, "PLAN", operator->job->plan_name);
 
     for (i = 1; i < argv->num; ++i) {
         assert(argv->values[i] != NULL);
@@ -323,7 +323,7 @@ int workplace_start(struct workplace *workplace,
         char ident[256];
 
         snprintf(ident, sizeof(ident), "%s[%s]",
-                 plan->name, job->id);
+                 job->plan_name, job->id);
 
         ret = syslog_open(workplace->node_name, ident, 1,
                           job->syslog_server,
@@ -466,7 +466,7 @@ int workplace_start(struct workplace *workplace,
     ++workplace->num_operators;
 
     log(2, "job %s (plan '%s') running as pid %d\n",
-        job->id, plan->name, operator->pid);
+        job->id, job->plan_name, operator->pid);
 
     return 0;
 }

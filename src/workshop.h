@@ -104,7 +104,6 @@ struct library;
 /** a plan describes how to perform a specific job */
 struct plan {
     struct library *library;
-    char *name;
     struct strarray argv;
     char *timeout, *chroot;
     uid_t uid;

@@ -47,9 +47,6 @@ static void free_plan(struct plan **plan_r) {
 
     assert(plan->ref == 0);
 
-    if (plan->name != NULL)
-        free(plan->name);
-
     strarray_free(&plan->argv);
 
     if (plan->timeout != NULL)
@@ -222,7 +219,7 @@ static int find_plan_by_name(struct library *library, const char *name) {
 
     for (i = 0; i < library->num_plans; ++i)
         if (library->plans[i].plan != NULL &&
-            strcmp(library->plans[i].plan->name, name) == 0)
+            strcmp(library->plans[i].name, name) == 0)
             return (int)i;
 
     return -1;
@@ -402,12 +399,6 @@ static int load_plan_config(const char *path, const char *name,
     plan->gid = 65534;
     plan->priority = 10;
 
-    plan->name = strdup(name);
-    if (plan->name == NULL) {
-        free_plan(&plan);
-        return ENOMEM;
-    }
-
     file = fopen(path, "r");
     if (file == NULL) {
         fprintf(stderr, "failed to open file '%s': %s\n",
@@ -452,11 +443,12 @@ static struct plan_entry *add_plan_entry(struct library *library,
 }
 
 static int add_plan(struct library *library,
+                    const char *name,
                     struct plan *plan,
                     time_t mtime) {
     struct plan_entry *entry;
 
-    entry = add_plan_entry(library, plan->name);
+    entry = add_plan_entry(library, name);
     entry->plan = plan;
     entry->mtime = mtime;
 
@@ -523,7 +515,7 @@ int library_get(struct library *library, const char *name,
 
         plan->library = library;
 
-        ret = add_plan(library, plan, st.st_mtime);
+        ret = add_plan(library, name, plan, st.st_mtime);
         if (ret != 0) {
             free_plan(&plan);
             return ret;
