@@ -442,19 +442,6 @@ static struct plan_entry *add_plan_entry(struct library *library,
     return entry;
 }
 
-static int add_plan(struct library *library,
-                    const char *name,
-                    struct plan *plan,
-                    time_t mtime) {
-    struct plan_entry *entry;
-
-    entry = add_plan_entry(library, name);
-    entry->plan = plan;
-    entry->mtime = mtime;
-
-    return 0;
-}
-
 int library_get(struct library *library, const char *name,
                 struct plan **plan_r) {
     int ret;
@@ -508,18 +495,16 @@ int library_get(struct library *library, const char *name,
         /* not in cache, load it from disk */
 
         log(6, "loading plan '%s'\n", name);
-        
+
         ret = load_plan_config(path, name, &plan);
         if (ret != 0)
             return ret;
 
         plan->library = library;
 
-        ret = add_plan(library, name, plan, st.st_mtime);
-        if (ret != 0) {
-            free_plan(&plan);
-            return ret;
-        }
+        entry = add_plan_entry(library, name);
+        entry->plan = plan;
+        entry->mtime = st.st_mtime;
     }
 
     if (plan->argv.num == 0 ||
