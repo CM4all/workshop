@@ -178,14 +178,15 @@ const char *library_plan_names(struct library *library) {
         : library->plan_names;
 }
 
-static int find_plan_by_name(struct library *library, const char *name) {
+static struct plan_entry *find_plan_by_name(struct library *library,
+                                            const char *name) {
     unsigned i;
 
     for (i = 0; i < library->num_plans; ++i)
         if (strcmp(library->plans[i].name, name) == 0)
-            return (int)i;
+            return &library->plans[i];
 
-    return -1;
+    return NULL;
 }
 
 static int find_plan_index(struct library *library,
@@ -419,11 +420,11 @@ static void disable_plan(struct library *library,
 }
 
 static struct plan_entry *make_plan_entry(struct library *library, const char *name) {
-    int ret;
+    struct plan_entry *entry;
 
-    ret = find_plan_by_name(library, name);
-    if (ret >= 0)
-        return &library->plans[ret];
+    entry = find_plan_by_name(library, name);
+    if (entry != NULL)
+        return entry;
 
     return add_plan_entry(library, name);
 }
@@ -674,8 +675,8 @@ int library_get(struct library *library, const char *name,
     if (!is_valid_plan_name(name))
         return ENOENT;
 
-    ret = find_plan_by_name(library, name);
-    if (ret < 0)
+    entry = find_plan_by_name(library, name);
+    if (entry == NULL)
         return ENOENT;
 
     entry = &library->plans[ret];
