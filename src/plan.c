@@ -354,14 +354,12 @@ static int parse_plan_config(struct plan *plan, FILE *file) {
     return 0;
 }
 
-static int load_plan_config(const char *path, const char *name,
-                            struct plan **plan_r) {
+static int load_plan_config(const char *path, struct plan **plan_r) {
     struct plan *plan;
     FILE *file;
     int ret;
 
     assert(path != NULL);
-    assert(is_valid_plan_name(name));
 
     plan = calloc(1, sizeof(*plan));
     if (plan == NULL)
@@ -536,7 +534,7 @@ static int load_plan_entry(struct library *library,
     snprintf(path, sizeof(path), "%s/%s",
              library->path, entry->name);
 
-    ret = load_plan_config(path, entry->name, &entry->plan);
+    ret = load_plan_config(path, &entry->plan);
     if (ret != 0) {
         disable_plan(library, entry, 600);
         return ret;
