@@ -566,6 +566,8 @@ int library_get(struct library *library, const char *name,
         }
 
         entry->plan->library = library;
+
+        library->next_update = 0;
     }
 
     ret = validate_plan(entry);
