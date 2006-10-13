@@ -9,6 +9,7 @@
 
 #include "workshop.h"
 #include "pg-util.h"
+#include "plan-internal.h"
 
 #include <assert.h>
 #include <sys/stat.h>
@@ -17,7 +18,6 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
-#include <pwd.h>
 #include <time.h>
 #include <dirent.h>
 
@@ -44,7 +44,7 @@ struct library {
     time_t mtime;
 };
 
-static void free_plan(struct plan **plan_r) {
+void plan_free(struct plan **plan_r) {
     struct plan *plan;
 
     assert(plan_r != NULL);
@@ -125,7 +125,7 @@ void library_close(struct library **library_r) {
             if (entry->name != NULL)
                 free(entry->name);
             if (entry->plan != NULL)
-                free_plan(&entry->plan);
+                plan_free(&entry->plan);
         }
 
         free(library->plans);
@@ -221,174 +221,6 @@ static int is_valid_plan_name(const char *name) {
     return 1;
 }
 
-/** parse the next word from the writable string */
-static char *next_word(char **pp) {
-    char *word;
-
-    while (**pp > 0 && **pp <= 0x20)
-        ++(*pp);
-
-    if (**pp == 0)
-        return NULL;
-
-    if (**pp == '"') {
-        word = ++(*pp);
-        while (**pp != 0 && **pp != '"')
-            ++(*pp);
-    } else {
-        word = *pp;
-        while (**pp < 0 || **pp > 0x20)
-            ++(*pp);
-    }
-
-    if (**pp == 0)
-        return word;
-
-    **pp = 0;
-    ++(*pp);
-
-    return word;
-}
-
-static int parse_plan_config(struct plan *plan, FILE *file) {
-    char line[1024], *p, *key, *value;
-    unsigned line_no = 0;
-
-    while (fgets(line, sizeof(line), file) != NULL) {
-        ++line_no;
-
-        p = line;
-        key = next_word(&p);
-        if (key == NULL || *key == '#')
-            continue;
-
-        value = next_word(&p);
-        if (value == NULL) {
-            fprintf(stderr, "line %u: value missing after keyword\n",
-                    line_no);
-            return -1;
-        }
-
-        if (strcmp(key, "exec") == 0) {
-            if (plan->argv.num > 0) {
-                fprintf(stderr, "line %u: 'exec' already specified\n",
-                        line_no);
-                return -1;
-            }
-
-            if (*value == 0) {
-                fprintf(stderr, "line %u: empty executable\n",
-                        line_no);
-                return -1;
-            }
-
-            while (value != NULL) {
-                strarray_append(&plan->argv, value);
-                value = next_word(&p);
-            }
-        } else {
-            p = next_word(&p);
-            if (p != NULL) {
-                fprintf(stderr, "line %u: too many arguments\n",
-                        line_no);
-                return -1;
-            }
-
-            if (strcmp(key, "timeout") == 0) {
-                plan->timeout = strdup(value);
-                if (plan->timeout == NULL)
-                    return errno;
-            } else if (strcmp(key, "chroot") == 0) {
-                int ret;
-                struct stat st;
-
-                ret = stat(value, &st);
-                if (ret < 0) {
-                    fprintf(stderr, "line %u: failed to stat '%s': %s\n",
-                            line_no, value, strerror(errno));
-                    return -1;
-                }
-
-                if (!S_ISDIR(st.st_mode)) {
-                    fprintf(stderr, "line %u: not a directory: %s\n",
-                            line_no, value);
-                    return -1;
-                }
-
-                plan->chroot = strdup(value);
-                if (plan->chroot == NULL)
-                    return errno;
-            } else if (strcmp(key, "user") == 0) {
-                struct passwd *pw;
-
-                pw = getpwnam(value);
-                if (pw == NULL) {
-                    fprintf(stderr, "line %u: no such user '%s'\n",
-                            line_no, value);
-                    return -1;
-                }
-
-                plan->uid = pw->pw_uid;
-                plan->gid = pw->pw_gid;
-            } else if (strcmp(key, "nice") == 0) {
-                plan->priority = atoi(value);
-            } else {
-                fprintf(stderr, "line %u: unknown option '%s'\n",
-                        line_no, key);
-                return -1;
-            }
-        }
-    }
-
-    if (plan->argv.num == 0) {
-        fprintf(stderr, "no 'exec'\n");
-        return -1;
-    }
-
-    if (plan->timeout == NULL) {
-        plan->timeout = strdup("10 minutes");
-        if (plan->timeout == NULL)
-            return errno;
-    }
-
-    return 0;
-}
-
-static int load_plan_config(const char *path, struct plan **plan_r) {
-    struct plan *plan;
-    FILE *file;
-    int ret;
-
-    assert(path != NULL);
-
-    plan = calloc(1, sizeof(*plan));
-    if (plan == NULL)
-        return ENOMEM;
-
-    plan->uid = 65534;
-    plan->gid = 65534;
-    plan->priority = 10;
-
-    file = fopen(path, "r");
-    if (file == NULL) {
-        fprintf(stderr, "failed to open file '%s': %s\n",
-                path, strerror(errno));
-        free_plan(&plan);
-        return -1;
-    }
-
-    ret = parse_plan_config(plan, file);
-    fclose(file);
-    if (ret != 0) {
-        fprintf(stderr, "parsing file '%s' failed\n", path);
-        free_plan(&plan);
-        return ret;
-    }
-
-    *plan_r = plan;
-    return 0;
-}
-
 static struct plan_entry *add_plan_entry(struct library *library,
                                          const char *name) {
     struct plan_entry *entry;
@@ -452,7 +284,7 @@ static int check_plan_mtime(struct library *library, struct plan_entry *entry) {
             /* free memory of old plan only if there are no
                references on it anymore */
             if (entry->plan->ref == 0)
-                free_plan(&entry->plan);
+                plan_free(&entry->plan);
             else
                 entry->plan = NULL;
         }
@@ -470,7 +302,7 @@ static int check_plan_mtime(struct library *library, struct plan_entry *entry) {
             /* free memory of old plan only if there are no
                references on it anymore */
             if (entry->plan->ref == 0)
-                free_plan(&entry->plan);
+                plan_free(&entry->plan);
             else
                 entry->plan = NULL;
         }
@@ -534,7 +366,7 @@ static int load_plan_entry(struct library *library,
     snprintf(path, sizeof(path), "%s/%s",
              library->path, entry->name);
 
-    ret = load_plan_config(path, &entry->plan);
+    ret = plan_load(path, &entry->plan);
     if (ret != 0) {
         disable_plan(library, entry, 600);
         return ret;
@@ -579,7 +411,7 @@ static void library_remove_plan(struct library *library, unsigned i) {
         free(entry->name);
 
     if (entry->plan != NULL && entry->plan->ref == 0)
-        free_plan(&entry->plan);
+        plan_free(&entry->plan);
 
     --library->num_plans;
     memmove(entry, entry + 1,
@@ -714,6 +546,6 @@ void plan_put(struct plan **plan_r) {
         /* free "old" plans which have refcount 0 */
         int i = find_plan_index(library, plan);
         if (i < 0)
-            free_plan(&plan);
+            plan_free(&plan);
     }
 }
