@@ -22,6 +22,7 @@
 #include <dirent.h>
 
 struct plan_entry {
+    char *name;
     struct plan *plan;
     time_t mtime;
 };
@@ -116,6 +117,8 @@ void library_close(struct library **library_r) {
 
         for (i = 0; i < library->num_plans; ++i) {
             struct plan_entry *entry = &library->plans[i];
+            if (entry->name != NULL)
+                free(entry->name);
             if (entry->plan != NULL)
                 free_plan(&entry->plan);
         }
@@ -425,10 +428,11 @@ static int load_plan_config(const char *path, const char *name,
     return 0;
 }
 
-static int add_plan(struct library *library,
-                    struct plan *plan,
-                    time_t mtime) {
+static struct plan_entry *add_plan_entry(struct library *library,
+                                         const char *name) {
     struct plan_entry *entry;
+
+    assert(is_valid_plan_name(name));
 
     if (library->num_plans >= library->max_plans) {
         library->max_plans += 16;
@@ -439,10 +443,22 @@ static int add_plan(struct library *library,
     }
 
     entry = &library->plans[library->num_plans++];
-    *entry = (struct plan_entry) {
-        .plan = plan,
-        .mtime = mtime,
-    };
+    memset(entry, 0, sizeof(*entry));
+    entry->name = strdup(name);
+    if (entry->name == NULL)
+        abort();
+
+    return entry;
+}
+
+static int add_plan(struct library *library,
+                    struct plan *plan,
+                    time_t mtime) {
+    struct plan_entry *entry;
+
+    entry = add_plan_entry(library, plan->name);
+    entry->plan = plan;
+    entry->mtime = mtime;
 
     return 0;
 }
