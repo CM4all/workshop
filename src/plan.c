@@ -507,10 +507,14 @@ static int check_plan_mtime(struct library *library, struct plan_entry *entry) {
     if (st.st_mtime != entry->mtime) {
         entry->disabled_until = 0;
 
-        if (entry->plan != NULL && entry->plan->ref == 0)
+        if (entry->plan != NULL) {
             /* free memory of old plan only if there are no
                references on it anymore */
-            free_plan(&entry->plan);
+            if (entry->plan->ref == 0)
+                free_plan(&entry->plan);
+            else
+                entry->plan = NULL;
+        }
 
         entry->mtime = st.st_mtime;
     }
