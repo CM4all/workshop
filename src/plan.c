@@ -623,6 +623,8 @@ static int library_update_plans(struct library *library) {
         struct plan_entry *entry = &library->plans[--i];
 
         if (entry->generation != library->generation) {
+            log(3, "removed plan '%s'\n", entry->name);
+
             library_remove_plan(library, i);
             library->next_update = 0;
         }
