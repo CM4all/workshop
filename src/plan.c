@@ -24,6 +24,7 @@
 struct plan_entry {
     char *name;
     struct plan *plan;
+    int deinstalled;
     time_t mtime, disabled_until;
 };
 
@@ -535,11 +536,16 @@ int library_get(struct library *library, const char *name,
 
     ret = stat(plan->argv.values[0], &st);
     if (ret < 0) {
-        fprintf(stderr, "failed to stat '%s': %s\n",
-                plan->argv.values[0], strerror(errno));
+        if (errno != ENOENT || !entry->deinstalled)
+            fprintf(stderr, "failed to stat '%s': %s\n",
+                    plan->argv.values[0], strerror(errno));
+        if (errno == ENOENT)
+            entry->deinstalled = 1;
         disable_plan(library, entry, 10);
         return ENOENT;
     }
+
+    entry->deinstalled = 0;
 
     *plan_r = plan;
     ++plan->ref;
