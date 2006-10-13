@@ -541,7 +541,8 @@ int library_get(struct library *library, const char *name,
                     plan->argv.values[0], strerror(errno));
         if (errno == ENOENT)
             entry->deinstalled = 1;
-        disable_plan(library, entry, 10);
+        else
+            disable_plan(library, entry, 60);
         return ENOENT;
     }
 
