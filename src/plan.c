@@ -679,8 +679,6 @@ int library_get(struct library *library, const char *name,
     if (entry == NULL)
         return ENOENT;
 
-    entry = &library->plans[ret];
-
     ret = library_update_plan(library, entry);
     if (ret != 0)
         return ret;
