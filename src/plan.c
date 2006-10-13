@@ -310,6 +310,12 @@ static int parse_plan_config(struct plan *plan, FILE *file) {
                 return -1;
             }
 
+            if (*value == 0) {
+                fprintf(stderr, "line %u: empty executable\n",
+                        line_no);
+                return -1;
+            }
+
             while (value != NULL) {
                 strarray_append(&plan->argv, value);
                 value = next_word(&p);
@@ -520,11 +526,8 @@ int library_get(struct library *library, const char *name,
         entry->mtime = st.st_mtime;
     }
 
-    if (plan->argv.num == 0 ||
-        plan->argv.values[0] == NULL || plan->argv.values[0][0] == 0) {
-        disable_plan(library, entry, 600);
-        return ENOENT;
-    }
+    assert(plan->argv.num > 0);
+    assert(plan->argv.values[0] != NULL && plan->argv.values[0][0] != 0);
 
     /* check if the executable exists; it would not if the Debian
        package has been deinstalled, but the plan's config file is
