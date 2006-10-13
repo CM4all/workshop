@@ -37,9 +37,11 @@ struct library {
     time_t next_plans_check;
     unsigned generation;
 
+    char *names;
+    time_t next_names_update;
+
     unsigned ref;
-    char *plan_names;
-    time_t mtime, next_update;
+    time_t mtime;
 };
 
 static void free_plan(struct plan **plan_r) {
@@ -129,8 +131,8 @@ void library_close(struct library **library_r) {
         free(library->plans);
     }
 
-    if (library->plan_names)
-        free(library->plan_names);
+    if (library->names)
+        free(library->names);
 
     free(library);
 }
@@ -145,10 +147,10 @@ static int update_plan_names(struct library *library) {
     unsigned i;
     const struct plan_entry *entry;
 
-    if (library->plan_names != NULL && now < library->next_update)
+    if (library->names != NULL && now < library->next_names_update)
         return 0;
 
-    library->next_update = now + 60;
+    library->next_names_update = now + 60;
 
     /* collect new list */
 
@@ -161,9 +163,9 @@ static int update_plan_names(struct library *library) {
             strarray_append(&plan_names, entry->name);
     }
 
-    if (library->plan_names != NULL)
-        free(library->plan_names);
-    library->plan_names = pg_encode_array(&plan_names);
+    if (library->names != NULL)
+        free(library->names);
+    library->names = pg_encode_array(&plan_names);
 
     strarray_free(&plan_names);
 
@@ -173,9 +175,9 @@ static int update_plan_names(struct library *library) {
 const char *library_plan_names(struct library *library) {
     update_plan_names(library);
 
-    return library->plan_names == NULL
+    return library->names == NULL
         ? "{}"
-        : library->plan_names;
+        : library->names;
 }
 
 static struct plan_entry *find_plan_by_name(struct library *library,
@@ -416,7 +418,7 @@ static void disable_plan(struct library *library,
                          struct plan_entry *entry,
                          time_t duration) {
     entry->disabled_until = time(NULL) + duration;
-    library->next_update = 0;
+    library->next_names_update = 0;
 }
 
 static struct plan_entry *make_plan_entry(struct library *library, const char *name) {
@@ -542,7 +544,7 @@ static int load_plan_entry(struct library *library,
 
     entry->plan->library = library;
 
-    library->next_update = 0;
+    library->next_names_update = 0;
 
     return 0;
 }
@@ -626,7 +628,7 @@ static int library_update_plans(struct library *library) {
             log(3, "removed plan '%s'\n", entry->name);
 
             library_remove_plan(library, i);
-            library->next_update = 0;
+            library->next_names_update = 0;
         }
     }
 
