@@ -84,7 +84,7 @@ static void claim_and_start_job(struct instance *instance, struct job *job) {
 
     ret = library_get(instance->library, job->plan_name, &plan);
     if (ret != 0) {
-        fprintf(stderr, "library_get() failed\n");
+        fprintf(stderr, "library_get('%s') failed\n", job->plan_name);
         job_skip(&job);
         return;
     }
