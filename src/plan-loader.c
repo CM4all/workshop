@@ -184,3 +184,25 @@ int plan_load(const char *path, struct plan **plan_r) {
     *plan_r = plan;
     return 0;
 }
+
+void plan_free(struct plan **plan_r) {
+    struct plan *plan;
+
+    assert(plan_r != NULL);
+    assert(*plan_r != NULL);
+
+    plan = *plan_r;
+    *plan_r = NULL;
+
+    assert(plan->ref == 0);
+
+    strarray_free(&plan->argv);
+
+    if (plan->timeout != NULL)
+        free(plan->timeout);
+
+    if (plan->chroot != NULL)
+        free(plan->chroot);
+
+    free(plan);
+}
