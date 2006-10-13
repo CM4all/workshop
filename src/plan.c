@@ -536,6 +536,33 @@ static int validate_plan(struct plan_entry *entry) {
     return 0;
 }
 
+static int load_plan_entry(struct library *library,
+                           struct plan_entry *entry) {
+    int ret;
+    char path[1024];
+
+    assert(entry->name != NULL);
+    assert(entry->plan == NULL);
+    assert(entry->mtime != 0);
+
+    log(6, "loading plan '%s'\n", entry->name);
+
+    snprintf(path, sizeof(path), "%s/%s",
+             library->path, entry->name);
+
+    ret = load_plan_config(path, entry->name, &entry->plan);
+    if (ret != 0) {
+        disable_plan(library, entry, 600);
+        return ret;
+    }
+
+    entry->plan->library = library;
+
+    library->next_update = 0;
+
+    return 0;
+}
+
 int library_get(struct library *library, const char *name,
                 struct plan **plan_r) {
     int ret;
@@ -552,22 +579,9 @@ int library_get(struct library *library, const char *name,
         return ret;
 
     if (entry->plan == NULL) {
-        char path[1024];
-
-        log(6, "loading plan '%s'\n", name);
-
-        snprintf(path, sizeof(path), "%s/%s",
-                 library->path, entry->name);
-
-        ret = load_plan_config(path, name, &entry->plan);
-        if (ret != 0) {
-            disable_plan(library, entry, 600);
+        ret = load_plan_entry(library, entry);
+        if (ret != 0)
             return ret;
-        }
-
-        entry->plan->library = library;
-
-        library->next_update = 0;
     }
 
     ret = validate_plan(entry);
