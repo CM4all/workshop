@@ -24,7 +24,7 @@
 struct plan_entry {
     char *name;
     struct plan *plan;
-    time_t mtime;
+    time_t mtime, disabled_until;
 };
 
 struct library {
@@ -442,6 +442,13 @@ static struct plan_entry *add_plan_entry(struct library *library,
     return entry;
 }
 
+static void disable_plan(struct library *library,
+                         struct plan_entry *entry,
+                         time_t duration) {
+    entry->disabled_until = time(NULL) + duration;
+    library->next_update = 0;
+}
+
 int library_get(struct library *library, const char *name,
                 struct plan **plan_r) {
     int ret;
@@ -490,6 +497,12 @@ int library_get(struct library *library, const char *name,
 
             entry->mtime = st.st_mtime;
             entry->plan = plan;
+        } else if (entry->disabled_until > 0) {
+            if (time(NULL) < entry->disabled_until)
+                /* this plan is temporarily disabled due to previous errors */
+                return ENOENT;
+
+            entry->disabled_until = 0;
         }
     } else {
         /* not in cache, load it from disk */
@@ -508,8 +521,10 @@ int library_get(struct library *library, const char *name,
     }
 
     if (plan->argv.num == 0 ||
-        plan->argv.values[0] == NULL || plan->argv.values[0][0] == 0)
+        plan->argv.values[0] == NULL || plan->argv.values[0][0] == 0) {
+        disable_plan(library, entry, 600);
         return ENOENT;
+    }
 
     /* check if the executable exists; it would not if the Debian
        package has been deinstalled, but the plan's config file is
@@ -519,6 +534,7 @@ int library_get(struct library *library, const char *name,
     if (ret < 0) {
         fprintf(stderr, "failed to stat '%s': %s\n",
                 plan->argv.values[0], strerror(errno));
+        disable_plan(library, entry, 10);
         return ENOENT;
     }
 
