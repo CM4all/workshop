@@ -439,9 +439,9 @@ int job_rollback(struct job **job_r) {
 
     pg_rollback_job(job->queue->conn, job->id);
 
-    free_job(&job);
-
     pg_notify(job->queue->conn);
+
+    free_job(&job);
 
     return 0;
 }
