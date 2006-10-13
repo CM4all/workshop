@@ -219,8 +219,7 @@ static int find_plan_by_name(struct library *library, const char *name) {
     unsigned i;
 
     for (i = 0; i < library->num_plans; ++i)
-        if (library->plans[i].plan != NULL &&
-            strcmp(library->plans[i].name, name) == 0)
+        if (strcmp(library->plans[i].name, name) == 0)
             return (int)i;
 
     return -1;
@@ -484,9 +483,18 @@ int library_get(struct library *library, const char *name,
         entry = &library->plans[ret];
         plan = entry->plan;
 
-        assert(plan != NULL);
+        if (st.st_mtime != entry->mtime)
+            entry->disabled_until = 0;
 
-        if (st.st_mtime != entry->mtime) {
+        if (entry->disabled_until > 0) {
+            if (time(NULL) < entry->disabled_until)
+                /* this plan is temporarily disabled due to previous errors */
+                return ENOENT;
+
+            entry->disabled_until = 0;
+        }
+
+        if (entry->plan == NULL || st.st_mtime != entry->mtime) {
             /* .. but it's not up to date */
 
             log(6, "reloading plan '%s'\n", name);
@@ -497,34 +505,31 @@ int library_get(struct library *library, const char *name,
 
             plan->library = library;
 
-            if (entry->plan->ref == 0)
+            if (entry->plan != NULL && entry->plan->ref == 0)
                 /* free memory of old plan only if there are no
                    references on it anymore */
                 free_plan(&entry->plan);
 
             entry->mtime = st.st_mtime;
             entry->plan = plan;
-        } else if (entry->disabled_until > 0) {
-            if (time(NULL) < entry->disabled_until)
-                /* this plan is temporarily disabled due to previous errors */
-                return ENOENT;
-
-            entry->disabled_until = 0;
         }
     } else {
         /* not in cache, load it from disk */
 
         log(6, "loading plan '%s'\n", name);
 
+        entry = add_plan_entry(library, name);
+        entry->mtime = st.st_mtime;
+
         ret = load_plan_config(path, name, &plan);
-        if (ret != 0)
+        if (ret != 0) {
+            disable_plan(library, entry, 600);
             return ret;
+        }
 
         plan->library = library;
 
-        entry = add_plan_entry(library, name);
         entry->plan = plan;
-        entry->mtime = st.st_mtime;
     }
 
     assert(plan->argv.num > 0);
