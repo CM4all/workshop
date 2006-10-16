@@ -75,6 +75,8 @@ int queue_open(const char *node_name,
 
 void queue_close(struct queue **queue_r);
 
+void queue_reload(struct queue *queue);
+
 int queue_next_scheduled(struct queue *queue, const char *plans_include,
                          int *span_r);
 

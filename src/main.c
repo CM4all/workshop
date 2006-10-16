@@ -32,11 +32,16 @@ static void config_get(struct config *config, int argc, char **argv) {
     parse_cmdline(config, argc, argv);
 }
 
-static int should_exit = 0, child_exited = 0;
+static int should_exit = 0, should_reload = 0, child_exited = 0;
 
 static void exit_signal_handler(int sig) {
     (void)sig;
     should_exit = 1;
+}
+
+static void reload_signal_handler(int sig) {
+    (void)sig;
+    should_reload = 1;
 }
 
 static void child_signal_handler(int sig) {
@@ -53,9 +58,11 @@ static void setup_signal_handlers(void) {
     sigaction(SIGINT, &sa, NULL);
     sigaction(SIGQUIT, &sa, NULL);
 
+    sa.sa_handler = reload_signal_handler;
+    sigaction(SIGHUP, &sa, NULL);
+
     sa.sa_handler = SIG_IGN;
     sa.sa_flags = SA_RESTART;
-    sigaction(SIGHUP, &sa, NULL);
     sigaction(SIGALRM, &sa, NULL);
     sigaction(SIGUSR1, &sa, NULL);
     sigaction(SIGUSR2, &sa, NULL);
@@ -183,6 +190,14 @@ int main(int argc, char **argv) {
         if (child_exited) {
             child_exited = 0;
             workplace_waitpid(instance.workplace);
+        }
+
+        /* reload? */
+
+        if (should_reload) {
+            log(4, "reloading\n");
+            queue_reload(instance.queue);
+            should_reload = 0;
         }
 
         /* informational message */

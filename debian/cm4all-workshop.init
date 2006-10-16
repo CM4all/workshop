@@ -52,6 +52,11 @@ case "$1" in
         killproc -p "$PIDFILE" /usr/sbin/cm4all-workshop
 	log_end_msg $?
 	;;
+    reload)
+	log_begin_msg "Reloading CM4all Workshop daemon..."
+        killproc -p "$PIDFILE" /usr/sbin/cm4all-workshop SIGUP
+	log_end_msg $?
+	;;
     force-reload)
 	$0 restart
 	;;
@@ -60,7 +65,7 @@ case "$1" in
 	$0 start
 	;;
     *)
-	log_success_msg "Usage: /etc/init.d/cm4all-workshop {start|stop|force-reload|restart}"
+	log_success_msg "Usage: /etc/init.d/cm4all-workshop {start|stop|reload|force-reload|restart}"
 	exit 1
 	;;
 esac

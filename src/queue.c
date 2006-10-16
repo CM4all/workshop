@@ -151,6 +151,12 @@ void queue_close(struct queue **queue_r) {
     free(queue);
 }
 
+void queue_reload(struct queue *queue) {
+    queue->ready = 1;
+    queue->next_scheduled = 0;
+    queue->next_scheduled_valid = 0;
+}
+
 static int queue_reconnect(struct queue *queue) {
     int ret;
 
