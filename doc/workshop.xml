@@ -381,7 +381,8 @@ nice 5</programlisting>
                 <varname>exit_status</varname>
               </entry>
               <entry>
-                Exit-Code des Plan-Prozesses.
+                Exit-Code des Plan-Prozesses.  Negativ, wenn der
+                Prozess durch ein Signal gekillt wurde.
               </entry>
             </row>
           </tbody>
