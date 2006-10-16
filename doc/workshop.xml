@@ -27,6 +27,50 @@
 
   <chapter id="installation">
     <title>Installation und Konfiguration</title>
+
+    <orderedlist>
+      <listitem>
+        <para>
+          PostgreSQL-Datenbank für die Workshop-Queue erstellen.
+        </para>
+      </listitem>
+
+      <listitem>
+        <programlisting>apt-get install cm4all-workshop</programlisting>
+      </listitem>
+
+      <listitem>
+        <para>
+          Datei
+          <filename>/usr/share/cm4all/workshop/sql/jobs.sql</filename>
+          mit <filename>psql</filename> ausführen, um die Tabelle
+          <filename>jobs</filename> zu erstellen.
+        </para>
+      </listitem>
+
+      <listitem>
+        <para>
+          Folgender Befehl gibt dem Workshop-Daemon die nötigen Rechte
+          (hier als Beispiel mit Username "workshop"):
+        </para>
+        <programlisting>GRANT SELECT, UPDATE ON jobs TO workshop</programlisting>
+      </listitem>
+
+      <listitem>
+        <para>
+          Datei <filename>/etc/default/cm4all-workshop</filename>
+          editieren und die Variable <varname>DATABASE</varname>
+          setzen (<ulink
+          url="http://www.postgresql.org/docs/8.1/static/libpq.html#LIBPQ-CONNECT">Dokumentation
+          dazu</ulink>).
+        </para>
+      </listitem>
+
+      <listitem>
+        <programlisting>invoke-rc.d cm4all-workshop start</programlisting>
+      </listitem>
+    </orderedlist>
+
     <para>
       Siehe Debian-Paket.
     </para>
