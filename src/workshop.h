@@ -10,7 +10,7 @@
 
 #include <sys/types.h>
 
-#define VERSION "0.1.0"
+#define VERSION "0.1.2"
 
 
 /* config.c */
