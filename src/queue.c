@@ -162,8 +162,10 @@ static int queue_reconnect(struct queue *queue) {
 
     /* unregister old socket */
 
-    if (queue->fd >= 0)
+    if (queue->fd >= 0) {
         poll_remove(queue->poll, queue->fd);
+        queue->fd = -1;
+    }
 
     /* reconnect */
 
@@ -171,7 +173,6 @@ static int queue_reconnect(struct queue *queue) {
     PQreset(queue->conn);
 
     if (PQstatus(queue->conn) != CONNECTION_OK) {
-        queue->fd = -1;
         log(2, "reconnect to PostgreSQL failed: %s\n",
             PQerrorMessage(queue->conn));
         return -1;
