@@ -53,7 +53,14 @@
           Folgender Befehl gibt dem Workshop-Daemon die nötigen Rechte
           (hier als Beispiel mit Username "workshop"):
         </para>
-        <programlisting>GRANT SELECT, UPDATE ON jobs TO workshop</programlisting>
+        <programlisting>GRANT SELECT, UPDATE ON jobs TO workshop;</programlisting>
+
+        <para>
+          Der Workshop-Client (Auftraggeber) benötigt folgende Rechte
+          (Username beispielsweise "workshop_client"):
+        </para>
+        <programlisting>GRANT INSERT, SELECT, DELETE ON jobs TO workshop_client;
+GRANT UPDATE, SELECT ON jobs_id_seq TO workshop_client;</programlisting>
       </listitem>
 
       <listitem>
