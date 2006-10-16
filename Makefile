@@ -3,7 +3,7 @@ LD = ld
 #CFLAGS = -O3
 CFLAGS = -O0 -g
 override CFLAGS += -Wall -W -Werror -std=gnu99 -Wmissing-prototypes -Wwrite-strings -Wcast-qual -Wfloat-equal -Wshadow -Wpointer-arith -Wbad-function-cast -Wsign-compare -Wmissing-declarations -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls -Wnested-externs -Winline -Wdisabled-optimization -Wno-long-long -Wstrict-prototypes -Wundef
-INCLUDES = -I/usr/include/cm4all/libfox-0
+INCLUDES =
 
 SOURCES = src/main.c src/config.c src/daemon.c \
 	src/poll.c src/syslog.c \
@@ -15,7 +15,7 @@ SOURCES = src/main.c src/config.c src/daemon.c \
 
 HEADERS = src/workshop.h src/syslog.h src/strarray.h src/strhash.h src/pg-util.h src/pg-queue.h
 OBJECTS = $(patsubst %.c,%.o,$(SOURCES))
-LIBS = -lcm4all-fox -lpq
+LIBS = -lpq
 
 all: src/cm4all-workshop doc/workshop.html
 
