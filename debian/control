@@ -2,7 +2,7 @@ Source: cm4all-workshop
 Section: non-free/admin
 Priority: optional
 Maintainer: Max Kellermann <mk@cm4all.com>
-Build-Depends: cdbs (>= 0.4.6), debhelper (>= 4), gcc (>= 4), libpq-dev (>= 8)
+Build-Depends: cdbs (>= 0.4.6), debhelper (>= 4), gcc (>= 4), libpq-dev (>= 8), xsltproc, docbook-xsl
 Standards-Version: 3.6.1
 
 Package: cm4all-workshop
