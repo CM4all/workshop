@@ -12,3 +12,12 @@ Description: Distributed job scheduler
  cm4all-workshop is a daemon which reads jobs from a database queue
  (PostgreSQL) and executes them.  Multiple instances distributed over
  a network can read the queue at the same time.
+
+Package: cm4all-workshop-doc
+Architecture: all
+Description: Documentation for cm4all-workshop
+ cm4all-workshop is a daemon which reads jobs from a database queue
+ (PostgreSQL) and executes them.  Multiple instances distributed over
+ a network can read the queue at the same time.
+ .
+ This package provides documentation.
