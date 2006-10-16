@@ -77,10 +77,6 @@ GRANT UPDATE, SELECT ON jobs_id_seq TO workshop_client;</programlisting>
         <programlisting>invoke-rc.d cm4all-workshop start</programlisting>
       </listitem>
     </orderedlist>
-
-    <para>
-      Siehe Debian-Paket.
-    </para>
   </chapter>
 
   <chapter id="concept">
