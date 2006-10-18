@@ -9,6 +9,7 @@
 #include "strarray.h"
 
 #include <sys/types.h>
+#include <event.h>
 
 #define VERSION "0.1.2"
 
@@ -41,24 +42,6 @@ int stdin_null(void);
 
 void daemonize(struct config *config);
 
-/* poll.c */
-
-struct poll;
-struct pollfd;
-
-typedef void (*poll_callback_t)(struct pollfd *pollfd, void *ctx);
-
-int poll_open(struct poll **poll_r);
-
-void poll_close(struct poll **poll_r);
-
-void poll_add(struct poll *poll, int fd, short events,
-              poll_callback_t callback, void *ctx);
-
-void poll_remove(struct poll *poll, int fd);
-
-void poll_poll(struct poll *poll, int timeout);
-
 /* queue.c */
 
 struct queue;
@@ -69,23 +52,22 @@ struct job {
     struct strarray args;
 };
 
-int queue_open(const char *node_name,
-               const char *conninfo, struct poll *poll,
+typedef void (*queue_callback_t)(struct job *job, void *ctx);
+
+int queue_open(const char *node_name, const char *conninfo,
+               queue_callback_t callback, void *ctx,
                struct queue **queue_r);
 
 void queue_close(struct queue **queue_r);
 
-void queue_reload(struct queue *queue);
+void queue_set_filter(struct queue *queue, const char *plans_include,
+                      const char *plans_exclude);
 
-int queue_next_scheduled(struct queue *queue, const char *plans_include,
-                         int *span_r);
+int queue_run(struct queue *queue);
 
-void queue_flush(struct queue *queue);
+void queue_disable(struct queue *queue);
 
-int queue_fill(struct queue *queue, const char *plans_include,
-               const char *plans_exclude);
-
-int queue_get(struct queue *queue, const char *timeout, struct job **job_r);
+void queue_enable(struct queue *queue);
 
 int job_set_progress(struct job *job, unsigned progress,
                      const char *timeout);
@@ -136,18 +118,19 @@ struct operator {
     pid_t pid;
 
     int stdout_fd;
+    struct event stdout_event;
     char stdout_buffer[64];
     size_t stdout_length;
     unsigned progress;
 
     int stderr_fd;
+    struct event stderr_event;
     char stderr_buffer[512];
     size_t stderr_length;
     struct syslog_client *syslog;
 };
 
 int workplace_open(const char *node_name, unsigned max_operators,
-                   struct poll *p,
                    struct workplace **workplace_r);
 
 void workplace_close(struct workplace **workplace_r);

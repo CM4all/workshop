@@ -10,59 +10,67 @@
 #include "pg-util.h"
 #include "pg-queue.h"
 
+#include <event.h>
+
 #include <assert.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
-#include <poll.h>
 #include <time.h>
 
 struct queue {
     char *node_name;
     PGconn *conn;
     int fd;
-    struct poll *poll;
-    int ready;
+    int disabled, running;
+    struct event event;
+    char *plans_include, *plans_exclude;
     time_t next_expire_check;
 
-    int next_scheduled_valid;
-    time_t next_scheduled;
-
-    PGresult *result;
-    int result_row, result_num;
+    queue_callback_t callback;
+    void *ctx;
 };
 
 static int queue_reconnect(struct queue *queue);
 
 /** the poll() callback handler; this function handles notifies sent
     by the PostgreSQL server */
-static void queue_callback(struct pollfd *pollfd, void *ctx) {
+static void queue_callback(int fd, short event, void *ctx) {
     struct queue *queue = (struct queue*)ctx;
+    int ret, should_run;
     PGnotify *notify;
 
-    (void)pollfd;
+    (void)fd;
+    (void)event;
 
-    assert(pollfd->fd == queue->fd);
+    assert(fd == queue->fd);
 
     PQconsumeInput(queue->conn);
 
     if (PQstatus(queue->conn) != CONNECTION_OK) {
         log(2, "connection to PostgreSQL lost; trying to reconnect\n");
-        queue_reconnect(queue);
+        ret = queue_reconnect(queue);
+        if (ret == 0)
+            queue_run(queue);
         return;
     }
+
+    should_run = event == EV_TIMEOUT;
 
     while ((notify = PQnotifies(queue->conn)) != NULL) {
         log(6, "async notify '%s' received from backend pid %d\n",
             notify->relname, notify->be_pid);
         if (strcmp(notify->relname, "new_job") == 0)
-            queue->ready = 1;
+            should_run = 1;
         PQfreemem(notify);
     }
+
+    if (should_run)
+        queue_run(queue);
 }
 
-int queue_open(const char *node_name,
-               const char *conninfo, struct poll *p,
+int queue_open(const char *node_name, const char *conninfo,
+               queue_callback_t callback, void *ctx,
                struct queue **queue_r) {
     struct queue *queue;
     int ret;
@@ -117,10 +125,12 @@ int queue_open(const char *node_name,
     /* poll on libpq file descriptor */
 
     queue->fd = PQsocket(queue->conn);
-    queue->poll = p;
-    poll_add(queue->poll, queue->fd, POLLIN, queue_callback, queue);
+    event_set(&queue->event, queue->fd, EV_TIMEOUT|EV_READ|EV_PERSIST,
+              queue_callback, queue);
+    event_add(&queue->event, NULL);
 
-    queue->ready = 1;
+    queue->callback = callback;
+    queue->ctx = ctx;
 
     /* done */
 
@@ -137,24 +147,24 @@ void queue_close(struct queue **queue_r) {
     queue = *queue_r;
     *queue_r = NULL;
 
-    queue_flush(queue);
+    assert(!queue->running);
 
-    if (queue->poll != NULL)
-        poll_remove(queue->poll, queue->fd);
+    if (queue->fd >= 0)
+        event_del(&queue->event);
 
     if (queue->conn != NULL)
         PQfinish(queue->conn);
+
+    if (queue->plans_include != NULL)
+        free(queue->plans_include);
+
+    if (queue->plans_exclude != NULL)
+        free(queue->plans_exclude);
 
     if (queue->node_name != NULL)
         free(queue->node_name);
 
     free(queue);
-}
-
-void queue_reload(struct queue *queue) {
-    queue->ready = 1;
-    queue->next_scheduled = 0;
-    queue->next_scheduled_valid = 0;
 }
 
 static int queue_reconnect(struct queue *queue) {
@@ -163,13 +173,12 @@ static int queue_reconnect(struct queue *queue) {
     /* unregister old socket */
 
     if (queue->fd >= 0) {
-        poll_remove(queue->poll, queue->fd);
+        event_del(&queue->event);
         queue->fd = -1;
     }
 
     /* reconnect */
 
-    queue_flush(queue);
     PQreset(queue->conn);
 
     if (PQstatus(queue->conn) != CONNECTION_OK) {
@@ -187,12 +196,8 @@ static int queue_reconnect(struct queue *queue) {
     /* register new socket */
 
     queue->fd = PQsocket(queue->conn);
-    poll_add(queue->poll, queue->fd, POLLIN, queue_callback, queue);
-
-    /* reset some state variables */
-
-    queue->next_scheduled_valid = 0;
-    queue->ready = 1;
+    event_set(&queue->event, queue->fd, EV_READ|EV_PERSIST, queue_callback, queue);
+    event_add(&queue->event, NULL);
 
     return 0;
 }
@@ -204,24 +209,16 @@ static int queue_autoreconnect(struct queue *queue) {
     return queue_reconnect(queue);
 }
 
-int queue_next_scheduled(struct queue *queue, const char *plans_include,
-                         int *span_r) {
+static int queue_next_scheduled(struct queue *queue, int *span_r) {
     int ret;
     long span;
 
-    if (queue->next_scheduled_valid) {
-        if (queue->next_scheduled == 0) {
-            *span_r = -1;
-            return 0;
-        } else {
-            *span_r = (int)(queue->next_scheduled - time(NULL));
-            if (*span_r < 0)
-                *span_r = 0;
-            return 1;
-        }
+    if (queue->plans_include == NULL) {
+        *span_r = -1;
+        return 0;
     }
 
-    ret = pg_next_scheduled_job(queue->conn, plans_include, &span);
+    ret = pg_next_scheduled_job(queue->conn, queue->plans_include, &span);
     if (ret > 0) {
         if (span < 0)
             span = 0;
@@ -233,83 +230,11 @@ int queue_next_scheduled(struct queue *queue, const char *plans_include,
             span = 600;
 
         *span_r = (int)span;
-        queue->next_scheduled = time(NULL) + span;
     } else {
         *span_r = -1;
-        queue->next_scheduled = 0;
     }
-
-    queue->next_scheduled = 1;
 
     return ret;
-}
-
-void queue_flush(struct queue *queue) {
-    if (queue->result == NULL)
-        return;
-
-    PQclear(queue->result);
-    queue->result = NULL;
-    queue->result_row = 0;
-    queue->result_num = 0;
-}
-
-int queue_fill(struct queue *queue, const char *plans_include,
-               const char *plans_exclude) {
-    int ret;
-    time_t now;
-
-    assert(queue->result == NULL);
-    assert(queue->result_row == 0);
-    assert(queue->result_num == 0);
-    assert(plans_include != NULL && *plans_include == '{');
-    assert(plans_exclude == NULL || *plans_exclude == '{');
-
-    ret = queue_autoreconnect(queue);
-    if (ret < 0)
-        return -1;
-
-    /* check expired jobs from all other nodes except us */
-
-    now = time(NULL);
-    if (now >= queue->next_expire_check) {
-        queue->next_expire_check = now + 60;
-
-        ret = pg_expire_jobs(queue->conn, queue->node_name);
-        if (ret < 0)
-            return -1;
-
-        if (ret > 0) {
-            log(2, "released %d expired jobs\n", ret);
-            pg_notify(queue->conn);
-        }
-    }
-
-    /* continue only if we got a "new_job" notify from PostgreSQL */
-
-    if ((!queue->ready && (queue->next_scheduled == 0 ||
-                           now < queue->next_scheduled)) ||
-        strcmp(plans_include, "{}") == 0)
-        return 0;
-
-    queue->next_scheduled_valid = 0;
-    queue->next_scheduled = 0;
-
-    if (plans_exclude == NULL)
-        plans_exclude = "{}";
-
-    log(7, "requesting new jobs from database; plans_include=%s plans_exclude=%s\n",
-        plans_include, plans_exclude);
-
-    ret = pg_select_new_jobs(queue->conn, plans_include, plans_exclude,
-                             &queue->result);
-    if (ret <= 0) {
-        if (strcmp(plans_exclude, "{}") == 0)
-            queue->ready = 0;
-        return ret;
-    }
-
-    return queue->result_num = ret;
 }
 
 static char *my_strdup(const char *p) {
@@ -339,21 +264,17 @@ static void free_job(struct job **job_r) {
     free(job);
 }
 
-static int get_next_job(struct queue *queue, struct job **job_r) {
+static int get_job(struct queue *queue, PGresult *res, int row,
+                   struct job **job_r) {
     struct job *job;
-    PGresult *res;
-    int row, ret;
+    int ret;
 
     assert(queue != NULL);
-    assert(queue->result != NULL);
     assert(job_r != NULL);
 
     job = (struct job*)calloc(1, sizeof(*job));
     if (job == NULL)
         return -1;
-
-    res = queue->result;
-    row = queue->result_row++;
 
     assert(row < PQntuples(res));
 
@@ -379,15 +300,12 @@ static int get_next_job(struct queue *queue, struct job **job_r) {
     return 1;
 }
 
-int queue_get(struct queue *queue, const char *timeout, struct job **job_r) {
+static int get_and_claim_job(struct queue *queue, PGresult *res, int row,
+                             const char *timeout, struct job **job_r) {
     int ret;
     struct job *job;
 
-    if (queue->result == NULL ||
-        queue->result_row >= PQntuples(queue->result))
-        return 0;
-
-    ret = get_next_job(queue, &job);
+    ret = get_job(queue, res, row, &job);
     if (ret <= 0)
         return ret;
 
@@ -396,13 +314,13 @@ int queue_get(struct queue *queue, const char *timeout, struct job **job_r) {
     ret = pg_claim_job(queue->conn, job->id, queue->node_name,
                        timeout);
     if (ret < 0) {
-        free_job(job_r);
+        free_job(&job);
         return -1;
     }
 
     if (ret == 0) {
         log(6, "job %s was not claimed\n", job->id);
-        free_job(job_r);
+        free_job(&job);
         return 0;
     }
 
@@ -410,6 +328,134 @@ int queue_get(struct queue *queue, const char *timeout, struct job **job_r) {
 
     *job_r = job;
     return 1;
+}
+
+static int copy_string(char **dest_r, const char *src) {
+    assert(dest_r != NULL);
+    assert(src != NULL);
+
+    if (*dest_r != NULL) {
+        if (strcmp(*dest_r, src) == 0)
+            return 0;
+
+        free(*dest_r);
+    }
+
+    *dest_r = strdup(src);
+    if (*dest_r == NULL)
+        abort();
+    return 1;
+}
+
+void queue_set_filter(struct queue *queue, const char *plans_include,
+                      const char *plans_exclude) {
+    int r1, r2;
+
+    r1 = copy_string(&queue->plans_include, plans_include);
+    r2 = copy_string(&queue->plans_exclude, plans_exclude);
+
+    if (r1 || r2)
+        queue_run(queue);
+}
+
+static int queue_run2(struct queue *queue) {
+    PGresult *result;
+    int ret, row, num;
+    struct job *job;
+    time_t now;
+    struct timeval tv;
+
+    if (queue->plans_include == NULL ||
+        strcmp(queue->plans_include, "{}") == 0 ||
+        queue->plans_exclude == NULL)
+        return 0;
+
+    ret = queue_autoreconnect(queue);
+    if (ret < 0)
+        return -1;
+
+    /* check expired jobs from all other nodes except us */
+
+    now = time(NULL);
+    if (now >= queue->next_expire_check) {
+        queue->next_expire_check = now + 60;
+
+        ret = pg_expire_jobs(queue->conn, queue->node_name);
+        if (ret < 0)
+            return -1;
+
+        if (ret > 0) {
+            log(2, "released %d expired jobs\n", ret);
+            pg_notify(queue->conn);
+        }
+    }
+
+    /* query database */
+
+    log(7, "requesting new jobs from database; plans_include=%s plans_exclude=%s\n",
+        queue->plans_include, queue->plans_exclude);
+
+    num = pg_select_new_jobs(queue->conn, queue->plans_include, queue->plans_exclude,
+                             &result);
+    if (num > 0) {
+        for (row = 0; row < num && !queue->disabled; ++row) {
+            ret = get_and_claim_job(queue, result, row, "5 minutes", &job);
+            if (ret < 0)
+                break;
+
+            if (ret == 0)
+                continue;
+
+            queue->callback(job, queue->ctx);
+        }
+
+        PQclear(result);
+    }
+
+    /* update timeout */
+
+    queue_next_scheduled(queue, &ret);
+    if (ret >= 0)
+        log(3, "next scheduled job is in %d seconds\n", ret);
+    else
+        ret = 600;
+
+    tv.tv_sec = ret;
+    tv.tv_usec = 0;
+    event_del(&queue->event);
+    event_set(&queue->event, queue->fd, EV_TIMEOUT|EV_READ|EV_PERSIST,
+              queue_callback, queue);
+    event_add(&queue->event, &tv);
+
+    return num;
+}
+
+int queue_run(struct queue *queue) {
+    int ret;
+
+    if (queue->running || queue->disabled)
+        return 0;
+
+    queue->running = 1;
+    ret = queue_run2(queue);
+    queue->running = 0;
+
+    return ret;
+}
+
+void queue_disable(struct queue *queue) {
+    if (queue->disabled)
+        return;
+
+    queue->disabled = 1;
+}
+
+void queue_enable(struct queue *queue) {
+    if (!queue->disabled)
+        return;
+
+    queue->disabled = 0;
+    queue_run(queue);
 }
 
 int job_set_progress(struct job *job, unsigned progress,

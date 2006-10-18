@@ -8,6 +8,8 @@
 
 #include "workshop.h"
 
+#include <event.h>
+
 #include <assert.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -19,8 +21,10 @@
 struct instance {
     struct library *library;
     struct queue *queue;
-    struct poll *poll;
     struct workplace *workplace;
+    int should_exit;
+    struct event sigterm_event, sigint_event, sigquit_event;
+    struct event sighup_event, sigchld_event;
 };
 
 static void config_get(struct config *config, int argc, char **argv) {
@@ -32,44 +36,111 @@ static void config_get(struct config *config, int argc, char **argv) {
     parse_cmdline(config, argc, argv);
 }
 
-static int should_exit = 0, should_reload = 0, child_exited = 0;
+static void exit_callback(int fd, short event, void *arg) {
+    struct instance *instance = (struct instance*)arg;
 
-static void exit_signal_handler(int sig) {
-    (void)sig;
-    should_exit = 1;
+    (void)fd;
+    (void)event;
+
+    if (instance->should_exit)
+        return;
+
+    instance->should_exit = 1;
+    event_del(&instance->sigterm_event);
+    event_del(&instance->sigint_event);
+    event_del(&instance->sigquit_event);
+    event_del(&instance->sighup_event);
+
+    queue_disable(instance->queue);
+
+    if (instance->workplace != NULL) {
+        if (workplace_is_empty(instance->workplace)) {
+            event_del(&instance->sigchld_event);
+            workplace_close(&instance->workplace);
+            if (instance->queue != NULL)
+                queue_close(&instance->queue);
+        } else {
+            log(1, "waiting for operators to finish\n");
+        }
+    }
 }
 
-static void reload_signal_handler(int sig) {
-    (void)sig;
-    should_reload = 1;
+static void update_library_and_filter(struct instance *instance) {
+    library_update(instance->library);
+    queue_set_filter(instance->queue,
+                     library_plan_names(instance->library),
+                     workplace_plan_names(instance->workplace));
 }
 
-static void child_signal_handler(int sig) {
-    (void)sig;
-    child_exited = 1;
+static void reload_callback(int fd, short event, void *arg) {
+    struct instance *instance = (struct instance*)arg;
+
+    (void)fd;
+    (void)event;
+
+    if (instance->queue == NULL)
+        return;
+
+    log(4, "reloading\n");
+    update_library_and_filter(instance);
+    queue_run(instance->queue);
 }
 
-static void setup_signal_handlers(void) {
+static void child_callback(int fd, short event, void *arg) {
+    struct instance *instance = (struct instance*)arg;
+
+    (void)fd;
+    (void)event;
+
+    if (instance->workplace == NULL)
+        return;
+
+    workplace_waitpid(instance->workplace);
+
+    if (instance->should_exit) {
+        if (workplace_is_empty(instance->workplace)) {
+            event_del(&instance->sigchld_event);
+            workplace_close(&instance->workplace);
+            if (instance->queue != NULL)
+                queue_close(&instance->queue);
+        }
+    } else {
+        update_library_and_filter(instance);
+
+        if (!workplace_is_full(instance->workplace))
+            queue_enable(instance->queue);
+    }
+}
+
+static void setup_signal_handlers(struct instance *instance) {
     struct sigaction sa;
 
+    event_set(&instance->sigterm_event, SIGTERM, EV_SIGNAL|EV_PERSIST,
+              exit_callback, instance);
+    event_add(&instance->sigterm_event, NULL);
+
+    event_set(&instance->sigint_event, SIGINT, EV_SIGNAL|EV_PERSIST,
+              exit_callback, instance);
+    event_add(&instance->sigint_event, NULL);
+
+    event_set(&instance->sigquit_event, SIGQUIT, EV_SIGNAL|EV_PERSIST,
+              exit_callback, instance);
+    event_add(&instance->sigquit_event, NULL);
+
+    event_set(&instance->sighup_event, SIGHUP, EV_SIGNAL|EV_PERSIST,
+              reload_callback, instance);
+    event_add(&instance->sighup_event, NULL);
+
+    event_set(&instance->sigchld_event, SIGCHLD, EV_SIGNAL|EV_PERSIST,
+              child_callback, instance);
+    event_add(&instance->sigchld_event, NULL);
+
     memset(&sa, 0, sizeof(sa));
-    sa.sa_handler = exit_signal_handler;
-    sigaction(SIGTERM, &sa, NULL);
-    sigaction(SIGINT, &sa, NULL);
-    sigaction(SIGQUIT, &sa, NULL);
-
-    sa.sa_handler = reload_signal_handler;
-    sigaction(SIGHUP, &sa, NULL);
-
     sa.sa_handler = SIG_IGN;
     sa.sa_flags = SA_RESTART;
     sigaction(SIGALRM, &sa, NULL);
     sigaction(SIGUSR1, &sa, NULL);
     sigaction(SIGUSR2, &sa, NULL);
-
-    sa.sa_handler = child_signal_handler;
-    sa.sa_flags = SA_NOCLDSTOP;
-    sigaction(SIGCHLD, &sa, NULL);
 }
 
 static int start_job(struct instance *instance, struct job *job) {
@@ -98,6 +169,22 @@ static int start_job(struct instance *instance, struct job *job) {
     return 0;
 }
 
+static void queue_callback(struct job *job, void *ctx) {
+    struct instance *instance = (struct instance*)ctx;
+    int ret;
+
+    if (workplace_is_full(instance->workplace)) {
+        job_rollback(&job);
+        queue_disable(instance->queue);
+    }
+
+    update_library_and_filter(instance);
+
+    ret = start_job(instance, job);
+    if (ret != 0 || workplace_is_full(instance->workplace))
+        queue_disable(instance->queue);
+}
+
 int main(int argc, char **argv) {
     struct config config;
     struct instance instance;
@@ -117,28 +204,24 @@ int main(int argc, char **argv) {
         exit(2);
     }
 
-    ret = poll_open(&instance.poll);
-    if (ret != 0) {
-        fprintf(stderr, "poll_open() failed\n");
-        exit(2);
-    }
+    event_init();
 
     ret = queue_open(config.node_name, config.database,
-                     instance.poll, &instance.queue);
+                     queue_callback, &instance,
+                     &instance.queue);
     if (ret != 0) {
         fprintf(stderr, "failed to open queue database\n");
         exit(2);
     }
 
     ret = workplace_open(config.node_name, config.concurrency,
-                         instance.poll,
                          &instance.workplace);
     if (ret != 0) {
         fprintf(stderr, "failed to open workplace\n");
         exit(2);
     }
 
-    setup_signal_handlers();
+    setup_signal_handlers(&instance);
 
     stdin_null();
 
@@ -148,75 +231,21 @@ int main(int argc, char **argv) {
 
     /* main loop */
 
-    while (!should_exit || !workplace_is_empty(instance.workplace)) {
-        /* check for new/updated plans */
+    update_library_and_filter(&instance);
 
-        library_update(instance.library);
+    queue_run(instance.queue);
 
-        /* handle job queue */
-
-        ret = queue_fill(instance.queue,
-                         library_plan_names(instance.library),
-                         workplace_plan_names(instance.workplace));
-        if (ret == 0)
-            ret = queue_fill(instance.queue,
-                             library_plan_names(instance.library),
-                             NULL);
-
-        while (!should_exit && !workplace_is_full(instance.workplace)) {
-            struct job *job;
-
-            ret = queue_get(instance.queue, "5 minutes", &job);
-            if (ret <= 0)
-                break;
-
-            start_job(&instance, job);
-        }
-
-        queue_flush(instance.queue);
-
-        queue_next_scheduled(instance.queue,
-                             library_plan_names(instance.library),
-                             &ret);
-        if (ret > 0)
-            log(3, "next scheduled job is in %d seconds\n", ret);
-
-        /* poll file handles */
-
-        poll_poll(instance.poll, ret);
-
-        /* check child processes */
-
-        if (child_exited) {
-            child_exited = 0;
-            workplace_waitpid(instance.workplace);
-        }
-
-        /* reload? */
-
-        if (should_reload) {
-            log(4, "reloading\n");
-            queue_reload(instance.queue);
-            should_reload = 0;
-        }
-
-        /* informational message */
-
-        if (should_exit == 1 && !workplace_is_empty(instance.workplace)) {
-            should_exit = 2;
-            log(1, "waiting for operators to finish\n");
-        }
-    }
+    event_dispatch();
 
     /* cleanup */
 
     log(5, "cleaning up\n");
 
-    workplace_close(&instance.workplace);
+    if (instance.workplace != NULL)
+        workplace_close(&instance.workplace);
 
-    queue_close(&instance.queue);
-
-    poll_close(&instance.poll);
+    if (instance.queue != NULL)
+        queue_close(&instance.queue);
 
     library_close(&instance.library);
 

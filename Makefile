@@ -6,7 +6,7 @@ override CFLAGS += -Wall -W -Werror -std=gnu99 -Wmissing-prototypes -Wwrite-stri
 INCLUDES =
 
 SOURCES = src/main.c src/config.c src/daemon.c \
-	src/poll.c src/syslog.c \
+	src/syslog.c \
 	src/queue.c src/pg-queue.c \
 	src/plan.c src/plan-loader.c src/plan-library.c src/plan-update.c \
 	src/operator.c \
@@ -15,7 +15,7 @@ SOURCES = src/main.c src/config.c src/daemon.c \
 
 HEADERS = src/workshop.h src/syslog.h src/strarray.h src/strhash.h src/pg-util.h src/pg-queue.h
 OBJECTS = $(patsubst %.c,%.o,$(SOURCES))
-LIBS = -lpq
+LIBS = -levent -lpq
 
 all: src/cm4all-workshop doc/workshop.html
 

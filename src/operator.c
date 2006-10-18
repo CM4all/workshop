@@ -26,14 +26,12 @@
 
 struct workplace {
     const char *node_name;
-    struct poll *poll;
     struct operator *head;
     unsigned max_operators, num_operators;
     char *plan_names;
 };
 
 int workplace_open(const char *node_name, unsigned max_operators,
-                   struct poll *p,
                    struct workplace **workplace_r) {
     struct workplace *workplace;
 
@@ -50,7 +48,6 @@ int workplace_open(const char *node_name, unsigned max_operators,
     }
 
     workplace->max_operators = max_operators;
-    workplace->poll = p;
 
     *workplace_r = workplace;
     return 0;
@@ -107,12 +104,12 @@ static void free_operator(struct operator **operator_r) {
     *operator_r = NULL;
 
     if (operator->stdout_fd >= 0) {
-        poll_remove(operator->workplace->poll, operator->stdout_fd);
+        event_del(&operator->stdout_event);
         close(operator->stdout_fd);
     }
 
     if (operator->stderr_fd >= 0) {
-        poll_remove(operator->workplace->poll, operator->stderr_fd);
+        event_del(&operator->stderr_event);
         close(operator->stderr_fd);
     }
 
@@ -122,17 +119,18 @@ static void free_operator(struct operator **operator_r) {
     free(operator);
 }
 
-static void stdout_callback(struct pollfd *pollfd, void *ctx) {
+static void stdout_callback(int fd, short event, void *ctx) {
     struct operator *operator = (struct operator*)ctx;
     char buffer[512];
     ssize_t nbytes, i;
     unsigned progress = 0, p;
 
-    (void)pollfd;
+    (void)fd;
+    (void)event;
 
     nbytes = read(operator->stdout_fd, buffer, sizeof(buffer));
     if (nbytes <= 0) {
-        poll_remove(operator->workplace->poll, operator->stdout_fd);
+        event_del(&operator->stdout_event);
         close(operator->stdout_fd);
         operator->stdout_fd = -1;
         return;
@@ -162,18 +160,19 @@ static void stdout_callback(struct pollfd *pollfd, void *ctx) {
     }
 }
 
-static void stderr_callback(struct pollfd *pollfd, void *ctx) {
+static void stderr_callback(int fd, short event, void *ctx) {
     struct operator *operator = (struct operator*)ctx;
     char buffer[512];
     ssize_t nbytes, i;
 
-    (void)pollfd;
+    (void)fd;
+    (void)event;
 
     assert(operator->syslog != NULL);
 
     nbytes = read(operator->stderr_fd, buffer, sizeof(buffer));
     if (nbytes <= 0) {
-        poll_remove(operator->workplace->poll, operator->stderr_fd);
+        event_del(&operator->stderr_event);
         close(operator->stderr_fd);
         operator->stderr_fd = -1;
         return;
@@ -316,8 +315,9 @@ int workplace_start(struct workplace *workplace,
     /* create stdout/stderr pipes */
 
     operator->stdout_fd = stdout_fds[0];
-    poll_add(workplace->poll, operator->stdout_fd, POLLIN,
-             stdout_callback, operator);
+    event_set(&operator->stdout_event, operator->stdout_fd,
+              EV_READ|EV_PERSIST, stdout_callback, operator);
+    event_add(&operator->stdout_event, NULL);
 
     if (job->syslog_server != NULL) {
         char ident[256];
@@ -346,8 +346,9 @@ int workplace_start(struct workplace *workplace,
         }
 
         operator->stderr_fd = stderr_fds[0];
-        poll_add(workplace->poll, operator->stderr_fd, POLLIN,
-                 stderr_callback, operator);
+        event_set(&operator->stderr_event, operator->stderr_fd,
+                  EV_READ|EV_PERSIST, stderr_callback, operator);
+        event_add(&operator->stderr_event, NULL);
     }
 
     /* build command line */

@@ -132,7 +132,6 @@ int pg_select_new_jobs(PGconn *conn,
     assert(plans_include != NULL && *plans_include == '{');
     assert(plans_exclude != NULL && *plans_exclude == '{');
     assert(res_r != NULL);
-    assert(*res_r == NULL);
 
     params[0] = plans_include;
     params[1] = plans_exclude;
