@@ -2,7 +2,7 @@ cm4all-workshop (0.1.2) unstable; urgency=low
 
   * using libevent
 
- --
+ -- Max Kellermann <mk@cm4all.com>  Thu, 19 Oct 2006 11:00:15 +0200
 
 cm4all-workshop (0.1.1) unstable; urgency=low
 
