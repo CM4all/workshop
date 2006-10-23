@@ -181,6 +181,44 @@ nice 5</programlisting>
           </tbody>
         </tgroup>
       </table>
+
+      <para>
+        In der <varname>exec</varname>-Zeile werden
+        Variablenreferenzen in der Form <varname>${NAME}</varname>
+        ersetzt:
+      </para>
+
+      <table id="plan_vars">
+        <title>Variablen in <varname>exec</varname></title>
+        <tgroup cols="2">
+          <tbody>
+            <row>
+              <entry>
+                <varname>NODE</varname>
+              </entry>
+              <entry>
+                Name der Workshop-Node.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <varname>JOB</varname>
+              </entry>
+              <entry>
+                ID des Job-Datensatzes.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <varname>PLAN</varname>
+              </entry>
+              <entry>
+                Name dieses Plan.
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
     </section>
 
     <section id="start-job">
