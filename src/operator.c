@@ -269,6 +269,7 @@ static int expand_operator_vars(const struct operator *operator,
         return ret;
 
     strhash_set(vars, "0", argv->values[0]);
+    strhash_set(vars, "NODE", operator->workplace->node_name);
     strhash_set(vars, "JOB", operator->job->id);
     strhash_set(vars, "PLAN", operator->job->plan_name);
 
