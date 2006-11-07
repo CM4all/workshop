@@ -154,7 +154,7 @@ nice 5</programlisting>
               </entry>
               <entry>
                 Name des Unix-User, mit dessen Rechten der Prozess
-                gestartet wird.
+                gestartet wird.  "root" ist nicht erlaubt.
               </entry>
             </row>
             <row>

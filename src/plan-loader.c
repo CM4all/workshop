@@ -124,6 +124,16 @@ static int parse_plan_config(struct plan *plan, FILE *file) {
                     return -1;
                 }
 
+                if (pw->pw_uid == 0) {
+                    fprintf(stderr, "user 'root' is forbidden\n");
+                    return -1;
+                }
+
+                if (pw->pw_gid == 0) {
+                    fprintf(stderr, "group 'root' is forbidden\n");
+                    return -1;
+                }
+
                 plan->uid = pw->pw_uid;
                 plan->gid = pw->pw_gid;
             } else if (strcmp(key, "nice") == 0) {
