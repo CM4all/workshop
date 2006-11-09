@@ -87,8 +87,6 @@ void daemonize(struct config *config) {
 
         setsid();
 
-        close(0);
-
         signal(SIGTSTP, SIG_IGN);
         signal(SIGTTOU, SIG_IGN);
         signal(SIGTTIN, SIG_IGN);
