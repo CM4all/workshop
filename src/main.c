@@ -223,7 +223,9 @@ int main(int argc, char **argv) {
 
     setup_signal_handlers(&instance);
 
-    stdin_null();
+    ret = stdin_null();
+    if (ret != 0)
+        exit(2);
 
     daemonize(&config);
 

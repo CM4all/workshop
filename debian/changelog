@@ -3,6 +3,7 @@ cm4all-workshop (0.1.3) unstable; urgency=low
   * added plan variable NODE
   * documented the plan variables
   * disallow user "root" for plans
+  * check stdin_null() return value
 
  --
 
