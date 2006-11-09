@@ -241,8 +241,6 @@ int main(int argc, char **argv) {
 
     update_library_and_filter(&instance);
 
-    queue_run(instance.queue);
-
     event_dispatch();
 
     /* cleanup */
