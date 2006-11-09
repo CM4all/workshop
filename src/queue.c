@@ -37,7 +37,7 @@ static int queue_reconnect(struct queue *queue);
     by the PostgreSQL server */
 static void queue_callback(int fd, short event, void *ctx) {
     struct queue *queue = (struct queue*)ctx;
-    int ret, should_run;
+    int ret, should_run = 0;
     PGnotify *notify;
 
     (void)fd;
@@ -55,7 +55,10 @@ static void queue_callback(int fd, short event, void *ctx) {
         return;
     }
 
-    should_run = event == EV_TIMEOUT;
+    if (event == EV_TIMEOUT) {
+        log(7, "queue timeout\n");
+        should_run = 1;
+    }
 
     while ((notify = PQnotifies(queue->conn)) != NULL) {
         log(6, "async notify '%s' received from backend pid %d\n",
