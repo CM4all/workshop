@@ -39,8 +39,10 @@ fi
 case "$1" in
     start)
 	log_begin_msg "Starting CM4all Workshop daemon..."
-        start_daemon -p "$PIDFILE" -- \
-            /usr/sbin/cm4all-workshop \
+        start-stop-daemon --start --quiet \
+            --exec /usr/sbin/cm4all-workshop \
+            --pidfile "$PIDFILE" \
+            -- \
             --name "$NODE_NAME" --concurrency "$CONCURRENCY" \
             --database "$DATABASE" \
             --logger "$LOGGER" --pidfile "$PIDFILE" \
