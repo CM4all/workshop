@@ -40,6 +40,8 @@ int stdin_null(void);
 
 void daemonize(const struct config *config);
 
+void daemon_cleanup(const struct config *config);
+
 /* queue.c */
 
 struct queue;

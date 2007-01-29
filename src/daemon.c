@@ -177,3 +177,8 @@ void daemonize(const struct config *config) {
         close(loggerfd);
     }
 }
+
+void daemon_cleanup(const struct config *config) {
+    if (config->pidfile != NULL)
+        unlink(config->pidfile);
+}

@@ -256,6 +256,8 @@ int main(int argc, char **argv) {
 
     library_close(&instance.library);
 
+    daemon_cleanup(&config);
+
     config_dispose(&config);
 
     log(4, "exiting\n");
