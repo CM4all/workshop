@@ -16,6 +16,7 @@
 #include <errno.h>
 #include <string.h>
 #include <pwd.h>
+#include <grp.h>
 
 /** parse the next word from the writable string */
 static char *next_word(char **pp) {
@@ -44,6 +45,50 @@ static char *next_word(char **pp) {
     ++(*pp);
 
     return word;
+}
+
+static int user_in_group(const struct group *group, const char *user) {
+    char **mem = group->gr_mem;
+
+    while (*mem != NULL) {
+        if (strcmp(*mem, user) == 0)
+            return 1;
+        ++mem;
+    }
+
+    return 0;
+}
+
+static int get_user_groups(const char *user, gid_t **groups_r) {
+    unsigned num_groups = 0, max_groups = 0;
+    gid_t *groups = NULL, *groups_new;
+    const struct group *group;
+
+    setgrent();
+
+    while ((group = getgrent()) != NULL) {
+        if (group->gr_gid > 0 && user_in_group(group, user)) {
+            if (num_groups >= max_groups) {
+                max_groups += 16;
+                groups_new = realloc(groups, max_groups * sizeof(*groups));
+                if (groups_new == NULL) {
+                    free(groups);
+                    endgrent();
+                    fprintf(stderr, "Out of memory\n");
+                    return -1;
+                }
+
+                groups = groups_new;
+            }
+
+            groups[num_groups++] = group->gr_gid;
+        }
+    }
+
+    endgrent();
+
+    *groups_r = groups;
+    return (int)num_groups;
 }
 
 static int parse_plan_config(struct plan *plan, FILE *file) {
@@ -136,6 +181,10 @@ static int parse_plan_config(struct plan *plan, FILE *file) {
 
                 plan->uid = pw->pw_uid;
                 plan->gid = pw->pw_gid;
+
+                plan->num_groups = get_user_groups(value, &plan->groups);
+                if (plan->num_groups < 0)
+                    return -1;
             } else if (strcmp(key, "nice") == 0) {
                 plan->priority = atoi(value);
             } else {
@@ -213,6 +262,9 @@ void plan_free(struct plan **plan_r) {
 
     if (plan->chroot != NULL)
         free(plan->chroot);
+
+    if (plan->groups != NULL)
+        free(plan->groups);
 
     free(plan);
 }

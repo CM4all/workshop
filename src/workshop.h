@@ -86,6 +86,12 @@ struct plan {
     char *timeout, *chroot;
     uid_t uid;
     gid_t gid;
+
+    /** number of supplementary groups */
+    int num_groups;
+    /** supplementary group ids */
+    gid_t *groups;
+
     int priority;
     unsigned ref;
 };
