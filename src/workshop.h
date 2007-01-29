@@ -38,7 +38,7 @@ void config_dispose(struct config *config);
 
 int stdin_null(void);
 
-void daemonize(struct config *config);
+void daemonize(const struct config *config);
 
 /* queue.c */
 

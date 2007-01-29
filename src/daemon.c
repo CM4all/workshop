@@ -30,7 +30,7 @@ int stdin_null(void) {
     return 0;
 }
 
-void daemonize(struct config *config) {
+void daemonize(const struct config *config) {
     int ret, parentfd = -1, loggerfd = -1;
     pid_t logger_pid;
 
