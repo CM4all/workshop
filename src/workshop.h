@@ -11,8 +11,6 @@
 #include <sys/types.h>
 #include <event.h>
 
-#define VERSION "0.1.4"
-
 
 /* config.c */
 

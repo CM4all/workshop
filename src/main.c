@@ -7,6 +7,7 @@
  */
 
 #include "workshop.h"
+#include "version.h"
 
 #include <event.h>
 
