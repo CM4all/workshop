@@ -9,8 +9,11 @@
 # Provides:          cm4all-workshop
 # Required-Start:    $network
 # Required-Stop:     $network
-# Default-Start:     2 3 5 
-# Default-Stop:	     0 6 
+# Should-Start:      
+# Should-Stop:       
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start or stop the CM4all workshop daemon
 ### END INIT INFO
 
 test -f /usr/sbin/cm4all-workshop || exit 0
