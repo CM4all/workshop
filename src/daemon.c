@@ -1,3 +1,11 @@
+/*
+ * $Id$
+ *
+ * Daemonization functions.
+ *
+ * author: Max Kellermann <mk@cm4all.com>
+ */
+
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
