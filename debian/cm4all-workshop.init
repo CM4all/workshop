@@ -41,7 +41,7 @@ fi
 
 case "$1" in
     start)
-	log_begin_msg "Starting CM4all Workshop daemon..."
+	log_begin_msg "Starting CM4all Workshop daemon"
         start-stop-daemon --start --quiet \
             --exec /usr/sbin/cm4all-workshop \
             --pidfile "$PIDFILE" \
@@ -53,12 +53,12 @@ case "$1" in
 	log_end_msg $?
 	;;
     stop)
-	log_begin_msg "Stopping CM4all Workshop daemon..."
+	log_begin_msg "Stopping CM4all Workshop daemon"
         killproc -p "$PIDFILE" /usr/sbin/cm4all-workshop
 	log_end_msg $?
 	;;
     reload)
-	log_begin_msg "Reloading CM4all Workshop daemon..."
+	log_begin_msg "Reloading CM4all Workshop daemon"
         killproc -p "$PIDFILE" /usr/sbin/cm4all-workshop SIGHUP
 	log_end_msg $?
 	;;
