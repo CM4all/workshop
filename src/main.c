@@ -9,6 +9,8 @@
 #include "workshop.h"
 #include "version.h"
 
+#include <daemon/daemonize.h>
+
 #include <event.h>
 
 #include <assert.h>
@@ -224,11 +226,11 @@ int main(int argc, char **argv) {
 
     setup_signal_handlers(&instance);
 
-    ret = stdin_null();
-    if (ret != 0)
+    ret = daemonize();
+    if (ret < 0)
         exit(2);
-
-    daemonize(&config);
+    else if (ret > 0)
+        _exit(0);
 
     log(1, "cm4all-workshop v" VERSION "\n");
 
@@ -256,7 +258,7 @@ int main(int argc, char **argv) {
 
     library_close(&instance.library);
 
-    daemon_cleanup(&config);
+    daemonize_cleanup();
 
     config_dispose(&config);
 

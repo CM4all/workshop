@@ -1,6 +1,8 @@
 #include "workshop.h"
 #include "version.h"
 
+#include <daemon/daemonize.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
@@ -115,15 +117,15 @@ void parse_cmdline(struct config *config, int argc, char **argv) {
             break;
 
         case 'D':
-            config->no_daemon = 1;
+            daemon_config.detach = 0;
             break;
 
         case 'P':
-            config->pidfile = optarg;
+            daemon_config.pidfile = optarg;
             break;
 
         case 'l':
-            config->logger = optarg;
+            daemon_config.logger = optarg;
             break;
 
         default:

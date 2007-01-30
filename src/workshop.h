@@ -18,10 +18,6 @@ struct config {
     const char *node_name;
     unsigned concurrency;
     const char *database;
-
-    /* daemon config */
-    int no_daemon;
-    const char *pidfile, *logger;
 };
 
 extern int verbose;
@@ -33,14 +29,6 @@ void parse_cmdline(struct config *config, int argc, char **argv);
 
 void config_dispose(struct config *config);
 
-
-/* daemon.c */
-
-int stdin_null(void);
-
-void daemonize(const struct config *config);
-
-void daemon_cleanup(const struct config *config);
 
 /* queue.c */
 
