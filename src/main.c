@@ -229,8 +229,6 @@ int main(int argc, char **argv) {
     ret = daemonize();
     if (ret < 0)
         exit(2);
-    else if (ret > 0)
-        _exit(0);
 
     log(1, "cm4all-workshop v" VERSION "\n");
 
