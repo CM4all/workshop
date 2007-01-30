@@ -9,8 +9,6 @@
 #include <string.h>
 #include <errno.h>
 
-int verbose = 1;
-
 static void usage(void) {
     puts("usage: cm4all-workshop [options]\n\n"
          "valid options:\n"
@@ -93,11 +91,11 @@ void parse_cmdline(struct config *config, int argc, char **argv) {
             exit(0);
 
         case 'v':
-            ++verbose;
+            ++daemon_verbose;
             break;
 
         case 'q':
-            verbose = 0;
+            daemon_verbose = 0;
             break;
 
         case 'N':

@@ -8,6 +8,8 @@
 
 #include "strarray.h"
 
+#include <daemon/log.h>
+
 #include <sys/types.h>
 #include <event.h>
 
@@ -20,9 +22,7 @@ struct config {
     const char *database;
 };
 
-extern int verbose;
-
-#define log(level, ...) do { if (verbose >= (level)) { printf(__VA_ARGS__); fflush(stdout); } } while (0)
+#define log(level, ...) daemon_log((level), __VA_ARGS__)
 
 /** read configuration options from the command line */
 void parse_cmdline(struct config *config, int argc, char **argv);
