@@ -59,7 +59,7 @@ case "$1" in
 	;;
     reload)
 	log_begin_msg "Reloading CM4all Workshop daemon..."
-        killproc -p "$PIDFILE" /usr/sbin/cm4all-workshop SIGUP
+        killproc -p "$PIDFILE" /usr/sbin/cm4all-workshop SIGHUP
 	log_end_msg $?
 	;;
     force-reload)
