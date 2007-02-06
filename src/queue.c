@@ -55,7 +55,7 @@ static void queue_callback(int fd, short event, void *ctx) {
         return;
     }
 
-    if (event == EV_TIMEOUT && !queue->notified)
+    if (event == EV_TIMEOUT)
         log(7, "queue timeout\n");
 
     if (queue_has_notify(queue) || queue->notified || event == EV_TIMEOUT)
