@@ -4,6 +4,7 @@ cm4all-workshop (0.1.5) unstable; urgency=low
   * removed ellipsis from init script messages
   * use libcm4all-daemon
   * don't build with cdbs
+  * check PostgreSQL notifies after every query
 
  --
 

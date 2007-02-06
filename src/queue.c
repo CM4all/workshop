@@ -22,7 +22,7 @@ struct queue {
     char *node_name;
     PGconn *conn;
     int fd;
-    int disabled, running;
+    int disabled, running, notified;
     struct event event;
     char *plans_include, *plans_exclude;
     time_t next_expire_check;
@@ -55,10 +55,10 @@ static void queue_callback(int fd, short event, void *ctx) {
         return;
     }
 
-    if (event == EV_TIMEOUT)
+    if (event == EV_TIMEOUT && !queue->notified)
         log(7, "queue timeout\n");
 
-    if (queue_has_notify(queue) || event == EV_TIMEOUT)
+    if (queue_has_notify(queue) || queue->notified || event == EV_TIMEOUT)
         queue_run(queue);
 }
 
@@ -225,6 +225,8 @@ static void queue_check_notify(struct queue *queue) {
 
     if (!queue_has_notify(queue))
         return;
+
+    queue->notified = 1;
 
     /* there are pending notifies - set a very short timeout, so
        libevent will call us very soon */
@@ -471,6 +473,7 @@ int queue_run(struct queue *queue) {
 
     queue->running = 1;
     ret = queue_run2(queue);
+    queue->notified = 0;
     queue->running = 0;
 
     queue_check_notify(queue);
