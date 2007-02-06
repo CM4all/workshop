@@ -62,10 +62,7 @@ case "$1" in
         killproc -p "$PIDFILE" /usr/sbin/cm4all-workshop SIGHUP
 	log_end_msg $?
 	;;
-    force-reload)
-	$0 restart
-	;;
-    restart)
+    restart|force-reload)
 	$0 stop
 	$0 start
 	;;
