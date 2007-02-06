@@ -6,7 +6,7 @@ cm4all-workshop (0.1.5) unstable; urgency=low
   * don't build with cdbs
   * check PostgreSQL notifies after every query
 
- --
+ -- Max Kellermann <mk@cm4all.com>  Tue,  6 Feb 2007 10:04:37 +0100
 
 cm4all-workshop (0.1.4) unstable; urgency=low
 
