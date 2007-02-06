@@ -217,6 +217,24 @@ static int queue_has_notify(const struct queue *queue) {
     return ret;
 }
 
+static void queue_check_notify(struct queue *queue) {
+    struct timeval tv;
+
+    if (!queue_has_notify(queue))
+        return;
+
+    /* there are pending notifies - set a very short timeout, so
+       libevent will call us very soon */
+
+    event_del(&queue->event);
+    event_set(&queue->event, queue->fd, EV_TIMEOUT|EV_READ|EV_PERSIST,
+              queue_callback, queue);
+
+    tv.tv_sec = 0;
+    tv.tv_usec = 10000;
+    event_add(&queue->event, &tv);
+}
+
 static int queue_next_scheduled(struct queue *queue, int *span_r) {
     int ret;
     long span;
@@ -447,6 +465,8 @@ int queue_run(struct queue *queue) {
     queue->running = 1;
     ret = queue_run2(queue);
     queue->running = 0;
+
+    queue_check_notify(queue);
 
     return ret;
 }
