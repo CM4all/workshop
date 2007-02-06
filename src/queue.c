@@ -33,20 +33,7 @@ struct queue {
 
 static int queue_reconnect(struct queue *queue);
 
-static int queue_has_notify(const struct queue *queue) {
-    PGnotify *notify;
-    int ret = 0;
-
-    while ((notify = PQnotifies(queue->conn)) != NULL) {
-        log(6, "async notify '%s' received from backend pid %d\n",
-            notify->relname, notify->be_pid);
-        if (strcmp(notify->relname, "new_job") == 0)
-            ret = 1;
-        PQfreemem(notify);
-    }
-
-    return ret;
-}
+static int queue_has_notify(const struct queue *queue);
 
 /** the poll() callback handler; this function handles notifies sent
     by the PostgreSQL server */
@@ -213,6 +200,21 @@ static int queue_autoreconnect(struct queue *queue) {
         return 0;
 
     return queue_reconnect(queue);
+}
+
+static int queue_has_notify(const struct queue *queue) {
+    PGnotify *notify;
+    int ret = 0;
+
+    while ((notify = PQnotifies(queue->conn)) != NULL) {
+        log(6, "async notify '%s' received from backend pid %d\n",
+            notify->relname, notify->be_pid);
+        if (strcmp(notify->relname, "new_job") == 0)
+            ret = 1;
+        PQfreemem(notify);
+    }
+
+    return ret;
 }
 
 static int queue_next_scheduled(struct queue *queue, int *span_r) {
