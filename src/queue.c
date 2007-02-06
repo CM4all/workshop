@@ -33,12 +33,26 @@ struct queue {
 
 static int queue_reconnect(struct queue *queue);
 
+static int queue_has_notify(const struct queue *queue) {
+    PGnotify *notify;
+    int ret = 0;
+
+    while ((notify = PQnotifies(queue->conn)) != NULL) {
+        log(6, "async notify '%s' received from backend pid %d\n",
+            notify->relname, notify->be_pid);
+        if (strcmp(notify->relname, "new_job") == 0)
+            ret = 1;
+        PQfreemem(notify);
+    }
+
+    return ret;
+}
+
 /** the poll() callback handler; this function handles notifies sent
     by the PostgreSQL server */
 static void queue_callback(int fd, short event, void *ctx) {
     struct queue *queue = (struct queue*)ctx;
-    int ret, should_run = 0;
-    PGnotify *notify;
+    int ret;
 
     (void)fd;
 
@@ -54,20 +68,10 @@ static void queue_callback(int fd, short event, void *ctx) {
         return;
     }
 
-    if (event == EV_TIMEOUT) {
+    if (event == EV_TIMEOUT)
         log(7, "queue timeout\n");
-        should_run = 1;
-    }
 
-    while ((notify = PQnotifies(queue->conn)) != NULL) {
-        log(6, "async notify '%s' received from backend pid %d\n",
-            notify->relname, notify->be_pid);
-        if (strcmp(notify->relname, "new_job") == 0)
-            should_run = 1;
-        PQfreemem(notify);
-    }
-
-    if (should_run)
+    if (queue_has_notify(queue) || event == EV_TIMEOUT)
         queue_run(queue);
 }
 
