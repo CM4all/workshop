@@ -41,7 +41,6 @@ static void queue_callback(int fd, short event, void *ctx) {
     PGnotify *notify;
 
     (void)fd;
-    (void)event;
 
     assert(fd == queue->fd);
 
