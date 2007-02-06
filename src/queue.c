@@ -325,6 +325,8 @@ static int get_job(struct queue *queue, PGresult *res, int row,
         return -1;
     }
 
+    queue_check_notify(queue);
+
     *job_r = job;
     return 1;
 }
@@ -354,6 +356,8 @@ static int get_and_claim_job(struct queue *queue, PGresult *res, int row,
     }
 
     log(6, "job %s claimed\n", job->id);
+
+    queue_check_notify(queue);
 
     *job_r = job;
     return 1;
@@ -491,10 +495,16 @@ void queue_enable(struct queue *queue) {
 
 int job_set_progress(struct job *job, unsigned progress,
                      const char *timeout) {
+    int ret;
+
     log(5, "job %s progress=%u\n", job->id, progress);
 
-    return pg_set_job_progress(job->queue->conn, job->id, progress,
-                               timeout);
+    ret = pg_set_job_progress(job->queue->conn, job->id, progress,
+                              timeout);
+
+    queue_check_notify(job->queue);
+
+    return ret;
 }
 
 int job_rollback(struct job **job_r) {
@@ -516,6 +526,8 @@ int job_rollback(struct job **job_r) {
     pg_rollback_job(job->queue->conn, job->id);
 
     pg_notify(job->queue->conn);
+
+    queue_check_notify(job->queue);
 
     free_job(&job);
 
@@ -539,6 +551,8 @@ int job_done(struct job **job_r, int status) {
     log(6, "job %s done with status %d\n", job->id, status);
 
     pg_set_job_done(job->queue->conn, job->id, status);
+
+    queue_check_notify(job->queue);
 
     free_job(&job);
 
