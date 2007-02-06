@@ -206,6 +206,9 @@ static int queue_has_notify(const struct queue *queue) {
     PGnotify *notify;
     int ret = 0;
 
+    if (queue->conn == NULL)
+        return 0;
+
     while ((notify = PQnotifies(queue->conn)) != NULL) {
         log(6, "async notify '%s' received from backend pid %d\n",
             notify->relname, notify->be_pid);
