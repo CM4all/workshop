@@ -5,7 +5,7 @@ cm4all-workshop (0.1.6) unstable; urgency=low
   * increased shutdown timeout to 60 seconds
   * moved the -doc package to section non-free/doc
 
- --
+ -- Max Kellermann <mk@cm4all.com>  Mon, 12 Feb 2007 11:17:48 +0100
 
 cm4all-workshop (0.1.5) unstable; urgency=low
 
