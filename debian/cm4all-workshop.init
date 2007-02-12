@@ -56,7 +56,11 @@ case "$1" in
 	;;
     stop)
 	log_begin_msg "Stopping CM4all Workshop daemon"
-        killproc -p "$PIDFILE" /usr/sbin/cm4all-workshop
+	start-stop-daemon --stop --quiet \
+            --retry 60 \
+            --oknodo \
+            --pidfile "$PIDFILE" \
+            --exec /usr/sbin/cm4all-workshop
 	log_end_msg $?
 	;;
     reload)

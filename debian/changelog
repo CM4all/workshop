@@ -2,6 +2,7 @@ cm4all-workshop (0.1.6) unstable; urgency=low
 
   * fixed endless loop in expand_vars()
   * pass PostgreSQL DSN as environment variable, for security reasons
+  * increased shutdown timeout to 60 seconds
 
  --
 
