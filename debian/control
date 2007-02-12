@@ -14,6 +14,7 @@ Description: Distributed job scheduler
  a network can read the queue at the same time.
 
 Package: cm4all-workshop-doc
+Section: non-free/doc
 Architecture: all
 Description: Documentation for cm4all-workshop
  cm4all-workshop is a daemon which reads jobs from a database queue
