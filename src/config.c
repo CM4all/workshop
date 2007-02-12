@@ -68,6 +68,9 @@ void parse_cmdline(struct config *config, int argc, char **argv) {
     };
 #endif
 
+    config->database = getenv("WORKSHOP_DATABASE");
+    daemon_config.logger = getenv("WORKSHOP_LOGGER");
+
     while (1) {
 #ifdef __GLIBC__
         int option_index = 0;

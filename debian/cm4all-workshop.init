@@ -39,6 +39,9 @@ if test -z "$DATABASE"; then
     exit 0
 fi
 
+export WORKSHOP_DATABASE=$DATABASE
+test -z "$LOGGER" || export WORKSHOP_LOGGER=$LOGGER
+
 case "$1" in
     start)
 	log_begin_msg "Starting CM4all Workshop daemon"
@@ -47,8 +50,7 @@ case "$1" in
             --pidfile "$PIDFILE" \
             -- \
             --name "$NODE_NAME" --concurrency "$CONCURRENCY" \
-            --database "$DATABASE" \
-            --logger "$LOGGER" --pidfile "$PIDFILE" \
+            --pidfile "$PIDFILE" \
             $OPTIONS
 	log_end_msg $?
 	;;
