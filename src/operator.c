@@ -251,6 +251,8 @@ static int expand_vars(char **pp, struct strhash *vars) {
 
             p = *pp + (p - v) + strlen(expanded);
             v = *pp;
+        } else {
+            ++p;
         }
     }
 
