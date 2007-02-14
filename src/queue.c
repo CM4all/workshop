@@ -42,7 +42,7 @@ struct queue {
     void *ctx;
 };
 
-static int queue_reconnect(struct queue *queue);
+static int queue_autoreconnect(struct queue *queue);
 
 static int queue_has_notify(const struct queue *queue);
 
@@ -58,13 +58,9 @@ static void queue_event_callback(int fd, short event, void *ctx) {
 
     PQconsumeInput(queue->conn);
 
-    if (PQstatus(queue->conn) != CONNECTION_OK) {
-        if (queue->disconnected)
-            log(2, "re-trying to reconnect to PostgreSQL\n");
-        else
-            log(2, "connection to PostgreSQL lost; trying to reconnect\n");
-        ret = queue_reconnect(queue);
-        if (ret == 0)
+    ret = queue_autoreconnect(queue);
+    if (ret != 0) {
+        if (ret > 0)
             queue_run(queue);
         return;
     }
@@ -239,12 +235,17 @@ static int queue_reconnect(struct queue *queue) {
 
     queue->disconnected = 0;
 
-    return 0;
+    return 1;
 }
 
 static int queue_autoreconnect(struct queue *queue) {
     if (PQstatus(queue->conn) == CONNECTION_OK)
         return 0;
+
+    if (queue->disconnected)
+        log(2, "re-trying to reconnect to PostgreSQL\n");
+    else
+        log(2, "connection to PostgreSQL lost; trying to reconnect\n");
 
     return queue_reconnect(queue);
 }
