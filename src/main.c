@@ -68,11 +68,15 @@ static void exit_callback(int fd, short event, void *arg) {
     }
 }
 
-static void update_library_and_filter(struct instance *instance) {
-    library_update(instance->library);
+static void update_filter(struct instance *instance) {
     queue_set_filter(instance->queue,
                      library_plan_names(instance->library),
                      workplace_plan_names(instance->workplace));
+}
+
+static void update_library_and_filter(struct instance *instance) {
+    library_update(instance->library);
+    update_filter(instance);
 }
 
 static void reload_callback(int fd, short event, void *arg) {
@@ -182,11 +186,13 @@ static void queue_callback(struct job *job, void *ctx) {
         return;
     }
 
-    update_library_and_filter(instance);
+    library_update(instance->library);
 
     ret = start_job(instance, job);
     if (ret != 0 || workplace_is_full(instance->workplace))
         queue_disable(instance->queue);
+
+    update_filter(instance);
 }
 
 int main(int argc, char **argv) {
