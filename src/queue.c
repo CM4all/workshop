@@ -23,6 +23,14 @@ struct queue {
     PGconn *conn;
     int fd;
     int disabled, running, notified;
+
+    /** if set to 1, the current queue run should be interrupted, to
+        be started again */
+    int interrupt;
+
+    /** the next timeout is just a queue_run() restart */
+    int again;
+
     struct event event;
     char *plans_include, *plans_exclude;
     time_t next_expire_check;
@@ -55,8 +63,10 @@ static void queue_callback(int fd, short event, void *ctx) {
         return;
     }
 
-    if (event == EV_TIMEOUT)
+    if (event == EV_TIMEOUT && !queue->again)
         log(7, "queue timeout\n");
+
+    queue->again = 0;
 
     if (queue_has_notify(queue) || queue->notified || event == EV_TIMEOUT)
         queue_run(queue);
@@ -427,13 +437,15 @@ static int queue_run2(struct queue *queue) {
 
     /* query database */
 
+    queue->interrupt = 0;
+
     log(7, "requesting new jobs from database; plans_include=%s plans_exclude=%s\n",
         queue->plans_include, queue->plans_exclude);
 
     num = pg_select_new_jobs(queue->conn, queue->plans_include, queue->plans_exclude,
                              &result);
     if (num > 0) {
-        for (row = 0; row < num && !queue->disabled; ++row) {
+        for (row = 0; row < num && !queue->disabled && !queue->interrupt; ++row) {
             ret = get_and_claim_job(queue, result, row, "5 minutes", &job);
             if (ret < 0)
                 break;
@@ -449,14 +461,24 @@ static int queue_run2(struct queue *queue) {
 
     /* update timeout */
 
-    queue_next_scheduled(queue, &ret);
-    if (ret >= 0)
-        log(3, "next scheduled job is in %d seconds\n", ret);
-    else
-        ret = 600;
+    if (queue->interrupt) {
+        /* we have been interrupted: run again in 100ms */
+        log(4, "aborting queue run\n");
 
-    tv.tv_sec = ret;
-    tv.tv_usec = 0;
+        queue->again = 1;
+        tv.tv_sec = 0;
+        tv.tv_usec = 100 * 1000;
+    } else {
+        queue_next_scheduled(queue, &ret);
+        if (ret >= 0)
+            log(3, "next scheduled job is in %d seconds\n", ret);
+        else
+            ret = 600;
+
+        tv.tv_sec = ret;
+        tv.tv_usec = 0;
+    }
+
     event_del(&queue->event);
     event_set(&queue->event, queue->fd, EV_TIMEOUT|EV_READ|EV_PERSIST,
               queue_callback, queue);
@@ -467,6 +489,8 @@ static int queue_run2(struct queue *queue) {
 
 int queue_run(struct queue *queue) {
     int ret;
+
+    queue->interrupt = 1;
 
     if (queue->running || queue->disabled)
         return 0;
