@@ -22,7 +22,7 @@ struct queue {
     char *node_name;
     PGconn *conn;
     int fd;
-    int disabled, running, notified;
+    int disabled, running;
 
     /** if set to 1, the current queue run should be interrupted, to
         be started again */
@@ -66,9 +66,10 @@ static void queue_event_callback(int fd, short event, void *ctx) {
     if (event == EV_TIMEOUT && !queue->again)
         log(7, "queue timeout\n");
 
+    ret = queue->again;
     queue->again = 0;
 
-    if (queue_has_notify(queue) || queue->notified || event == EV_TIMEOUT)
+    if (queue_has_notify(queue) || ret || event == EV_TIMEOUT)
         queue_run(queue);
 }
 
@@ -244,7 +245,7 @@ static void queue_check_notify(struct queue *queue) {
     if (!queue_has_notify(queue))
         return;
 
-    queue->notified = 1;
+    queue->again = 1;
 
     /* there are pending notifies - set a very short timeout, so
        libevent will call us very soon */
@@ -503,7 +504,6 @@ int queue_run(struct queue *queue) {
 
     queue->running = 1;
     ret = queue_run2(queue);
-    queue->notified = 0;
     queue->running = 0;
 
     queue_check_notify(queue);
