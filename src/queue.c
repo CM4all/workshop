@@ -80,6 +80,17 @@ static void queue_set_timeout(struct queue *queue, struct timeval *tv) {
     event_add(&queue->event, tv);
 }
 
+static void queue_set_again(struct queue *queue) {
+    struct timeval tv;
+
+    tv.tv_sec = 0;
+    tv.tv_usec = 10000;
+
+    queue_set_timeout(queue, &tv);
+
+    queue->again = 1;
+}
+
 int queue_open(const char *node_name, const char *conninfo,
                queue_callback_t callback, void *ctx,
                struct queue **queue_r) {
@@ -240,19 +251,13 @@ static int queue_has_notify(const struct queue *queue) {
 }
 
 static void queue_check_notify(struct queue *queue) {
-    struct timeval tv;
-
     if (!queue_has_notify(queue))
         return;
-
-    queue->again = 1;
 
     /* there are pending notifies - set a very short timeout, so
        libevent will call us very soon */
 
-    tv.tv_sec = 0;
-    tv.tv_usec = 10000;
-    queue_set_timeout(queue, &tv);
+    queue_set_again(queue);
 }
 
 static int queue_next_scheduled(struct queue *queue, int *span_r) {
@@ -413,7 +418,6 @@ static int queue_run2(struct queue *queue) {
     int ret, row, num;
     struct job *job;
     time_t now;
-    struct timeval tv;
 
     if (queue->plans_include == NULL ||
         strcmp(queue->plans_include, "{}") == 0 ||
@@ -475,10 +479,10 @@ static int queue_run2(struct queue *queue) {
         /* we have been interrupted: run again in 100ms */
         log(7, "aborting queue run\n");
 
-        queue->again = 1;
-        tv.tv_sec = 0;
-        tv.tv_usec = 10000;
+        queue_set_again(queue);
     } else {
+        struct timeval tv;
+
         queue_next_scheduled(queue, &ret);
         if (ret >= 0)
             log(3, "next scheduled job is in %d seconds\n", ret);
@@ -487,9 +491,8 @@ static int queue_run2(struct queue *queue) {
 
         tv.tv_sec = ret;
         tv.tv_usec = 0;
+        queue_set_timeout(queue, &tv);
     }
-
-    queue_set_timeout(queue, &tv);
 
     return num;
 }
