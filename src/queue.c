@@ -72,6 +72,13 @@ static void queue_callback(int fd, short event, void *ctx) {
         queue_run(queue);
 }
 
+static void queue_set_timeout(struct queue *queue, struct timeval *tv) {
+    event_del(&queue->event);
+    event_set(&queue->event, queue->fd, EV_TIMEOUT|EV_READ|EV_PERSIST,
+              queue_callback, queue);
+    event_add(&queue->event, tv);
+}
+
 int queue_open(const char *node_name, const char *conninfo,
                queue_callback_t callback, void *ctx,
                struct queue **queue_r) {
@@ -241,13 +248,9 @@ static void queue_check_notify(struct queue *queue) {
     /* there are pending notifies - set a very short timeout, so
        libevent will call us very soon */
 
-    event_del(&queue->event);
-    event_set(&queue->event, queue->fd, EV_TIMEOUT|EV_READ|EV_PERSIST,
-              queue_callback, queue);
-
     tv.tv_sec = 0;
     tv.tv_usec = 10000;
-    event_add(&queue->event, &tv);
+    queue_set_timeout(queue, &tv);
 }
 
 static int queue_next_scheduled(struct queue *queue, int *span_r) {
@@ -484,10 +487,7 @@ static int queue_run2(struct queue *queue) {
         tv.tv_usec = 0;
     }
 
-    event_del(&queue->event);
-    event_set(&queue->event, queue->fd, EV_TIMEOUT|EV_READ|EV_PERSIST,
-              queue_callback, queue);
-    event_add(&queue->event, &tv);
+    queue_set_timeout(queue, &tv);
 
     return num;
 }
