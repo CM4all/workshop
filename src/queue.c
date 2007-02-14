@@ -459,6 +459,11 @@ static int queue_run2(struct queue *queue) {
         PQclear(result);
     }
 
+    if (queue->disabled) {
+        log(7, "queue has been disabled\n");
+        return num;
+    }
+
     /* update timeout */
 
     if (queue->interrupt) {
