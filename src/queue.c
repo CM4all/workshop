@@ -45,7 +45,7 @@ static int queue_has_notify(const struct queue *queue);
 
 /** the poll() callback handler; this function handles notifies sent
     by the PostgreSQL server */
-static void queue_callback(int fd, short event, void *ctx) {
+static void queue_event_callback(int fd, short event, void *ctx) {
     struct queue *queue = (struct queue*)ctx;
     int ret;
 
@@ -75,7 +75,7 @@ static void queue_callback(int fd, short event, void *ctx) {
 static void queue_set_timeout(struct queue *queue, struct timeval *tv) {
     event_del(&queue->event);
     event_set(&queue->event, queue->fd, EV_TIMEOUT|EV_READ|EV_PERSIST,
-              queue_callback, queue);
+              queue_event_callback, queue);
     event_add(&queue->event, tv);
 }
 
@@ -136,7 +136,7 @@ int queue_open(const char *node_name, const char *conninfo,
 
     queue->fd = PQsocket(queue->conn);
     event_set(&queue->event, queue->fd, EV_TIMEOUT|EV_READ|EV_PERSIST,
-              queue_callback, queue);
+              queue_event_callback, queue);
     event_add(&queue->event, NULL);
 
     queue->callback = callback;
@@ -206,7 +206,8 @@ static int queue_reconnect(struct queue *queue) {
     /* register new socket */
 
     queue->fd = PQsocket(queue->conn);
-    event_set(&queue->event, queue->fd, EV_READ|EV_PERSIST, queue_callback, queue);
+    event_set(&queue->event, queue->fd, EV_READ|EV_PERSIST,
+              queue_event_callback, queue);
     event_add(&queue->event, NULL);
 
     return 0;
