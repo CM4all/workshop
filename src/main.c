@@ -179,6 +179,7 @@ static void queue_callback(struct job *job, void *ctx) {
     if (workplace_is_full(instance->workplace)) {
         job_rollback(&job);
         queue_disable(instance->queue);
+        return;
     }
 
     update_library_and_filter(instance);

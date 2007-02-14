@@ -1,6 +1,6 @@
 cm4all-workshop (0.1.7) unstable; urgency=low
 
-  * 
+  * bugfix: added missing 'return' when the concurrency limit is reached
 
  --
 
