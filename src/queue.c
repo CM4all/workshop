@@ -468,11 +468,11 @@ static int queue_run2(struct queue *queue) {
 
     if (queue->interrupt) {
         /* we have been interrupted: run again in 100ms */
-        log(4, "aborting queue run\n");
+        log(7, "aborting queue run\n");
 
         queue->again = 1;
         tv.tv_sec = 0;
-        tv.tv_usec = 100 * 1000;
+        tv.tv_usec = 10000;
     } else {
         queue_next_scheduled(queue, &ret);
         if (ret >= 0)
