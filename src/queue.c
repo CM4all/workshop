@@ -24,6 +24,9 @@ struct queue {
     int fd;
     int disabled, running;
 
+    /** is the database connection currently down? */
+    int disconnected;
+
     /** if set to 1, the current queue run should be interrupted, to
         be started again */
     int interrupt;
@@ -56,7 +59,10 @@ static void queue_event_callback(int fd, short event, void *ctx) {
     PQconsumeInput(queue->conn);
 
     if (PQstatus(queue->conn) != CONNECTION_OK) {
-        log(2, "connection to PostgreSQL lost; trying to reconnect\n");
+        if (queue->disconnected)
+            log(2, "re-trying to reconnect to PostgreSQL\n");
+        else
+            log(2, "connection to PostgreSQL lost; trying to reconnect\n");
         ret = queue_reconnect(queue);
         if (ret == 0)
             queue_run(queue);
@@ -201,6 +207,8 @@ static int queue_reconnect(struct queue *queue) {
 
     /* reconnect */
 
+    queue->disconnected = 1;
+
     PQreset(queue->conn);
 
     if (PQstatus(queue->conn) != CONNECTION_OK) {
@@ -228,6 +236,8 @@ static int queue_reconnect(struct queue *queue) {
     event_set(&queue->event, queue->fd, EV_READ|EV_PERSIST,
               queue_event_callback, queue);
     event_add(&queue->event, NULL);
+
+    queue->disconnected = 0;
 
     return 0;
 }
