@@ -204,8 +204,15 @@ static int queue_reconnect(struct queue *queue) {
     PQreset(queue->conn);
 
     if (PQstatus(queue->conn) != CONNECTION_OK) {
+        struct timeval tv;
+
         log(2, "reconnect to PostgreSQL failed: %s\n",
             PQerrorMessage(queue->conn));
+
+        tv.tv_sec = 10;
+        tv.tv_usec = 0;
+        queue_set_timeout(queue, &tv);
+
         return -1;
     }
 
