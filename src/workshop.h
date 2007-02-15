@@ -129,6 +129,9 @@ int workplace_open(const char *node_name, unsigned max_operators,
 
 void workplace_close(struct workplace **workplace_r);
 
+int workplace_plan_is_running(const struct workplace *workplace,
+                              const struct plan *plan);
+
 const char *workplace_plan_names(struct workplace *workplace);
 
 int workplace_start(struct workplace *workplace,

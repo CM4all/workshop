@@ -71,6 +71,18 @@ void workplace_close(struct workplace **workplace_r) {
     free(workplace);
 }
 
+int workplace_plan_is_running(const struct workplace *workplace,
+                              const struct plan *plan) {
+    struct operator *operator;
+
+    for (operator = workplace->head; operator != NULL;
+         operator = operator->next)
+        if (operator->plan == plan)
+            return 1;
+
+    return 0;
+}
+
 const char *workplace_plan_names(struct workplace *workplace) {
     struct strarray plan_names;
     struct operator *operator;
