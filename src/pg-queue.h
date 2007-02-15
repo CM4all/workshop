@@ -24,6 +24,7 @@ int pg_next_scheduled_job(PGconn *conn, const char *plans_include,
 
 int pg_select_new_jobs(PGconn *conn,
                        const char *plans_include, const char *plans_exclude,
+                       const char *plans_lowprio,
                        PGresult **res_r);
 
 int pg_claim_job(PGconn *conn, const char *job_id, const char *node_name,

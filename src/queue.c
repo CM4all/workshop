@@ -469,7 +469,10 @@ static int queue_run2(struct queue *queue) {
     log(7, "requesting new jobs from database; plans_include=%s plans_exclude=%s\n",
         queue->plans_include, queue->plans_exclude);
 
-    num = pg_select_new_jobs(queue->conn, queue->plans_include, queue->plans_exclude,
+    num = pg_select_new_jobs(queue->conn,
+                             queue->plans_include,
+                             queue->plans_exclude,
+                             "{}",
                              &result);
     if (num > 0) {
         for (row = 0; row < num && !queue->disabled && !queue->interrupt; ++row) {
