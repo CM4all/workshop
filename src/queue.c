@@ -35,7 +35,7 @@ struct queue {
     int again;
 
     struct event event;
-    char *plans_include, *plans_exclude;
+    char *plans_include, *plans_exclude, *plans_lowprio;
     time_t next_expire_check;
 
     queue_callback_t callback;
@@ -184,6 +184,9 @@ void queue_close(struct queue **queue_r) {
 
     if (queue->plans_exclude != NULL)
         free(queue->plans_exclude);
+
+    if (queue->plans_lowprio != NULL)
+        free(queue->plans_lowprio);
 
     if (queue->node_name != NULL)
         free(queue->node_name);
@@ -421,11 +424,13 @@ static int copy_string(char **dest_r, const char *src) {
 }
 
 void queue_set_filter(struct queue *queue, const char *plans_include,
-                      const char *plans_exclude) {
+                      const char *plans_exclude,
+                      const char *plans_lowprio) {
     int r1, r2;
 
     r1 = copy_string(&queue->plans_include, plans_include);
     r2 = copy_string(&queue->plans_exclude, plans_exclude);
+    copy_string(&queue->plans_lowprio, plans_lowprio);
 
     if (r1 || r2)
         queue_run(queue);

@@ -49,7 +49,8 @@ int queue_open(const char *node_name, const char *conninfo,
 void queue_close(struct queue **queue_r);
 
 void queue_set_filter(struct queue *queue, const char *plans_include,
-                      const char *plans_exclude);
+                      const char *plans_exclude,
+                      const char *plans_lowprio);
 
 int queue_run(struct queue *queue);
 
@@ -83,6 +84,10 @@ struct plan {
     gid_t *groups;
 
     int priority;
+
+    /** maximum concurrency for this plan */
+    unsigned concurrency;
+
     unsigned ref;
 };
 
@@ -133,6 +138,10 @@ int workplace_plan_is_running(const struct workplace *workplace,
                               const struct plan *plan);
 
 const char *workplace_plan_names(struct workplace *workplace);
+
+/** returns the plan names which have reached their concurrency
+    limit */
+const char *workplace_full_plan_names(struct workplace *workplace);
 
 int workplace_start(struct workplace *workplace,
                     struct job *job, struct plan *plan);

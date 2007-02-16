@@ -178,6 +178,17 @@ nice 5</programlisting>
                 relativ zum Changeroot sein.
               </entry>
             </row>
+            <row>
+              <entry>
+                <varname>concurrency</varname>
+                <varname>NUM</varname>
+              </entry>
+              <entry>
+                Legt fest, wie oft dieser Plan gleichzeitig laufen
+                darf.  Die globale Concurrency-Konfiguration wird
+                weiterhin beachtet.
+              </entry>
+            </row>
           </tbody>
         </tgroup>
       </table>

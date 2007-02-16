@@ -71,6 +71,7 @@ static void exit_callback(int fd, short event, void *arg) {
 static void update_filter(struct instance *instance) {
     queue_set_filter(instance->queue,
                      library_plan_names(instance->library),
+                     workplace_full_plan_names(instance->workplace),
                      workplace_plan_names(instance->workplace));
 }
 

@@ -187,6 +187,8 @@ static int parse_plan_config(struct plan *plan, FILE *file) {
                     return -1;
             } else if (strcmp(key, "nice") == 0) {
                 plan->priority = atoi(value);
+            } else if (strcmp(key, "concurrency") == 0) {
+                plan->concurrency = (unsigned)strtoul(value, NULL, 0);
             } else {
                 fprintf(stderr, "line %u: unknown option '%s'\n",
                         line_no, key);

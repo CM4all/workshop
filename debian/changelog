@@ -5,6 +5,7 @@ cm4all-workshop (0.1.7) unstable; urgency=low
   * interrupt queue_run() when the plan filter has been changed
   * do not set a new timeout when the queue is disabled
   * try to reconnect to PostgreSQL every 10 seconds
+  * implemented a per-plan maximum concurrency
 
  --
 

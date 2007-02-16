@@ -28,7 +28,7 @@ struct workplace {
     const char *node_name;
     struct operator *head;
     unsigned max_operators, num_operators;
-    char *plan_names;
+    char *plan_names, *full_plan_names;
 };
 
 int workplace_open(const char *node_name, unsigned max_operators,
@@ -68,6 +68,9 @@ void workplace_close(struct workplace **workplace_r) {
     if (workplace->plan_names != NULL)
         free(workplace->plan_names);
 
+    if (workplace->full_plan_names != NULL)
+        free(workplace->full_plan_names);
+
     free(workplace);
 }
 
@@ -104,6 +107,57 @@ const char *workplace_plan_names(struct workplace *workplace) {
     return workplace->plan_names == NULL
         ? "{}"
         : workplace->plan_names;
+}
+
+struct plan_counter {
+    const struct plan *plan;
+    const char *plan_name;
+    unsigned num;
+};
+
+const char *workplace_full_plan_names(struct workplace *workplace) {
+    struct strarray plan_names;
+    struct plan_counter *counters;
+    unsigned num_counters = 0, i;
+    struct operator *operator;
+
+    if (workplace->num_operators == 0)
+        return "{}";
+
+    strarray_init(&plan_names);
+
+    counters = calloc(workplace->num_operators, sizeof(counters[0]));
+
+    for (operator = workplace->head; operator != NULL;
+         operator = operator->next) {
+        for (i = 0; i < num_counters; ++i)
+            if (counters[i].plan == operator->plan)
+                break;
+
+        if (i < num_counters) {
+            ++counters[i].num;
+        } else {
+            counters[i].plan = operator->plan;
+            counters[i].plan_name = operator->job->plan_name;
+            counters[i].num = 1;
+        }
+
+        if (counters[i].num == counters[i].plan->concurrency)
+            strarray_append(&plan_names, counters[i].plan_name);
+    }
+
+    free(counters);
+
+    if (workplace->full_plan_names != NULL)
+        free(workplace->full_plan_names);
+
+    workplace->full_plan_names = pg_encode_array(&plan_names);
+
+    strarray_free(&plan_names);
+
+    return workplace->full_plan_names == NULL
+        ? "{}"
+        : workplace->full_plan_names;
 }
 
 static void free_operator(struct operator **operator_r) {
