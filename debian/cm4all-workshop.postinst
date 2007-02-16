@@ -1,0 +1,10 @@
+#! /bin/sh -e
+# Author: Max Kellermann <mk@cm4all.com>
+
+if [ "$1" = "configure" ]; then
+    if [ -f /etc/default/cm4all-workshop ]; then
+        chmod 0600 /etc/default/cm4all-workshop
+    fi
+fi
+
+#DEBHELPER#

@@ -6,6 +6,7 @@ cm4all-workshop (0.1.7) unstable; urgency=low
   * do not set a new timeout when the queue is disabled
   * try to reconnect to PostgreSQL every 10 seconds
   * implemented a per-plan maximum concurrency
+  * set default file's mode to 0600
 
  --
 
