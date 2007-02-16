@@ -53,6 +53,20 @@ void strarray_append(struct strarray *a, const char *v) {
     ++a->num;
 }
 
+void strarray_remove(struct strarray *a, unsigned idx) {
+    assert(idx < a->num);
+    assert(a->values[idx] != NULL);
+
+    free(a->values[idx]);
+    --a->num;
+
+    if (idx < a->num)
+        memmove(&a->values[idx], &a->values[idx + 1],
+                sizeof(&a->values[idx]) * (a->num - idx));
+
+    a->values[a->num] = NULL;
+}
+
 int strarray_index(struct strarray *a, const char *v) {
     unsigned i;
 
