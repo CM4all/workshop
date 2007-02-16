@@ -9,7 +9,7 @@ cm4all-workshop (0.2.0) unstable; urgency=low
   * set default file's mode to 0600
   * documented the debian default file
 
- --
+ -- Max Kellermann <mk@cm4all.com>  Fri, 16 Feb 2007 11:06:39 +0100
 
 cm4all-workshop (0.1.6) unstable; urgency=low
 
