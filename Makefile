@@ -25,7 +25,7 @@ LIBS = -levent -lpq $(LIBDAEMON_LIBS)
 all: src/cm4all-workshop doc/workshop.html
 
 doc/workshop.html: doc/workshop.xml
-	xsltproc -o $@ /usr/share/sgml/docbook/stylesheet/xsl/nwalsh/html/docbook.xsl $<
+	xsltproc -o $@ /usr/share/sgml/docbook/stylesheet/xsl/nwalsh/xhtml/docbook.xsl $<
 
 clean:
 	rm -f src/*.o src/cm4all-workshop doc/workshop.html
