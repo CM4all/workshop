@@ -18,7 +18,7 @@ SOURCES = src/main.c src/config.c \
 	src/pg-util.c \
 	src/strarray.c src/strhash.c
 
-HEADERS = src/workshop.h src/syslog.h src/strarray.h src/strhash.h src/pg-util.h src/pg-queue.h
+HEADERS = src/workshop.h src/version.h src/syslog.h src/strarray.h src/strhash.h src/pg-util.h src/pg-queue.h
 OBJECTS = $(patsubst %.c,%.o,$(SOURCES))
 LIBS = -levent -lpq $(LIBDAEMON_LIBS)
 
