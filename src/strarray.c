@@ -53,14 +53,18 @@ void strarray_append(struct strarray *a, const char *v) {
     ++a->num;
 }
 
-int strarray_contains(struct strarray *a, const char *v) {
+int strarray_index(struct strarray *a, const char *v) {
     unsigned i;
 
     assert(v != NULL);
 
     for (i = 0; i < a->num; ++i)
         if (a->values[i] != NULL && strcmp(a->values[i], v) == 0)
-            return 1;
+            return (int)i;
 
-    return 0;
+    return -1;
+}
+
+int strarray_contains(struct strarray *a, const char *v) {
+    return strarray_index(a, v) >= 0;
 }
