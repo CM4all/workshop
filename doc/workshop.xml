@@ -77,6 +77,89 @@ GRANT UPDATE, SELECT ON jobs_id_seq TO workshop_client;</programlisting>
         <programlisting>invoke-rc.d cm4all-workshop start</programlisting>
       </listitem>
     </orderedlist>
+
+    <section id="default_file">
+      <title>
+        Einstellungen in
+        <filename>/etc/default/cm4all-workshop</filename>
+      </title>
+
+      <para>
+        In der Datei <filename>/etc/default/cm4all-workshop</filename>
+        wird <filename>workshop</filename> konfiguriert.  Folgende
+        Einstellungen sind möglich:
+      </para>
+
+      <table id="default_file_table">
+        <title>
+          Einstellungen in
+          <filename>/etc/default/cm4all-workshop</filename>
+        </title>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Name</entry>
+              <entry>Beschreibung</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>
+                <varname>NODE_NAME</varname>
+              </entry>
+              <entry>
+                Name dieser Node, z.B. der vollständige Hostname.  Muß
+                im Cluster eindeutig sein.  Standardmäßig wird dies
+                mit <filename>hostname -f</filename> bestimmt, und
+                wenn die Hostnamen alle richtig konfiguriert sind,
+                sollte das ausreichen.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <varname>CONCURRENCY</varname>
+              </entry>
+              <entry>
+                Wie viele Jobs werden gleichzeitig maximal ausgeführt?
+                Daumenregel: dieser Wert sollte der Anzahl CPUs
+                entsprechen, nicht viel mehr, da dies sonst zu Lasten
+                der Cache Locality geht und zu viele Context Switches
+                durchgeführt werden müssen.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <varname>DATABASE</varname>
+              </entry>
+              <entry>
+                PostgreSQL-Datenbank, siehe <ulink
+                  url="http://www.postgresql.org/docs/8.1/static/libpq.html#LIBPQ-CONNECT">PostgreSQL-Dokumentation</ulink>.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <varname>LOGGER</varname>
+              </entry>
+              <entry>
+                Prozess, der die Log-Zeilen als
+                <filename>stdin</filename> bekommt.  Vorkonfiguriert
+                ist <filename>multilog</filename>.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <varname>OPTIONS</varname>
+              </entry>
+              <entry>
+                Sonstige Optionen, die <filename>workshop</filename>
+                übergeben werden.  Hier kann man z.B. die Verbosity zu
+                Debugging-Zwecken hochsetzen.
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
   </chapter>
 
   <chapter id="concept">
