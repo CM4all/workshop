@@ -127,6 +127,8 @@ const char *workplace_full_plan_names(struct workplace *workplace) {
     strarray_init(&plan_names);
 
     counters = calloc(workplace->num_operators, sizeof(counters[0]));
+    if (counters == NULL)
+        abort();
 
     for (operator = workplace->head; operator != NULL;
          operator = operator->next) {
