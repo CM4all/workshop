@@ -477,7 +477,7 @@ static int queue_run2(struct queue *queue) {
     num = pg_select_new_jobs(queue->conn,
                              queue->plans_include,
                              queue->plans_exclude,
-                             "{}",
+                             queue->plans_lowprio,
                              &result);
     if (num > 0) {
         for (row = 0; row < num && !queue->disabled && !queue->interrupt; ++row) {
