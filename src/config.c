@@ -75,10 +75,10 @@ void parse_cmdline(struct config *config, int argc, char **argv) {
 #ifdef __GLIBC__
         int option_index = 0;
 
-        ret = getopt_long(argc, argv, "hVvqp:DP:l:r:u:",
+        ret = getopt_long(argc, argv, "hVvqN:c:d:DP:l:",
                           long_options, &option_index);
 #else
-        ret = getopt(argc, argv, "hVvqp:DP:l:r:u:");
+        ret = getopt(argc, argv, "hVvqN:c:d:DP:l:");
 #endif
         if (ret == -1)
             break;
