@@ -136,13 +136,12 @@ const char *workplace_full_plan_names(struct workplace *workplace) {
             if (counters[i].plan == operator->plan)
                 break;
 
-        if (i < num_counters) {
-            ++counters[i].num;
-        } else {
+        if (i == num_counters) {
             counters[i].plan = operator->plan;
             counters[i].plan_name = operator->job->plan_name;
-            counters[i].num = 1;
         }
+
+        ++counters[i].num;
 
         if (counters[i].num == counters[i].plan->concurrency)
             strarray_append(&plan_names, counters[i].plan_name);
