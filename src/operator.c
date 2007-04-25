@@ -132,6 +132,9 @@ const char *workplace_full_plan_names(struct workplace *workplace) {
 
     for (operator = workplace->head; operator != NULL;
          operator = operator->next) {
+        if (operator->plan->concurrency == 0)
+            continue;
+
         for (i = 0; i < num_counters; ++i)
             if (counters[i].plan == operator->plan)
                 break;
@@ -144,7 +147,8 @@ const char *workplace_full_plan_names(struct workplace *workplace) {
 
         ++counters[i].num;
 
-        assert(counters[i].num <= counters[i].plan->concurrency ||
+        assert(counters[i].plan->concurrency == 0 ||
+               counters[i].num <= counters[i].plan->concurrency ||
                strarray_contains(&plan_names, counters[i].plan_name));
 
         if (counters[i].num == counters[i].plan->concurrency)
