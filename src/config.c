@@ -1,3 +1,12 @@
+/*
+ * $Id$
+ *
+ * Configure the workshop daemon.  Currently this is only command
+ * line.
+ *
+ * author: Max Kellermann <mk@cm4all.com>
+ */
+
 #include "workshop.h"
 #include "version.h"
 
