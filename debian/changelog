@@ -6,7 +6,7 @@ cm4all-workshop (0.2.1) unstable; urgency=low
   * fixed getopt optstring
   * generate XHTML documentation in UTF-8
 
- --
+ -- Max Kellermann <mk@cm4all.com>  Thu, 26 Apr 2007 10:37:11 +0200
 
 cm4all-workshop (0.2.0) unstable; urgency=low
 
