@@ -14,6 +14,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <getopt.h>
 #include <string.h>
 #include <errno.h>
@@ -57,6 +58,28 @@ static void usage(void) {
          " -P file        create a pid file\n"
          "\n"
          );
+}
+
+static void arg_error(const char *argv0, const char *fmt, ...)
+     __attribute__ ((noreturn))
+     __attribute__((format(printf,2,3)));
+static void arg_error(const char *argv0, const char *fmt, ...) {
+    if (fmt != NULL) {
+        va_list ap;
+
+        fputs(argv0, stderr);
+        fputs(": ", stderr);
+
+        va_start(ap, fmt);
+        vfprintf(stderr, fmt, ap);
+        va_end(ap);
+
+        putc('\n', stderr);
+    }
+
+    fprintf(stderr, "Try '%s --help' for more information.\n",
+            argv0);
+    exit(1);
 }
 
 /** read configuration options from the command line */
@@ -115,10 +138,8 @@ void parse_cmdline(struct config *config, int argc, char **argv) {
 
         case 'c':
             config->concurrency = (unsigned)strtoul(optarg, NULL, 10);
-            if (config->concurrency == 0) {
-                fprintf(stderr, "invalid concurrency specification\n");
-                exit(1);
-            }
+            if (config->concurrency == 0)
+                arg_error(argv[0], "invalid concurrency specification");
             break;
 
         case 'd':
@@ -137,6 +158,9 @@ void parse_cmdline(struct config *config, int argc, char **argv) {
             daemon_config.logger = optarg;
             break;
 
+        case '?':
+            arg_error(argv[0], NULL);
+
         default:
             exit(1);
         }
@@ -144,24 +168,16 @@ void parse_cmdline(struct config *config, int argc, char **argv) {
 
     /* check non-option arguments */
 
-    if (optind < argc) {
-        fprintf(stderr, "cm4all-workshop: unrecognized argument: %s\n",
-                argv[optind]);
-        fprintf(stderr, "Try 'cm4all-workshop -h' for more information\n");
-        exit(1);
-    }
+    if (optind < argc)
+        arg_error(argv[0], "unrecognized argument: %s", argv[optind]);
 
     /* check completeness */
 
-    if (config->node_name == NULL) {
-        fprintf(stderr, "cm4all-workshop: no node name specified\n");
-        exit(1);
-    }
+    if (config->node_name == NULL)
+        arg_error(argv[0], "no node name specified");
 
-    if (config->database == NULL) {
-        fprintf(stderr, "cm4all-workshop: no database specified\n");
-        exit(1);
-    }
+    if (config->database == NULL)
+        arg_error(argv[0], "no database specified");
 }
 
 void config_dispose(struct config *config) {
