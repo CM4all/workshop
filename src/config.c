@@ -98,8 +98,7 @@ void parse_cmdline(struct config *config, int argc, char **argv) {
             exit(0);
 
         case 'V':
-            printf("uoproxy v" VERSION
-                   ", http://max.kellermann.name/projects/uoproxy/\n");
+            printf("cm4all-workshop v%s\n", VERSION);
             exit(0);
 
         case 'v':
