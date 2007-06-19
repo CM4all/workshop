@@ -2,7 +2,7 @@ Source: cm4all-workshop
 Section: non-free/admin
 Priority: optional
 Maintainer: Max Kellermann <mk@cm4all.com>
-Build-Depends: debhelper (>= 5), gcc (>= 4), libevent-dev, libpq-dev (>= 8), libcm4all-daemon-dev, xsltproc, docbook-xsl
+Build-Depends: debhelper (>= 5), gcc (>= 4), libevent-dev (>= 1.1), libpq-dev (>= 8), libcm4all-daemon-dev, xsltproc, docbook-xsl
 Standards-Version: 3.7.2
 
 Package: cm4all-workshop

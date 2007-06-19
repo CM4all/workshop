@@ -240,11 +240,8 @@ int main(int argc, char **argv) {
 
     log(1, "cm4all-workshop v" VERSION "\n");
 
-#if 0
-    /* libevent 1.0 does not provide this runtime information */
     log(4, "using libevent %s method '%s' for polling\n",
         event_get_version(), event_get_method());
-#endif
 
     /* main loop */
 

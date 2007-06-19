@@ -1,5 +1,6 @@
 cm4all-workshop (0.2.2) unstable; urgency=low
 
+  * build with libevent 1.1, show libevent information
   * fixed gcc warning on PowerPC due to char being unsigned
 
  --
