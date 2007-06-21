@@ -8,7 +8,7 @@
 
 DROP TABLE jobs;
 CREATE TABLE jobs (
-        id SERIAL,
+        id SERIAL PRIMARY KEY,
 
         -- non-unique name of the job
         name VARCHAR(64) NULL,
