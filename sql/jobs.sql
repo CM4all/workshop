@@ -48,9 +48,6 @@ CREATE TABLE jobs (
 CREATE INDEX jobs_sorted ON jobs(priority, time_created)
         WHERE node_name IS NULL AND time_done IS NULL AND exit_status IS NULL;
 
-CREATE INDEX jobs_sorted2 ON jobs(plan_name, priority, time_created)
-        WHERE node_name IS NULL AND time_done IS NULL AND exit_status IS NULL;
-
 -- find scheduled jobs
 CREATE INDEX jobs_scheduled ON jobs(scheduled_time)
         WHERE node_name IS NULL AND time_done IS NULL AND exit_status IS NULL AND scheduled_time IS NOT NULL;
