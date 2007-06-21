@@ -125,8 +125,10 @@ int pg_next_scheduled_job(PGconn *conn, const char *plans_include,
 int pg_select_new_jobs(PGconn *conn,
                        const char *plans_include, const char *plans_exclude,
                        const char *plans_lowprio,
+                       unsigned limit,
                        PGresult **res_r) {
-    const char *params[3];
+    char limit_string[10];
+    const char *params[4];
     PGresult *res;
     int ret;
 
@@ -135,17 +137,22 @@ int pg_select_new_jobs(PGconn *conn,
     assert(plans_lowprio != NULL && *plans_lowprio == '{');
     assert(res_r != NULL);
 
+    snprintf(limit_string, sizeof(limit_string),
+             "%u", limit);
+
     params[0] = plans_include;
     params[1] = plans_exclude;
     params[2] = plans_lowprio;
+    params[3] = limit_string;
 
     res = PQexecParams(conn, "SELECT id,plan_name,args,syslog_server "
                        "FROM jobs WHERE node_name IS NULL AND time_done IS NULL AND exit_status IS NULL "
                        "AND (scheduled_time IS NULL OR NOW() >= scheduled_time) "
                        "AND plan_name = ANY ($1::TEXT[]) "
                        "AND plan_name <> ALL ($2::TEXT[]) "
-                       "ORDER BY priority, plan_name = ANY ($3::TEXT[]), time_created",
-                       3, NULL, params, NULL, NULL, 0);
+                       "ORDER BY priority, plan_name = ANY ($3::TEXT[]), time_created "
+                       "LIMIT $4",
+                       4, NULL, params, NULL, NULL, 0);
     if (PQresultStatus(res) != PGRES_TUPLES_OK) {
         fprintf(stderr, "SELECT on jobs failed: %s\n",
                 PQerrorMessage(conn));

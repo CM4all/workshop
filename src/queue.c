@@ -478,6 +478,7 @@ static int queue_run2(struct queue *queue) {
                              queue->plans_include,
                              queue->plans_exclude,
                              queue->plans_lowprio,
+                             16,
                              &result);
     if (num > 0) {
         for (row = 0; row < num && !queue->disabled && !queue->interrupt; ++row) {
@@ -506,6 +507,15 @@ static int queue_run2(struct queue *queue) {
         log(7, "aborting queue run\n");
 
         queue_set_again(queue);
+    } else if (num == 16) {
+        /* 16 is our row limit, and exactly 16 rows were returned - we
+           suspect there may be more.  schedule next queue run in 1
+           second */
+        struct timeval tv;
+
+        tv.tv_sec = 1;
+        tv.tv_usec = 0;
+        queue_set_timeout(queue, &tv);
     } else {
         struct timeval tv;
 
