@@ -92,7 +92,7 @@ int pg_next_scheduled_job(PGconn *conn, const char *plans_include,
     assert(plans_include != NULL && *plans_include == '{');
 
     res = PQexecParams(conn, "SELECT EXTRACT(EPOCH FROM (MIN(scheduled_time) - NOW())) "
-                       "FROM jobs WHERE node_name IS NULL AND exit_status IS NULL "
+                       "FROM jobs WHERE node_name IS NULL AND time_done IS NULL AND exit_status IS NULL "
                        "AND scheduled_time IS NOT NULL "
                        "AND plan_name = ANY ($1::TEXT[]) ",
                        1, NULL, &plans_include, NULL, NULL, 0);
@@ -140,7 +140,7 @@ int pg_select_new_jobs(PGconn *conn,
     params[2] = plans_lowprio;
 
     res = PQexecParams(conn, "SELECT id,plan_name,args,syslog_server "
-                       "FROM jobs WHERE node_name IS NULL AND exit_status IS NULL "
+                       "FROM jobs WHERE node_name IS NULL AND time_done IS NULL AND exit_status IS NULL "
                        "AND (scheduled_time IS NULL OR NOW() >= scheduled_time) "
                        "AND plan_name = ANY ($1::TEXT[]) "
                        "AND plan_name <> ALL ($2::TEXT[]) "

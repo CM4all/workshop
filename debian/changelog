@@ -3,6 +3,7 @@ cm4all-workshop (0.2.2) unstable; urgency=low
   * build with libevent 1.1, show libevent information
   * column "id" should be a primary key
   * fixed gcc warning on PowerPC due to char being unsigned
+  * check "time_done IS NULL" for improved index usage
 
  --
 
