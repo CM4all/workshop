@@ -8,7 +8,7 @@ cm4all-workshop (0.2.2) unstable; urgency=low
   * don't use expression in ORDER BY clause, perform two separate queries
     instead
 
- --
+ -- Max Kellermann <mk@cm4all.com>  Fri, 22 Jun 2007 09:48:45 +0200
 
 cm4all-workshop (0.2.1) unstable; urgency=low
 
