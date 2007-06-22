@@ -5,6 +5,8 @@ cm4all-workshop (0.2.2) unstable; urgency=low
   * fixed gcc warning on PowerPC due to char being unsigned
   * check "time_done IS NULL" for improved index usage
   * added row limit to pg_select_new_jobs()
+  * don't use expression in ORDER BY clause, perform two separate queries
+    instead
 
  --
 

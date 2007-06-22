@@ -471,8 +471,8 @@ static int queue_run2(struct queue *queue) {
 
     queue->interrupt = 0;
 
-    log(7, "requesting new jobs from database; plans_include=%s plans_exclude=%s\n",
-        queue->plans_include, queue->plans_exclude);
+    log(7, "requesting new jobs from database; plans_include=%s plans_exclude=%s plans_lowprio=%s\n",
+        queue->plans_include, queue->plans_exclude, queue->plans_lowprio);
 
     num = pg_select_new_jobs(queue->conn,
                              queue->plans_include,
@@ -493,6 +493,34 @@ static int queue_run2(struct queue *queue) {
         }
 
         PQclear(result);
+    }
+
+    if (!queue->disabled && strcmp(queue->plans_lowprio, "{}") != 0) {
+        /* now also select plans which are already running */
+
+        log(7, "requesting new jobs from database II; plans_lowprio=%s\n",
+            queue->plans_lowprio);
+
+        num = pg_select_new_jobs(queue->conn,
+                                 queue->plans_lowprio,
+                                 queue->plans_exclude,
+                                 "{}",
+                                 16,
+                                 &result);
+        if (num > 0) {
+            for (row = 0; row < num && !queue->disabled && !queue->interrupt; ++row) {
+                ret = get_and_claim_job(queue, result, row, "5 minutes", &job);
+                if (ret < 0)
+                    break;
+
+                if (ret == 0)
+                    continue;
+
+                queue->callback(job, queue->ctx);
+            }
+
+            PQclear(result);
+        }
     }
 
     if (queue->disabled) {
