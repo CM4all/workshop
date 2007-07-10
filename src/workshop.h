@@ -1,6 +1,4 @@
 /*
- * $Id$
- *
  * Internal declarations of cm4all-workshop.
  *
  * author: Max Kellermann <mk@cm4all.com>

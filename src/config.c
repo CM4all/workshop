@@ -1,6 +1,4 @@
 /*
- * $Id$
- *
  * Configure the workshop daemon.  Currently this is only command
  * line.
  *

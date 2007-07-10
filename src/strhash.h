@@ -1,6 +1,4 @@
 /*
- * $Id$
- *
  * Dynamic string hash.
  *
  * author: Max Kellermann <mk@cm4all.com>

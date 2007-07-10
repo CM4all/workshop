@@ -1,6 +1,4 @@
 /*
- * $Id$
- *
  * Manage a plan library.
  *
  * author: Max Kellermann <mk@cm4all.com>

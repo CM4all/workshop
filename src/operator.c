@@ -1,6 +1,4 @@
 /*
- * $Id$
- *
  * Manage operator processes.
  *
  * author: Max Kellermann <mk@cm4all.com>

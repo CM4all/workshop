@@ -1,6 +1,4 @@
 /*
- * $Id$
- *
  * Small utilities for PostgreSQL clients.
  *
  * author: Max Kellermann <mk@cm4all.com>

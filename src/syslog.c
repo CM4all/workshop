@@ -1,6 +1,4 @@
 /*
- * $Id$
- *
  * Syslog network client.
  *
  * author: Max Kellermann <mk@cm4all.com>

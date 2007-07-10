@@ -1,6 +1,4 @@
 /*
- * $Id$
- *
  * SQL to C wrappers for queue.c.
  *
  * author: Max Kellermann <mk@cm4all.com>

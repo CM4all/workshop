@@ -1,6 +1,4 @@
 /*
- * $Id$
- *
  * Internal header for the plan library.
  *
  * author: Max Kellermann <mk@cm4all.com>

@@ -1,6 +1,4 @@
 /*
- * $Id$
- *
  * Parses plan configuration files.
  *
  * author: Max Kellermann <mk@cm4all.com>

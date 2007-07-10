@@ -1,6 +1,4 @@
 /*
- * $Id$
- *
  * Manage the list of plans (= library) and load their configuration
  * files.
  *

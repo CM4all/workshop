@@ -1,6 +1,4 @@
 /*
- * $Id$
- *
  * Dynamic string array.
  *
  * author: Max Kellermann <mk@cm4all.com>

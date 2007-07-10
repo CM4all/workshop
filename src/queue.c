@@ -1,6 +1,4 @@
 /*
- * $Id$
- *
  * Implementation of the job queue with PostgreSQL and async notifies.
  *
  * author: Max Kellermann <mk@cm4all.com>

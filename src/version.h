@@ -1,6 +1,4 @@
 /*
- * $Id$
- *
  * Version number declaration.
  *
  * author: Max Kellermann <mk@cm4all.com>

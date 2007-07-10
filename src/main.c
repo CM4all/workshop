@@ -1,6 +1,4 @@
 /*
- * $Id$
- *
  * cm4all-workshop's main().
  *
  * author: Max Kellermann <mk@cm4all.com>
