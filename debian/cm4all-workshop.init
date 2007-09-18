@@ -24,6 +24,7 @@ PIDFILE=/var/run/cm4all/workshop.pid
 NODE_NAME=""
 CONCURRENCY=2
 DATABASE=""
+USER=cm4all-workshop
 LOGGER="/usr/bin/multilog t s1048576 /var/log/cm4all/workshop"
 OPTIONS=""
 
@@ -39,6 +40,11 @@ if test -z "$DATABASE"; then
     exit 0
 fi
 
+if test -z "$USER"; then
+    log_action_msg "No user configured in /etc/default/cm4all-workshop"
+    exit 0
+fi
+
 export WORKSHOP_DATABASE=$DATABASE
 test -z "$LOGGER" || export WORKSHOP_LOGGER=$LOGGER
 
@@ -50,6 +56,7 @@ case "$1" in
             --pidfile "$PIDFILE" \
             -- \
             --name "$NODE_NAME" --concurrency "$CONCURRENCY" \
+            --user "$USER" \
             --pidfile "$PIDFILE" \
             $OPTIONS
 	log_end_msg $?

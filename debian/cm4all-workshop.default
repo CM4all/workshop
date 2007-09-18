@@ -8,6 +8,9 @@ CONCURRENCY=2
 # PostgreSQL connection info
 #DATABASE="dbname=workshop"
 
+# Which user should workshop run as?
+#USER=cm4all-workshop
+
 # Process which receives the daemon's log messages 
 #LOGGER="/usr/bin/multilog t s1048576 /var/log/cm4all/workshop"
 #LOGGER="logger -p daemon.info -t cm4all-workshop"

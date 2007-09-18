@@ -25,6 +25,8 @@ struct config {
     const char *node_name;
     unsigned concurrency;
     const char *database;
+    uid_t uid;
+    gid_t gid;
 };
 
 #define log(level, ...) daemon_log((level), __VA_ARGS__)

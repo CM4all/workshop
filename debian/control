@@ -7,7 +7,7 @@ Standards-Version: 3.7.2
 
 Package: cm4all-workshop
 Architecture: any
-Depends: ${shlibs:Depends}, lsb-base (>= 3.0-6), cm4all-thirdparty-multilog
+Depends: ${shlibs:Depends}, lsb-base (>= 3.0-6), cm4all-thirdparty-multilog, adduser
 Description: Distributed job scheduler
  cm4all-workshop is a daemon which reads jobs from a database queue
  (PostgreSQL) and executes them.  Multiple instances distributed over

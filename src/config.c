@@ -16,6 +16,8 @@
 #include <getopt.h>
 #include <string.h>
 #include <errno.h>
+#include <pwd.h>
+#include <unistd.h>
 
 static void usage(void) {
     puts("usage: cm4all-workshop [options]\n\n"
@@ -54,6 +56,10 @@ static void usage(void) {
          " --pidfile file\n"
 #endif
          " -P file        create a pid file\n"
+#ifdef __GLIBC__
+         " --user name\n"
+#endif
+         " -u name        switch to another user id\n"
          "\n"
          );
 }
@@ -80,6 +86,21 @@ static void arg_error(const char *argv0, const char *fmt, ...) {
     exit(1);
 }
 
+static void
+parse_username(const char *argv0, const char *name, uid_t *uid_r, gid_t *gid_r)
+{
+    const struct passwd *pwd = getpwnam(name);
+
+    if (pwd == NULL)
+        arg_error(argv0, "no such user: %s", name);
+
+    if (pwd->pw_uid == 0 || pwd->pw_gid == 0)
+        arg_error(argv0, "refuse to change to a superuser account");
+
+    *uid_r = pwd->pw_uid;
+    *gid_r = pwd->pw_gid;
+}
+
 /** read configuration options from the command line */
 void parse_cmdline(struct config *config, int argc, char **argv) {
     int ret;
@@ -94,6 +115,7 @@ void parse_cmdline(struct config *config, int argc, char **argv) {
         {"database", 1, 0, 'd'},
         {"logger", 1, 0, 'l'},
         {"pidfile", 1, 0, 'P'},
+        {"user", 1, 0, 'u'},
         {0,0,0,0}
     };
 #endif
@@ -105,10 +127,10 @@ void parse_cmdline(struct config *config, int argc, char **argv) {
 #ifdef __GLIBC__
         int option_index = 0;
 
-        ret = getopt_long(argc, argv, "hVvqN:c:d:DP:l:",
+        ret = getopt_long(argc, argv, "hVvqN:c:d:DP:l:u:",
                           long_options, &option_index);
 #else
-        ret = getopt(argc, argv, "hVvqN:c:d:DP:l:");
+        ret = getopt(argc, argv, "hVvqN:c:d:DP:l:u:");
 #endif
         if (ret == -1)
             break;
@@ -156,6 +178,10 @@ void parse_cmdline(struct config *config, int argc, char **argv) {
             daemon_config.logger = optarg;
             break;
 
+        case 'u':
+            parse_username(argv[0], optarg, &config->uid, &config->gid);
+            break;
+
         case '?':
             arg_error(argv[0], NULL);
 
@@ -176,6 +202,15 @@ void parse_cmdline(struct config *config, int argc, char **argv) {
 
     if (config->database == NULL)
         arg_error(argv[0], "no database specified");
+
+    if (debug_mode) {
+        if (config->uid != 0)
+            arg_error(argv[0], "cannot specify a user in debug mode");
+    } else {
+        /* non-root only for debugging */
+        if (config->uid == 0)
+            arg_error(argv[0], "no user name specified (-u)");
+    }
 }
 
 void config_dispose(struct config *config) {

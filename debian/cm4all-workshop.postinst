@@ -5,6 +5,18 @@ if [ "$1" = "configure" ]; then
     if [ -f /etc/default/cm4all-workshop ]; then
         chmod 0600 /etc/default/cm4all-workshop
     fi
+
+    if ! getent passwd cm4all-workshop >/dev/null; then
+	adduser --quiet --system --no-create-home \
+            --home /var/lib/cm4all/workshop \
+            --shell /usr/sbin/nologin \
+            cm4all-workshop
+    fi
+
+    if [ -d /var/log/cm4all/workshop ]; then
+        chown -R cm4all-workshop:adm /var/log/cm4all/workshop
+        chmod g+s /var/log/cm4all/workshop
+    fi
 fi
 
 #DEBHELPER#

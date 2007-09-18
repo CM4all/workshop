@@ -465,6 +465,16 @@ int workplace_start(struct workplace *workplace,
 
         clearenv();
 
+        /* swap effective uid back to root */
+
+        if (!debug_mode) {
+            ret = setreuid(0, 0);
+            if (ret < 0) {
+                perror("setreuid() to root failed");
+                exit(1);
+            }
+        }
+
         /* chroot */
 
         if (plan->chroot != NULL) {
