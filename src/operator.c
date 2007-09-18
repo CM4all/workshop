@@ -484,23 +484,19 @@ int workplace_start(struct workplace *workplace,
 
         /* UID / GID */
 
-        if (geteuid() == 0) {
+        if (!debug_mode) {
             ret = setgroups(plan->num_groups, plan->groups);
             if (ret < 0) {
                 fprintf(stderr, "setgroups() failed: %s\n", strerror(errno));
                 exit(1);
             }
-        }
 
-        if (getegid() != plan->gid || getuid() != plan->gid) {
             ret = setregid(plan->gid, plan->gid);
             if (ret < 0) {
                 fprintf(stderr, "setregid() failed: %s\n", strerror(errno));
                 exit(1);
             }
-        }
 
-        if (geteuid() != plan->uid || getuid() != plan->uid) {
             ret = setreuid(plan->uid, plan->uid);
             if (ret < 0) {
                 fprintf(stderr, "setreuid() failed: %s\n", strerror(errno));

@@ -19,6 +19,10 @@
 #include <errno.h>
 #include <signal.h>
 
+#ifndef NDEBUG
+int debug_mode = 0;
+#endif
+
 struct instance {
     struct library *library;
     struct queue *queue;
@@ -198,6 +202,11 @@ int main(int argc, char **argv) {
     struct config config;
     struct instance instance;
     int ret;
+
+#ifndef NDEBUG
+    if (geteuid() != 0)
+        debug_mode = 1;
+#endif
 
     /* configuration */
 
