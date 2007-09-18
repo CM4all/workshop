@@ -3,7 +3,7 @@ cm4all-workshop (0.2.3) unstable; urgency=low
   * set real uid to non-privileged user
   * call dh_installdirs in debian/rules
 
- --
+ -- Max Kellermann <mk@cm4all.com>  Tue, 18 Sep 2007 12:15:36 +0200
 
 cm4all-workshop (0.2.2) unstable; urgency=low
 
