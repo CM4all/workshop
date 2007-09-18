@@ -51,9 +51,9 @@
       <listitem>
         <para>
           Folgender Befehl gibt dem Workshop-Daemon die nötigen Rechte
-          (hier als Beispiel mit Username "workshop"):
+          (hier als Beispiel mit Username "cm4all-workshop"):
         </para>
-        <programlisting>GRANT SELECT, UPDATE ON jobs TO workshop;</programlisting>
+        <programlisting>GRANT SELECT, UPDATE ON jobs TO "cm4all-workshop";</programlisting>
 
         <para>
           Der Workshop-Client (Auftraggeber) benötigt folgende Rechte
