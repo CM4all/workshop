@@ -109,7 +109,7 @@ void parse_cmdline(struct config *config, int argc, char **argv) {
         {"help", 0, 0, 'h'},
         {"version", 0, 0, 'V'},
         {"verbose", 0, 0, 'v'},
-        {"quiet", 1, 0, 'q'},
+        {"quiet", 0, 0, 'q'},
         {"name", 1, 0, 'N'},
         {"concurrency", 1, 0, 'c'},
         {"database", 1, 0, 'd'},
