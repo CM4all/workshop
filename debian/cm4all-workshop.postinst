@@ -24,7 +24,7 @@ if [ "$1" = "configure" ]; then
 
     if [ -d /var/log/cm4all/workshop ]; then
         chown -R cm4all-logger:adm /var/log/cm4all/workshop
-        chmod g+s /var/log/cm4all/workshop
+        chmod 2750 /var/log/cm4all/workshop
     fi
 fi
 
