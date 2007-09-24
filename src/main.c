@@ -217,6 +217,10 @@ int main(int argc, char **argv) {
 
     memset(&instance, 0, sizeof(instance));
 
+    ret = daemonize_prepare();
+    if (ret < 0)
+        exit(2);
+
     ret = library_open("/etc/cm4all/workshop/plans", &instance.library);
     if (ret != 0) {
         fprintf(stderr, "library_open() failed\n");
