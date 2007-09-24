@@ -58,6 +58,7 @@ case "$1" in
             -- \
             --name "$NODE_NAME" --concurrency "$CONCURRENCY" \
             --user "$USER" \
+            --logger-user "$LOGGER_USER" \
             --pidfile "$PIDFILE" \
             $OPTIONS
 	log_end_msg $?
