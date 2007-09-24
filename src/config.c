@@ -86,21 +86,6 @@ static void arg_error(const char *argv0, const char *fmt, ...) {
     exit(1);
 }
 
-static void
-parse_username(const char *argv0, const char *name, uid_t *uid_r, gid_t *gid_r)
-{
-    const struct passwd *pwd = getpwnam(name);
-
-    if (pwd == NULL)
-        arg_error(argv0, "no such user: %s", name);
-
-    if (pwd->pw_uid == 0 || pwd->pw_gid == 0)
-        arg_error(argv0, "refuse to change to a superuser account");
-
-    *uid_r = pwd->pw_uid;
-    *gid_r = pwd->pw_gid;
-}
-
 /** read configuration options from the command line */
 void parse_cmdline(struct config *config, int argc, char **argv) {
     int ret;
@@ -179,7 +164,13 @@ void parse_cmdline(struct config *config, int argc, char **argv) {
             break;
 
         case 'u':
-            parse_username(argv[0], optarg, &config->uid, &config->gid);
+            if (debug_mode)
+                arg_error(argv[0], "cannot specify a user in debug mode");
+
+            daemon_user_by_name(&daemon_config.user, optarg, NULL);
+            daemon_config.user.real_uid_root = 1;
+            if (!daemon_user_defined(&daemon_config.user))
+                arg_error(argv[0], "refusing to run as root");
             break;
 
         case '?':
@@ -203,14 +194,8 @@ void parse_cmdline(struct config *config, int argc, char **argv) {
     if (config->database == NULL)
         arg_error(argv[0], "no database specified");
 
-    if (debug_mode) {
-        if (config->uid != 0)
-            arg_error(argv[0], "cannot specify a user in debug mode");
-    } else {
-        /* non-root only for debugging */
-        if (config->uid == 0)
-            arg_error(argv[0], "no user name specified (-u)");
-    }
+    if (!debug_mode && !daemon_user_defined(&daemon_config.user))
+        arg_error(argv[0], "no user name specified (-u)");
 }
 
 void config_dispose(struct config *config) {

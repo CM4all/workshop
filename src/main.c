@@ -20,10 +20,6 @@
 #include <signal.h>
 #include <grp.h>
 
-#ifdef __linux
-#include <sys/fsuid.h>
-#endif
-
 #ifndef NDEBUG
 int debug_mode = 0;
 #endif
@@ -216,43 +212,6 @@ int main(int argc, char **argv) {
     /* configuration */
 
     config_get(&config, argc, argv);
-
-    /* change user */
-
-    if (config.gid != 0) {
-        ret = setgroups(1, &config.gid);
-        if (ret < 0) {
-            perror("setgroups() failed");
-            exit(2);
-        }
-
-        ret = setregid(config.gid, config.gid);
-        if (ret < 0) {
-            perror("setregid() failed");
-            exit(2);
-        }
-    }
-
-    if (config.uid != 0) {
-        ret = setreuid(0, config.uid);
-        if (ret < 0) {
-            perror("setreuid() failed");
-            exit(2);
-        }
-
-#ifdef __linux
-        /* XXX this is required to write the pid file */
-        /* XXX start logger with real uid != 0 */
-
-        ret = setfsuid(0);
-        if (ret < 0) {
-            perror("setfsuid() failed");
-            exit(2);
-        }
-#else
-#error setfsuid() only available on Linux
-#endif
-    }
 
     /* set up */
 
