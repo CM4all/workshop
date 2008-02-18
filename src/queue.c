@@ -564,11 +564,7 @@ queue_run2(struct queue *queue)
         /* 16 is our row limit, and exactly 16 rows were returned - we
            suspect there may be more.  schedule next queue run in 1
            second */
-        struct timeval tv;
-
-        tv.tv_sec = 1;
-        tv.tv_usec = 0;
-        queue_set_timeout(queue, &tv);
+        queue_reschedule(queue);
     } else {
         struct timeval tv;
 
