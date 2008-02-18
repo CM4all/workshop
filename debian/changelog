@@ -3,6 +3,7 @@ cm4all-workshop (0.2.4) unstable; urgency=low
   * use the libdaemon user code
   * run logger as user "cm4all-logger"
   * delete log directory on purge
+  * bugfix: re-initialize event in queue_set_timeout()
 
  --
 

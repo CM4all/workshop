@@ -74,9 +74,16 @@ static void queue_event_callback(int fd, short event, void *ctx) {
 }
 
 static void queue_set_timeout(struct queue *queue, struct timeval *tv) {
+    short event = EV_TIMEOUT;
+
     assert(tv != NULL);
 
     event_del(&queue->event);
+
+    if (queue->fd >= 0)
+        event |= EV_READ|EV_PERSIST;
+    event_set(&queue->event, queue->fd, event,
+              queue_event_callback, queue);
     event_add(&queue->event, tv);
 }
 
@@ -147,7 +154,7 @@ int queue_open(const char *node_name, const char *conninfo,
     /* poll on libpq file descriptor */
 
     queue->fd = PQsocket(queue->conn);
-    event_set(&queue->event, queue->fd, EV_TIMEOUT|EV_READ|EV_PERSIST,
+    event_set(&queue->event, queue->fd, EV_READ|EV_PERSIST,
               queue_event_callback, queue);
     event_add(&queue->event, NULL);
 
