@@ -553,6 +553,8 @@ queue_run2(struct queue *queue)
         }
     }
 
+    /* update timeout */
+
     if (queue->disabled) {
         daemon_log(7, "queue has been disabled\n");
     } else if (queue->interrupt) {
