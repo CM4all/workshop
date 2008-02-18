@@ -95,7 +95,7 @@ static void reload_callback(int fd, short event, void *arg) {
 
     log(4, "reloading\n");
     update_library_and_filter(instance);
-    queue_run(instance->queue);
+    queue_reschedule(instance->queue);
 }
 
 static void child_callback(int fd, short event, void *arg) {

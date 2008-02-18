@@ -49,6 +49,9 @@ static int queue_autoreconnect(struct queue *queue);
 
 static int queue_has_notify(const struct queue *queue);
 
+static int
+queue_run(struct queue *queue);
+
 /** the poll() callback handler; this function handles notifies sent
     by the PostgreSQL server */
 static void queue_event_callback(int fd, short event, void *ctx) {
@@ -107,7 +110,9 @@ static void queue_set_timeout(struct queue *queue, struct timeval *tv) {
     event_add(&queue->event, tv);
 }
 
-static void queue_reschedule(struct queue *queue) {
+void
+queue_reschedule(struct queue *queue)
+{
     struct timeval tv;
 
     tv.tv_sec = 0;
@@ -588,7 +593,9 @@ static int queue_run2(struct queue *queue) {
     return num;
 }
 
-int queue_run(struct queue *queue) {
+static int
+queue_run(struct queue *queue)
+{
     int ret;
 
     queue->interrupt = 1;

@@ -19,6 +19,9 @@ struct job {
 
 typedef void (*queue_callback_t)(struct job *job, void *ctx);
 
+void
+queue_reschedule(struct queue *queue);
+
 int queue_open(const char *node_name, const char *conninfo,
                queue_callback_t callback, void *ctx,
                struct queue **queue_r);
@@ -28,8 +31,6 @@ void queue_close(struct queue **queue_r);
 void queue_set_filter(struct queue *queue, const char *plans_include,
                       const char *plans_exclude,
                       const char *plans_lowprio);
-
-int queue_run(struct queue *queue);
 
 void queue_disable(struct queue *queue);
 
