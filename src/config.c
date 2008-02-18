@@ -135,11 +135,11 @@ void parse_cmdline(struct config *config, int argc, char **argv) {
             exit(0);
 
         case 'v':
-            ++daemon_verbose;
+            ++daemon_log_config.verbose;
             break;
 
         case 'q':
-            daemon_verbose = 0;
+            daemon_log_config.verbose = 0;
             break;
 
         case 'N':
