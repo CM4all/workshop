@@ -482,7 +482,7 @@ static void
 queue_run2(struct queue *queue)
 {
     PGresult *result;
-    int ret, num;
+    int ret, num, full = 0;
     time_t now;
 
     assert(!queue->disabled);
@@ -526,10 +526,12 @@ queue_run2(struct queue *queue)
     if (num > 0) {
         queue_run_result(queue, num, result);
         PQclear(result);
+
+        if (num == 16)
+            full = 1;
     }
 
-    if (num < 16 && !queue->disabled &&
-        strcmp(queue->plans_lowprio, "{}") != 0) {
+    if (!queue->disabled && strcmp(queue->plans_lowprio, "{}") != 0) {
         /* now also select plans which are already running */
 
         daemon_log(7, "requesting new jobs from database II; plans_lowprio=%s\n",
@@ -544,6 +546,9 @@ queue_run2(struct queue *queue)
         if (num > 0) {
             queue_run_result(queue, num, result);
             PQclear(result);
+
+            if (num == 16)
+                full = 1;
         }
     }
 
@@ -559,7 +564,7 @@ queue_run2(struct queue *queue)
         daemon_log(7, "aborting queue run\n");
 
         queue_reschedule(queue);
-    } else if (num == 16) {
+    } else if (full) {
         /* 16 is our row limit, and exactly 16 rows were returned - we
            suspect there may be more.  schedule next queue run in 1
            second */
