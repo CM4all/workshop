@@ -83,11 +83,8 @@ static void queue_event_callback(int fd, short event, void *ctx) {
     PQconsumeInput(queue->conn);
 
     ret = queue_autoreconnect(queue);
-    if (ret != 0) {
-        if (ret > 0)
-            queue_run(queue);
+    if (ret != 0)
         return;
-    }
 
     if (event == EV_TIMEOUT && !queue->again)
         daemon_log(7, "queue timeout\n");
@@ -266,10 +263,7 @@ static int queue_reconnect(struct queue *queue) {
     /* register new socket */
 
     queue->fd = PQsocket(queue->conn);
-    queue->event_mask = EV_READ|EV_PERSIST;
-    event_set(&queue->event, queue->fd, queue->event_mask,
-              queue_event_callback, queue);
-    event_add(&queue->event, NULL);
+    queue_reschedule(queue);
 
     queue->disconnected = 0;
 
