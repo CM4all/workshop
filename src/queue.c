@@ -464,8 +464,12 @@ void queue_set_filter(struct queue *queue, const char *plans_include,
     r2 = copy_string(&queue->plans_exclude, plans_exclude);
     copy_string(&queue->plans_lowprio, plans_lowprio);
 
-    if (r1 || r2)
-        queue_run(queue);
+    if (r1 || r2) {
+        if (queue->running)
+            queue->interrupt = 1;
+        else
+            queue_run(queue);
+    }
 }
 
 static int queue_run2(struct queue *queue) {
@@ -598,9 +602,9 @@ queue_run(struct queue *queue)
 {
     int ret;
 
-    queue->interrupt = 1;
+    assert(!queue->running);
 
-    if (queue->running || queue->disabled)
+    if (queue->disabled)
         return 0;
 
     queue->running = 1;
