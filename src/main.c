@@ -5,6 +5,7 @@
  */
 
 #include "workshop.h"
+#include "queue.h"
 #include "version.h"
 
 #include <daemon/daemonize.h>

@@ -4,12 +4,13 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#include "workshop.h"
+#include "queue.h"
 #include "pg-util.h"
 #include "pg-queue.h"
 
 #include <daemon/log.h>
 
+#include <sys/types.h>
 #include <event.h>
 
 #include <assert.h>

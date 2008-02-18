@@ -5,6 +5,7 @@
  */
 
 #include "workshop.h"
+#include "queue.h"
 #include "syslog.h"
 #include "strhash.h"
 #include "pg-util.h"

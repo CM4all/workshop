@@ -35,41 +35,6 @@ void parse_cmdline(struct config *config, int argc, char **argv);
 void config_dispose(struct config *config);
 
 
-/* queue.c */
-
-struct queue;
-
-struct job {
-    struct queue *queue;
-    char *id, *plan_name, *syslog_server;
-    struct strarray args;
-};
-
-typedef void (*queue_callback_t)(struct job *job, void *ctx);
-
-int queue_open(const char *node_name, const char *conninfo,
-               queue_callback_t callback, void *ctx,
-               struct queue **queue_r);
-
-void queue_close(struct queue **queue_r);
-
-void queue_set_filter(struct queue *queue, const char *plans_include,
-                      const char *plans_exclude,
-                      const char *plans_lowprio);
-
-int queue_run(struct queue *queue);
-
-void queue_disable(struct queue *queue);
-
-void queue_enable(struct queue *queue);
-
-int job_set_progress(struct job *job, unsigned progress,
-                     const char *timeout);
-
-int job_rollback(struct job **job_r);
-
-int job_done(struct job **job_r, int status);
-
 /* plan.c */
 
 /** a library is a container for plan objects */
