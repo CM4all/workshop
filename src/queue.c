@@ -25,9 +25,6 @@ struct queue {
     int fd;
     int disabled, running;
 
-    /** is the database connection currently down? */
-    int disconnected;
-
     /** if set to 1, the current queue run should be interrupted, to
         be started again */
     int interrupt;
@@ -238,8 +235,6 @@ static int queue_reconnect(struct queue *queue) {
 
     /* reconnect */
 
-    queue->disconnected = 1;
-
     PQreset(queue->conn);
 
     if (PQstatus(queue->conn) != CONNECTION_OK) {
@@ -263,7 +258,6 @@ static int queue_reconnect(struct queue *queue) {
 
     /* register new socket */
 
-    queue->disconnected = 0;
     queue->fd = PQsocket(queue->conn);
     queue_reschedule(queue);
 
@@ -274,7 +268,7 @@ static int queue_autoreconnect(struct queue *queue) {
     if (PQstatus(queue->conn) == CONNECTION_OK)
         return 0;
 
-    if (queue->disconnected)
+    if (queue->fd < 0)
         daemon_log(2, "re-trying to reconnect to PostgreSQL\n");
     else
         daemon_log(2, "connection to PostgreSQL lost; trying to reconnect\n");
