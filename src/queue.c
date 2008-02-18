@@ -74,6 +74,8 @@ static void queue_event_callback(int fd, short event, void *ctx) {
 }
 
 static void queue_set_timeout(struct queue *queue, struct timeval *tv) {
+    assert(tv != NULL);
+
     event_del(&queue->event);
     event_add(&queue->event, tv);
 }
