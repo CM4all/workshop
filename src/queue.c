@@ -8,6 +8,8 @@
 #include "pg-util.h"
 #include "pg-queue.h"
 
+#include <daemon/log.h>
+
 #include <event.h>
 
 #include <assert.h>
@@ -83,7 +85,7 @@ static void queue_event_callback(int fd, short event, void *ctx) {
     }
 
     if (event == EV_TIMEOUT && !queue->again)
-        log(7, "queue timeout\n");
+        daemon_log(7, "queue timeout\n");
 
     ret = queue->again;
     queue->again = 0;
@@ -157,7 +159,7 @@ int queue_open(const char *node_name, const char *conninfo,
     }
 
     if (ret > 0) {
-        log(2, "released %d stale jobs\n", ret);
+        daemon_log(2, "released %d stale jobs\n", ret);
         pg_notify(queue->conn);
     }
 
@@ -237,8 +239,8 @@ static int queue_reconnect(struct queue *queue) {
     if (PQstatus(queue->conn) != CONNECTION_OK) {
         struct timeval tv;
 
-        log(2, "reconnect to PostgreSQL failed: %s\n",
-            PQerrorMessage(queue->conn));
+        daemon_log(2, "reconnect to PostgreSQL failed: %s\n",
+                   PQerrorMessage(queue->conn));
 
         tv.tv_sec = 10;
         tv.tv_usec = 0;
@@ -251,7 +253,7 @@ static int queue_reconnect(struct queue *queue) {
 
     ret = pg_listen(queue->conn);
     if (ret < 0)
-        log(1, "re-LISTEN failed\n");
+        daemon_log(1, "re-LISTEN failed\n");
 
     /* register new socket */
 
@@ -271,9 +273,9 @@ static int queue_autoreconnect(struct queue *queue) {
         return 0;
 
     if (queue->disconnected)
-        log(2, "re-trying to reconnect to PostgreSQL\n");
+        daemon_log(2, "re-trying to reconnect to PostgreSQL\n");
     else
-        log(2, "connection to PostgreSQL lost; trying to reconnect\n");
+        daemon_log(2, "connection to PostgreSQL lost; trying to reconnect\n");
 
     return queue_reconnect(queue);
 }
@@ -286,8 +288,8 @@ static int queue_has_notify(const struct queue *queue) {
         return 0;
 
     while ((notify = PQnotifies(queue->conn)) != NULL) {
-        log(6, "async notify '%s' received from backend pid %d\n",
-            notify->relname, notify->be_pid);
+        daemon_log(6, "async notify '%s' received from backend pid %d\n",
+                   notify->relname, notify->be_pid);
         if (strcmp(notify->relname, "new_job") == 0)
             ret = 1;
         PQfreemem(notify);
@@ -408,7 +410,7 @@ static int get_and_claim_job(struct queue *queue, PGresult *res, int row,
     if (ret <= 0)
         return ret;
 
-    log(6, "attempting to claim job %s\n", job->id);
+    daemon_log(6, "attempting to claim job %s\n", job->id);
 
     ret = pg_claim_job(queue->conn, job->id, queue->node_name,
                        timeout);
@@ -418,12 +420,12 @@ static int get_and_claim_job(struct queue *queue, PGresult *res, int row,
     }
 
     if (ret == 0) {
-        log(6, "job %s was not claimed\n", job->id);
+        daemon_log(6, "job %s was not claimed\n", job->id);
         free_job(&job);
         return 0;
     }
 
-    log(6, "job %s claimed\n", job->id);
+    daemon_log(6, "job %s claimed\n", job->id);
 
     queue_check_notify(queue);
 
@@ -487,7 +489,7 @@ static int queue_run2(struct queue *queue) {
             return -1;
 
         if (ret > 0) {
-            log(2, "released %d expired jobs\n", ret);
+            daemon_log(2, "released %d expired jobs\n", ret);
             pg_notify(queue->conn);
         }
     }
@@ -496,8 +498,8 @@ static int queue_run2(struct queue *queue) {
 
     queue->interrupt = 0;
 
-    log(7, "requesting new jobs from database; plans_include=%s plans_exclude=%s plans_lowprio=%s\n",
-        queue->plans_include, queue->plans_exclude, queue->plans_lowprio);
+    daemon_log(7, "requesting new jobs from database; plans_include=%s plans_exclude=%s plans_lowprio=%s\n",
+               queue->plans_include, queue->plans_exclude, queue->plans_lowprio);
 
     num = pg_select_new_jobs(queue->conn,
                              queue->plans_include,
@@ -523,8 +525,8 @@ static int queue_run2(struct queue *queue) {
     if (!queue->disabled && strcmp(queue->plans_lowprio, "{}") != 0) {
         /* now also select plans which are already running */
 
-        log(7, "requesting new jobs from database II; plans_lowprio=%s\n",
-            queue->plans_lowprio);
+        daemon_log(7, "requesting new jobs from database II; plans_lowprio=%s\n",
+                   queue->plans_lowprio);
 
         num = pg_select_new_jobs(queue->conn,
                                  queue->plans_lowprio,
@@ -549,7 +551,7 @@ static int queue_run2(struct queue *queue) {
     }
 
     if (queue->disabled) {
-        log(7, "queue has been disabled\n");
+        daemon_log(7, "queue has been disabled\n");
         return num;
     }
 
@@ -557,7 +559,7 @@ static int queue_run2(struct queue *queue) {
 
     if (queue->interrupt) {
         /* we have been interrupted: run again in 100ms */
-        log(7, "aborting queue run\n");
+        daemon_log(7, "aborting queue run\n");
 
         queue_set_again(queue);
     } else if (num == 16) {
@@ -574,7 +576,7 @@ static int queue_run2(struct queue *queue) {
 
         queue_next_scheduled(queue, &ret);
         if (ret >= 0)
-            log(3, "next scheduled job is in %d seconds\n", ret);
+            daemon_log(3, "next scheduled job is in %d seconds\n", ret);
         else
             ret = 600;
 
@@ -622,7 +624,7 @@ int job_set_progress(struct job *job, unsigned progress,
                      const char *timeout) {
     int ret;
 
-    log(5, "job %s progress=%u\n", job->id, progress);
+    daemon_log(5, "job %s progress=%u\n", job->id, progress);
 
     ret = pg_set_job_progress(job->queue->conn, job->id, progress,
                               timeout);
@@ -646,7 +648,7 @@ int job_rollback(struct job **job_r) {
     if (ret < 0)
         return -1;
 
-    log(6, "rolling back job %s\n", job->id);
+    daemon_log(6, "rolling back job %s\n", job->id);
 
     pg_rollback_job(job->queue->conn, job->id);
 
@@ -673,7 +675,7 @@ int job_done(struct job **job_r, int status) {
     if (ret < 0)
         return -1;
 
-    log(6, "job %s done with status %d\n", job->id, status);
+    daemon_log(6, "job %s done with status %d\n", job->id, status);
 
     pg_set_job_done(job->queue->conn, job->id, status);
 
