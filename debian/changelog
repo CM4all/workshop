@@ -6,7 +6,7 @@ cm4all-workshop (0.2.4) unstable; urgency=low
   * bugfix: re-initialize event in queue_set_timeout()
   * moved DH_COMPAT to debian/compat
 
- --
+ -- Max Kellermann <mk@cm4all.com>  Mon, 18 Feb 2008 14:06:07 +0100
 
 cm4all-workshop (0.2.3) unstable; urgency=low
 
