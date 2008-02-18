@@ -61,6 +61,7 @@ static void queue_event_callback(int fd, short event, void *ctx) {
     (void)fd;
 
     assert(fd == queue->fd);
+    assert(!queue->running);
 
     if ((queue->event_mask & EV_TIMEOUT) != 0) {
         assert((queue->event_mask & EV_PERSIST) == 0);
@@ -95,6 +96,8 @@ static void queue_event_callback(int fd, short event, void *ctx) {
         queue->again = 0;
         queue_run(queue);
     }
+
+    assert(!queue->running);
 }
 
 static void queue_set_timeout(struct queue *queue, struct timeval *tv) {
