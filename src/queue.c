@@ -295,13 +295,10 @@ static int queue_has_notify(const struct queue *queue) {
 }
 
 static void queue_check_notify(struct queue *queue) {
-    if (!queue_has_notify(queue))
-        return;
-
-    /* there are pending notifies - set a very short timeout, so
-       libevent will call us very soon */
-
-    queue_reschedule(queue);
+    if (queue_has_notify(queue))
+        /* there are pending notifies - set a very short timeout, so
+           libevent will call us very soon */
+        queue_reschedule(queue);
 }
 
 static int queue_next_scheduled(struct queue *queue, int *span_r) {
