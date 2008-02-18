@@ -555,12 +555,7 @@ queue_run2(struct queue *queue)
 
     if (queue->disabled) {
         daemon_log(7, "queue has been disabled\n");
-        return;
-    }
-
-    /* update timeout */
-
-    if (queue->interrupt) {
+    } else if (queue->interrupt) {
         /* we have been interrupted: run again in 100ms */
         daemon_log(7, "aborting queue run\n");
 
