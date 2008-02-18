@@ -262,10 +262,9 @@ static int queue_reconnect(struct queue *queue) {
 
     /* register new socket */
 
+    queue->disconnected = 0;
     queue->fd = PQsocket(queue->conn);
     queue_reschedule(queue);
-
-    queue->disconnected = 0;
 
     return 1;
 }
