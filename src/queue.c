@@ -49,7 +49,7 @@ static int queue_autoreconnect(struct queue *queue);
 
 static int queue_has_notify(const struct queue *queue);
 
-static int
+static void
 queue_run(struct queue *queue);
 
 /** the poll() callback handler; this function handles notifies sent
@@ -587,23 +587,19 @@ static int queue_run2(struct queue *queue) {
     return num;
 }
 
-static int
+static void
 queue_run(struct queue *queue)
 {
-    int ret;
-
     assert(!queue->running);
 
     if (queue->disabled)
         return 0;
 
     queue->running = 1;
-    ret = queue_run2(queue);
+    queue_run2(queue);
     queue->running = 0;
 
     queue_check_notify(queue);
-
-    return ret;
 }
 
 void queue_disable(struct queue *queue) {
