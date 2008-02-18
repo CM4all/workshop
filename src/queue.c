@@ -33,6 +33,8 @@ struct queue {
     int again;
 
     struct event event;
+    short event_mask;
+
     char *plans_include, *plans_exclude, *plans_lowprio;
     time_t next_expire_check;
 
@@ -54,6 +56,23 @@ static void queue_event_callback(int fd, short event, void *ctx) {
 
     assert(fd == queue->fd);
 
+    if ((queue->event_mask & EV_TIMEOUT) != 0) {
+        assert((queue->event_mask & EV_PERSIST) == 0);
+
+        event_del(&queue->event);
+
+        if (queue->fd >= 0) {
+            /* restore EV_PERSIST */
+            queue->event_mask = EV_READ|EV_PERSIST;
+            event_set(&queue->event, queue->fd, queue->event_mask,
+                      queue_event_callback, queue);
+            event_add(&queue->event, NULL);
+        } else
+            queue->event_mask = 0;
+    } else {
+        assert(queue->event_mask == (EV_READ|EV_PERSIST));
+    }
+
     PQconsumeInput(queue->conn);
 
     ret = queue_autoreconnect(queue);
@@ -74,15 +93,14 @@ static void queue_event_callback(int fd, short event, void *ctx) {
 }
 
 static void queue_set_timeout(struct queue *queue, struct timeval *tv) {
-    short event = EV_TIMEOUT;
-
     assert(tv != NULL);
 
     event_del(&queue->event);
 
+    queue->event_mask = EV_TIMEOUT;
     if (queue->fd >= 0)
-        event |= EV_READ|EV_PERSIST;
-    event_set(&queue->event, queue->fd, event,
+        queue->event_mask |= EV_READ;
+    event_set(&queue->event, queue->fd, queue->event_mask,
               queue_event_callback, queue);
     event_add(&queue->event, tv);
 }
@@ -154,7 +172,8 @@ int queue_open(const char *node_name, const char *conninfo,
     /* poll on libpq file descriptor */
 
     queue->fd = PQsocket(queue->conn);
-    event_set(&queue->event, queue->fd, EV_READ|EV_PERSIST,
+    queue->event_mask = EV_READ|EV_PERSIST;
+    event_set(&queue->event, queue->fd, queue->event_mask,
               queue_event_callback, queue);
     event_add(&queue->event, NULL);
 
@@ -178,8 +197,7 @@ void queue_close(struct queue **queue_r) {
 
     assert(!queue->running);
 
-    if (queue->fd >= 0)
-        event_del(&queue->event);
+    event_del(&queue->event);
 
     if (queue->conn != NULL)
         PQfinish(queue->conn);
@@ -206,6 +224,7 @@ static int queue_reconnect(struct queue *queue) {
 
     if (queue->fd >= 0) {
         event_del(&queue->event);
+        queue->event_mask = 0;
         queue->fd = -1;
     }
 
@@ -237,7 +256,8 @@ static int queue_reconnect(struct queue *queue) {
     /* register new socket */
 
     queue->fd = PQsocket(queue->conn);
-    event_set(&queue->event, queue->fd, EV_READ|EV_PERSIST,
+    queue->event_mask = EV_READ|EV_PERSIST;
+    event_set(&queue->event, queue->fd, queue->event_mask,
               queue_event_callback, queue);
     event_add(&queue->event, NULL);
 
