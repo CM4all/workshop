@@ -107,7 +107,7 @@ static void queue_set_timeout(struct queue *queue, struct timeval *tv) {
     event_add(&queue->event, tv);
 }
 
-static void queue_set_again(struct queue *queue) {
+static void queue_reschedule(struct queue *queue) {
     struct timeval tv;
 
     tv.tv_sec = 0;
@@ -305,7 +305,7 @@ static void queue_check_notify(struct queue *queue) {
     /* there are pending notifies - set a very short timeout, so
        libevent will call us very soon */
 
-    queue_set_again(queue);
+    queue_reschedule(queue);
 }
 
 static int queue_next_scheduled(struct queue *queue, int *span_r) {
@@ -561,7 +561,7 @@ static int queue_run2(struct queue *queue) {
         /* we have been interrupted: run again in 100ms */
         daemon_log(7, "aborting queue run\n");
 
-        queue_set_again(queue);
+        queue_reschedule(queue);
     } else if (num == 16) {
         /* 16 is our row limit, and exactly 16 rows were returned - we
            suspect there may be more.  schedule next queue run in 1
