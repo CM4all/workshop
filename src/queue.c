@@ -468,10 +468,24 @@ void queue_set_filter(struct queue *queue, const char *plans_include,
     }
 }
 
+static void
+queue_run_result(struct queue *queue, int num, PGresult *result)
+{
+    int row, ret;
+    struct job *job;
+
+    for (row = 0; row < num && !queue->disabled && !queue->interrupt; ++row) {
+        ret = get_and_claim_job(queue, result, row, "5 minutes", &job);
+        if (ret > 0)
+            queue->callback(job, queue->ctx);
+        else if (ret < 0)
+            break;
+    }
+}
+
 static int queue_run2(struct queue *queue) {
     PGresult *result;
-    int ret, row, num;
-    struct job *job;
+    int ret, num;
     time_t now;
 
     if (queue->plans_include == NULL ||
@@ -513,17 +527,7 @@ static int queue_run2(struct queue *queue) {
                              16,
                              &result);
     if (num > 0) {
-        for (row = 0; row < num && !queue->disabled && !queue->interrupt; ++row) {
-            ret = get_and_claim_job(queue, result, row, "5 minutes", &job);
-            if (ret < 0)
-                break;
-
-            if (ret == 0)
-                continue;
-
-            queue->callback(job, queue->ctx);
-        }
-
+        queue_run_result(queue, num, result);
         PQclear(result);
     }
 
@@ -540,17 +544,7 @@ static int queue_run2(struct queue *queue) {
                                  16,
                                  &result);
         if (num > 0) {
-            for (row = 0; row < num && !queue->disabled && !queue->interrupt; ++row) {
-                ret = get_and_claim_job(queue, result, row, "5 minutes", &job);
-                if (ret < 0)
-                    break;
-
-                if (ret == 0)
-                    continue;
-
-                queue->callback(job, queue->ctx);
-            }
-
+            queue_run_result(queue, num, result);
             PQclear(result);
         }
     }
