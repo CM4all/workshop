@@ -88,11 +88,10 @@ static void queue_event_callback(int fd, short event, void *ctx) {
     if (event == EV_TIMEOUT && !queue->again)
         daemon_log(7, "queue timeout\n");
 
-    ret = queue->again;
-    queue->again = 0;
-
-    if (queue_has_notify(queue) || ret || event == EV_TIMEOUT)
+    if (queue_has_notify(queue) || queue->again || event == EV_TIMEOUT) {
+        queue->again = 0;
         queue_run(queue);
+    }
 }
 
 static void queue_set_timeout(struct queue *queue, struct timeval *tv) {
