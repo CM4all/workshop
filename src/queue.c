@@ -91,7 +91,8 @@ static void queue_event_callback(int fd, short event, void *ctx) {
 
     if (queue_has_notify(queue) || queue->again || event == EV_TIMEOUT) {
         queue->again = 0;
-        queue_run(queue);
+        if (!queue->disabled)
+            queue_run(queue);
     }
 
     assert(!queue->running);
@@ -463,7 +464,7 @@ void queue_set_filter(struct queue *queue, const char *plans_include,
     if (r1 || r2) {
         if (queue->running)
             queue->interrupt = 1;
-        else
+        else if (!queue->disabled)
             queue_run(queue);
     }
 }
@@ -489,6 +490,8 @@ queue_run2(struct queue *queue)
     PGresult *result;
     int ret, num;
     time_t now;
+
+    assert(!queue->disabled);
 
     if (queue->plans_include == NULL ||
         strcmp(queue->plans_include, "{}") == 0 ||
@@ -590,6 +593,7 @@ queue_run2(struct queue *queue)
 static void
 queue_run(struct queue *queue)
 {
+    assert(!queue->disabled);
     assert(!queue->running);
 
     if (queue->disabled)
