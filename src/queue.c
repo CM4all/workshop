@@ -464,7 +464,7 @@ void queue_set_filter(struct queue *queue, const char *plans_include,
     if (r1 || r2) {
         if (queue->running)
             queue->interrupt = 1;
-        else if (!queue->disabled)
+        else if (!queue->disabled && queue->fd >= 0)
             queue_run(queue);
     }
 }
@@ -492,14 +492,12 @@ queue_run2(struct queue *queue)
     time_t now;
 
     assert(!queue->disabled);
+    assert(queue->running);
+    assert(!queue->fd >= 0);
 
     if (queue->plans_include == NULL ||
         strcmp(queue->plans_include, "{}") == 0 ||
         queue->plans_exclude == NULL)
-        return;
-
-    ret = queue_autoreconnect(queue);
-    if (ret < 0)
         return;
 
     /* check expired jobs from all other nodes except us */
@@ -595,6 +593,7 @@ queue_run(struct queue *queue)
 {
     assert(!queue->disabled);
     assert(!queue->running);
+    assert(!queue->fd >= 0);
 
     if (queue->disabled)
         return;
@@ -620,7 +619,9 @@ void queue_enable(struct queue *queue) {
         return;
 
     queue->disabled = 0;
-    queue_run(queue);
+
+    if (queue->fd >= 0)
+        queue_run(queue);
 }
 
 int job_set_progress(struct job *job, unsigned progress,
