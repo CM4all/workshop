@@ -531,7 +531,8 @@ queue_run2(struct queue *queue)
             full = 1;
     }
 
-    if (!queue->disabled && !queue->interrupt && strcmp(queue->plans_lowprio, "{}") != 0) {
+    if (!queue->disabled && !queue->interrupt &&
+        strcmp(queue->plans_lowprio, "{}") != 0) {
         /* now also select plans which are already running */
 
         daemon_log(7, "requesting new jobs from database II; plans_lowprio=%s\n",
