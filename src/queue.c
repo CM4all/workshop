@@ -613,6 +613,8 @@ void queue_disable(struct queue *queue) {
 }
 
 void queue_enable(struct queue *queue) {
+    assert(!queue->running);
+
     if (!queue->disabled)
         return;
 
