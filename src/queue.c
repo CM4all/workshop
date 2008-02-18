@@ -528,7 +528,8 @@ queue_run2(struct queue *queue)
         PQclear(result);
     }
 
-    if (!queue->disabled && strcmp(queue->plans_lowprio, "{}") != 0) {
+    if (num < 16 && !queue->disabled &&
+        strcmp(queue->plans_lowprio, "{}") != 0) {
         /* now also select plans which are already running */
 
         daemon_log(7, "requesting new jobs from database II; plans_lowprio=%s\n",
