@@ -483,7 +483,9 @@ queue_run_result(struct queue *queue, int num, PGresult *result)
     }
 }
 
-static int queue_run2(struct queue *queue) {
+static void
+queue_run2(struct queue *queue)
+{
     PGresult *result;
     int ret, num;
     time_t now;
@@ -491,11 +493,11 @@ static int queue_run2(struct queue *queue) {
     if (queue->plans_include == NULL ||
         strcmp(queue->plans_include, "{}") == 0 ||
         queue->plans_exclude == NULL)
-        return 0;
+        return;
 
     ret = queue_autoreconnect(queue);
     if (ret < 0)
-        return -1;
+        return;
 
     /* check expired jobs from all other nodes except us */
 
@@ -505,7 +507,7 @@ static int queue_run2(struct queue *queue) {
 
         ret = pg_expire_jobs(queue->conn, queue->node_name);
         if (ret < 0)
-            return -1;
+            return;
 
         if (ret > 0) {
             daemon_log(2, "released %d expired jobs\n", ret);
@@ -551,7 +553,7 @@ static int queue_run2(struct queue *queue) {
 
     if (queue->disabled) {
         daemon_log(7, "queue has been disabled\n");
-        return num;
+        return;
     }
 
     /* update timeout */
@@ -583,8 +585,6 @@ static int queue_run2(struct queue *queue) {
         tv.tv_usec = 0;
         queue_set_timeout(queue, &tv);
     }
-
-    return num;
 }
 
 static void
@@ -593,7 +593,7 @@ queue_run(struct queue *queue)
     assert(!queue->running);
 
     if (queue->disabled)
-        return 0;
+        return;
 
     queue->running = 1;
     queue_run2(queue);
