@@ -4,7 +4,7 @@ cm4all-workshop (1.0.1) unstable; urgency=low
     retain compatibility with old .default files
   * build with libpq5 (PostgreSQL 8.3)
 
- --
+ -- Max Kellermann <mk@cm4all.com>  Mon, 02 Mar 2009 12:07:20 +0100
 
 cm4all-workshop (1.0) unstable; urgency=low
 
