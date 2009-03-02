@@ -2,6 +2,7 @@ cm4all-workshop (1.0.1) unstable; urgency=low
 
   * renamed the .default variable "USER" to "WORKSHOP_USER", trying to
     retain compatibility with old .default files
+  * build with libpq5 (PostgreSQL 8.3)
 
  --
 
