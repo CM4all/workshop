@@ -1,6 +1,7 @@
 cm4all-workshop (1.0.2) unstable; urgency=low
 
-  * 
+  * finished the "USER" to "WORKSHOP_USER" variable rename in the init
+    script
 
  --
 
