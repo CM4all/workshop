@@ -30,11 +30,16 @@ struct queue {
         be started again */
     int interrupt;
 
-    /** the next timeout is just a queue_run() restart */
-    int again;
+    /**
+     * For detecting notifies from PostgreSQL.
+     */
+    struct event read_event;
 
-    struct event event;
-    short event_mask;
+    /**
+     * Timer event for which runs the queue or reconnects to
+     * PostgreSQL.
+     */
+    struct event timer_event;
 
     char *plans_include, *plans_exclude, *plans_lowprio;
     time_t next_expire_check;
@@ -53,7 +58,8 @@ queue_run(struct queue *queue);
 /** the poll() callback handler; this function handles notifies sent
     by the PostgreSQL server */
 static void
-queue_event_callback(G_GNUC_UNUSED int fd, short event, void *ctx)
+queue_event_callback(G_GNUC_UNUSED int fd, G_GNUC_UNUSED short event,
+                     void *ctx)
 {
     struct queue *queue = (struct queue*)ctx;
     int ret;
@@ -61,36 +67,32 @@ queue_event_callback(G_GNUC_UNUSED int fd, short event, void *ctx)
     assert(fd == queue->fd);
     assert(!queue->running);
 
-    if ((queue->event_mask & EV_TIMEOUT) != 0) {
-        assert((queue->event_mask & EV_PERSIST) == 0);
-
-        event_del(&queue->event);
-
-        if (queue->fd >= 0) {
-            /* restore EV_PERSIST */
-            queue->event_mask = EV_READ|EV_PERSIST;
-            event_set(&queue->event, queue->fd, queue->event_mask,
-                      queue_event_callback, queue);
-            event_add(&queue->event, NULL);
-        } else
-            queue->event_mask = 0;
-    } else {
-        assert(queue->event_mask == (EV_READ|EV_PERSIST));
-    }
-
     PQconsumeInput(queue->conn);
 
     ret = queue_autoreconnect(queue);
     if (ret != 0)
         return;
 
-    if (event == EV_TIMEOUT && !queue->again)
-        daemon_log(7, "queue timeout\n");
-
-    if (queue_has_notify(queue) || queue->again || event == EV_TIMEOUT) {
-        queue->again = 0;
+    if (queue_has_notify(queue))
         queue_run(queue);
-    }
+
+    assert(!queue->running);
+}
+
+static void
+queue_timer_event_callback(G_GNUC_UNUSED int fd, G_GNUC_UNUSED short event,
+                           void *ctx)
+{
+    struct queue *queue = (struct queue *)ctx;
+    int ret;
+
+    assert(!queue->running);
+
+    ret = queue_autoreconnect(queue);
+    if (ret != 0)
+        return;
+
+    queue_run(queue);
 
     assert(!queue->running);
 }
@@ -98,14 +100,8 @@ queue_event_callback(G_GNUC_UNUSED int fd, short event, void *ctx)
 static void queue_set_timeout(struct queue *queue, struct timeval *tv) {
     assert(tv != NULL);
 
-    event_del(&queue->event);
-
-    queue->event_mask = EV_TIMEOUT;
-    if (queue->fd >= 0)
-        queue->event_mask |= EV_READ;
-    event_set(&queue->event, queue->fd, queue->event_mask,
-              queue_event_callback, queue);
-    event_add(&queue->event, tv);
+    evtimer_del(&queue->timer_event);
+    evtimer_add(&queue->timer_event, tv);
 }
 
 void
@@ -117,8 +113,6 @@ queue_reschedule(struct queue *queue)
     tv.tv_usec = 10000;
 
     queue_set_timeout(queue, &tv);
-
-    queue->again = 1;
 }
 
 int queue_open(const char *node_name, const char *conninfo,
@@ -177,10 +171,11 @@ int queue_open(const char *node_name, const char *conninfo,
     /* poll on libpq file descriptor */
 
     queue->fd = PQsocket(queue->conn);
-    queue->event_mask = EV_READ|EV_PERSIST;
-    event_set(&queue->event, queue->fd, queue->event_mask,
+    event_set(&queue->read_event, queue->fd, EV_READ|EV_PERSIST,
               queue_event_callback, queue);
-    event_add(&queue->event, NULL);
+    event_add(&queue->read_event, NULL);
+
+    evtimer_set(&queue->timer_event, queue_timer_event_callback, queue);
 
     queue->callback = callback;
     queue->ctx = ctx;
@@ -202,7 +197,10 @@ void queue_close(struct queue **queue_r) {
 
     assert(!queue->running);
 
-    event_del(&queue->event);
+    if (queue->fd >= 0)
+        event_del(&queue->read_event);
+
+    evtimer_del(&queue->timer_event);
 
     if (queue->conn != NULL)
         PQfinish(queue->conn);
@@ -228,8 +226,7 @@ static int queue_reconnect(struct queue *queue) {
     /* unregister old socket */
 
     if (queue->fd >= 0) {
-        event_del(&queue->event);
-        queue->event_mask = 0;
+        event_del(&queue->read_event);
         queue->fd = -1;
     }
 
@@ -259,6 +256,10 @@ static int queue_reconnect(struct queue *queue) {
     /* register new socket */
 
     queue->fd = PQsocket(queue->conn);
+    event_set(&queue->read_event, queue->fd, EV_READ|EV_PERSIST,
+              queue_event_callback, queue);
+    event_add(&queue->read_event, NULL);
+
     queue_reschedule(queue);
 
     return 1;
