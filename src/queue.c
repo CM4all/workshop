@@ -121,15 +121,8 @@ int queue_open(const char *node_name, const char *conninfo,
     struct queue *queue;
     int ret;
 
-    queue = (struct queue*)calloc(1, sizeof(*queue));
-    if (queue == NULL)
-        return errno;
-
-    queue->node_name = strdup(node_name);
-    if (queue->node_name == NULL) {
-        queue_close(&queue);
-        return -1;
-    }
+    queue = g_new0(struct queue, 0);
+    queue->node_name = g_strdup(node_name);
 
     /* connect to PostgreSQL */
 
@@ -205,19 +198,11 @@ void queue_close(struct queue **queue_r) {
     if (queue->conn != NULL)
         PQfinish(queue->conn);
 
-    if (queue->plans_include != NULL)
-        free(queue->plans_include);
-
-    if (queue->plans_exclude != NULL)
-        free(queue->plans_exclude);
-
-    if (queue->plans_lowprio != NULL)
-        free(queue->plans_lowprio);
-
-    if (queue->node_name != NULL)
-        free(queue->node_name);
-
-    free(queue);
+    g_free(queue->plans_include);
+    g_free(queue->plans_exclude);
+    g_free(queue->plans_lowprio);
+    g_free(queue->node_name);
+    g_free(queue);
 }
 
 static int queue_reconnect(struct queue *queue) {
@@ -333,7 +318,7 @@ static int queue_next_scheduled(struct queue *queue, int *span_r) {
 static char *my_strdup(const char *p) {
     if (p == NULL || *p == 0)
         return NULL;
-    return strdup(p);
+    return g_strdup(p);
 }
 
 static void free_job(struct job **job_r) {
@@ -345,16 +330,13 @@ static void free_job(struct job **job_r) {
     job = *job_r;
     *job_r = NULL;
 
-    if (job->id != NULL)
-        free(job->id);
-    if (job->plan_name != NULL)
-        free(job->plan_name);
-    if (job->syslog_server != NULL)
-        free(job->syslog_server);
+    g_free(job->id);
+    g_free(job->plan_name);
+    g_free(job->syslog_server);
 
     strarray_free(&job->args);
 
-    free(job);
+    g_free(job);
 }
 
 static int get_job(struct queue *queue, PGresult *res, int row,
@@ -365,7 +347,7 @@ static int get_job(struct queue *queue, PGresult *res, int row,
     assert(queue != NULL);
     assert(job_r != NULL);
 
-    job = (struct job*)calloc(1, sizeof(*job));
+    job = g_new0(struct job, 1);
     if (job == NULL)
         return -1;
 
@@ -435,12 +417,10 @@ static int copy_string(char **dest_r, const char *src) {
         if (strcmp(*dest_r, src) == 0)
             return 0;
 
-        free(*dest_r);
+        g_free(*dest_r);
     }
 
-    *dest_r = strdup(src);
-    if (*dest_r == NULL)
-        abort();
+    *dest_r = g_strdup(src);
     return 1;
 }
 
