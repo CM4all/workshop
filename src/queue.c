@@ -89,8 +89,7 @@ queue_event_callback(G_GNUC_UNUSED int fd, short event, void *ctx)
 
     if (queue_has_notify(queue) || queue->again || event == EV_TIMEOUT) {
         queue->again = 0;
-        if (!queue->disabled)
-            queue_run(queue);
+        queue_run(queue);
     }
 
     assert(!queue->running);
@@ -456,7 +455,7 @@ void queue_set_filter(struct queue *queue, const char *plans_include,
     if (r1 || r2) {
         if (queue->running)
             queue->interrupt = 1;
-        else if (!queue->disabled && queue->fd >= 0)
+        else if (queue->fd >= 0)
             queue_run(queue);
     }
 }
@@ -583,7 +582,6 @@ queue_run2(struct queue *queue)
 static void
 queue_run(struct queue *queue)
 {
-    assert(!queue->disabled);
     assert(!queue->running);
     assert(!queue->fd >= 0);
 
