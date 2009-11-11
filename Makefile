@@ -9,7 +9,10 @@ INCLUDES =
 LIBDAEMON_CFLAGS := $(shell pkg-config --cflags libcm4all-daemon)
 LIBDAEMON_LIBS := $(shell pkg-config --libs libcm4all-daemon)
 
-INCLUDES += $(LIBDAEMON_CFLAGS)
+GLIB_CFLAGS := $(shell pkg-config --cflags "glib-2.0 >= 2.16")
+GLIB_LIBS := $(shell pkg-config --libs "glib-2.0 >= 2.16")
+
+INCLUDES += $(LIBDAEMON_CFLAGS) $(GLIB_CFLAGS)
 
 SOURCES = src/main.c src/config.c \
 	src/syslog.c \
@@ -21,7 +24,7 @@ SOURCES = src/main.c src/config.c \
 
 HEADERS = src/workshop.h src/version.h src/syslog.h src/strarray.h src/strhash.h src/pg-util.h src/pg-queue.h
 OBJECTS = $(patsubst %.c,%.o,$(SOURCES))
-LIBS = -levent -lpq $(LIBDAEMON_LIBS)
+LIBS = -levent -lpq $(LIBDAEMON_LIBS) $(GLIB_LIBS)
 
 all: src/cm4all-workshop doc/workshop.html
 
