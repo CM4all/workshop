@@ -10,6 +10,7 @@
 
 #include <daemon/daemonize.h>
 
+#include <glib.h>
 #include <event.h>
 
 #include <assert.h>
@@ -43,11 +44,10 @@ static void config_get(struct config *config, int argc, char **argv) {
     parse_cmdline(config, argc, argv);
 }
 
-static void exit_callback(int fd, short event, void *arg) {
+static void
+exit_callback(G_GNUC_UNUSED int fd, G_GNUC_UNUSED short event, void *arg)
+{
     struct instance *instance = (struct instance*)arg;
-
-    (void)fd;
-    (void)event;
 
     if (instance->should_exit)
         return;
@@ -84,11 +84,10 @@ static void update_library_and_filter(struct instance *instance) {
     update_filter(instance);
 }
 
-static void reload_callback(int fd, short event, void *arg) {
+static void
+reload_callback(G_GNUC_UNUSED int fd, G_GNUC_UNUSED short event, void *arg)
+{
     struct instance *instance = (struct instance*)arg;
-
-    (void)fd;
-    (void)event;
 
     if (instance->queue == NULL)
         return;
@@ -98,11 +97,10 @@ static void reload_callback(int fd, short event, void *arg) {
     queue_reschedule(instance->queue);
 }
 
-static void child_callback(int fd, short event, void *arg) {
+static void
+child_callback(G_GNUC_UNUSED int fd, G_GNUC_UNUSED short event, void *arg)
+{
     struct instance *instance = (struct instance*)arg;
-
-    (void)fd;
-    (void)event;
 
     if (instance->workplace == NULL)
         return;

@@ -10,9 +10,10 @@
 
 #include <daemon/log.h>
 
-#include <sys/types.h>
+#include <glib.h>
 #include <event.h>
 
+#include <sys/types.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -51,11 +52,11 @@ queue_run(struct queue *queue);
 
 /** the poll() callback handler; this function handles notifies sent
     by the PostgreSQL server */
-static void queue_event_callback(int fd, short event, void *ctx) {
+static void
+queue_event_callback(G_GNUC_UNUSED int fd, short event, void *ctx)
+{
     struct queue *queue = (struct queue*)ctx;
     int ret;
-
-    (void)fd;
 
     assert(fd == queue->fd);
     assert(!queue->running);

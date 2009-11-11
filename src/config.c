@@ -10,6 +10,8 @@
 
 #include <daemon/daemonize.h>
 
+#include <glib.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -210,6 +212,7 @@ void parse_cmdline(struct config *config, int argc, char **argv) {
         arg_error(argv[0], "no user name specified (-u)");
 }
 
-void config_dispose(struct config *config) {
-    (void)config;
+void
+config_dispose(G_GNUC_UNUSED struct config *config)
+{
 }

@@ -10,6 +10,8 @@
 #include "strhash.h"
 #include "pg-util.h"
 
+#include <glib.h>
+
 #include <assert.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -193,14 +195,13 @@ static void free_operator(struct operator **operator_r) {
     free(operator);
 }
 
-static void stdout_callback(int fd, short event, void *ctx) {
+static void
+stdout_callback(G_GNUC_UNUSED int fd, G_GNUC_UNUSED short event, void *ctx)
+{
     struct operator *operator = (struct operator*)ctx;
     char buffer[512];
     ssize_t nbytes, i;
     unsigned progress = 0, p;
-
-    (void)fd;
-    (void)event;
 
     nbytes = read(operator->stdout_fd, buffer, sizeof(buffer));
     if (nbytes <= 0) {
@@ -234,13 +235,12 @@ static void stdout_callback(int fd, short event, void *ctx) {
     }
 }
 
-static void stderr_callback(int fd, short event, void *ctx) {
+static void
+stderr_callback(G_GNUC_UNUSED int fd, G_GNUC_UNUSED short event, void *ctx)
+{
     struct operator *operator = (struct operator*)ctx;
     char buffer[512];
     ssize_t nbytes, i;
-
-    (void)fd;
-    (void)event;
 
     assert(operator->syslog != NULL);
 
