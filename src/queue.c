@@ -121,8 +121,12 @@ int queue_open(const char *node_name, const char *conninfo,
     struct queue *queue;
     int ret;
 
-    queue = g_new0(struct queue, 0);
+    queue = g_new0(struct queue, 1);
     queue->node_name = g_strdup(node_name);
+    queue->callback = callback;
+    queue->ctx = ctx;
+
+    evtimer_set(&queue->timer_event, queue_timer_event_callback, queue);
 
     /* connect to PostgreSQL */
 
@@ -133,10 +137,18 @@ int queue_open(const char *node_name, const char *conninfo,
     }
 
     if (PQstatus(queue->conn) != CONNECTION_OK) {
-        fprintf(stderr, "failed to connect to postgresql: %s\n",
-                PQerrorMessage(queue->conn));
-        queue_close(&queue);
-        return -1;
+        struct timeval tv;
+
+        daemon_log(2, "connect to PostgreSQL failed: %s\n",
+                   PQerrorMessage(queue->conn));
+
+        tv.tv_sec = 10;
+        tv.tv_usec = 0;
+        queue_set_timeout(queue, &tv);
+
+        *queue_r = queue;
+        return 0;
+
     }
 
     /* release jobs which might be claimed by a former instance of
@@ -167,11 +179,6 @@ int queue_open(const char *node_name, const char *conninfo,
     event_set(&queue->read_event, queue->fd, EV_READ|EV_PERSIST,
               queue_event_callback, queue);
     event_add(&queue->read_event, NULL);
-
-    evtimer_set(&queue->timer_event, queue_timer_event_callback, queue);
-
-    queue->callback = callback;
-    queue->ctx = ctx;
 
     /* done */
 
