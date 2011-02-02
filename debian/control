@@ -16,6 +16,15 @@ Description: Distributed job scheduler
  (PostgreSQL) and executes them.  Multiple instances distributed over
  a network can read the queue at the same time.
 
+Package: cm4all-workshop-database
+Architecture: any
+Depends: 
+Description: Distributed job scheduler database package
+ Database package providing initial SQL statement used by cm4all-workshop.
+ This package includes only a sql file which can be included by other packages.
+ cm4all-workshop is a daemon which reads jobs from a database queue
+ (PostgreSQL) and executes them.
+
 Package: cm4all-workshop-doc
 Section: non-free/doc
 Architecture: all
