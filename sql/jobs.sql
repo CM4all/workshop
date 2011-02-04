@@ -6,7 +6,8 @@
 --  author: Max Kellermann <mk@cm4all.com>
 --
 
-DROP TABLE jobs;
+-- DROP TABLE jobs;
+
 CREATE TABLE jobs (
         id SERIAL PRIMARY KEY,
 
