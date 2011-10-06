@@ -416,6 +416,11 @@ static int get_and_claim_job(struct queue *queue, PGresult *res, int row,
     return 1;
 }
 
+/**
+ * Copy a string.
+ *
+ * @return false if the string was not modified.
+ */
 static int copy_string(char **dest_r, const char *src) {
     assert(dest_r != NULL);
     assert(src != NULL);
