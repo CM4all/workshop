@@ -13,6 +13,7 @@
 #include <glib.h>
 #include <event.h>
 
+#include <stdbool.h>
 #include <sys/types.h>
 #include <assert.h>
 #include <stdlib.h>
@@ -48,7 +49,8 @@ struct queue {
     void *ctx;
 };
 
-static int queue_autoreconnect(struct queue *queue);
+static bool
+queue_autoreconnect(struct queue *queue);
 
 static int queue_has_notify(const struct queue *queue);
 
@@ -62,15 +64,13 @@ queue_event_callback(G_GNUC_UNUSED int fd, G_GNUC_UNUSED short event,
                      void *ctx)
 {
     struct queue *queue = (struct queue*)ctx;
-    int ret;
 
     assert(fd == queue->fd);
     assert(!queue->running);
 
     PQconsumeInput(queue->conn);
 
-    ret = queue_autoreconnect(queue);
-    if (ret != 0)
+    if (!queue_autoreconnect(queue))
         return;
 
     if (queue_has_notify(queue))
@@ -84,12 +84,10 @@ queue_timer_event_callback(G_GNUC_UNUSED int fd, G_GNUC_UNUSED short event,
                            void *ctx)
 {
     struct queue *queue = (struct queue *)ctx;
-    int ret;
 
     assert(!queue->running);
 
-    ret = queue_autoreconnect(queue);
-    if (ret != 0)
+    if (!queue_autoreconnect(queue))
         return;
 
     queue_run(queue);
@@ -212,7 +210,15 @@ void queue_close(struct queue **queue_r) {
     g_free(queue);
 }
 
-static int queue_reconnect(struct queue *queue) {
+/**
+ * Reconnect to the database (unconditionally).
+ *
+ * @return true on success, false if a connection could not be
+ * established
+ */
+static bool
+queue_reconnect(struct queue *queue)
+{
     int ret;
 
     /* unregister old socket */
@@ -236,7 +242,7 @@ static int queue_reconnect(struct queue *queue) {
         tv.tv_usec = 0;
         queue_set_timeout(queue, &tv);
 
-        return -1;
+        return false;
     }
 
     /* listen on notifications */
@@ -254,12 +260,18 @@ static int queue_reconnect(struct queue *queue) {
 
     queue_reschedule(queue);
 
-    return 1;
+    return true;
 }
 
-static int queue_autoreconnect(struct queue *queue) {
+/**
+ * Check the status of the database connection, and reconnect when it
+ * has gone bad.
+ */
+static bool
+queue_autoreconnect(struct queue *queue)
+{
     if (PQstatus(queue->conn) == CONNECTION_OK)
-        return 0;
+        return true;
 
     if (queue->fd < 0)
         daemon_log(2, "re-trying to reconnect to PostgreSQL\n");
@@ -620,7 +632,6 @@ int job_set_progress(struct job *job, unsigned progress,
 
 int job_rollback(struct job **job_r) {
     struct job *job;
-    int ret;
 
     assert(job_r != NULL);
     assert(*job_r != NULL);
@@ -628,8 +639,7 @@ int job_rollback(struct job **job_r) {
     job = *job_r;
     *job_r = NULL;
 
-    ret = queue_autoreconnect(job->queue);
-    if (ret < 0)
+    if (!queue_autoreconnect(job->queue))
         return -1;
 
     daemon_log(6, "rolling back job %s\n", job->id);
@@ -647,7 +657,6 @@ int job_rollback(struct job **job_r) {
 
 int job_done(struct job **job_r, int status) {
     struct job *job;
-    int ret;
 
     assert(job_r != NULL);
     assert(*job_r != NULL);
@@ -655,8 +664,7 @@ int job_done(struct job **job_r, int status) {
     job = *job_r;
     *job_r = NULL;
 
-    ret = queue_autoreconnect(job->queue);
-    if (ret < 0)
+    if (!queue_autoreconnect(job->queue))
         return -1;
 
     daemon_log(6, "job %s done with status %d\n", job->id, status);
