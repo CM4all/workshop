@@ -6,6 +6,7 @@
  */
 
 #include "workshop.h"
+#include "debug.h"
 #include "version.h"
 
 #include <daemon/daemonize.h>

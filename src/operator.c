@@ -5,7 +5,7 @@
  */
 
 #include "operator.h"
-#include "workshop.h"
+#include "debug.h"
 #include "plan.h"
 #include "queue.h"
 #include "syslog.h"

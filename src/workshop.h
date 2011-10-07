@@ -9,14 +9,6 @@
 #include <sys/types.h>
 #include <event.h>
 
-
-#ifdef NDEBUG
-static const int debug_mode = 0;
-#else
-extern int debug_mode;
-#endif
-
-
 /* config.c */
 
 struct config {
