@@ -362,13 +362,9 @@ static int get_job(struct queue *queue, PGresult *res, int row,
 
     assert(queue != NULL);
     assert(job_r != NULL);
-
-    job = g_new0(struct job, 1);
-    if (job == NULL)
-        return -1;
-
     assert(row < PQntuples(res));
 
+    job = g_new0(struct job, 1);
     job->queue = queue;
     job->id = my_strdup(PQgetvalue(res, row, 0));
     job->plan_name = my_strdup(PQgetvalue(res, row, 1));
