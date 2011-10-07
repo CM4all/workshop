@@ -25,8 +25,6 @@ struct config {
     const char *database;
 };
 
-#define log(level, ...) daemon_log((level), __VA_ARGS__)
-
 /** read configuration options from the command line */
 void parse_cmdline(struct config *config, int argc, char **argv);
 

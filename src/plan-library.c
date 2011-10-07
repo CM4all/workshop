@@ -6,7 +6,8 @@
 
 #include "plan-internal.h"
 #include "plan.h"
-#include "workshop.h"
+
+#include <daemon/log.h>
 
 #include <assert.h>
 #include <sys/stat.h>
@@ -136,7 +137,7 @@ static int library_update_plans(struct library *library) {
         struct plan_entry *entry = &library->plans[--i];
 
         if (entry->generation != library->generation) {
-            log(3, "removed plan '%s'\n", entry->name);
+            daemon_log(3, "removed plan '%s'\n", entry->name);
 
             library_remove_plan(library, i);
             library->next_names_update = 0;

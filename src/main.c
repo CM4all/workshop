@@ -69,7 +69,7 @@ exit_callback(G_GNUC_UNUSED int fd, G_GNUC_UNUSED short event, void *arg)
             if (instance->queue != NULL)
                 queue_close(&instance->queue);
         } else {
-            log(1, "waiting for operators to finish\n");
+            daemon_log(1, "waiting for operators to finish\n");
         }
     }
 }
@@ -94,7 +94,7 @@ reload_callback(G_GNUC_UNUSED int fd, G_GNUC_UNUSED short event, void *arg)
     if (instance->queue == NULL)
         return;
 
-    log(4, "reloading\n");
+    daemon_log(4, "reloading\n");
     update_library_and_filter(instance);
     queue_reschedule(instance->queue);
 }
@@ -251,10 +251,10 @@ int main(int argc, char **argv) {
     if (ret < 0)
         exit(2);
 
-    log(1, "cm4all-workshop v" VERSION "\n");
+    daemon_log(1, "cm4all-workshop v" VERSION "\n");
 
-    log(4, "using libevent %s method '%s' for polling\n",
-        event_get_version(), event_get_method());
+    daemon_log(4, "using libevent %s method '%s' for polling\n",
+               event_get_version(), event_get_method());
 
     /* main loop */
 
@@ -264,7 +264,7 @@ int main(int argc, char **argv) {
 
     /* cleanup */
 
-    log(5, "cleaning up\n");
+    daemon_log(5, "cleaning up\n");
 
     if (instance.workplace != NULL)
         workplace_close(&instance.workplace);
@@ -278,5 +278,5 @@ int main(int argc, char **argv) {
 
     config_dispose(&config);
 
-    log(4, "exiting\n");
+    daemon_log(4, "exiting\n");
 }

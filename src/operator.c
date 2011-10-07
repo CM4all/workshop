@@ -12,6 +12,8 @@
 #include "strhash.h"
 #include "pg-util.h"
 
+#include <daemon/log.h>
+
 #include <glib.h>
 
 #include <assert.h>
@@ -551,8 +553,8 @@ int workplace_start(struct workplace *workplace,
     workplace->head = operator;
     ++workplace->num_operators;
 
-    log(2, "job %s (plan '%s') running as pid %d\n",
-        job->id, job->plan_name, operator->pid);
+    daemon_log(2, "job %s (plan '%s') running as pid %d\n",
+               job->id, job->plan_name, operator->pid);
 
     return 0;
 }
@@ -599,18 +601,18 @@ void workplace_waitpid(struct workplace *workplace) {
         exit_status = WEXITSTATUS(status);
 
         if (WIFSIGNALED(status)) {
-            log(1, "job %s (pid %d) died from signal %d%s\n",
-                operator->job->id, pid,
-                WTERMSIG(status),
-                WCOREDUMP(status) ? " (core dumped)" : "");
+            daemon_log(1, "job %s (pid %d) died from signal %d%s\n",
+                       operator->job->id, pid,
+                       WTERMSIG(status),
+                       WCOREDUMP(status) ? " (core dumped)" : "");
             exit_status = -1;
         } else if (exit_status == 0)
-            log(3, "job %s (pid %d) exited with success\n",
-                operator->job->id, pid);
+            daemon_log(3, "job %s (pid %d) exited with success\n",
+                       operator->job->id, pid);
         else
-            log(2, "job %s (pid %d) exited with status %d\n",
-                operator->job->id, pid,
-                exit_status);
+            daemon_log(2, "job %s (pid %d) exited with status %d\n",
+                       operator->job->id, pid,
+                       exit_status);
 
         plan_put(&operator->plan);
 

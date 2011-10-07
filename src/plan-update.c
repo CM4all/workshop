@@ -7,7 +7,8 @@
 
 #include "plan-internal.h"
 #include "plan.h"
-#include "workshop.h"
+
+#include <daemon/log.h>
 
 #include <assert.h>
 #include <stdlib.h>
@@ -124,7 +125,7 @@ static int load_plan_entry(struct library *library,
     assert(entry->plan == NULL);
     assert(entry->mtime != 0);
 
-    log(6, "loading plan '%s'\n", entry->name);
+    daemon_log(6, "loading plan '%s'\n", entry->name);
 
     snprintf(path, sizeof(path), "%s/%s",
              library->path, entry->name);
