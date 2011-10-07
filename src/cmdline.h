@@ -1,15 +1,12 @@
 /*
- * Internal declarations of cm4all-workshop.
+ * Configure the workshop daemon.  Currently this is only command
+ * line.
  *
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#include <daemon/log.h>
-
-#include <sys/types.h>
-#include <event.h>
-
-/* config.c */
+#ifndef WORKSHOP_CMDLINE_H
+#define WORKSHOP_CMDLINE_H
 
 struct config {
     const char *node_name;
@@ -21,3 +18,5 @@ struct config {
 void parse_cmdline(struct config *config, int argc, char **argv);
 
 void config_dispose(struct config *config);
+
+#endif

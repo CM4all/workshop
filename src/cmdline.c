@@ -5,10 +5,11 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#include "workshop.h"
+#include "cmdline.h"
 #include "debug.h"
 #include "version.h"
 
+#include <daemon/log.h>
 #include <daemon/daemonize.h>
 
 #include <glib.h>

@@ -14,7 +14,7 @@ GLIB_LIBS := $(shell pkg-config --libs "glib-2.0 >= 2.16")
 
 INCLUDES += $(LIBDAEMON_CFLAGS) $(GLIB_CFLAGS)
 
-SOURCES = src/main.c src/config.c \
+SOURCES = src/main.c src/cmdline.c \
 	src/syslog.c \
 	src/queue.c src/pg-queue.c \
 	src/plan.c src/plan-loader.c src/plan-library.c src/plan-update.c \
@@ -22,7 +22,7 @@ SOURCES = src/main.c src/config.c \
 	src/pg-util.c \
 	src/strarray.c src/strhash.c
 
-HEADERS = src/workshop.h src/version.h src/syslog.h src/strarray.h src/strhash.h src/pg-util.h src/pg-queue.h
+HEADERS = src/cmdline.h src/debug.h src/operator.h src/pg-queue.h src/pg-util.h src/plan-internal.h src/plan.h src/queue.h src/strarray.h src/strhash.h src/syslog.h src/version.h
 OBJECTS = $(patsubst %.c,%.o,$(SOURCES))
 LIBS = -levent -lpq $(LIBDAEMON_LIBS) $(GLIB_LIBS)
 

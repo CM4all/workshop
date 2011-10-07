@@ -4,12 +4,13 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#include "workshop.h"
+#include "cmdline.h"
 #include "plan.h"
 #include "queue.h"
 #include "operator.h"
 #include "version.h"
 
+#include <daemon/log.h>
 #include <daemon/daemonize.h>
 
 #include <glib.h>
