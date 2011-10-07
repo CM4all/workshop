@@ -4,6 +4,7 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
+#include "operator.h"
 #include "workshop.h"
 #include "plan.h"
 #include "queue.h"

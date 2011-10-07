@@ -7,6 +7,7 @@
 #include "workshop.h"
 #include "plan.h"
 #include "queue.h"
+#include "operator.h"
 #include "version.h"
 
 #include <daemon/daemonize.h>
