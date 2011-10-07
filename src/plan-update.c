@@ -6,6 +6,7 @@
  */
 
 #include "plan-internal.h"
+#include "plan.h"
 #include "workshop.h"
 
 #include <assert.h>

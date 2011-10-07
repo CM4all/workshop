@@ -5,6 +5,7 @@
  */
 
 #include "workshop.h"
+#include "plan.h"
 #include "queue.h"
 #include "version.h"
 

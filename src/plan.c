@@ -5,7 +5,7 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#include "workshop.h"
+#include "plan.h"
 #include "pg-util.h"
 #include "plan-internal.h"
 
