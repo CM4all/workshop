@@ -3,7 +3,7 @@ cm4all-workshop (1.0.5) unstable; urgency=low
   * jobs.sql: removed initial "DROP TABLE"
   * queue: reconnect after UPDATE failure
 
- --
+ -- Max Kellermann <mk@cm4all.com>  Fri, 21 Oct 2011 18:08:30 +0200
 
 cm4all-workshop (1.0.4) unstable; urgency=low
 
