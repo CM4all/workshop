@@ -25,11 +25,11 @@ struct queue {
     char *node_name;
     PGconn *conn;
     int fd;
-    int disabled, running;
+    bool disabled, running;
 
     /** if set to 1, the current queue run should be interrupted, to
         be started again */
-    int interrupt;
+    bool interrupt;
 
     /**
      * For detecting notifies from PostgreSQL.
@@ -52,7 +52,8 @@ struct queue {
 static bool
 queue_autoreconnect(struct queue *queue);
 
-static int queue_has_notify(const struct queue *queue);
+static bool
+queue_has_notify(const struct queue *queue);
 
 static void
 queue_run(struct queue *queue);
@@ -281,15 +282,16 @@ queue_autoreconnect(struct queue *queue)
     return queue_reconnect(queue);
 }
 
-static int queue_has_notify(const struct queue *queue) {
+static bool
+queue_has_notify(const struct queue *queue) {
     PGnotify *notify;
-    int ret = 0;
+    bool ret = false;
 
     while ((notify = PQnotifies(queue->conn)) != NULL) {
         daemon_log(6, "async notify '%s' received from backend pid %d\n",
                    notify->relname, notify->be_pid);
         if (strcmp(notify->relname, "new_job") == 0)
-            ret = 1;
+            ret = true;
         PQfreemem(notify);
     }
 
@@ -355,8 +357,10 @@ static void free_job(struct job **job_r) {
     g_free(job);
 }
 
-static int get_job(struct queue *queue, PGresult *res, int row,
-                   struct job **job_r) {
+static bool
+get_job(struct queue *queue, PGresult *res, int row,
+        struct job **job_r)
+{
     struct job *job;
     int ret;
 
@@ -373,20 +377,20 @@ static int get_job(struct queue *queue, PGresult *res, int row,
     if (ret != 0) {
         fprintf(stderr, "pg_decode_array() failed\n");
         free_job(&job);
-        return -1;
+        return false;
     }
 
     job->syslog_server = my_strdup(PQgetvalue(res, row, 3));
 
     if (job->id == NULL || job->plan_name == NULL) {
         free_job(&job);
-        return -1;
+        return false;
     }
 
     queue_check_notify(queue);
 
     *job_r = job;
-    return 1;
+    return true;
 }
 
 static int get_and_claim_job(struct queue *queue, PGresult *res, int row,
@@ -394,9 +398,8 @@ static int get_and_claim_job(struct queue *queue, PGresult *res, int row,
     int ret;
     struct job *job;
 
-    ret = get_job(queue, res, row, &job);
-    if (ret <= 0)
-        return ret;
+    if (!get_job(queue, res, row, &job))
+        return -1;
 
     daemon_log(6, "attempting to claim job %s\n", job->id);
 
@@ -426,33 +429,33 @@ static int get_and_claim_job(struct queue *queue, PGresult *res, int row,
  *
  * @return false if the string was not modified.
  */
-static int copy_string(char **dest_r, const char *src) {
+static bool
+copy_string(char **dest_r, const char *src)
+{
     assert(dest_r != NULL);
     assert(src != NULL);
 
     if (*dest_r != NULL) {
         if (strcmp(*dest_r, src) == 0)
-            return 0;
+            return false;
 
         g_free(*dest_r);
     }
 
     *dest_r = g_strdup(src);
-    return 1;
+    return true;
 }
 
 void queue_set_filter(struct queue *queue, const char *plans_include,
                       const char *plans_exclude,
                       const char *plans_lowprio) {
-    int r1, r2;
-
-    r1 = copy_string(&queue->plans_include, plans_include);
-    r2 = copy_string(&queue->plans_exclude, plans_exclude);
+    bool r1 = copy_string(&queue->plans_include, plans_include);
+    bool r2 = copy_string(&queue->plans_exclude, plans_exclude);
     copy_string(&queue->plans_lowprio, plans_lowprio);
 
     if (r1 || r2) {
         if (queue->running)
-            queue->interrupt = 1;
+            queue->interrupt = true;
         else if (queue->fd >= 0)
             queue_run(queue);
     }
@@ -477,7 +480,8 @@ static void
 queue_run2(struct queue *queue)
 {
     PGresult *result;
-    int ret, num, full = 0;
+    int ret, num;
+    bool full = false;
     time_t now;
 
     assert(!queue->disabled);
@@ -507,7 +511,7 @@ queue_run2(struct queue *queue)
 
     /* query database */
 
-    queue->interrupt = 0;
+    queue->interrupt = false;
 
     daemon_log(7, "requesting new jobs from database; plans_include=%s plans_exclude=%s plans_lowprio=%s\n",
                queue->plans_include, queue->plans_exclude, queue->plans_lowprio);
@@ -523,7 +527,7 @@ queue_run2(struct queue *queue)
         PQclear(result);
 
         if (num == 16)
-            full = 1;
+            full = true;
     }
 
     if (!queue->disabled && !queue->interrupt &&
@@ -544,7 +548,7 @@ queue_run2(struct queue *queue)
             PQclear(result);
 
             if (num == 16)
-                full = 1;
+                full = true;
         }
     }
 
@@ -586,9 +590,9 @@ queue_run(struct queue *queue)
     if (queue->disabled)
         return;
 
-    queue->running = 1;
+    queue->running = true;
     queue_run2(queue);
-    queue->running = 0;
+    queue->running = false;
 
     queue_check_notify(queue);
 }
@@ -597,7 +601,7 @@ void queue_disable(struct queue *queue) {
     if (queue->disabled)
         return;
 
-    queue->disabled = 1;
+    queue->disabled = true;
 }
 
 void queue_enable(struct queue *queue) {
@@ -606,7 +610,7 @@ void queue_enable(struct queue *queue) {
     if (!queue->disabled)
         return;
 
-    queue->disabled = 0;
+    queue->disabled = false;
 
     if (queue->fd >= 0)
         queue_run(queue);
