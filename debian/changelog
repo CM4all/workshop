@@ -1,6 +1,7 @@
 cm4all-workshop (1.0.5) unstable; urgency=low
 
   * jobs.sql: removed initial "DROP TABLE"
+  * queue: reconnect after UPDATE failure
 
  --
 

@@ -305,6 +305,23 @@ static void queue_check_notify(struct queue *queue) {
         queue_reschedule(queue);
 }
 
+/**
+ * Checks everything asynchronously: if the connection has failed,
+ * schedule a reconnect.  If there are notifies, schedule a queue run.
+ *
+ * This is an extended version of queue_check_notify(), to be used by
+ * public functions that (unlike the internal functions) do not
+ * reschedule.
+ */
+static void
+queue_check_all(struct queue *queue)
+{
+    if (queue_has_notify(queue) || PQstatus(queue->conn) != CONNECTION_OK)
+        /* something needs to be done - schedule it for the timer
+           event callback */
+        queue_reschedule(queue);
+}
+
 static int queue_next_scheduled(struct queue *queue, int *span_r) {
     int ret;
     long span;
@@ -621,7 +638,7 @@ int job_set_progress(struct job *job, unsigned progress,
     ret = pg_set_job_progress(job->queue->conn, job->id, progress,
                               timeout);
 
-    queue_check_notify(job->queue);
+    queue_check_all(job->queue);
 
     return ret;
 }
@@ -644,7 +661,7 @@ int job_rollback(struct job **job_r) {
 
     pg_notify(job->queue->conn);
 
-    queue_check_notify(job->queue);
+    queue_check_all(job->queue);
 
     free_job(&job);
 
@@ -667,7 +684,7 @@ int job_done(struct job **job_r, int status) {
 
     pg_set_job_done(job->queue->conn, job->id, status);
 
-    queue_check_notify(job->queue);
+    queue_check_all(job->queue);
 
     free_job(&job);
 
