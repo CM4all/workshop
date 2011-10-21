@@ -387,8 +387,6 @@ get_job(struct queue *queue, PGresult *res, int row,
         return false;
     }
 
-    queue_check_notify(queue);
-
     *job_r = job;
     return true;
 }
@@ -417,8 +415,6 @@ static int get_and_claim_job(struct queue *queue, PGresult *res, int row,
     }
 
     daemon_log(6, "job %s claimed\n", job->id);
-
-    queue_check_notify(queue);
 
     *job_r = job;
     return 1;
