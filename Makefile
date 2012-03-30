@@ -39,13 +39,13 @@ check: t/test-pg_decode_array t/test-pg_encode_array
 	./t/test-pg_encode_array
 
 t/test-pg_decode_array: t/test-pg_decode_array.o src/pg-util.o src/strarray.o
-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+	$(CC) -o $@ $^ $(LIBS)
 
 t/test-pg_encode_array: t/test-pg_encode_array.o src/pg-util.o src/strarray.o
-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+	$(CC) -o $@ $^ $(LIBS)
 
 src/cm4all-workshop: $(OBJECTS)
-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+	$(CC) -o $@ $^ $(LIBS)
 
 $(OBJECTS): %.o: %.c $(HEADERS)
 	$(CC) -c -o $@ $< $(CFLAGS) $(INCLUDES) $(INCLUDES)
