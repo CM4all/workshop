@@ -2,14 +2,18 @@ DEBUG ?= y
 NOOPT ?= $(DEBUG)
 
 CC = clang
+CXX = clang++
 LD = ld
 
 CFLAGS = -g
+CXXFLAGS = -g
 
 ifeq ($(NOOPT),y)
 CFLAGS += -O0
+CXXFLAGS += -O0
 else
 CFLAGS += -O2 -ffunction-sections
+CXXFLAGS += -O2 -ffunction-sections
 endif
 
 ifneq ($(DEBUG),y)
@@ -17,6 +21,9 @@ CFLAGS += -DNDEBUG
 endif
 
 override CFLAGS += -Wall -W -Werror -std=gnu99 -Wmissing-prototypes -Wwrite-strings -Wcast-qual -Wfloat-equal -Wshadow -Wpointer-arith -Wbad-function-cast -Wsign-compare -Wmissing-declarations -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls -Wnested-externs -Winline -Wdisabled-optimization -Wno-long-long -Wstrict-prototypes -Wundef
+
+override CXXFLAGS += -Wall -W -Werror -std=gnu++0x -Wmissing-prototypes -Wwrite-strings -Wcast-qual -Wfloat-equal -Wshadow -Wpointer-arith -Wbad-function-cast -Wsign-compare -Wmissing-declarations -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls -Wnested-externs -Winline -Wdisabled-optimization -Wno-long-long -Wstrict-prototypes -Wundef
+
 INCLUDES =
 
 LIBDAEMON_CFLAGS := $(shell pkg-config --cflags libcm4all-daemon)
@@ -27,15 +34,20 @@ GLIB_LIBS := $(shell pkg-config --libs "glib-2.0 >= 2.16")
 
 INCLUDES += $(LIBDAEMON_CFLAGS) $(GLIB_CFLAGS)
 
-SOURCES = src/main.c src/cmdline.c \
+C_SOURCES = src/cmdline.c \
 	src/syslog.c \
-	src/queue.c src/pg-queue.c \
-	src/plan.c src/plan-loader.c src/plan-library.c src/plan-update.c \
-	src/workplace.c \
+	src/pg-queue.c \
 	src/pg-util.c \
 	src/strarray.c src/strhash.c
-OBJECTS = $(patsubst %.c,%.o,$(SOURCES))
-LIBS = -levent -lpq $(LIBDAEMON_LIBS) $(GLIB_LIBS)
+
+CXX_SOURCES = src/main.cxx \
+	src/queue.cxx \
+	src/plan.cxx src/plan-loader.cxx src/plan-library.cxx src/plan-update.cxx \
+	src/workplace.cxx
+
+C_OBJECTS = $(patsubst %.c,%.o,$(C_SOURCES))
+CXX_OBJECTS = $(patsubst %.cxx,%.o,$(CXX_SOURCES))
+LIBS = -lstdc++ -levent -lpq $(LIBDAEMON_LIBS) $(GLIB_LIBS)
 LDFLAGS = -Wl,-gc-sections
 
 all: src/cm4all-workshop doc/workshop.html
@@ -56,8 +68,11 @@ t/test-pg_decode_array: t/test-pg_decode_array.o src/pg-util.o src/strarray.o
 t/test-pg_encode_array: t/test-pg_encode_array.o src/pg-util.o src/strarray.o
 	$(CC) -o $@ $^ $(LDFLAGS) $(LIBS)
 
-src/cm4all-workshop: $(OBJECTS)
+src/cm4all-workshop: $(C_OBJECTS) $(CXX_OBJECTS)
 	$(CC) -o $@ $^ $(LDFLAGS) $(LIBS)
 
-$(OBJECTS): %.o: %.c $(wildcard src/*.h)
+$(C_OBJECTS): %.o: %.c $(wildcard src/*.h)
 	$(CC) -c -o $@ $< $(CFLAGS) $(INCLUDES) $(INCLUDES)
+
+$(CXX_OBJECTS): %.o: %.cxx $(wildcard src/*.h) $(wildcard src/*.hxx)
+	$(CXX) -c -o $@ $< $(CXXFLAGS) $(INCLUDES)

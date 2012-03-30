@@ -4,8 +4,8 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#include "plan-internal.h"
-#include "plan.h"
+#include "plan_internal.hxx"
+#include "plan.hxx"
 
 #include <daemon/log.h>
 
@@ -57,8 +57,9 @@ static struct plan_entry *add_plan_entry(struct library *library,
 
     if (library->num_plans >= library->max_plans) {
         library->max_plans += 16;
-        library->plans = realloc(library->plans,
-                                 library->max_plans * sizeof(library->plans[0]));
+        library->plans = (struct plan_entry *)
+            realloc(library->plans,
+                    library->max_plans * sizeof(library->plans[0]));
         if (library->plans == NULL)
             abort();
     }

@@ -4,8 +4,8 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#include "plan-internal.h"
-#include "plan.h"
+#include "plan_internal.hxx"
+#include "plan.hxx"
 
 #include <assert.h>
 #include <sys/stat.h>
@@ -68,7 +68,8 @@ static int get_user_groups(const char *user, gid_t **groups_r) {
         if (group->gr_gid > 0 && user_in_group(group, user)) {
             if (num_groups >= max_groups) {
                 max_groups += 16;
-                groups_new = realloc(groups, max_groups * sizeof(*groups));
+                groups_new = (gid_t *)realloc(groups,
+                                              max_groups * sizeof(*groups));
                 if (groups_new == NULL) {
                     free(groups);
                     endgrent();
@@ -216,7 +217,7 @@ int plan_load(const char *path, struct plan **plan_r) {
 
     assert(path != NULL);
 
-    plan = calloc(1, sizeof(*plan));
+    plan = (struct plan *)calloc(1, sizeof(*plan));
     if (plan == NULL)
         return ENOMEM;
 

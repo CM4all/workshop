@@ -5,8 +5,8 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#include "plan-internal.h"
-#include "plan.h"
+#include "plan_internal.hxx"
+#include "plan.hxx"
 
 #include <daemon/log.h>
 

@@ -5,9 +5,12 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#include "plan.h"
+#include "plan.hxx"
+#include "plan_internal.hxx"
+
+extern "C" {
 #include "pg-util.h"
-#include "plan-internal.h"
+}
 
 #include <assert.h>
 #include <sys/stat.h>
@@ -40,7 +43,7 @@ int library_open(const char *path, struct library **library_r) {
 
     /* create library object */
 
-    library = calloc(1, sizeof(*library));
+    library = (struct library *)calloc(1, sizeof(*library));
     if (library == NULL)
         return errno;
 

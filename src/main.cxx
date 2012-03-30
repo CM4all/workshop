@@ -5,10 +5,14 @@
  */
 
 #include "debug.h"
+
+extern "C" {
 #include "cmdline.h"
-#include "plan.h"
-#include "queue.h"
-#include "workplace.h"
+}
+
+#include "plan.hxx"
+#include "queue.hxx"
+#include "workplace.hxx"
 #include "version.h"
 
 #include <daemon/log.h>

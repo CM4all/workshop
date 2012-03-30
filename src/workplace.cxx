@@ -4,14 +4,17 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#include "workplace.h"
-#include "operator.h"
+#include "workplace.hxx"
+#include "operator.hxx"
 #include "debug.h"
-#include "plan.h"
-#include "queue.h"
+#include "plan.hxx"
+#include "queue.hxx"
+
+extern "C" {
 #include "syslog.h"
 #include "strhash.h"
 #include "pg-util.h"
+}
 
 #include <daemon/log.h>
 
@@ -126,7 +129,8 @@ const char *workplace_full_plan_names(struct workplace *workplace) {
 
     strarray_init(&plan_names);
 
-    counters = calloc(workplace->num_operators, sizeof(counters[0]));
+    counters = (struct plan_counter *)
+        calloc(workplace->num_operators, sizeof(counters[0]));
     if (counters == NULL)
         abort();
 

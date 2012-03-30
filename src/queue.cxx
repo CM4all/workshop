@@ -4,9 +4,12 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#include "queue.h"
+#include "queue.hxx"
+
+extern "C" {
 #include "pg-util.h"
 #include "pg-queue.h"
+}
 
 #include <daemon/log.h>
 
