@@ -5,8 +5,6 @@
 #ifndef WORKSHOP_WORKPLACE_H
 #define WORKSHOP_WORKPLACE_H
 
-#include <event.h>
-
 struct plan;
 struct job;
 struct workplace;
