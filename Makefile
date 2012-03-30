@@ -1,7 +1,21 @@
+DEBUG ?= y
+NOOPT ?= $(DEBUG)
+
 CC = gcc
 LD = ld
-#CFLAGS = -O3
-CFLAGS = -O0 -g
+
+CFLAGS = -g
+
+ifeq ($(NOOPT),y)
+CFLAGS += -O0
+else
+CFLAGS += -O2 -ffunction-sections
+endif
+
+ifneq ($(DEBUG),y)
+CFLAGS += -DNDEBUG
+endif
+
 override CFLAGS += -Wall -W -Werror -std=gnu99 -Wmissing-prototypes -Wwrite-strings -Wcast-qual -Wfloat-equal -Wshadow -Wpointer-arith -Wbad-function-cast -Wsign-compare -Wmissing-declarations -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls -Wnested-externs -Winline -Wdisabled-optimization -Wno-long-long -Wstrict-prototypes -Wundef
 override CFLAGS += -funit-at-a-time
 INCLUDES =
@@ -23,6 +37,7 @@ SOURCES = src/main.c src/cmdline.c \
 	src/strarray.c src/strhash.c
 OBJECTS = $(patsubst %.c,%.o,$(SOURCES))
 LIBS = -levent -lpq $(LIBDAEMON_LIBS) $(GLIB_LIBS)
+LDFLAGS = -Wl,-gc-sections
 
 all: src/cm4all-workshop doc/workshop.html
 
@@ -37,13 +52,13 @@ check: t/test-pg_decode_array t/test-pg_encode_array
 	./t/test-pg_encode_array
 
 t/test-pg_decode_array: t/test-pg_decode_array.o src/pg-util.o src/strarray.o
-	$(CC) -o $@ $^ $(LIBS)
+	$(CC) -o $@ $^ $(LDFLAGS) $(LIBS)
 
 t/test-pg_encode_array: t/test-pg_encode_array.o src/pg-util.o src/strarray.o
-	$(CC) -o $@ $^ $(LIBS)
+	$(CC) -o $@ $^ $(LDFLAGS) $(LIBS)
 
 src/cm4all-workshop: $(OBJECTS)
-	$(CC) -o $@ $^ $(LIBS)
+	$(CC) -o $@ $^ $(LDFLAGS) $(LIBS)
 
 $(OBJECTS): %.o: %.c $(wildcard src/*.h)
 	$(CC) -c -o $@ $< $(CFLAGS) $(INCLUDES) $(INCLUDES)
