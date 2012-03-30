@@ -18,3 +18,6 @@ aclocal.m4
 .dirstamp
 *.pc
 perf.data
+
+t/test-pg_decode_array
+t/test-pg_encode_array
