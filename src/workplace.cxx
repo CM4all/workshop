@@ -12,11 +12,13 @@
 
 extern "C" {
 #include "syslog.h"
-#include "strhash.h"
 #include "pg-util.h"
 }
 
 #include <daemon/log.h>
+
+#include <map>
+#include <string>
 
 #include <glib.h>
 
@@ -292,11 +294,13 @@ static int splice_string(char **pp, size_t start, size_t end,
     return 0;
 }
 
-static int expand_vars(char **pp, struct strhash *vars) {
+typedef std::map<std::string, std::string> StringMap;
+
+static int
+expand_vars(char **pp, const StringMap &vars)
+{
     int ret;
-    char key[64];
     char *v = *pp, *p = v, *dollar, *end;
-    const char *expanded;
 
     while (1) {
         dollar = strchr(p, '$');
@@ -308,16 +312,11 @@ static int expand_vars(char **pp, struct strhash *vars) {
             if (end == NULL)
                 break;
 
-            if ((size_t)(end - dollar - 2) < sizeof(key)) {
-                memcpy(key, dollar + 2, end - dollar - 2);
-                key[end - dollar - 2] = 0;
-
-                expanded = strhash_get(vars, key);
-                if (expanded == NULL)
-                    expanded = "";
-            } else {
-                expanded = "";
-            }
+            const std::string key(dollar + 2, end);
+            auto i = vars.find(key);
+            const char *expanded = i != vars.end()
+                ? i->second.c_str()
+                : "";
 
             ret = splice_string(pp, dollar - v, end + 1 - v, expanded);
             if (ret != 0)
@@ -337,28 +336,20 @@ static int
 expand_operator_vars(const struct Operator *o,
                      struct strarray *argv)
 {
-    int ret;
-    struct strhash *vars;
-    unsigned i;
+    StringMap vars;
+    vars.insert(std::make_pair("0", argv->values[0]));
+    vars.insert(std::make_pair("NODE", o->workplace->node_name));
+    vars.insert(std::make_pair("JOB", o->job->id));
+    vars.insert(std::make_pair("PLAN", o->job->plan_name));
 
-    ret = strhash_open(64, &vars);
-    if (ret != 0)
-        return ret;
-
-    strhash_set(vars, "0", argv->values[0]);
-    strhash_set(vars, "NODE", o->workplace->node_name);
-    strhash_set(vars, "JOB", o->job->id);
-    strhash_set(vars, "PLAN", o->job->plan_name);
-
-    for (i = 1; i < argv->num; ++i) {
+    for (unsigned i = 1; i < argv->num; ++i) {
         assert(argv->values[i] != NULL);
-        ret = expand_vars(&argv->values[i], vars);
+        int ret = expand_vars(&argv->values[i], vars);
         if (ret != 0)
-            break;
+            return ret;
     }
 
-    strhash_close(&vars);
-    return ret;
+    return 0;
 }
 
 int workplace_start(struct workplace *workplace,

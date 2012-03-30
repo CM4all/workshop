@@ -38,7 +38,7 @@ C_SOURCES = src/cmdline.c \
 	src/syslog.c \
 	src/pg-queue.c \
 	src/pg-util.c \
-	src/strarray.c src/strhash.c
+	src/strarray.c
 
 CXX_SOURCES = src/main.cxx \
 	src/queue.cxx \
