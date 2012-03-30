@@ -21,11 +21,6 @@ SOURCES = src/main.c src/cmdline.c \
 	src/workplace.c \
 	src/pg-util.c \
 	src/strarray.c src/strhash.c
-
-HEADERS = src/cmdline.h src/debug.h \
-	src/workplace.h \
-	src/operator.h \
-	src/pg-queue.h src/pg-util.h src/plan-internal.h src/plan.h src/queue.h src/strarray.h src/strhash.h src/syslog.h src/version.h
 OBJECTS = $(patsubst %.c,%.o,$(SOURCES))
 LIBS = -levent -lpq $(LIBDAEMON_LIBS) $(GLIB_LIBS)
 
@@ -50,5 +45,5 @@ t/test-pg_encode_array: t/test-pg_encode_array.o src/pg-util.o src/strarray.o
 src/cm4all-workshop: $(OBJECTS)
 	$(CC) -o $@ $^ $(LIBS)
 
-$(OBJECTS): %.o: %.c $(HEADERS)
+$(OBJECTS): %.o: %.c $(wildcard src/*.h)
 	$(CC) -c -o $@ $< $(CFLAGS) $(INCLUDES) $(INCLUDES)
