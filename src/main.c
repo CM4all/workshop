@@ -4,6 +4,7 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
+#include "debug.h"
 #include "cmdline.h"
 #include "plan.h"
 #include "queue.h"
