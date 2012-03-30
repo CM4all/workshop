@@ -10,8 +10,8 @@
 struct workplace;
 
 /** an operator is a job being executed */
-struct operator {
-    struct operator *next;
+struct Operator {
+    struct Operator *next;
     struct workplace *workplace;
     struct job *job;
     struct plan *plan;

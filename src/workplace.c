@@ -32,7 +32,7 @@
 
 struct workplace {
     const char *node_name;
-    struct operator *head;
+    struct Operator *head;
     unsigned max_operators, num_operators;
     char *plan_names, *full_plan_names;
 };
@@ -82,11 +82,8 @@ void workplace_close(struct workplace **workplace_r) {
 
 int workplace_plan_is_running(const struct workplace *workplace,
                               const struct plan *plan) {
-    struct operator *operator;
-
-    for (operator = workplace->head; operator != NULL;
-         operator = operator->next)
-        if (operator->plan == plan)
+    for (struct Operator *o = workplace->head; o != NULL; o = o->next)
+        if (o->plan == plan)
             return 1;
 
     return 0;
@@ -94,14 +91,12 @@ int workplace_plan_is_running(const struct workplace *workplace,
 
 const char *workplace_plan_names(struct workplace *workplace) {
     struct strarray plan_names;
-    struct operator *operator;
 
     strarray_init(&plan_names);
 
-    for (operator = workplace->head; operator != NULL;
-         operator = operator->next)
-        if (!strarray_contains(&plan_names, operator->job->plan_name))
-            strarray_append(&plan_names, operator->job->plan_name);
+    for (struct Operator *o = workplace->head; o != NULL; o = o->next)
+        if (!strarray_contains(&plan_names, o->job->plan_name))
+            strarray_append(&plan_names, o->job->plan_name);
 
     if (workplace->plan_names != NULL)
         free(workplace->plan_names);
@@ -125,7 +120,6 @@ const char *workplace_full_plan_names(struct workplace *workplace) {
     struct strarray plan_names;
     struct plan_counter *counters;
     unsigned num_counters = 0, i;
-    struct operator *operator;
 
     if (workplace->num_operators == 0)
         return "{}";
@@ -136,19 +130,18 @@ const char *workplace_full_plan_names(struct workplace *workplace) {
     if (counters == NULL)
         abort();
 
-    for (operator = workplace->head; operator != NULL;
-         operator = operator->next) {
-        if (operator->plan->concurrency == 0)
+    for (struct Operator *o = workplace->head; o != NULL; o = o->next) {
+        if (o->plan->concurrency == 0)
             continue;
 
         for (i = 0; i < num_counters; ++i)
-            if (counters[i].plan == operator->plan)
+            if (counters[i].plan == o->plan)
                 break;
 
         if (i == num_counters) {
             ++num_counters;
-            counters[i].plan = operator->plan;
-            counters[i].plan_name = operator->job->plan_name;
+            counters[i].plan = o->plan;
+            counters[i].plan_name = o->job->plan_name;
         }
 
         ++counters[i].num;
@@ -175,44 +168,42 @@ const char *workplace_full_plan_names(struct workplace *workplace) {
         : workplace->full_plan_names;
 }
 
-static void free_operator(struct operator **operator_r) {
-    struct operator *operator;
-
+static void free_operator(struct Operator **operator_r) {
     assert(operator_r != NULL);
     assert(*operator_r != NULL);
 
-    operator = *operator_r;
+    struct Operator *o = *operator_r;
     *operator_r = NULL;
 
-    if (operator->stdout_fd >= 0) {
-        event_del(&operator->stdout_event);
-        close(operator->stdout_fd);
+    if (o->stdout_fd >= 0) {
+        event_del(&o->stdout_event);
+        close(o->stdout_fd);
     }
 
-    if (operator->stderr_fd >= 0) {
-        event_del(&operator->stderr_event);
-        close(operator->stderr_fd);
+    if (o->stderr_fd >= 0) {
+        event_del(&o->stderr_event);
+        close(o->stderr_fd);
     }
 
-    if (operator->syslog != NULL)
-        syslog_close(&operator->syslog);
+    if (o->syslog != NULL)
+        syslog_close(&o->syslog);
 
-    free(operator);
+    free(o);
 }
 
 static void
 stdout_callback(G_GNUC_UNUSED int fd, G_GNUC_UNUSED short event, void *ctx)
 {
-    struct operator *operator = (struct operator*)ctx;
+    struct Operator *o = (struct Operator*)ctx;
     char buffer[512];
     ssize_t nbytes, i;
     unsigned progress = 0, p;
 
-    nbytes = read(operator->stdout_fd, buffer, sizeof(buffer));
+    nbytes = read(o->stdout_fd, buffer, sizeof(buffer));
     if (nbytes <= 0) {
-        event_del(&operator->stdout_event);
-        close(operator->stdout_fd);
-        operator->stdout_fd = -1;
+        event_del(&o->stdout_event);
+        close(o->stdout_fd);
+        o->stdout_fd = -1;
         return;
     }
 
@@ -220,40 +211,40 @@ stdout_callback(G_GNUC_UNUSED int fd, G_GNUC_UNUSED short event, void *ctx)
         char ch = buffer[i];
 
         if (ch >= '0' && ch <= '9' &&
-            operator->stdout_length < sizeof(operator->stdout_buffer) - 1) {
-            operator->stdout_buffer[operator->stdout_length++] = ch;
+            o->stdout_length < sizeof(o->stdout_buffer) - 1) {
+            o->stdout_buffer[o->stdout_length++] = ch;
         } else {
-            if (operator->stdout_length > 0) {
-                operator->stdout_buffer[operator->stdout_length] = 0;
-                p = (unsigned)strtoul(operator->stdout_buffer, NULL, 10);
+            if (o->stdout_length > 0) {
+                o->stdout_buffer[o->stdout_length] = 0;
+                p = (unsigned)strtoul(o->stdout_buffer, NULL, 10);
                 if (p <= 100)
                     progress = p;
             }
 
-            operator->stdout_length = 0;
+            o->stdout_length = 0;
         }
     }
 
-    if (progress > 0 && progress != operator->progress) {
-        job_set_progress(operator->job, progress, operator->plan->timeout);
-        operator->progress = progress;
+    if (progress > 0 && progress != o->progress) {
+        job_set_progress(o->job, progress, o->plan->timeout);
+        o->progress = progress;
     }
 }
 
 static void
 stderr_callback(G_GNUC_UNUSED int fd, G_GNUC_UNUSED short event, void *ctx)
 {
-    struct operator *operator = (struct operator*)ctx;
+    struct Operator *o = (struct Operator*)ctx;
     char buffer[512];
     ssize_t nbytes, i;
 
-    assert(operator->syslog != NULL);
+    assert(o->syslog != NULL);
 
-    nbytes = read(operator->stderr_fd, buffer, sizeof(buffer));
+    nbytes = read(o->stderr_fd, buffer, sizeof(buffer));
     if (nbytes <= 0) {
-        event_del(&operator->stderr_event);
-        close(operator->stderr_fd);
-        operator->stderr_fd = -1;
+        event_del(&o->stderr_event);
+        close(o->stderr_fd);
+        o->stderr_fd = -1;
         return;
     }
 
@@ -261,15 +252,15 @@ stderr_callback(G_GNUC_UNUSED int fd, G_GNUC_UNUSED short event, void *ctx)
         char ch = buffer[i];
 
         if (ch == '\r' || ch == '\n') {
-            if (operator->stderr_length > 0) {
-                operator->stderr_buffer[operator->stderr_length] = 0;
-                syslog_log(operator->syslog, 6, operator->stderr_buffer);
+            if (o->stderr_length > 0) {
+                o->stderr_buffer[o->stderr_length] = 0;
+                syslog_log(o->syslog, 6, o->stderr_buffer);
             }
 
-            operator->stderr_length = 0;
+            o->stderr_length = 0;
         } else if (ch > 0 && (ch & ~0x7f) == 0 &&
-                   operator->stderr_length < sizeof(operator->stderr_buffer) - 1) {
-            operator->stderr_buffer[operator->stderr_length++] = ch;
+                   o->stderr_length < sizeof(o->stderr_buffer) - 1) {
+            o->stderr_buffer[o->stderr_length++] = ch;
         }
     }
 }
@@ -338,9 +329,10 @@ static int expand_vars(char **pp, struct strhash *vars) {
     return 0;
 }
 
-static int expand_operator_vars(const struct operator *operator,
-                                struct strarray *argv) {
-                                
+static int
+expand_operator_vars(const struct Operator *o,
+                     struct strarray *argv)
+{
     int ret;
     struct strhash *vars;
     unsigned i;
@@ -350,9 +342,9 @@ static int expand_operator_vars(const struct operator *operator,
         return ret;
 
     strhash_set(vars, "0", argv->values[0]);
-    strhash_set(vars, "NODE", operator->workplace->node_name);
-    strhash_set(vars, "JOB", operator->job->id);
-    strhash_set(vars, "PLAN", operator->job->plan_name);
+    strhash_set(vars, "NODE", o->workplace->node_name);
+    strhash_set(vars, "JOB", o->job->id);
+    strhash_set(vars, "PLAN", o->job->plan_name);
 
     for (i = 1; i < argv->num; ++i) {
         assert(argv->values[i] != NULL);
@@ -367,7 +359,6 @@ static int expand_operator_vars(const struct operator *operator,
 
 int workplace_start(struct workplace *workplace,
                     struct job *job, struct plan *plan) {
-    struct operator *operator;
     int ret, stdout_fds[2], stderr_fds[2];
     struct strarray argv;
     unsigned i;
@@ -377,29 +368,29 @@ int workplace_start(struct workplace *workplace,
 
     /* create operator object */
 
-    operator = (struct operator*)calloc(1, sizeof(*operator));
-    if (operator == NULL)
+    struct Operator *o = (struct Operator *)calloc(1, sizeof(*o));
+    if (o == NULL)
         return errno;
 
-    operator->workplace = workplace;
-    operator->stdout_fd = -1;
-    operator->stderr_fd = -1;
-    operator->job = job;
-    operator->plan = plan;
+    o->workplace = workplace;
+    o->stdout_fd = -1;
+    o->stderr_fd = -1;
+    o->job = job;
+    o->plan = plan;
 
     ret = pipe(stdout_fds);
     if (ret < 0) {
         fprintf(stderr, "pipe() failed: %s\n", strerror(errno));
-        free_operator(&operator);
+        free_operator(&o);
         return -1;
     }
 
     /* create stdout/stderr pipes */
 
-    operator->stdout_fd = stdout_fds[0];
-    event_set(&operator->stdout_event, operator->stdout_fd,
-              EV_READ|EV_PERSIST, stdout_callback, operator);
-    event_add(&operator->stdout_event, NULL);
+    o->stdout_fd = stdout_fds[0];
+    event_set(&o->stdout_event, o->stdout_fd,
+              EV_READ|EV_PERSIST, stdout_callback, o);
+    event_add(&o->stdout_event, NULL);
 
     if (job->syslog_server != NULL) {
         char ident[256];
@@ -409,12 +400,12 @@ int workplace_start(struct workplace *workplace,
 
         ret = syslog_open(workplace->node_name, ident, 1,
                           job->syslog_server,
-                          &operator->syslog);
+                          &o->syslog);
         if (ret != 0) {
             if (ret > 0)
                 fprintf(stderr, "syslog_open(%s) failed: %s\n",
                         job->syslog_server, strerror(ret));
-            free_operator(&operator);
+            free_operator(&o);
             close(stdout_fds[1]);
             return -1;
         }
@@ -422,15 +413,15 @@ int workplace_start(struct workplace *workplace,
         ret = pipe(stderr_fds);
         if (ret < 0) {
             fprintf(stderr, "pipe() failed: %s\n", strerror(errno));
-            free_operator(&operator);
+            free_operator(&o);
             close(stdout_fds[1]);
             return -1;
         }
 
-        operator->stderr_fd = stderr_fds[0];
-        event_set(&operator->stderr_event, operator->stderr_fd,
-                  EV_READ|EV_PERSIST, stderr_callback, operator);
-        event_add(&operator->stderr_event, NULL);
+        o->stderr_fd = stderr_fds[0];
+        event_set(&o->stderr_event, o->stderr_fd,
+                  EV_READ|EV_PERSIST, stderr_callback, o);
+        event_add(&o->stderr_event, NULL);
     }
 
     /* build command line */
@@ -442,10 +433,10 @@ int workplace_start(struct workplace *workplace,
     for (i = 0; i < job->args.num; ++i)
         strarray_append(&argv, job->args.values[i]);
 
-    ret = expand_operator_vars(operator, &argv);
+    ret = expand_operator_vars(o, &argv);
     if (ret != 0) {
         strarray_free(&argv);
-        free_operator(&operator);
+        free_operator(&o);
         close(stdout_fds[1]);
         if (job->syslog_server != NULL)
             close(stderr_fds[1]);
@@ -456,17 +447,17 @@ int workplace_start(struct workplace *workplace,
 
     /* fork */
 
-    operator->pid = fork();
-    if (operator->pid < 0) {
+    o->pid = fork();
+    if (o->pid < 0) {
         fprintf(stderr, "fork() failed: %s\n", strerror(errno));
-        free_operator(&operator);
+        free_operator(&o);
         close(stdout_fds[1]);
         if (job->syslog_server != NULL)
             close(stderr_fds[1]);
         return -1;
     }
 
-    if (operator->pid == 0) {
+    if (o->pid == 0) {
         /* in the operator process */
 
         clearenv();
@@ -550,12 +541,12 @@ int workplace_start(struct workplace *workplace,
     if (job->syslog_server != NULL)
         close(stderr_fds[1]);
 
-    operator->next = workplace->head;
-    workplace->head = operator;
+    o->next = workplace->head;
+    workplace->head = o;
     ++workplace->num_operators;
 
     daemon_log(2, "job %s (plan '%s') running as pid %d\n",
-               job->id, job->plan_name, operator->pid);
+               job->id, job->plan_name, o->pid);
 
     return 0;
 }
@@ -568,59 +559,56 @@ int workplace_is_full(const struct workplace *workplace) {
     return workplace->num_operators >= workplace->max_operators;
 }
 
-static struct operator **find_operator_by_pid(struct workplace *workplace,
+static struct Operator **find_operator_by_pid(struct workplace *workplace,
                                               pid_t pid) {
-    struct operator **operator_p, *operator;
-
-    operator_p = &workplace->head;
+    struct Operator **operator_p = &workplace->head;
 
     while (1) {
-        operator = *operator_p;
-        if (operator == NULL)
+        struct Operator *o = *operator_p;
+        if (o == NULL)
             return NULL;
 
-        if (operator->pid == pid)
+        if (o->pid == pid)
             return operator_p;
 
-        operator_p = &operator->next;
+        operator_p = &o->next;
     }
 }
 
 void workplace_waitpid(struct workplace *workplace) {
     pid_t pid;
     int status, exit_status;
-    struct operator **operator_p, *operator;
 
     while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
-        operator_p = find_operator_by_pid(workplace, pid);
+        struct Operator **operator_p = find_operator_by_pid(workplace, pid);
         if (operator_p == NULL)
             continue;
 
-        operator = *operator_p;
-        assert(operator != NULL);
+        struct Operator *o = *operator_p;
+        assert(o != NULL);
 
         exit_status = WEXITSTATUS(status);
 
         if (WIFSIGNALED(status)) {
             daemon_log(1, "job %s (pid %d) died from signal %d%s\n",
-                       operator->job->id, pid,
+                       o->job->id, pid,
                        WTERMSIG(status),
                        WCOREDUMP(status) ? " (core dumped)" : "");
             exit_status = -1;
         } else if (exit_status == 0)
             daemon_log(3, "job %s (pid %d) exited with success\n",
-                       operator->job->id, pid);
+                       o->job->id, pid);
         else
             daemon_log(2, "job %s (pid %d) exited with status %d\n",
-                       operator->job->id, pid,
+                       o->job->id, pid,
                        exit_status);
 
-        plan_put(&operator->plan);
+        plan_put(&o->plan);
 
-        job_done(&operator->job, exit_status);
+        job_done(&o->job, exit_status);
 
         --workplace->num_operators;
-        *operator_p = operator->next;
-        free_operator(&operator);
+        *operator_p = o->next;
+        free_operator(&o);
     }
 }
