@@ -1,7 +1,7 @@
 DEBUG ?= y
 NOOPT ?= $(DEBUG)
 
-CC = gcc
+CC = clang
 LD = ld
 
 CFLAGS = -g
@@ -17,7 +17,6 @@ CFLAGS += -DNDEBUG
 endif
 
 override CFLAGS += -Wall -W -Werror -std=gnu99 -Wmissing-prototypes -Wwrite-strings -Wcast-qual -Wfloat-equal -Wshadow -Wpointer-arith -Wbad-function-cast -Wsign-compare -Wmissing-declarations -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls -Wnested-externs -Winline -Wdisabled-optimization -Wno-long-long -Wstrict-prototypes -Wundef
-override CFLAGS += -funit-at-a-time
 INCLUDES =
 
 LIBDAEMON_CFLAGS := $(shell pkg-config --cflags libcm4all-daemon)
