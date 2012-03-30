@@ -8,7 +8,7 @@
 #include "cmdline.h"
 #include "plan.h"
 #include "queue.h"
-#include "operator.h"
+#include "workplace.h"
 #include "version.h"
 
 #include <daemon/log.h>

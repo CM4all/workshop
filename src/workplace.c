@@ -4,6 +4,7 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
+#include "workplace.h"
 #include "operator.h"
 #include "debug.h"
 #include "plan.h"

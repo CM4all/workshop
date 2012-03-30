@@ -18,11 +18,14 @@ SOURCES = src/main.c src/cmdline.c \
 	src/syslog.c \
 	src/queue.c src/pg-queue.c \
 	src/plan.c src/plan-loader.c src/plan-library.c src/plan-update.c \
-	src/operator.c \
+	src/workplace.c \
 	src/pg-util.c \
 	src/strarray.c src/strhash.c
 
-HEADERS = src/cmdline.h src/debug.h src/operator.h src/pg-queue.h src/pg-util.h src/plan-internal.h src/plan.h src/queue.h src/strarray.h src/strhash.h src/syslog.h src/version.h
+HEADERS = src/cmdline.h src/debug.h \
+	src/workplace.h \
+	src/operator.h \
+	src/pg-queue.h src/pg-util.h src/plan-internal.h src/plan.h src/queue.h src/strarray.h src/strhash.h src/syslog.h src/version.h
 OBJECTS = $(patsubst %.c,%.o,$(SOURCES))
 LIBS = -levent -lpq $(LIBDAEMON_LIBS) $(GLIB_LIBS)
 
