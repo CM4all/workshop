@@ -18,75 +18,79 @@
 #include <string.h>
 #include <sys/stat.h>
 
-static void disable_plan(struct library *library,
-                         struct plan_entry *entry,
-                         time_t duration) {
-    entry->disabled_until = time(NULL) + duration;
-    library->next_names_update = 0;
+static void
+disable_plan(Library &library, PlanEntry &entry, time_t duration)
+{
+    entry.disabled_until = time(NULL) + duration;
+    library.next_names_update = 0;
 }
 
-static int check_plan_mtime(struct library *library, struct plan_entry *entry) {
+static int
+check_plan_mtime(Library &library, PlanEntry &entry)
+{
     int ret;
     char path[1024];
     struct stat st;
 
     snprintf(path, sizeof(path), "%s/%s",
-             library->path, entry->name);
+             library.path.c_str(), entry.name.c_str());
     ret = stat(path, &st);
     if (ret < 0) {
         if (ret != ENOENT)
             fprintf(stderr, "failed to stat '%s': %s\n",
                     path, strerror(errno));
 
-        entry->mtime = 0;
+        entry.mtime = 0;
 
         return errno;
     }
 
     if (!S_ISREG(st.st_mode)) {
-        if (entry->plan != NULL) {
+        if (entry.plan != NULL) {
             /* free memory of old plan only if there are no
                references on it anymore */
-            if (entry->plan->ref == 0)
-                plan_free(&entry->plan);
+            if (entry.plan->ref == 0)
+                plan_free(&entry.plan);
             else
-                entry->plan = NULL;
+                entry.plan = NULL;
         }
 
-        entry->mtime = 0;
+        entry.mtime = 0;
 
         disable_plan(library, entry, 60);
         return ENOENT;
     }
 
-    if (st.st_mtime != entry->mtime) {
-        entry->disabled_until = 0;
+    if (st.st_mtime != entry.mtime) {
+        entry.disabled_until = 0;
 
-        if (entry->plan != NULL) {
+        if (entry.plan != NULL) {
             /* free memory of old plan only if there are no
                references on it anymore */
-            if (entry->plan->ref == 0)
-                plan_free(&entry->plan);
+            if (entry.plan->ref == 0)
+                plan_free(&entry.plan);
             else
-                entry->plan = NULL;
+                entry.plan = NULL;
         }
 
-        entry->mtime = st.st_mtime;
+        entry.mtime = st.st_mtime;
     }
 
-    if (entry->disabled_until > 0) {
-        if (time(NULL) < entry->disabled_until)
+    if (entry.disabled_until > 0) {
+        if (time(NULL) < entry.disabled_until)
             /* this plan is temporarily disabled due to previous errors */
             return ENOENT;
 
-        entry->disabled_until = 0;
+        entry.disabled_until = 0;
     }
 
     return 0;
 }
 
-static int validate_plan(struct plan_entry *entry) {
-    const struct plan *plan = entry->plan;
+static int
+validate_plan(PlanEntry &entry)
+{
+    const struct plan *plan = entry.plan;
     int ret;
     struct stat st;
 
@@ -101,56 +105,58 @@ static int validate_plan(struct plan_entry *entry) {
 
     ret = stat(plan->argv.values[0], &st);
     if (ret < 0) {
-        if (errno != ENOENT || !entry->deinstalled)
+        if (errno != ENOENT || !entry.deinstalled)
             fprintf(stderr, "failed to stat '%s': %s\n",
                     plan->argv.values[0], strerror(errno));
         if (errno == ENOENT)
-            entry->deinstalled = 1;
+            entry.deinstalled = true;
         else
-            disable_plan(plan->library, entry, 60);
+            disable_plan(*plan->library, entry, 60);
         return ENOENT;
     }
 
-    entry->deinstalled = 0;
+    entry.deinstalled = false;
 
     return 0;
 }
 
-static int load_plan_entry(struct library *library,
-                           struct plan_entry *entry) {
+static int
+load_plan_entry(Library &library, PlanEntry &entry)
+{
     int ret;
     char path[1024];
 
-    assert(entry->name != NULL);
-    assert(entry->plan == NULL);
-    assert(entry->mtime != 0);
+    assert(entry.plan == NULL);
+    assert(entry.mtime != 0);
 
-    daemon_log(6, "loading plan '%s'\n", entry->name);
+    daemon_log(6, "loading plan '%s'\n", entry.name.c_str());
 
     snprintf(path, sizeof(path), "%s/%s",
-             library->path, entry->name);
+             library.path.c_str(), entry.name.c_str());
 
-    ret = plan_load(path, &entry->plan);
+    ret = plan_load(path, &entry.plan);
     if (ret != 0) {
         disable_plan(library, entry, 600);
         return ret;
     }
 
-    entry->plan->library = library;
+    entry.plan->library = &library;
 
-    library->next_names_update = 0;
+    library.next_names_update = 0;
 
     return 0;
 }
 
-int library_update_plan(struct library *library, struct plan_entry *entry) {
+int
+library_update_plan(Library &library, PlanEntry &entry)
+{
     int ret;
 
     ret = check_plan_mtime(library, entry);
     if (ret != 0)
         return ret;
 
-    if (entry->plan == NULL) {
+    if (entry.plan == NULL) {
         ret = load_plan_entry(library, entry);
         if (ret != 0)
             return ret;

@@ -20,10 +20,11 @@ extern "C" {
 #include <string.h>
 #include <time.h>
 
-int library_open(const char *path, struct library **library_r) {
+int
+library_open(const char *path, Library **library_r)
+{
     int ret;
     struct stat st;
-    struct library *library;
 
     assert(path != NULL);
 
@@ -43,93 +44,59 @@ int library_open(const char *path, struct library **library_r) {
 
     /* create library object */
 
-    library = (struct library *)calloc(1, sizeof(*library));
-    if (library == NULL)
-        return errno;
-
-    library->path = strdup(path);
-    if (library->path == NULL) {
-        library_close(&library);
-        return ENOMEM;
-    }
-
+    Library *library = new Library(path);
     *library_r = library;
     return 0;
 }
 
-void library_close(struct library **library_r) {
-    struct library *library;
-
+void
+library_close(Library **library_r)
+{
     assert(library_r != NULL);
     assert(*library_r != NULL);
 
-    library = *library_r;
+    Library *library = *library_r;
     *library_r = NULL;
 
-    assert(library->ref == 0);
-
-    if (library->path != NULL)
-        free(library->path);
-
-    if (library->plans != NULL) {
-        unsigned i;
-
-        for (i = 0; i < library->num_plans; ++i) {
-            struct plan_entry *entry = &library->plans[i];
-            if (entry->name != NULL)
-                free(entry->name);
-            if (entry->plan != NULL)
-                plan_free(&entry->plan);
-        }
-
-        free(library->plans);
-    }
-
-    if (library->names)
-        free(library->names);
-
-    free(library);
+    delete library;
 }
 
-static int plan_is_disabled(const struct plan_entry *entry, time_t now) {
-    return entry->disabled_until > 0 && now < entry->disabled_until;
-}
-
-static int update_plan_names(struct library *library) {
+static int
+update_plan_names(Library &library)
+{
     const time_t now = time(NULL);
     struct strarray plan_names;
-    unsigned i;
-    const struct plan_entry *entry;
 
-    if (library->names != NULL && now < library->next_names_update)
+    if (!library.names.empty() && now < library.next_names_update)
         return 0;
 
-    library->next_names_update = now + 60;
+    library.next_names_update = now + 60;
 
     /* collect new list */
 
     strarray_init(&plan_names);
 
-    for (i = 0; i < library->num_plans; ++i) {
-        entry = &library->plans[i];
+    for (const auto &i : library.plans) {
+        const std::string &name = i.first;
+        const PlanEntry &entry = i.second;
 
-        if (!plan_is_disabled(entry, now))
-            strarray_append(&plan_names, entry->name);
+        if (!entry.IsDisabled(now))
+            strarray_append(&plan_names, name.c_str());
     }
 
-    if (library->names != NULL)
-        free(library->names);
-    library->names = pg_encode_array(&plan_names);
+    char *p = pg_encode_array(&plan_names);
+    library.names = p;
+    free(p);
 
     strarray_free(&plan_names);
 
     return 0;
 }
 
-const char *library_plan_names(struct library *library) {
-    update_plan_names(library);
+const char *
+library_plan_names(Library *library)
+{
+    update_plan_names(*library);
 
-    return library->names == NULL
-        ? "{}"
-        : library->names;
+    return library->names.c_str();
 }

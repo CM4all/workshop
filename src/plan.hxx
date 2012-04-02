@@ -12,11 +12,11 @@
 #include <sys/types.h>
 
 /** a library is a container for plan objects */
-struct library;
+class Library;
 
 /** a plan describes how to perform a specific job */
 struct plan {
-    struct library *library;
+    Library *library;
     struct strarray argv;
     char *timeout, *chroot;
     uid_t uid;
@@ -33,18 +33,25 @@ struct plan {
     unsigned concurrency;
 
     unsigned ref;
+
+    plan(const plan &other) = delete;
 };
 
-int library_open(const char *path, struct library **library_r);
+int
+library_open(const char *path, Library **library_r);
 
-void library_close(struct library **library_r);
+void
+library_close(Library **library_r);
 
-int library_update(struct library *library);
+int
+library_update(Library *library);
 
-const char *library_plan_names(struct library *library);
+const char *
+library_plan_names(Library *library);
 
-int library_get(struct library *library, const char *name,
-                struct plan **plan_r);
+int
+library_get(Library *library, const char *name,
+            struct plan **plan_r);
 
 void plan_put(struct plan **plan_r);
 

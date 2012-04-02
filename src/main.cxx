@@ -35,7 +35,7 @@ int debug_mode = 0;
 #endif
 
 struct instance {
-    struct library *library;
+    Library *library;
     struct queue *queue;
     struct workplace *workplace;
     int should_exit;
