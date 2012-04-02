@@ -13,7 +13,7 @@
 #include <assert.h>
 
 struct plan;
-struct job;
+struct Job;
 struct Operator;
 
 struct Workplace {
@@ -74,7 +74,7 @@ const char *
 workplace_full_plan_names(Workplace *workplace);
 
 int
-workplace_start(Workplace *workplace, struct job *job, struct plan *plan);
+workplace_start(Workplace *workplace, Job *job, struct plan *plan);
 
 static inline bool
 workplace_is_empty(const Workplace *workplace)

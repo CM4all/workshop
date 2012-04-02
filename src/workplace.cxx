@@ -62,8 +62,8 @@ workplace_plan_names(Workplace *workplace)
     strarray_init(&plan_names);
 
     for (const auto &o : workplace->operators)
-        if (!strarray_contains(&plan_names, o->job->plan_name))
-            strarray_append(&plan_names, o->job->plan_name);
+        if (!strarray_contains(&plan_names, o->job->plan_name.c_str()))
+            strarray_append(&plan_names, o->job->plan_name.c_str());
 
     char *p = pg_encode_array(&plan_names);
     workplace->plan_names = p;
@@ -108,7 +108,7 @@ const char *workplace_full_plan_names(Workplace *workplace) {
         if (i == num_counters) {
             ++num_counters;
             counters[i].plan = o->plan;
-            counters[i].plan_name = o->job->plan_name;
+            counters[i].plan_name = o->job->plan_name.c_str();
         }
 
         ++counters[i].num;
@@ -209,7 +209,7 @@ stderr_callback(G_GNUC_UNUSED int fd, G_GNUC_UNUSED short event, void *ctx)
 }
 
 int
-workplace_start(Workplace *workplace, struct job *job, struct plan *plan)
+workplace_start(Workplace *workplace, Job *job, struct plan *plan)
 {
     int ret, stdout_fds[2], stderr_fds[2];
     struct strarray argv;
@@ -236,19 +236,19 @@ workplace_start(Workplace *workplace, struct job *job, struct plan *plan)
               EV_READ|EV_PERSIST, stdout_callback, (void *)o);
     event_add(&o->stdout_event, NULL);
 
-    if (job->syslog_server != NULL) {
+    if (!job->syslog_server.empty()) {
         char ident[256];
 
         snprintf(ident, sizeof(ident), "%s[%s]",
-                 job->plan_name, job->id);
+                 job->plan_name.c_str(), job->id.c_str());
 
         ret = syslog_open(workplace->node_name.c_str(), ident, 1,
-                          job->syslog_server,
+                          job->syslog_server.c_str(),
                           &o->syslog);
         if (ret != 0) {
             if (ret > 0)
                 fprintf(stderr, "syslog_open(%s) failed: %s\n",
-                        job->syslog_server, strerror(ret));
+                        job->syslog_server.c_str(), strerror(ret));
             free_operator(&o);
             close(stdout_fds[1]);
             return -1;
@@ -282,7 +282,7 @@ workplace_start(Workplace *workplace, struct job *job, struct plan *plan)
         strarray_free(&argv);
         free_operator(&o);
         close(stdout_fds[1]);
-        if (job->syslog_server != NULL)
+        if (!job->syslog_server.empty())
             close(stderr_fds[1]);
         return -1;
     }
@@ -295,7 +295,7 @@ workplace_start(Workplace *workplace, struct job *job, struct plan *plan)
     if (o->pid < 0) {
         fprintf(stderr, "fork() failed: %s\n", strerror(errno));
         close(stdout_fds[1]);
-        if (job->syslog_server != NULL)
+        if (!job->syslog_server.empty())
             close(stderr_fds[1]);
         return -1;
     }
@@ -357,12 +357,12 @@ workplace_start(Workplace *workplace, struct job *job, struct plan *plan)
         /* connect pipes */
 
         dup2(stdout_fds[1], 1);
-        if (job->syslog_server != NULL)
+        if (!job->syslog_server.empty())
             dup2(stderr_fds[1], 2);
 
         close(stdout_fds[0]);
         close(stdout_fds[1]);
-        if (job->syslog_server != NULL) {
+        if (!job->syslog_server.empty()) {
             close(stderr_fds[0]);
             close(stderr_fds[1]);
         }
@@ -381,11 +381,11 @@ workplace_start(Workplace *workplace, struct job *job, struct plan *plan)
     strarray_free(&argv);
 
     close(stdout_fds[1]);
-    if (job->syslog_server != NULL)
+    if (!job->syslog_server.empty())
         close(stderr_fds[1]);
 
     daemon_log(2, "job %s (plan '%s') running as pid %d\n",
-               job->id, job->plan_name, o->pid);
+               job->id.c_str(), job->plan_name.c_str(), o->pid);
 
     workplace->operators.push_back(o);
     ++workplace->num_operators;
@@ -426,16 +426,16 @@ void workplace_waitpid(Workplace *workplace) {
 
         if (WIFSIGNALED(status)) {
             daemon_log(1, "job %s (pid %d) died from signal %d%s\n",
-                       o->job->id, pid,
+                       o->job->id.c_str(), pid,
                        WTERMSIG(status),
                        WCOREDUMP(status) ? " (core dumped)" : "");
             exit_status = -1;
         } else if (exit_status == 0)
             daemon_log(3, "job %s (pid %d) exited with success\n",
-                       o->job->id, pid);
+                       o->job->id.c_str(), pid);
         else
             daemon_log(2, "job %s (pid %d) exited with status %d\n",
-                       o->job->id, pid,
+                       o->job->id.c_str(), pid,
                        exit_status);
 
         plan_put(&o->plan);

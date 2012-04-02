@@ -13,9 +13,9 @@
 #include <event.h>
 
 struct queue;
-struct job;
+struct Job;
 
-typedef void (*queue_callback_t)(struct job *job, void *ctx);
+typedef void (*queue_callback_t)(Job *job, void *ctx);
 
 struct queue {
     char *node_name;

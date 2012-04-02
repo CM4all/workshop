@@ -166,13 +166,13 @@ static void setup_signal_handlers(struct instance *instance) {
     sigaction(SIGUSR2, &sa, NULL);
 }
 
-static int start_job(struct instance *instance, struct job *job) {
+static int start_job(struct instance *instance, Job *job) {
     int ret;
     struct plan *plan;
 
-    ret = library_get(instance->library, job->plan_name, &plan);
+    ret = library_get(instance->library, job->plan_name.c_str(), &plan);
     if (ret != 0) {
-        fprintf(stderr, "library_get('%s') failed\n", job->plan_name);
+        fprintf(stderr, "library_get('%s') failed\n", job->plan_name.c_str());
         job_rollback(&job);
         return ret;
     }
@@ -192,7 +192,7 @@ static int start_job(struct instance *instance, struct job *job) {
     return 0;
 }
 
-static void queue_callback(struct job *job, void *ctx) {
+static void queue_callback(Job *job, void *ctx) {
     struct instance *instance = (struct instance*)ctx;
     int ret;
 

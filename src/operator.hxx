@@ -10,11 +10,12 @@
 #include <assert.h>
 
 struct Workplace;
+struct Job;
 
 /** an operator is a job being executed */
 struct Operator {
     Workplace *workplace;
-    struct job *job;
+    Job *job;
     struct plan *plan;
     pid_t pid;
 
@@ -30,7 +31,7 @@ struct Operator {
     size_t stderr_length;
     struct syslog_client *syslog;
 
-    Operator(Workplace *_workplace, struct job *_job,
+    Operator(Workplace *_workplace, Job *_job,
              struct plan *_plan)
         :workplace(_workplace), job(_job), plan(_plan),
          stdout_fd(-1), stdout_length(0),

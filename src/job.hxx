@@ -7,16 +7,29 @@
 
 #include "strarray.h"
 
+#include <string>
+
 struct queue;
 
-struct job {
+struct Job {
     struct queue *queue;
-    char *id, *plan_name, *syslog_server;
+
+    std::string id, plan_name, syslog_server;
+
     struct strarray args;
+
+    Job(struct queue *_queue, const char *_id, const char *_plan_name)
+        :queue(_queue), id(_id), plan_name(_plan_name) {
+        strarray_init(&args);
+    }
+
+    ~Job() {
+        strarray_free(&args);
+    }
 };
 
 void
-free_job(struct job **job_r);
+free_job(Job **job_r);
 
 /**
  * Update the "progress" value of the job.
@@ -27,7 +40,7 @@ free_job(struct job **job_r);
  * string that is understood by PostgreSQL)
  * @return 1 on success, 0 if the job was not found, -1 on error
  */
-int job_set_progress(struct job *job, unsigned progress,
+int job_set_progress(Job *job, unsigned progress,
                      const char *timeout);
 
 /**
@@ -36,11 +49,11 @@ int job_set_progress(struct job *job, unsigned progress,
  *
  * @return 0 on success, -1 on error
  */
-int job_rollback(struct job **job_r);
+int job_rollback(Job **job_r);
 
 /**
  * Mark the job as "done".
  */
-int job_done(struct job **job_r, int status);
+int job_done(Job **job_r, int status);
 
 #endif

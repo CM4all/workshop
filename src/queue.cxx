@@ -325,27 +325,18 @@ static int queue_next_scheduled(struct queue *queue, int *span_r) {
     return ret;
 }
 
-static char *my_strdup(const char *p) {
-    if (p == NULL || *p == 0)
-        return NULL;
-    return g_strdup(p);
-}
-
 static bool
 get_job(struct queue *queue, PGresult *res, int row,
-        struct job **job_r)
+        Job **job_r)
 {
-    struct job *job;
+    Job *job;
     int ret;
 
     assert(queue != NULL);
     assert(job_r != NULL);
     assert(row < PQntuples(res));
 
-    job = g_new0(struct job, 1);
-    job->queue = queue;
-    job->id = my_strdup(PQgetvalue(res, row, 0));
-    job->plan_name = my_strdup(PQgetvalue(res, row, 1));
+    job = new Job(queue, PQgetvalue(res, row, 0), PQgetvalue(res, row, 1));
 
     ret = pg_decode_array(PQgetvalue(res, row, 2), &job->args);
     if (ret != 0) {
@@ -354,9 +345,10 @@ get_job(struct queue *queue, PGresult *res, int row,
         return false;
     }
 
-    job->syslog_server = my_strdup(PQgetvalue(res, row, 3));
+    if (!PQgetisnull(res, row, 3))
+        job->syslog_server = PQgetvalue(res, row, 3);
 
-    if (job->id == NULL || job->plan_name == NULL) {
+    if (job->id.empty() || job->plan_name.empty()) {
         free_job(&job);
         return false;
     }
@@ -366,16 +358,16 @@ get_job(struct queue *queue, PGresult *res, int row,
 }
 
 static int get_and_claim_job(struct queue *queue, PGresult *res, int row,
-                             const char *timeout, struct job **job_r) {
+                             const char *timeout, Job **job_r) {
     int ret;
-    struct job *job;
+    Job *job;
 
     if (!get_job(queue, res, row, &job))
         return -1;
 
-    daemon_log(6, "attempting to claim job %s\n", job->id);
+    daemon_log(6, "attempting to claim job %s\n", job->id.c_str());
 
-    ret = pg_claim_job(queue->conn, job->id, queue->node_name,
+    ret = pg_claim_job(queue->conn, job->id.c_str(), queue->node_name,
                        timeout);
     if (ret < 0) {
         free_job(&job);
@@ -383,12 +375,12 @@ static int get_and_claim_job(struct queue *queue, PGresult *res, int row,
     }
 
     if (ret == 0) {
-        daemon_log(6, "job %s was not claimed\n", job->id);
+        daemon_log(6, "job %s was not claimed\n", job->id.c_str());
         free_job(&job);
         return 0;
     }
 
-    daemon_log(6, "job %s claimed\n", job->id);
+    daemon_log(6, "job %s claimed\n", job->id.c_str());
 
     *job_r = job;
     return 1;
@@ -435,7 +427,7 @@ static void
 queue_run_result(struct queue *queue, int num, PGresult *result)
 {
     int row, ret;
-    struct job *job;
+    Job *job;
 
     for (row = 0; row < num && !queue->disabled && !queue->interrupt; ++row) {
         ret = get_and_claim_job(queue, result, row, "5 minutes", &job);
@@ -586,13 +578,13 @@ void queue_enable(struct queue *queue) {
         queue_run(queue);
 }
 
-int job_set_progress(struct job *job, unsigned progress,
+int job_set_progress(Job *job, unsigned progress,
                      const char *timeout) {
     int ret;
 
-    daemon_log(5, "job %s progress=%u\n", job->id, progress);
+    daemon_log(5, "job %s progress=%u\n", job->id.c_str(), progress);
 
-    ret = pg_set_job_progress(job->queue->conn, job->id, progress,
+    ret = pg_set_job_progress(job->queue->conn, job->id.c_str(), progress,
                               timeout);
 
     queue_check_all(job->queue);
@@ -600,8 +592,8 @@ int job_set_progress(struct job *job, unsigned progress,
     return ret;
 }
 
-int job_rollback(struct job **job_r) {
-    struct job *job;
+int job_rollback(Job **job_r) {
+    Job *job;
 
     assert(job_r != NULL);
     assert(*job_r != NULL);
@@ -612,9 +604,9 @@ int job_rollback(struct job **job_r) {
     if (!queue_autoreconnect(job->queue))
         return -1;
 
-    daemon_log(6, "rolling back job %s\n", job->id);
+    daemon_log(6, "rolling back job %s\n", job->id.c_str());
 
-    pg_rollback_job(job->queue->conn, job->id);
+    pg_rollback_job(job->queue->conn, job->id.c_str());
 
     pg_notify(job->queue->conn);
 
@@ -625,8 +617,8 @@ int job_rollback(struct job **job_r) {
     return 0;
 }
 
-int job_done(struct job **job_r, int status) {
-    struct job *job;
+int job_done(Job **job_r, int status) {
+    Job *job;
 
     assert(job_r != NULL);
     assert(*job_r != NULL);
@@ -637,9 +629,9 @@ int job_done(struct job **job_r, int status) {
     if (!queue_autoreconnect(job->queue))
         return -1;
 
-    daemon_log(6, "job %s done with status %d\n", job->id, status);
+    daemon_log(6, "job %s done with status %d\n", job->id.c_str(), status);
 
-    pg_set_job_done(job->queue->conn, job->id, status);
+    pg_set_job_done(job->queue->conn, job->id.c_str(), status);
 
     queue_check_all(job->queue);
 

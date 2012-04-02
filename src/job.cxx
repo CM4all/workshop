@@ -4,14 +4,12 @@
 
 #include "job.hxx"
 
-#include <glib.h>
-
 #include <assert.h>
 
 void
-free_job(struct job **job_r)
+free_job(Job **job_r)
 {
-    struct job *job;
+    Job *job;
 
     assert(job_r != NULL);
     assert(*job_r != NULL);
@@ -19,11 +17,6 @@ free_job(struct job **job_r)
     job = *job_r;
     *job_r = NULL;
 
-    g_free(job->id);
-    g_free(job->plan_name);
-    g_free(job->syslog_server);
-
     strarray_free(&job->args);
-
-    g_free(job);
+    delete job;
 }
