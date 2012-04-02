@@ -7,7 +7,7 @@
 #include "operator.hxx"
 #include "workplace.hxx"
 #include "plan.hxx"
-#include "queue.hxx"
+#include "job.hxx"
 
 extern "C" {
 #include "syslog.h"

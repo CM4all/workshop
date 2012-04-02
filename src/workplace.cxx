@@ -8,7 +8,7 @@
 #include "operator.hxx"
 #include "debug.h"
 #include "plan.hxx"
-#include "queue.hxx"
+#include "job.hxx"
 
 extern "C" {
 #include "syslog.h"

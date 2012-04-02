@@ -12,6 +12,7 @@ extern "C" {
 
 #include "plan.hxx"
 #include "queue.hxx"
+#include "job.hxx"
 #include "workplace.hxx"
 #include "version.h"
 

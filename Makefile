@@ -43,7 +43,7 @@ C_SOURCES = src/cmdline.c \
 	src/strarray.c
 
 CXX_SOURCES = src/main.cxx \
-	src/queue.cxx \
+	src/queue.cxx src/job.cxx \
 	src/plan.cxx src/plan-loader.cxx src/plan-library.cxx src/plan-update.cxx \
 	src/operator.cxx src/workplace.cxx
 

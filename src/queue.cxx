@@ -5,6 +5,7 @@
  */
 
 #include "queue.hxx"
+#include "job.hxx"
 
 extern "C" {
 #include "pg-util.h"
@@ -357,24 +358,6 @@ static char *my_strdup(const char *p) {
     if (p == NULL || *p == 0)
         return NULL;
     return g_strdup(p);
-}
-
-static void free_job(struct job **job_r) {
-    struct job *job;
-
-    assert(job_r != NULL);
-    assert(*job_r != NULL);
-
-    job = *job_r;
-    *job_r = NULL;
-
-    g_free(job->id);
-    g_free(job->plan_name);
-    g_free(job->syslog_server);
-
-    strarray_free(&job->args);
-
-    g_free(job);
 }
 
 static bool
