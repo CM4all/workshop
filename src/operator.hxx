@@ -7,12 +7,13 @@
 
 #include <event.h>
 
-struct workplace;
+#include <assert.h>
+
+struct Workplace;
 
 /** an operator is a job being executed */
 struct Operator {
-    Operator *next;
-    struct workplace *workplace;
+    Workplace *workplace;
     struct job *job;
     struct plan *plan;
     pid_t pid;
@@ -29,13 +30,28 @@ struct Operator {
     size_t stderr_length;
     struct syslog_client *syslog;
 
-    Operator(struct workplace *_workplace, struct job *_job,
+    Operator(Workplace *_workplace, struct job *_job,
              struct plan *_plan)
         :workplace(_workplace), job(_job), plan(_plan),
          stdout_fd(-1), stdout_length(0),
          progress(0),
          stderr_fd(-1), stderr_length(0),
          syslog(NULL) {}
+
+#if 0
+    Operator(Operator &&other)
+        :workplace(other.workplace), job(other.job), plan(other.plan),
+         pid(other.pid),
+         stdout_fd(-1), stdout_length(0),
+         progress(0),
+         stderr_fd(-1), stderr_length(0),
+         syslog(other.syslog) {
+        assert(other.stdout_fd < 0);
+        assert(other.stdout_length == 0);
+        assert(other.stderr_fd < 0);
+        assert(other.stderr_length == 0);
+    }
+#endif
 
     Operator(const Operator &other) = delete;
 

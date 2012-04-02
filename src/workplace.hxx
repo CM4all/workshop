@@ -5,37 +5,90 @@
 #ifndef WORKSHOP_WORKPLACE_H
 #define WORKSHOP_WORKPLACE_H
 
+#include "operator.hxx"
+
+#include <string>
+#include <list>
+
+#include <assert.h>
+
 struct plan;
 struct job;
+struct Operator;
 
-struct workplace {
-    const char *node_name;
-    struct Operator *head;
+struct Workplace {
+    std::string node_name;
+
+    typedef std::list<Operator *> OperatorList;
+    OperatorList operators;
+
     unsigned max_operators, num_operators;
-    char *plan_names, *full_plan_names;
+
+    std::string plan_names, full_plan_names;
+
+    Workplace(const char *_node_name, unsigned _max_operators)
+        :node_name(_node_name),
+         max_operators(_max_operators), num_operators(0) {
+        assert(max_operators > 0);
+    }
+
+    Workplace(const Workplace &other) = delete;
+
+    ~Workplace() {
+        assert(operators.empty());
+        assert(num_operators == 0);
+    }
+
+    bool IsEmpty() const {
+        return num_operators == 0;
+    }
+
+    bool IsFull() const {
+        return num_operators == max_operators;
+    }
+
+    bool IsRunning(const struct plan *plan) const {
+        for (const auto &i : operators)
+            if (i->plan == plan)
+                return true;
+
+        return false;
+    }
 };
 
-int workplace_open(const char *node_name, unsigned max_operators,
-                   struct workplace **workplace_r);
+Workplace *
+workplace_open(const char *node_name, unsigned max_operators);
 
-void workplace_close(struct workplace **workplace_r);
+void
+workplace_free(Workplace *workplace);
 
-int workplace_plan_is_running(const struct workplace *workplace,
-                              const struct plan *plan);
+bool
+workplace_plan_is_running(const Workplace *workplace, const struct plan *plan);
 
-const char *workplace_plan_names(struct workplace *workplace);
+const char *
+workplace_plan_names(Workplace *workplace);
 
 /** returns the plan names which have reached their concurrency
     limit */
-const char *workplace_full_plan_names(struct workplace *workplace);
+const char *
+workplace_full_plan_names(Workplace *workplace);
 
-int workplace_start(struct workplace *workplace,
-                    struct job *job, struct plan *plan);
+int
+workplace_start(Workplace *workplace, struct job *job, struct plan *plan);
 
-int workplace_is_empty(const struct workplace *workplace);
+static inline bool
+workplace_is_empty(const Workplace *workplace)
+{
+    return workplace->IsEmpty();
+}
 
-int workplace_is_full(const struct workplace *workplace);
+static inline bool
+workplace_is_full(const Workplace *workplace)
+{
+    return workplace->IsFull();
+}
 
-void workplace_waitpid(struct workplace *workplace);
+void
+workplace_waitpid(Workplace *workplace);
 
 #endif

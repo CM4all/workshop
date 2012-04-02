@@ -19,6 +19,8 @@ extern "C" {
 
 #include <glib.h>
 
+#include <algorithm>
+
 #include <assert.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -32,77 +34,46 @@ extern "C" {
 #include <sys/time.h>
 #include <sys/resource.h>
 
-int workplace_open(const char *node_name, unsigned max_operators,
-                   struct workplace **workplace_r) {
-    struct workplace *workplace;
-
-    assert(max_operators > 0);
-
-    workplace = (struct workplace*)calloc(1, sizeof(*workplace));
-    if (workplace == NULL)
-        return errno;
-
-    workplace->node_name = node_name;
-    if (workplace->node_name == NULL) {
-        workplace_close(&workplace);
-        return ENOMEM;
-    }
-
-    workplace->max_operators = max_operators;
-
-    *workplace_r = workplace;
-    return 0;
+Workplace *
+workplace_open(const char *node_name, unsigned max_operators)
+{
+    return new Workplace(node_name, max_operators);
 }
 
-void workplace_close(struct workplace **workplace_r) {
-    struct workplace *workplace;
+void
+workplace_free(Workplace *workplace)
+{
+    assert(workplace != NULL);
 
-    assert(workplace_r != NULL);
-    assert(*workplace_r != NULL);
-
-    workplace = *workplace_r;
-    *workplace_r = NULL;
-
-    assert(workplace->head == NULL);
-    assert(workplace->num_operators == 0);
-
-    if (workplace->plan_names != NULL)
-        free(workplace->plan_names);
-
-    if (workplace->full_plan_names != NULL)
-        free(workplace->full_plan_names);
-
-    free(workplace);
+    delete workplace;
 }
 
-int workplace_plan_is_running(const struct workplace *workplace,
-                              const struct plan *plan) {
-    for (struct Operator *o = workplace->head; o != NULL; o = o->next)
-        if (o->plan == plan)
-            return 1;
-
-    return 0;
+bool
+workplace_plan_is_running(const Workplace *workplace, const struct plan *plan)
+{
+    return workplace->IsRunning(plan);
 }
 
-const char *workplace_plan_names(struct workplace *workplace) {
+const char *
+workplace_plan_names(Workplace *workplace)
+{
     struct strarray plan_names;
 
     strarray_init(&plan_names);
 
-    for (struct Operator *o = workplace->head; o != NULL; o = o->next)
+    for (const auto &o : workplace->operators)
         if (!strarray_contains(&plan_names, o->job->plan_name))
             strarray_append(&plan_names, o->job->plan_name);
 
-    if (workplace->plan_names != NULL)
-        free(workplace->plan_names);
-
-    workplace->plan_names = pg_encode_array(&plan_names);
+    char *p = pg_encode_array(&plan_names);
+    workplace->plan_names = p;
+    free(p);
 
     strarray_free(&plan_names);
 
-    return workplace->plan_names == NULL
+    return workplace->plan_names.empty()
         ? "{}"
-        : workplace->plan_names;
+        : workplace->plan_names.c_str();
 }
 
 struct plan_counter {
@@ -111,7 +82,7 @@ struct plan_counter {
     unsigned num;
 };
 
-const char *workplace_full_plan_names(struct workplace *workplace) {
+const char *workplace_full_plan_names(Workplace *workplace) {
     struct strarray plan_names;
     struct plan_counter *counters;
     unsigned num_counters = 0, i;
@@ -126,7 +97,7 @@ const char *workplace_full_plan_names(struct workplace *workplace) {
     if (counters == NULL)
         abort();
 
-    for (struct Operator *o = workplace->head; o != NULL; o = o->next) {
+    for (const auto &o : workplace->operators) {
         if (o->plan->concurrency == 0)
             continue;
 
@@ -152,16 +123,15 @@ const char *workplace_full_plan_names(struct workplace *workplace) {
 
     free(counters);
 
-    if (workplace->full_plan_names != NULL)
-        free(workplace->full_plan_names);
-
-    workplace->full_plan_names = pg_encode_array(&plan_names);
+    char *p = pg_encode_array(&plan_names);
+    workplace->full_plan_names = p;
+    free(p);
 
     strarray_free(&plan_names);
 
-    return workplace->full_plan_names == NULL
+    return workplace->full_plan_names.empty()
         ? "{}"
-        : workplace->full_plan_names;
+        : workplace->full_plan_names.c_str();
 }
 
 static void
@@ -238,8 +208,9 @@ stderr_callback(G_GNUC_UNUSED int fd, G_GNUC_UNUSED short event, void *ctx)
     }
 }
 
-int workplace_start(struct workplace *workplace,
-                    struct job *job, struct plan *plan) {
+int
+workplace_start(Workplace *workplace, struct job *job, struct plan *plan)
+{
     int ret, stdout_fds[2], stderr_fds[2];
     struct strarray argv;
     unsigned i;
@@ -262,7 +233,7 @@ int workplace_start(struct workplace *workplace,
 
     o->stdout_fd = stdout_fds[0];
     event_set(&o->stdout_event, o->stdout_fd,
-              EV_READ|EV_PERSIST, stdout_callback, o);
+              EV_READ|EV_PERSIST, stdout_callback, (void *)o);
     event_add(&o->stdout_event, NULL);
 
     if (job->syslog_server != NULL) {
@@ -271,7 +242,7 @@ int workplace_start(struct workplace *workplace,
         snprintf(ident, sizeof(ident), "%s[%s]",
                  job->plan_name, job->id);
 
-        ret = syslog_open(workplace->node_name, ident, 1,
+        ret = syslog_open(workplace->node_name.c_str(), ident, 1,
                           job->syslog_server,
                           &o->syslog);
         if (ret != 0) {
@@ -293,7 +264,7 @@ int workplace_start(struct workplace *workplace,
 
         o->stderr_fd = stderr_fds[0];
         event_set(&o->stderr_event, o->stderr_fd,
-                  EV_READ|EV_PERSIST, stderr_callback, o);
+                  EV_READ|EV_PERSIST, stderr_callback, (void *)o);
         event_add(&o->stderr_event, NULL);
     }
 
@@ -323,7 +294,6 @@ int workplace_start(struct workplace *workplace,
     o->pid = fork();
     if (o->pid < 0) {
         fprintf(stderr, "fork() failed: %s\n", strerror(errno));
-        free_operator(&o);
         close(stdout_fds[1]);
         if (job->syslog_server != NULL)
             close(stderr_fds[1]);
@@ -414,51 +384,43 @@ int workplace_start(struct workplace *workplace,
     if (job->syslog_server != NULL)
         close(stderr_fds[1]);
 
-    o->next = workplace->head;
-    workplace->head = o;
-    ++workplace->num_operators;
-
     daemon_log(2, "job %s (plan '%s') running as pid %d\n",
                job->id, job->plan_name, o->pid);
+
+    workplace->operators.push_back(o);
+    ++workplace->num_operators;
 
     return 0;
 }
 
-int workplace_is_empty(const struct workplace *workplace) {
-    return workplace->head == NULL;
+static Workplace::OperatorList::iterator
+find_operator_by_pid(Workplace *workplace, pid_t pid)
+{
+    struct ComparePid {
+        pid_t pid;
+
+        ComparePid(pid_t _pid):pid(_pid) {}
+
+        bool operator()(const Operator *o) const {
+            return o->pid == pid;
+        }
+    };
+
+    return std::find_if(workplace->operators.begin(),
+                        workplace->operators.end(),
+                        ComparePid(pid));
 }
 
-int workplace_is_full(const struct workplace *workplace) {
-    return workplace->num_operators >= workplace->max_operators;
-}
-
-static struct Operator **find_operator_by_pid(struct workplace *workplace,
-                                              pid_t pid) {
-    struct Operator **operator_p = &workplace->head;
-
-    while (1) {
-        struct Operator *o = *operator_p;
-        if (o == NULL)
-            return NULL;
-
-        if (o->pid == pid)
-            return operator_p;
-
-        operator_p = &o->next;
-    }
-}
-
-void workplace_waitpid(struct workplace *workplace) {
+void workplace_waitpid(Workplace *workplace) {
     pid_t pid;
     int status, exit_status;
 
     while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
-        struct Operator **operator_p = find_operator_by_pid(workplace, pid);
-        if (operator_p == NULL)
+        auto i = find_operator_by_pid(workplace, pid);
+        if (i == workplace->operators.end())
             continue;
 
-        struct Operator *o = *operator_p;
-        assert(o != NULL);
+        Operator *o = *i;
 
         exit_status = WEXITSTATUS(status);
 
@@ -480,8 +442,8 @@ void workplace_waitpid(struct workplace *workplace) {
 
         job_done(&o->job, exit_status);
 
+        workplace->operators.erase(i);
         --workplace->num_operators;
-        *operator_p = o->next;
         free_operator(&o);
     }
 }

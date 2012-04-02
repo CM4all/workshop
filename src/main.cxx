@@ -37,7 +37,7 @@ int debug_mode = 0;
 struct instance {
     Library *library;
     struct queue *queue;
-    struct workplace *workplace;
+    Workplace *workplace;
     int should_exit;
     struct event sigterm_event, sigint_event, sigquit_event;
     struct event sighup_event, sigchld_event;
@@ -71,7 +71,9 @@ exit_callback(G_GNUC_UNUSED int fd, G_GNUC_UNUSED short event, void *arg)
     if (instance->workplace != NULL) {
         if (workplace_is_empty(instance->workplace)) {
             event_del(&instance->sigchld_event);
-            workplace_close(&instance->workplace);
+            workplace_free(instance->workplace);
+            instance->workplace = NULL;
+
             if (instance->queue != NULL)
                 queue_close(&instance->queue);
         } else {
@@ -118,7 +120,9 @@ child_callback(G_GNUC_UNUSED int fd, G_GNUC_UNUSED short event, void *arg)
     if (instance->should_exit) {
         if (workplace_is_empty(instance->workplace)) {
             event_del(&instance->sigchld_event);
-            workplace_close(&instance->workplace);
+            workplace_free(instance->workplace);
+            instance->workplace = NULL;
+
             if (instance->queue != NULL)
                 queue_close(&instance->queue);
         }
@@ -244,12 +248,7 @@ int main(int argc, char **argv) {
         exit(2);
     }
 
-    ret = workplace_open(config.node_name, config.concurrency,
-                         &instance.workplace);
-    if (ret != 0) {
-        fprintf(stderr, "failed to open workplace\n");
-        exit(2);
-    }
+    instance.workplace = workplace_open(config.node_name, config.concurrency);
 
     setup_signal_handlers(&instance);
 
@@ -273,7 +272,7 @@ int main(int argc, char **argv) {
     daemon_log(5, "cleaning up\n");
 
     if (instance.workplace != NULL)
-        workplace_close(&instance.workplace);
+        workplace_free(instance.workplace);
 
     if (instance.queue != NULL)
         queue_close(&instance.queue);
