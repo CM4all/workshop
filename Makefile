@@ -45,7 +45,7 @@ C_SOURCES = src/cmdline.c \
 CXX_SOURCES = src/main.cxx \
 	src/queue.cxx \
 	src/plan.cxx src/plan-loader.cxx src/plan-library.cxx src/plan-update.cxx \
-	src/workplace.cxx
+	src/operator.cxx src/workplace.cxx
 
 C_OBJECTS = $(patsubst %.c,%.o,$(C_SOURCES))
 CXX_OBJECTS = $(patsubst %.cxx,%.o,$(CXX_SOURCES))

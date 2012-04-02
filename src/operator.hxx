@@ -30,4 +30,11 @@ struct Operator {
     struct syslog_client *syslog;
 };
 
+void
+free_operator(struct Operator **operator_r);
+
+int
+expand_operator_vars(const struct Operator *o,
+                     struct strarray *argv);
+
 #endif
