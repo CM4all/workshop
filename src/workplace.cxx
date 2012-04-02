@@ -249,15 +249,7 @@ int workplace_start(struct workplace *workplace,
 
     /* create operator object */
 
-    struct Operator *o = (struct Operator *)calloc(1, sizeof(*o));
-    if (o == NULL)
-        return errno;
-
-    o->workplace = workplace;
-    o->stdout_fd = -1;
-    o->stderr_fd = -1;
-    o->job = job;
-    o->plan = plan;
+    Operator *o = new Operator(workplace, job, plan);
 
     ret = pipe(stdout_fds);
     if (ret < 0) {

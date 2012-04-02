@@ -22,6 +22,22 @@ extern "C" {
 #include <unistd.h>
 #include <string.h>
 
+Operator::~Operator()
+{
+    if (stdout_fd >= 0) {
+        event_del(&stdout_event);
+        close(stdout_fd);
+    }
+
+    if (stderr_fd >= 0) {
+        event_del(&stderr_event);
+        close(stderr_fd);
+    }
+
+    if (syslog != NULL)
+        syslog_close(&syslog);
+}
+
 void
 free_operator(struct Operator **operator_r)
 {
@@ -31,20 +47,7 @@ free_operator(struct Operator **operator_r)
     struct Operator *o = *operator_r;
     *operator_r = NULL;
 
-    if (o->stdout_fd >= 0) {
-        event_del(&o->stdout_event);
-        close(o->stdout_fd);
-    }
-
-    if (o->stderr_fd >= 0) {
-        event_del(&o->stderr_event);
-        close(o->stderr_fd);
-    }
-
-    if (o->syslog != NULL)
-        syslog_close(&o->syslog);
-
-    free(o);
+    delete o;
 }
 
 static int splice_string(char **pp, size_t start, size_t end,

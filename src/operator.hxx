@@ -11,7 +11,7 @@ struct workplace;
 
 /** an operator is a job being executed */
 struct Operator {
-    struct Operator *next;
+    Operator *next;
     struct workplace *workplace;
     struct job *job;
     struct plan *plan;
@@ -28,6 +28,18 @@ struct Operator {
     char stderr_buffer[512];
     size_t stderr_length;
     struct syslog_client *syslog;
+
+    Operator(struct workplace *_workplace, struct job *_job,
+             struct plan *_plan)
+        :workplace(_workplace), job(_job), plan(_plan),
+         stdout_fd(-1), stdout_length(0),
+         progress(0),
+         stderr_fd(-1), stderr_length(0),
+         syslog(NULL) {}
+
+    Operator(const Operator &other) = delete;
+
+    ~Operator();
 };
 
 void
