@@ -9,10 +9,41 @@
 
 #include "strarray.h"
 
+#include <postgresql/libpq-fe.h>
+#include <event.h>
+
 struct queue;
 struct job;
 
 typedef void (*queue_callback_t)(struct job *job, void *ctx);
+
+struct queue {
+    char *node_name;
+    PGconn *conn;
+    int fd;
+    bool disabled, running;
+
+    /** if set to 1, the current queue run should be interrupted, to
+        be started again */
+    bool interrupt;
+
+    /**
+     * For detecting notifies from PostgreSQL.
+     */
+    struct event read_event;
+
+    /**
+     * Timer event for which runs the queue or reconnects to
+     * PostgreSQL.
+     */
+    struct event timer_event;
+
+    char *plans_include, *plans_exclude, *plans_lowprio;
+    time_t next_expire_check;
+
+    queue_callback_t callback;
+    void *ctx;
+};
 
 /**
  * Schedule a queue run.  It will occur "very soon" (in a few

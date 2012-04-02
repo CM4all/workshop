@@ -15,7 +15,6 @@ extern "C" {
 #include <daemon/log.h>
 
 #include <glib.h>
-#include <event.h>
 
 #include <stdbool.h>
 #include <sys/types.h>
@@ -24,34 +23,6 @@ extern "C" {
 #include <errno.h>
 #include <string.h>
 #include <time.h>
-
-struct queue {
-    char *node_name;
-    PGconn *conn;
-    int fd;
-    bool disabled, running;
-
-    /** if set to 1, the current queue run should be interrupted, to
-        be started again */
-    bool interrupt;
-
-    /**
-     * For detecting notifies from PostgreSQL.
-     */
-    struct event read_event;
-
-    /**
-     * Timer event for which runs the queue or reconnects to
-     * PostgreSQL.
-     */
-    struct event timer_event;
-
-    char *plans_include, *plans_exclude, *plans_lowprio;
-    time_t next_expire_check;
-
-    queue_callback_t callback;
-    void *ctx;
-};
 
 static bool
 queue_autoreconnect(struct queue *queue);
