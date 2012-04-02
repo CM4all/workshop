@@ -35,13 +35,6 @@ extern "C" {
 #include <sys/time.h>
 #include <sys/resource.h>
 
-struct workplace {
-    const char *node_name;
-    struct Operator *head;
-    unsigned max_operators, num_operators;
-    char *plan_names, *full_plan_names;
-};
-
 int workplace_open(const char *node_name, unsigned max_operators,
                    struct workplace **workplace_r) {
     struct workplace *workplace;
