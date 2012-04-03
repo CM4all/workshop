@@ -8,16 +8,16 @@
 #include <string>
 #include <list>
 
-struct queue;
+struct Queue;
 
 struct Job {
-    struct queue *queue;
+    Queue *queue;
 
     std::string id, plan_name, syslog_server;
 
     std::list<std::string> args;
 
-    Job(struct queue *_queue, const char *_id, const char *_plan_name)
+    Job(Queue *_queue, const char *_id, const char *_plan_name)
         :queue(_queue), id(_id), plan_name(_plan_name) {
     }
 };

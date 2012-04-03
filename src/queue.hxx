@@ -10,13 +10,14 @@
 #include <postgresql/libpq-fe.h>
 #include <event.h>
 
-struct queue;
+#include <string>
+
 struct Job;
 
 typedef void (*queue_callback_t)(Job *job, void *ctx);
 
-struct queue {
-    char *node_name;
+struct Queue {
+    std::string node_name;
     PGconn *conn;
     int fd;
     bool disabled, running;
@@ -36,11 +37,20 @@ struct queue {
      */
     struct event timer_event;
 
-    char *plans_include, *plans_exclude, *plans_lowprio;
+    std::string plans_include, plans_exclude, plans_lowprio;
     time_t next_expire_check;
 
     queue_callback_t callback;
     void *ctx;
+
+    Queue(const char *_node_name, queue_callback_t _callback, void *_ctx)
+        :node_name(_node_name),
+         conn(NULL), fd(-1),
+         disabled(false), running(false), interrupt(false),
+         next_expire_check(0),
+         callback(_callback), ctx(_ctx) {}
+
+    ~Queue();
 };
 
 /**
@@ -48,7 +58,7 @@ struct queue {
  * milliseconds).
  */
 void
-queue_reschedule(struct queue *queue);
+queue_reschedule(Queue *queue);
 
 /**
  * Open a queue database.  It will listen for notifications.
@@ -62,28 +72,28 @@ queue_reschedule(struct queue *queue);
  */
 int queue_open(const char *node_name, const char *conninfo,
                queue_callback_t callback, void *ctx,
-               struct queue **queue_r);
+               Queue **queue_r);
 
 /**
  * Close the queue database.
  */
-void queue_close(struct queue **queue_r);
+void queue_close(Queue **queue_r);
 
 /**
  * Configure a "plan" filter.
  */
-void queue_set_filter(struct queue *queue, const char *plans_include,
+void queue_set_filter(Queue *queue, const char *plans_include,
                       const char *plans_exclude,
                       const char *plans_lowprio);
 
 /**
  * Disable the queue, e.g. when the node is busy.
  */
-void queue_disable(struct queue *queue);
+void queue_disable(Queue *queue);
 
 /**
  * Enable the queue after it has been disabled with queue_disable().
  */
-void queue_enable(struct queue *queue);
+void queue_enable(Queue *queue);
 
 #endif

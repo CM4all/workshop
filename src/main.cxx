@@ -37,7 +37,7 @@ int debug_mode = 0;
 
 struct instance {
     Library *library;
-    struct queue *queue;
+    Queue *queue;
     Workplace *workplace;
     int should_exit;
     struct event sigterm_event, sigint_event, sigquit_event;
