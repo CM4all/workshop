@@ -20,6 +20,9 @@ extern "C" {
 #include <glib.h>
 
 #include <algorithm>
+#include <string>
+#include <list>
+#include <vector>
 
 #include <assert.h>
 #include <sys/stat.h>
@@ -212,7 +215,6 @@ int
 workplace_start(Workplace *workplace, Job *job, Plan *plan)
 {
     int ret, stdout_fds[2], stderr_fds[2];
-    struct strarray argv;
     unsigned i;
 
     assert(plan != NULL);
@@ -270,25 +272,13 @@ workplace_start(Workplace *workplace, Job *job, Plan *plan)
 
     /* build command line */
 
-    strarray_init(&argv);
-
-    for (const auto &a : plan->args)
-        strarray_append(&argv, a.c_str());
+    std::list<std::string> args;
+    args.insert(args.end(), plan->args.begin(), plan->args.end());
 
     for (i = 0; i < job->args.num; ++i)
-        strarray_append(&argv, job->args.values[i]);
+        args.push_back(job->args.values[i]);
 
-    ret = expand_operator_vars(o, &argv);
-    if (ret != 0) {
-        strarray_free(&argv);
-        free_operator(&o);
-        close(stdout_fds[1]);
-        if (!job->syslog_server.empty())
-            close(stderr_fds[1]);
-        return -1;
-    }
-
-    strarray_append(&argv, NULL);
+    expand_operator_vars(o, args);
 
     /* fork */
 
@@ -374,12 +364,17 @@ workplace_start(Workplace *workplace, Job *job, Plan *plan)
 
         /* execute plan */
 
-        execv(argv.values[0], argv.values);
+        std::vector<const char *> argv;
+        argv.reserve(args.size() + 1);
+        for (const auto &a : args)
+            argv.push_back(a.c_str());
+
+        argv.push_back(NULL);
+
+        execv(argv[0], const_cast<char *const*>(&argv[0]));
         fprintf(stderr, "execv() failed: %s\n", strerror(errno));
         exit(1);
     }
-
-    strarray_free(&argv);
 
     close(stdout_fds[1]);
     if (!job->syslog_server.empty())

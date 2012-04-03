@@ -5,6 +5,9 @@
 #ifndef WORKSHOP_OPERATOR_H
 #define WORKSHOP_OPERATOR_H
 
+#include <string>
+#include <list>
+
 #include <event.h>
 
 #include <assert.h>
@@ -63,8 +66,8 @@ struct Operator {
 void
 free_operator(struct Operator **operator_r);
 
-int
+void
 expand_operator_vars(const struct Operator *o,
-                     struct strarray *argv);
+                     std::list<std::string> &args);
 
 #endif
