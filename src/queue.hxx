@@ -7,8 +7,6 @@
 #ifndef __WORKSHOP_QUEUE_H
 #define __WORKSHOP_QUEUE_H
 
-#include "strarray.h"
-
 #include <postgresql/libpq-fe.h>
 #include <event.h>
 

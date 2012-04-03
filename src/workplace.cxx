@@ -9,11 +9,10 @@
 #include "debug.h"
 #include "plan.hxx"
 #include "job.hxx"
-#include "strarray.h"
+#include "pg_array.hxx"
 
 extern "C" {
 #include "syslog.h"
-#include "pg-util.h"
 }
 
 #include <daemon/log.h>
@@ -58,26 +57,24 @@ workplace_plan_is_running(const Workplace *workplace, const Plan *plan)
     return workplace->IsRunning(plan);
 }
 
+template<class C, typename V>
+static bool
+contains(const C &container, const V &value)
+{
+    return std::find(container.begin(), container.end(), value) != container.end();
+}
+
 const char *
 workplace_plan_names(Workplace *workplace)
 {
-    struct strarray plan_names;
-
-    strarray_init(&plan_names);
-
+    std::list<std::string> plan_names;
     for (const auto &o : workplace->operators)
-        if (!strarray_contains(&plan_names, o->job->plan_name.c_str()))
-            strarray_append(&plan_names, o->job->plan_name.c_str());
+        if (!contains(plan_names, o->job->plan_name))
+            plan_names.push_back(o->job->plan_name);
 
-    char *p = pg_encode_array(&plan_names);
-    workplace->plan_names = p;
-    free(p);
+    workplace->plan_names = pg_encode_array(plan_names);
 
-    strarray_free(&plan_names);
-
-    return workplace->plan_names.empty()
-        ? "{}"
-        : workplace->plan_names.c_str();
+    return workplace->plan_names.c_str();
 }
 
 struct plan_counter {
@@ -87,20 +84,18 @@ struct plan_counter {
 };
 
 const char *workplace_full_plan_names(Workplace *workplace) {
-    struct strarray plan_names;
     struct plan_counter *counters;
     unsigned num_counters = 0, i;
 
     if (workplace->num_operators == 0)
         return "{}";
 
-    strarray_init(&plan_names);
-
     counters = (struct plan_counter *)
         calloc(workplace->num_operators, sizeof(counters[0]));
     if (counters == NULL)
         abort();
 
+    std::list<std::string> plan_names;
     for (const auto &o : workplace->operators) {
         if (o->plan->concurrency == 0)
             continue;
@@ -119,23 +114,17 @@ const char *workplace_full_plan_names(Workplace *workplace) {
 
         assert(counters[i].plan->concurrency == 0 ||
                counters[i].num <= counters[i].plan->concurrency ||
-               strarray_contains(&plan_names, counters[i].plan_name));
+               contains(plan_names, counters[i].plan_name));
 
         if (counters[i].num == counters[i].plan->concurrency)
-            strarray_append(&plan_names, counters[i].plan_name);
+            plan_names.push_back(counters[i].plan_name);
     }
 
     free(counters);
 
-    char *p = pg_encode_array(&plan_names);
-    workplace->full_plan_names = p;
-    free(p);
+    workplace->full_plan_names = pg_encode_array(plan_names);
 
-    strarray_free(&plan_names);
-
-    return workplace->full_plan_names.empty()
-        ? "{}"
-        : workplace->full_plan_names.c_str();
+    return workplace->full_plan_names.c_str();
 }
 
 static void

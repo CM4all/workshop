@@ -1,44 +1,38 @@
-#include "../src/strarray.h"
-#include "../src/pg-util.h"
+#include "../src/pg_array.hxx"
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
 static void check_decode(const char *input, const char *const* expected) {
-    int ret;
-    struct strarray a;
-    unsigned i;
-
-    strarray_init(&a);
-
-    ret = pg_decode_array(input, &a);
-    if (ret != 0) {
+    std::list<std::string> a;
+    if (!pg_decode_array(input, a)) {
         fprintf(stderr, "decode '%s' failed\n", input);
         exit(2);
     }
 
-    for (i = 0; i < a.num; ++i) {
+    unsigned i = 0;
+    for (const auto &v : a) {
         if (expected[i] == NULL) {
             fprintf(stderr, "decode '%s': too many elements in result ('%s')\n",
-                    input, a.values[i]);
+                    input, v.c_str());
             exit(2);
         }
 
-        if (strcmp(a.values[i], expected[i]) != 0) {
+        if (strcmp(v.c_str(), expected[i]) != 0) {
             fprintf(stderr, "decode '%s': element %u differs: '%s', but '%s' expected\n",
-                    input, i, a.values[i], expected[i]);
+                    input, i, v.c_str(), expected[i]);
             exit(2);
         }
+
+        ++i;
     }
 
-    if (expected[a.num] != NULL) {
+    if (expected[a.size()] != NULL) {
         fprintf(stderr, "decode '%s': not enough elements in result ('%s')\n",
-                input, expected[a.num]);
+                input, expected[a.size()]);
         exit(2);
     }
-
-    strarray_free(&a);
 }
 
 int main(int argc, char **argv) {

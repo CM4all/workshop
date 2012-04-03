@@ -6,9 +6,9 @@
 
 #include "queue.hxx"
 #include "job.hxx"
+#include "pg_array.hxx"
 
 extern "C" {
-#include "pg-util.h"
 #include "pg-queue.h"
 }
 
@@ -330,7 +330,6 @@ get_job(struct queue *queue, PGresult *res, int row,
         Job **job_r)
 {
     Job *job;
-    int ret;
 
     assert(queue != NULL);
     assert(job_r != NULL);
@@ -338,19 +337,14 @@ get_job(struct queue *queue, PGresult *res, int row,
 
     job = new Job(queue, PQgetvalue(res, row, 0), PQgetvalue(res, row, 1));
 
-    struct strarray args;
-    strarray_init(&args);
-    ret = pg_decode_array(PQgetvalue(res, row, 2), &args);
-    if (ret != 0) {
-        strarray_free(&args);
+    std::list<std::string> args;
+    if (!pg_decode_array(PQgetvalue(res, row, 2), args)) {
         fprintf(stderr, "pg_decode_array() failed\n");
         delete job;
         return false;
     }
 
-    for (unsigned i = 0; i < args.num; ++i)
-        job->args.push_back(args.values[i]);
-    strarray_free(&args);
+    job->args.splice(job->args.end(), args, args.begin(), args.end());
 
     if (!PQgetisnull(res, row, 3))
         job->syslog_server = PQgetvalue(res, row, 3);

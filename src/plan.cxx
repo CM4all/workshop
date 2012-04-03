@@ -7,11 +7,7 @@
 
 #include "plan.hxx"
 #include "plan_internal.hxx"
-#include "strarray.h"
-
-extern "C" {
-#include "pg-util.h"
-}
+#include "pg_array.hxx"
 
 #include <assert.h>
 #include <sys/stat.h>
@@ -62,36 +58,29 @@ library_close(Library **library_r)
     delete library;
 }
 
-static int
+static void
 update_plan_names(Library &library)
 {
     const time_t now = time(NULL);
-    struct strarray plan_names;
 
     if (!library.names.empty() && now < library.next_names_update)
-        return 0;
+        return;
 
     library.next_names_update = now + 60;
 
     /* collect new list */
 
-    strarray_init(&plan_names);
+    std::list<std::string> plan_names;
 
     for (const auto &i : library.plans) {
         const std::string &name = i.first;
         const PlanEntry &entry = i.second;
 
         if (!entry.IsDisabled(now))
-            strarray_append(&plan_names, name.c_str());
+            plan_names.push_back(name);
     }
 
-    char *p = pg_encode_array(&plan_names);
-    library.names = p;
-    free(p);
-
-    strarray_free(&plan_names);
-
-    return 0;
+    library.names = pg_encode_array(plan_names);
 }
 
 const char *

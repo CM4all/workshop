@@ -38,11 +38,10 @@ INCLUDES += $(LIBDAEMON_CFLAGS) $(GLIB_CFLAGS)
 
 C_SOURCES = src/cmdline.c \
 	src/syslog.c \
-	src/pg-queue.c \
-	src/pg-util.c \
-	src/strarray.c
+	src/pg-queue.c
 
 CXX_SOURCES = src/main.cxx \
+	src/pg_array.cxx \
 	src/queue.cxx src/job.cxx \
 	src/plan.cxx src/plan-loader.cxx src/plan-library.cxx src/plan-update.cxx \
 	src/operator.cxx src/workplace.cxx
@@ -64,10 +63,13 @@ check: t/test-pg_decode_array t/test-pg_encode_array
 	./t/test-pg_decode_array
 	./t/test-pg_encode_array
 
-t/test-pg_decode_array: t/test-pg_decode_array.o src/pg-util.o src/strarray.o
+t/test-pg_decode_array.o t/test-pg_encode_array.o: %.o: %.cxx
+	$(CXX) -c -o $@ $< $(CXXFLAGS) $(INCLUDES)
+
+t/test-pg_decode_array: t/test-pg_decode_array.o src/pg_array.o
 	$(CC) -o $@ $^ $(LDFLAGS) $(LIBS)
 
-t/test-pg_encode_array: t/test-pg_encode_array.o src/pg-util.o src/strarray.o
+t/test-pg_encode_array: t/test-pg_encode_array.o src/pg_array.o
 	$(CC) -o $@ $^ $(LDFLAGS) $(LIBS)
 
 src/cm4all-workshop: $(C_OBJECTS) $(CXX_OBJECTS)
