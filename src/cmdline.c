@@ -9,10 +9,9 @@
 #include "debug.h"
 #include "version.h"
 
+#include <inline/compiler.h>
 #include <daemon/log.h>
 #include <daemon/daemonize.h>
-
-#include <glib.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -215,6 +214,6 @@ void parse_cmdline(struct config *config, int argc, char **argv) {
 }
 
 void
-config_dispose(G_GNUC_UNUSED struct config *config)
+config_dispose(gcc_unused struct config *config)
 {
 }

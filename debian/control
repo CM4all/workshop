@@ -3,9 +3,9 @@ Section: non-free/admin
 Priority: optional
 Maintainer: Max Kellermann <mk@cm4all.com>
 Build-Depends: debhelper (>= 5), clang (>= 3.0), libevent-dev (>= 1.1),
- libpq-dev (>= 8.3.6), libcm4all-daemon-dev (>= 0.3), xsltproc,
- libglib2.0-dev (>= 2.16),
- docbook-xsl
+ libpq-dev (>= 8.3.6),
+ libcm4all-inline-dev (>= 0.3.2), libcm4all-daemon-dev (>= 0.3.1),
+ xsltproc, docbook-xsl
 Standards-Version: 3.8.0
 
 Package: cm4all-workshop

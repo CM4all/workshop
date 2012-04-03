@@ -16,10 +16,10 @@ extern "C" {
 #include "workplace.hxx"
 #include "version.h"
 
+#include <inline/compiler.h>
 #include <daemon/log.h>
 #include <daemon/daemonize.h>
 
-#include <glib.h>
 #include <event.h>
 
 #include <assert.h>
@@ -54,7 +54,7 @@ static void config_get(struct config *config, int argc, char **argv) {
 }
 
 static void
-exit_callback(G_GNUC_UNUSED int fd, G_GNUC_UNUSED short event, void *arg)
+exit_callback(gcc_unused int fd, gcc_unused short event, void *arg)
 {
     struct instance *instance = (struct instance*)arg;
 
@@ -96,7 +96,7 @@ static void update_library_and_filter(struct instance *instance) {
 }
 
 static void
-reload_callback(G_GNUC_UNUSED int fd, G_GNUC_UNUSED short event, void *arg)
+reload_callback(gcc_unused int fd, gcc_unused short event, void *arg)
 {
     struct instance *instance = (struct instance*)arg;
 
@@ -109,7 +109,7 @@ reload_callback(G_GNUC_UNUSED int fd, G_GNUC_UNUSED short event, void *arg)
 }
 
 static void
-child_callback(G_GNUC_UNUSED int fd, G_GNUC_UNUSED short event, void *arg)
+child_callback(gcc_unused int fd, gcc_unused short event, void *arg)
 {
     struct instance *instance = (struct instance*)arg;
 

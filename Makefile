@@ -28,13 +28,12 @@ override CXXFLAGS += -Wall -W -Werror -std=gnu++0x -Wmissing-prototypes -Wwrite-
 
 INCLUDES =
 
+LIBINLINE_CFLAGS := $(shell pkg-config --cflags libcm4all-inline)
+
 LIBDAEMON_CFLAGS := $(shell pkg-config --cflags libcm4all-daemon)
 LIBDAEMON_LIBS := $(shell pkg-config --libs libcm4all-daemon)
 
-GLIB_CFLAGS := $(shell pkg-config --cflags "glib-2.0 >= 2.16")
-GLIB_LIBS := $(shell pkg-config --libs "glib-2.0 >= 2.16")
-
-INCLUDES += $(LIBDAEMON_CFLAGS) $(GLIB_CFLAGS)
+INCLUDES += $(LIBINLINE_CFLAGS) $(LIBDAEMON_CFLAGS)
 
 C_SOURCES = src/cmdline.c \
 	src/syslog.c \
@@ -48,7 +47,7 @@ CXX_SOURCES = src/main.cxx \
 
 C_OBJECTS = $(patsubst %.c,%.o,$(C_SOURCES))
 CXX_OBJECTS = $(patsubst %.cxx,%.o,$(CXX_SOURCES))
-LIBS = -lstdc++ -levent -lpq $(LIBDAEMON_LIBS) $(GLIB_LIBS)
+LIBS = -lstdc++ -levent -lpq $(LIBDAEMON_LIBS)
 LDFLAGS = -Wl,-gc-sections
 
 all: src/cm4all-workshop doc/workshop.html

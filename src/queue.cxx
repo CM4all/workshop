@@ -12,9 +12,8 @@ extern "C" {
 #include "pg-queue.h"
 }
 
+#include <inline/compiler.h>
 #include <daemon/log.h>
-
-#include <glib.h>
 
 #include <stdbool.h>
 #include <sys/types.h>
@@ -49,7 +48,7 @@ queue_run(Queue *queue);
 /** the poll() callback handler; this function handles notifies sent
     by the PostgreSQL server */
 static void
-queue_event_callback(G_GNUC_UNUSED int fd, G_GNUC_UNUSED short event,
+queue_event_callback(gcc_unused int fd, gcc_unused short event,
                      void *ctx)
 {
     Queue *queue = (Queue *)ctx;
@@ -69,7 +68,7 @@ queue_event_callback(G_GNUC_UNUSED int fd, G_GNUC_UNUSED short event,
 }
 
 static void
-queue_timer_event_callback(G_GNUC_UNUSED int fd, G_GNUC_UNUSED short event,
+queue_timer_event_callback(gcc_unused int fd, gcc_unused short event,
                            void *ctx)
 {
     Queue *queue = (Queue *)ctx;

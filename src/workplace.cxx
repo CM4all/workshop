@@ -15,9 +15,8 @@ extern "C" {
 #include "syslog.h"
 }
 
+#include <inline/compiler.h>
 #include <daemon/log.h>
-
-#include <glib.h>
 
 #include <algorithm>
 #include <string>
@@ -128,7 +127,7 @@ const char *workplace_full_plan_names(Workplace *workplace) {
 }
 
 static void
-stdout_callback(G_GNUC_UNUSED int fd, G_GNUC_UNUSED short event, void *ctx)
+stdout_callback(gcc_unused int fd, gcc_unused short event, void *ctx)
 {
     struct Operator *o = (struct Operator*)ctx;
     char buffer[512];
@@ -168,7 +167,7 @@ stdout_callback(G_GNUC_UNUSED int fd, G_GNUC_UNUSED short event, void *ctx)
 }
 
 static void
-stderr_callback(G_GNUC_UNUSED int fd, G_GNUC_UNUSED short event, void *ctx)
+stderr_callback(gcc_unused int fd, gcc_unused short event, void *ctx)
 {
     struct Operator *o = (struct Operator*)ctx;
     char buffer[512];

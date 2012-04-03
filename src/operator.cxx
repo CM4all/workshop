@@ -13,8 +13,6 @@ extern "C" {
 #include "syslog.h"
 }
 
-#include <glib.h>
-
 #include <map>
 #include <string>
 
