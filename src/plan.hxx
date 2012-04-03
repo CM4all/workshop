@@ -7,7 +7,8 @@
 #ifndef WORKSHOP_PLAN_H
 #define WORKSHOP_PLAN_H
 
-#include "strarray.h"
+#include <string>
+#include <list>
 
 #include <string>
 #include <vector>
@@ -21,8 +22,11 @@ class Library;
 /** a plan describes how to perform a specific job */
 struct Plan {
     Library *library;
-    struct strarray argv;
+
+    std::list<std::string> args;
+
     std::string timeout, chroot;
+
     uid_t uid;
     gid_t gid;
 
@@ -42,14 +46,9 @@ struct Plan {
          priority(10),
          concurrency(0),
          ref(0) {
-        strarray_init(&argv);
     }
 
     Plan(const Plan &other) = delete;
-
-    ~Plan() {
-        strarray_free(&argv);
-    }
 };
 
 int

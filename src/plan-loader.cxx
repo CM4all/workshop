@@ -97,7 +97,7 @@ parse_plan_config(Plan *plan, FILE *file)
         }
 
         if (strcmp(key, "exec") == 0) {
-            if (plan->argv.num > 0) {
+            if (!plan->args.empty()) {
                 fprintf(stderr, "line %u: 'exec' already specified\n",
                         line_no);
                 return -1;
@@ -110,7 +110,7 @@ parse_plan_config(Plan *plan, FILE *file)
             }
 
             while (value != NULL) {
-                strarray_append(&plan->argv, value);
+                plan->args.push_back(value);
                 value = next_word(&p);
             }
         } else {
@@ -177,7 +177,7 @@ parse_plan_config(Plan *plan, FILE *file)
         }
     }
 
-    if (plan->argv.num == 0) {
+    if (plan->args.empty()) {
         fprintf(stderr, "no 'exec'\n");
         return -1;
     }

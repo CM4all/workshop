@@ -7,6 +7,7 @@
 
 #include "plan.hxx"
 #include "plan_internal.hxx"
+#include "strarray.h"
 
 extern "C" {
 #include "pg-util.h"

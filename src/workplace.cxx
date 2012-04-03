@@ -216,7 +216,7 @@ workplace_start(Workplace *workplace, Job *job, Plan *plan)
     unsigned i;
 
     assert(plan != NULL);
-    assert(plan->argv.num > 0);
+    assert(!plan->args.empty());
 
     /* create operator object */
 
@@ -271,8 +271,9 @@ workplace_start(Workplace *workplace, Job *job, Plan *plan)
     /* build command line */
 
     strarray_init(&argv);
-    for (i = 0; i < plan->argv.num; ++i)
-        strarray_append(&argv, plan->argv.values[i]);
+
+    for (const auto &a : plan->args)
+        strarray_append(&argv, a.c_str());
 
     for (i = 0; i < job->args.num; ++i)
         strarray_append(&argv, job->args.values[i]);

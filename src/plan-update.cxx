@@ -95,19 +95,19 @@ validate_plan(PlanEntry &entry)
     struct stat st;
 
     assert(plan != NULL);
-    assert(plan->argv.num > 0);
-    assert(plan->argv.values[0] != NULL && plan->argv.values[0][0] != 0);
+    assert(!plan->args.empty());
+    assert(!plan->args.front().empty());
     assert(plan->library != NULL);
 
     /* check if the executable exists; it would not if the Debian
        package has been deinstalled, but the plan's config file is
        still there */
 
-    ret = stat(plan->argv.values[0], &st);
+    ret = stat(plan->args.front().c_str(), &st);
     if (ret < 0) {
         if (errno != ENOENT || !entry.deinstalled)
             fprintf(stderr, "failed to stat '%s': %s\n",
-                    plan->argv.values[0], strerror(errno));
+                    plan->args.front().c_str(), strerror(errno));
         if (errno == ENOENT)
             entry.deinstalled = true;
         else
