@@ -5,9 +5,8 @@
 #ifndef WORKSHOP_JOB_HXX
 #define WORKSHOP_JOB_HXX
 
-#include "strarray.h"
-
 #include <string>
+#include <list>
 
 struct queue;
 
@@ -16,15 +15,10 @@ struct Job {
 
     std::string id, plan_name, syslog_server;
 
-    struct strarray args;
+    std::list<std::string> args;
 
     Job(struct queue *_queue, const char *_id, const char *_plan_name)
         :queue(_queue), id(_id), plan_name(_plan_name) {
-        strarray_init(&args);
-    }
-
-    ~Job() {
-        strarray_free(&args);
     }
 };
 

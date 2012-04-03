@@ -9,6 +9,7 @@
 #include "debug.h"
 #include "plan.hxx"
 #include "job.hxx"
+#include "strarray.h"
 
 extern "C" {
 #include "syslog.h"
@@ -215,7 +216,6 @@ int
 workplace_start(Workplace *workplace, Job *job, Plan *plan)
 {
     int ret, stdout_fds[2], stderr_fds[2];
-    unsigned i;
 
     assert(plan != NULL);
     assert(!plan->args.empty());
@@ -274,9 +274,7 @@ workplace_start(Workplace *workplace, Job *job, Plan *plan)
 
     std::list<std::string> args;
     args.insert(args.end(), plan->args.begin(), plan->args.end());
-
-    for (i = 0; i < job->args.num; ++i)
-        args.push_back(job->args.values[i]);
+    args.insert(args.end(), job->args.begin(), job->args.end());
 
     expand_operator_vars(o, args);
 

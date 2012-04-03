@@ -338,12 +338,19 @@ get_job(struct queue *queue, PGresult *res, int row,
 
     job = new Job(queue, PQgetvalue(res, row, 0), PQgetvalue(res, row, 1));
 
-    ret = pg_decode_array(PQgetvalue(res, row, 2), &job->args);
+    struct strarray args;
+    strarray_init(&args);
+    ret = pg_decode_array(PQgetvalue(res, row, 2), &args);
     if (ret != 0) {
+        strarray_free(&args);
         fprintf(stderr, "pg_decode_array() failed\n");
         delete job;
         return false;
     }
+
+    for (unsigned i = 0; i < args.num; ++i)
+        job->args.push_back(args.values[i]);
+    strarray_free(&args);
 
     if (!PQgetisnull(res, row, 3))
         job->syslog_server = PQgetvalue(res, row, 3);
