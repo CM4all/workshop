@@ -341,7 +341,7 @@ get_job(struct queue *queue, PGresult *res, int row,
     ret = pg_decode_array(PQgetvalue(res, row, 2), &job->args);
     if (ret != 0) {
         fprintf(stderr, "pg_decode_array() failed\n");
-        free_job(&job);
+        delete job;
         return false;
     }
 
@@ -349,7 +349,7 @@ get_job(struct queue *queue, PGresult *res, int row,
         job->syslog_server = PQgetvalue(res, row, 3);
 
     if (job->id.empty() || job->plan_name.empty()) {
-        free_job(&job);
+        delete job;
         return false;
     }
 
@@ -370,13 +370,13 @@ static int get_and_claim_job(struct queue *queue, PGresult *res, int row,
     ret = pg_claim_job(queue->conn, job->id.c_str(), queue->node_name,
                        timeout);
     if (ret < 0) {
-        free_job(&job);
+        delete job;
         return -1;
     }
 
     if (ret == 0) {
         daemon_log(6, "job %s was not claimed\n", job->id.c_str());
-        free_job(&job);
+        delete job;
         return 0;
     }
 
@@ -612,7 +612,7 @@ int job_rollback(Job **job_r) {
 
     queue_check_all(job->queue);
 
-    free_job(&job);
+    delete job;
 
     return 0;
 }
@@ -635,7 +635,7 @@ int job_done(Job **job_r, int status) {
 
     queue_check_all(job->queue);
 
-    free_job(&job);
+    delete job;
 
     return 0;
 }

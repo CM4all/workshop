@@ -28,9 +28,6 @@ struct Job {
     }
 };
 
-void
-free_job(Job **job_r);
-
 /**
  * Update the "progress" value of the job.
  *
