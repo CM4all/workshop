@@ -14,14 +14,15 @@
 
 #include <sys/types.h>
 
-struct plan;
+struct Plan;
 
-void plan_free(struct plan **plan_r);
+void
+plan_free(Plan **plan_r);
 
 struct PlanEntry {
     std::string name;
 
-    struct plan *plan;
+    Plan *plan;
     bool deinstalled;
     time_t mtime, disabled_until;
     unsigned generation;
@@ -78,7 +79,8 @@ public:
 
 /* plan-loader.c */
 
-int plan_load(const char *path, struct plan **plan_r);
+int
+plan_load(const char *path, Plan **plan_r);
 
 /* plan-update.c */
 

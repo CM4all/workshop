@@ -12,7 +12,7 @@
 
 #include <assert.h>
 
-struct plan;
+struct Plan;
 struct Job;
 struct Operator;
 
@@ -47,7 +47,7 @@ struct Workplace {
         return num_operators == max_operators;
     }
 
-    bool IsRunning(const struct plan *plan) const {
+    bool IsRunning(const Plan *plan) const {
         for (const auto &i : operators)
             if (i->plan == plan)
                 return true;
@@ -63,7 +63,7 @@ void
 workplace_free(Workplace *workplace);
 
 bool
-workplace_plan_is_running(const Workplace *workplace, const struct plan *plan);
+workplace_plan_is_running(const Workplace *workplace, const Plan *plan);
 
 const char *
 workplace_plan_names(Workplace *workplace);
@@ -74,7 +74,7 @@ const char *
 workplace_full_plan_names(Workplace *workplace);
 
 int
-workplace_start(Workplace *workplace, Job *job, struct plan *plan);
+workplace_start(Workplace *workplace, Job *job, Plan *plan);
 
 static inline bool
 workplace_is_empty(const Workplace *workplace)

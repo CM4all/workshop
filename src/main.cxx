@@ -168,7 +168,7 @@ static void setup_signal_handlers(struct instance *instance) {
 
 static int start_job(struct instance *instance, Job *job) {
     int ret;
-    struct plan *plan;
+    Plan *plan;
 
     ret = library_get(instance->library, job->plan_name.c_str(), &plan);
     if (ret != 0) {
@@ -177,7 +177,7 @@ static int start_job(struct instance *instance, Job *job) {
         return ret;
     }
 
-    ret = job_set_progress(job, 0, plan->timeout);
+    ret = job_set_progress(job, 0, plan->timeout.c_str());
     if (ret < 0) {
         job_rollback(&job);
         return ret;

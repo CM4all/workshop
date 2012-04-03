@@ -9,6 +9,7 @@
 
 #include <assert.h>
 
+struct Plan;
 struct Workplace;
 struct Job;
 
@@ -16,7 +17,7 @@ struct Job;
 struct Operator {
     Workplace *workplace;
     Job *job;
-    struct plan *plan;
+    Plan *plan;
     pid_t pid;
 
     int stdout_fd;
@@ -32,7 +33,7 @@ struct Operator {
     struct syslog_client *syslog;
 
     Operator(Workplace *_workplace, Job *_job,
-             struct plan *_plan)
+             Plan *_plan)
         :workplace(_workplace), job(_job), plan(_plan),
          stdout_fd(-1), stdout_length(0),
          progress(0),

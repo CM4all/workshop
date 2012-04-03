@@ -138,7 +138,7 @@ library_update(Library *library)
 }
 
 int
-library_get(Library *library, const char *name, struct plan **plan_r)
+library_get(Library *library, const char *name, Plan **plan_r)
 {
     int ret;
     PlanEntry *entry;
@@ -158,7 +158,7 @@ library_get(Library *library, const char *name, struct plan **plan_r)
 }
 
 static bool
-find_plan_pointer(const Library &library, const struct plan *plan)
+find_plan_pointer(const Library &library, const Plan *plan)
 {
     for (const auto &i : library.plans)
         if (i.second.plan == plan)
@@ -167,14 +167,15 @@ find_plan_pointer(const Library &library, const struct plan *plan)
     return false;
 }
 
-void plan_put(struct plan **plan_r) {
-    struct plan *plan;
+void
+plan_put(Plan **plan_r)
+{
     Library *library;
 
     assert(plan_r != NULL);
     assert(*plan_r != NULL);
 
-    plan = *plan_r;
+    Plan *plan = *plan_r;
     *plan_r = NULL;
 
     library = plan->library;

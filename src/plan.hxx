@@ -9,23 +9,25 @@
 
 #include "strarray.h"
 
+#include <string>
+#include <vector>
+
 #include <sys/types.h>
+#include <stdlib.h>
 
 /** a library is a container for plan objects */
 class Library;
 
 /** a plan describes how to perform a specific job */
-struct plan {
+struct Plan {
     Library *library;
     struct strarray argv;
-    char *timeout, *chroot;
+    std::string timeout, chroot;
     uid_t uid;
     gid_t gid;
 
-    /** number of supplementary groups */
-    int num_groups;
     /** supplementary group ids */
-    gid_t *groups;
+    std::vector<gid_t> groups;
 
     int priority;
 
@@ -34,7 +36,20 @@ struct plan {
 
     unsigned ref;
 
-    plan(const plan &other) = delete;
+    Plan()
+        :library(NULL),
+         uid(65534), gid(65534),
+         priority(10),
+         concurrency(0),
+         ref(0) {
+        strarray_init(&argv);
+    }
+
+    Plan(const Plan &other) = delete;
+
+    ~Plan() {
+        strarray_free(&argv);
+    }
 };
 
 int
@@ -50,9 +65,9 @@ const char *
 library_plan_names(Library *library);
 
 int
-library_get(Library *library, const char *name,
-            struct plan **plan_r);
+library_get(Library *library, const char *name, Plan **plan_r);
 
-void plan_put(struct plan **plan_r);
+void
+plan_put(Plan **plan_r);
 
 #endif

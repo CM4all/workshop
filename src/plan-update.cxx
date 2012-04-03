@@ -90,7 +90,7 @@ check_plan_mtime(Library &library, PlanEntry &entry)
 static int
 validate_plan(PlanEntry &entry)
 {
-    const struct plan *plan = entry.plan;
+    const Plan *plan = entry.plan;
     int ret;
     struct stat st;
 

@@ -57,40 +57,27 @@ static int user_in_group(const struct group *group, const char *user) {
     return 0;
 }
 
-static int get_user_groups(const char *user, gid_t **groups_r) {
-    unsigned num_groups = 0, max_groups = 0;
-    gid_t *groups = NULL, *groups_new;
-    const struct group *group;
+static std::vector<gid_t>
+get_user_groups(const char *user)
+{
+    std::vector<gid_t> groups;
 
     setgrent();
 
+    const struct group *group;
     while ((group = getgrent()) != NULL) {
-        if (group->gr_gid > 0 && user_in_group(group, user)) {
-            if (num_groups >= max_groups) {
-                max_groups += 16;
-                groups_new = (gid_t *)realloc(groups,
-                                              max_groups * sizeof(*groups));
-                if (groups_new == NULL) {
-                    free(groups);
-                    endgrent();
-                    fprintf(stderr, "Out of memory\n");
-                    return -1;
-                }
-
-                groups = groups_new;
-            }
-
-            groups[num_groups++] = group->gr_gid;
-        }
+        if (group->gr_gid > 0 && user_in_group(group, user))
+            groups.push_back(group->gr_gid);
     }
 
     endgrent();
 
-    *groups_r = groups;
-    return (int)num_groups;
+    return groups;
 }
 
-static int parse_plan_config(struct plan *plan, FILE *file) {
+static int
+parse_plan_config(Plan *plan, FILE *file)
+{
     char line[1024], *p, *key, *value;
     unsigned line_no = 0;
 
@@ -135,9 +122,7 @@ static int parse_plan_config(struct plan *plan, FILE *file) {
             }
 
             if (strcmp(key, "timeout") == 0) {
-                plan->timeout = strdup(value);
-                if (plan->timeout == NULL)
-                    return errno;
+                plan->timeout = value;
             } else if (strcmp(key, "chroot") == 0) {
                 int ret;
                 struct stat st;
@@ -155,9 +140,7 @@ static int parse_plan_config(struct plan *plan, FILE *file) {
                     return -1;
                 }
 
-                plan->chroot = strdup(value);
-                if (plan->chroot == NULL)
-                    return errno;
+                plan->chroot = value;
             } else if (strcmp(key, "user") == 0) {
                 struct passwd *pw;
 
@@ -181,9 +164,7 @@ static int parse_plan_config(struct plan *plan, FILE *file) {
                 plan->uid = pw->pw_uid;
                 plan->gid = pw->pw_gid;
 
-                plan->num_groups = get_user_groups(value, &plan->groups);
-                if (plan->num_groups < 0)
-                    return -1;
+                plan->groups = get_user_groups(value);
             } else if (strcmp(key, "nice") == 0) {
                 plan->priority = atoi(value);
             } else if (strcmp(key, "concurrency") == 0) {
@@ -201,29 +182,21 @@ static int parse_plan_config(struct plan *plan, FILE *file) {
         return -1;
     }
 
-    if (plan->timeout == NULL) {
-        plan->timeout = strdup("10 minutes");
-        if (plan->timeout == NULL)
-            return errno;
-    }
+    if (plan->timeout.empty())
+        plan->timeout = "10 minutes";
 
     return 0;
 }
 
-int plan_load(const char *path, struct plan **plan_r) {
-    struct plan *plan;
+int
+plan_load(const char *path, Plan **plan_r)
+{
     FILE *file;
     int ret;
 
     assert(path != NULL);
 
-    plan = (struct plan *)calloc(1, sizeof(*plan));
-    if (plan == NULL)
-        return ENOMEM;
-
-    plan->uid = 65534;
-    plan->gid = 65534;
-    plan->priority = 10;
+    Plan *plan = new Plan();
 
     file = fopen(path, "r");
     if (file == NULL) {
@@ -245,8 +218,10 @@ int plan_load(const char *path, struct plan **plan_r) {
     return 0;
 }
 
-void plan_free(struct plan **plan_r) {
-    struct plan *plan;
+void
+plan_free(Plan **plan_r)
+{
+    Plan *plan;
 
     assert(plan_r != NULL);
     assert(*plan_r != NULL);
@@ -256,16 +231,5 @@ void plan_free(struct plan **plan_r) {
 
     assert(plan->ref == 0);
 
-    strarray_free(&plan->argv);
-
-    if (plan->timeout != NULL)
-        free(plan->timeout);
-
-    if (plan->chroot != NULL)
-        free(plan->chroot);
-
-    if (plan->groups != NULL)
-        free(plan->groups);
-
-    free(plan);
+    delete plan;
 }

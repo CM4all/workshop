@@ -49,7 +49,7 @@ workplace_free(Workplace *workplace)
 }
 
 bool
-workplace_plan_is_running(const Workplace *workplace, const struct plan *plan)
+workplace_plan_is_running(const Workplace *workplace, const Plan *plan)
 {
     return workplace->IsRunning(plan);
 }
@@ -77,7 +77,7 @@ workplace_plan_names(Workplace *workplace)
 }
 
 struct plan_counter {
-    const struct plan *plan;
+    const Plan *plan;
     const char *plan_name;
     unsigned num;
 };
@@ -169,7 +169,7 @@ stdout_callback(G_GNUC_UNUSED int fd, G_GNUC_UNUSED short event, void *ctx)
     }
 
     if (progress > 0 && progress != o->progress) {
-        job_set_progress(o->job, progress, o->plan->timeout);
+        job_set_progress(o->job, progress, o->plan->timeout.c_str());
         o->progress = progress;
     }
 }
@@ -209,7 +209,7 @@ stderr_callback(G_GNUC_UNUSED int fd, G_GNUC_UNUSED short event, void *ctx)
 }
 
 int
-workplace_start(Workplace *workplace, Job *job, struct plan *plan)
+workplace_start(Workplace *workplace, Job *job, Plan *plan)
 {
     int ret, stdout_fds[2], stderr_fds[2];
     struct strarray argv;
@@ -317,10 +317,10 @@ workplace_start(Workplace *workplace, Job *job, struct plan *plan)
 
         /* chroot */
 
-        if (plan->chroot != NULL) {
-            ret = chroot(plan->chroot);
+        if (!plan->chroot.empty()) {
+            ret = chroot(plan->chroot.c_str());
             fprintf(stderr, "chroot('%s') failed: %s\n",
-                    plan->chroot, strerror(errno));
+                    plan->chroot.c_str(), strerror(errno));
             exit(1);
         }
 
@@ -335,7 +335,7 @@ workplace_start(Workplace *workplace, Job *job, struct plan *plan)
         /* UID / GID */
 
         if (!debug_mode) {
-            ret = setgroups(plan->num_groups, plan->groups);
+            ret = setgroups(plan->groups.size(), &plan->groups[0]);
             if (ret < 0) {
                 fprintf(stderr, "setgroups() failed: %s\n", strerror(errno));
                 exit(1);
