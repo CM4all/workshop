@@ -43,20 +43,19 @@ contains(const C &container, const V &value)
     return std::find(container.begin(), container.end(), value) != container.end();
 }
 
-const char *
-Workplace::GetRunningPlanNames()
+std::string
+Workplace::GetRunningPlanNames() const
 {
     std::list<std::string> list;
     for (const auto &o : operators)
         if (!contains(list, o->job->plan_name))
             list.push_back(o->job->plan_name);
 
-    plan_names = pg_encode_array(list);
-    return plan_names.c_str();
+    return pg_encode_array(list);
 }
 
-const char *
-Workplace::GetFullPlanNames()
+std::string
+Workplace::GetFullPlanNames() const
 {
     std::map<std::string, unsigned> counters;
     std::list<std::string> list;
@@ -78,8 +77,7 @@ Workplace::GetFullPlanNames()
             list.push_back(plan_name);
     }
 
-    full_plan_names = pg_encode_array(list);
-    return full_plan_names.c_str();
+    return pg_encode_array(list);
 }
 
 static void

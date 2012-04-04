@@ -100,8 +100,8 @@ struct Queue {
     /**
      * Configure a "plan" filter.
      */
-    void SetFilter(const char *plans_include, const char *plans_exclude,
-                   const char *plans_lowprio);
+    void SetFilter(const char *plans_include, std::string &&plans_exclude,
+                   std::string &&plans_lowprio);
 
     void RunResult(int num, PGresult *result);
     void Run2();

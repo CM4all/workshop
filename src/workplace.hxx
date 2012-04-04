@@ -26,8 +26,6 @@ class Workplace {
 
     unsigned max_operators, num_operators;
 
-    std::string plan_names, full_plan_names;
-
 public:
     Workplace(const char *_node_name, unsigned _max_operators)
         :node_name(_node_name),
@@ -65,14 +63,14 @@ public:
     }
 
     gcc_pure
-    const char *GetRunningPlanNames();
+    std::string GetRunningPlanNames() const;
 
     /**
      * Returns the plan names which have reached their concurrency
      * limit.
      */
     gcc_pure
-    const char *GetFullPlanNames();
+    std::string GetFullPlanNames() const;
 
     int Start(Job *job, Plan *plan);
 

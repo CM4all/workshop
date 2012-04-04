@@ -353,13 +353,23 @@ copy_string(std::string &dest, const char *src)
     return true;
 }
 
+static bool
+copy_string(std::string &dest, std::string &&src)
+{
+    if (dest.compare(src) == 0)
+        return false;
+
+    dest = src;
+    return true;
+}
+
 void
-Queue::SetFilter(const char *_plans_include, const char *_plans_exclude,
-                 const char *_plans_lowprio)
+Queue::SetFilter(const char *_plans_include, std::string &&_plans_exclude,
+                 std::string &&_plans_lowprio)
 {
     bool r1 = copy_string(plans_include, _plans_include);
-    bool r2 = copy_string(plans_exclude, _plans_exclude);
-    copy_string(plans_lowprio, _plans_lowprio);
+    bool r2 = copy_string(plans_exclude, std::move(_plans_exclude));
+    plans_lowprio = std::move(_plans_lowprio);
 
     if (r1 || r2) {
         if (running)
