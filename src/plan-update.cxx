@@ -7,6 +7,7 @@
 
 #include "plan_internal.hxx"
 #include "plan.hxx"
+#include "library.hxx"
 
 #include <daemon/log.h>
 
