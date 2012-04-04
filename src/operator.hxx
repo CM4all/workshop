@@ -64,9 +64,6 @@ struct Operator {
 };
 
 void
-free_operator(struct Operator **operator_r);
-
-void
 expand_operator_vars(const struct Operator *o,
                      std::list<std::string> &args);
 

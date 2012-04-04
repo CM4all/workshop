@@ -168,7 +168,7 @@ Workplace::Start(Job *job, Plan *plan)
     ret = pipe(stdout_fds);
     if (ret < 0) {
         fprintf(stderr, "pipe() failed: %s\n", strerror(errno));
-        free_operator(&o);
+        delete o;
         return -1;
     }
 
@@ -192,7 +192,7 @@ Workplace::Start(Job *job, Plan *plan)
             if (ret > 0)
                 fprintf(stderr, "syslog_open(%s) failed: %s\n",
                         job->syslog_server.c_str(), strerror(ret));
-            free_operator(&o);
+            delete o;
             close(stdout_fds[1]);
             return -1;
         }
@@ -200,7 +200,7 @@ Workplace::Start(Job *job, Plan *plan)
         ret = pipe(stderr_fds);
         if (ret < 0) {
             fprintf(stderr, "pipe() failed: %s\n", strerror(errno));
-            free_operator(&o);
+            delete o;
             close(stdout_fds[1]);
             return -1;
         }
@@ -380,6 +380,6 @@ Workplace::WaitPid()
 
         operators.erase(i);
         --num_operators;
-        free_operator(&o);
+        delete o;
     }
 }

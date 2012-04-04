@@ -35,18 +35,6 @@ Operator::~Operator()
         syslog_close(&syslog);
 }
 
-void
-free_operator(struct Operator **operator_r)
-{
-    assert(operator_r != NULL);
-    assert(*operator_r != NULL);
-
-    struct Operator *o = *operator_r;
-    *operator_r = NULL;
-
-    delete o;
-}
-
 typedef std::map<std::string, std::string> StringMap;
 
 static void
