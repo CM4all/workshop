@@ -20,13 +20,13 @@ extern "C" {
 
 #include <algorithm>
 #include <string>
+#include <map>
 #include <list>
 #include <vector>
 
 #include <assert.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
@@ -55,52 +55,28 @@ Workplace::GetRunningPlanNames()
     return plan_names.c_str();
 }
 
-struct plan_counter {
-    const Plan *plan;
-    const char *plan_name;
-    unsigned num;
-};
-
 const char *
 Workplace::GetFullPlanNames()
 {
-    struct plan_counter *counters;
-    unsigned num_counters = 0, i;
-
-    if (num_operators == 0)
-        return "{}";
-
-    counters = (struct plan_counter *)
-        calloc(num_operators, sizeof(counters[0]));
-    if (counters == NULL)
-        abort();
-
+    std::map<std::string, unsigned> counters;
     std::list<std::string> list;
     for (const auto &o : operators) {
-        if (o->plan->concurrency == 0)
+        const Plan &plan = *o->plan;
+        if (plan.concurrency == 0)
             continue;
 
-        for (i = 0; i < num_counters; ++i)
-            if (counters[i].plan == o->plan)
-                break;
+        const std::string &plan_name = o->job->plan_name;
 
-        if (i == num_counters) {
-            ++num_counters;
-            counters[i].plan = o->plan;
-            counters[i].plan_name = o->job->plan_name.c_str();
-        }
+        auto i = counters.insert(std::make_pair(plan_name, 0));
+        unsigned &n = i.first->second;
 
-        ++counters[i].num;
+        ++n;
 
-        assert(counters[i].plan->concurrency == 0 ||
-               counters[i].num <= counters[i].plan->concurrency ||
-               contains(list, counters[i].plan_name));
+        assert(n <= plan.concurrency || contains(list, plan_name));
 
-        if (counters[i].num == counters[i].plan->concurrency)
-            list.push_back(counters[i].plan_name);
+        if (n == plan.concurrency)
+            list.push_back(plan_name);
     }
-
-    free(counters);
 
     full_plan_names = pg_encode_array(list);
     return full_plan_names.c_str();
