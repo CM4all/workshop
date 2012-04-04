@@ -190,6 +190,6 @@ plan_put(Plan **plan_r)
     if (plan->ref == 0) {
         /* free "old" plans which have refcount 0 */
         if (!find_plan_pointer(*library, plan))
-            plan_free(&plan);
+            delete plan;
     }
 }

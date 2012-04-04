@@ -202,7 +202,7 @@ plan_load(const char *path, Plan **plan_r)
     if (file == NULL) {
         fprintf(stderr, "failed to open file '%s': %s\n",
                 path, strerror(errno));
-        plan_free(&plan);
+        delete plan;
         return -1;
     }
 
@@ -210,26 +210,10 @@ plan_load(const char *path, Plan **plan_r)
     fclose(file);
     if (ret != 0) {
         fprintf(stderr, "parsing file '%s' failed\n", path);
-        plan_free(&plan);
+        delete plan;
         return ret;
     }
 
     *plan_r = plan;
     return 0;
-}
-
-void
-plan_free(Plan **plan_r)
-{
-    Plan *plan;
-
-    assert(plan_r != NULL);
-    assert(*plan_r != NULL);
-
-    plan = *plan_r;
-    *plan_r = NULL;
-
-    assert(plan->ref == 0);
-
-    delete plan;
 }

@@ -16,9 +16,6 @@
 
 struct Plan;
 
-void
-plan_free(Plan **plan_r);
-
 struct PlanEntry {
     std::string name;
 
@@ -44,8 +41,7 @@ struct PlanEntry {
     PlanEntry(const PlanEntry &other) = delete;
 
     ~PlanEntry() {
-        if (plan != NULL)
-            plan_free(&plan);
+        delete plan;
     }
 
     bool IsDisabled(time_t now) const {

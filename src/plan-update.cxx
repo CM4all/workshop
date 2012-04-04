@@ -50,9 +50,8 @@ check_plan_mtime(Library &library, PlanEntry &entry)
             /* free memory of old plan only if there are no
                references on it anymore */
             if (entry.plan->ref == 0)
-                plan_free(&entry.plan);
-            else
-                entry.plan = NULL;
+                delete entry.plan;
+            entry.plan = NULL;
         }
 
         entry.mtime = 0;
@@ -68,9 +67,8 @@ check_plan_mtime(Library &library, PlanEntry &entry)
             /* free memory of old plan only if there are no
                references on it anymore */
             if (entry.plan->ref == 0)
-                plan_free(&entry.plan);
-            else
-                entry.plan = NULL;
+                delete entry.plan;
+            entry.plan = NULL;
         }
 
         entry.mtime = st.st_mtime;

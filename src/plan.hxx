@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include <assert.h>
 #include <sys/types.h>
 #include <stdlib.h>
 
@@ -49,6 +50,10 @@ struct Plan {
     }
 
     Plan(const Plan &other) = delete;
+
+    ~Plan() {
+        assert(ref == 0);
+    }
 
     Plan &operator=(const Plan &other) = delete;
 };
