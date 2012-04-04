@@ -35,6 +35,59 @@ Operator::~Operator()
         syslog_close(&syslog);
 }
 
+static void
+stdout_callback(gcc_unused int fd, gcc_unused short event, void *ctx)
+{
+    struct Operator *o = (struct Operator*)ctx;
+    char buffer[512];
+    ssize_t nbytes, i;
+    unsigned progress = 0, p;
+
+    nbytes = read(o->stdout_fd, buffer, sizeof(buffer));
+    if (nbytes <= 0) {
+        event_del(&o->stdout_event);
+        close(o->stdout_fd);
+        o->stdout_fd = -1;
+        return;
+    }
+
+    for (i = 0; i < nbytes; ++i) {
+        char ch = buffer[i];
+
+        if (ch >= '0' && ch <= '9' &&
+            o->stdout_length < sizeof(o->stdout_buffer) - 1) {
+            o->stdout_buffer[o->stdout_length++] = ch;
+        } else {
+            if (o->stdout_length > 0) {
+                o->stdout_buffer[o->stdout_length] = 0;
+                p = (unsigned)strtoul(o->stdout_buffer, NULL, 10);
+                if (p <= 100)
+                    progress = p;
+            }
+
+            o->stdout_length = 0;
+        }
+    }
+
+    if (progress > 0 && progress != o->progress) {
+        job_set_progress(o->job, progress, o->plan->timeout.c_str());
+        o->progress = progress;
+    }
+}
+
+void
+Operator::SetOutput(int fd)
+{
+    assert(fd >= 0);
+    assert(stdout_fd < 0);
+
+    stdout_fd = fd;
+    event_set(&stdout_event, fd,
+              EV_READ|EV_PERSIST, stdout_callback, this);
+    event_add(&stdout_event, NULL);
+
+}
+
 typedef std::map<std::string, std::string> StringMap;
 
 static void
@@ -76,3 +129,4 @@ Operator::Expand(std::list<std::string> &args) const
     for (auto &i : args)
         expand_vars(i, vars);
 }
+

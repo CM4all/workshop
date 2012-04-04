@@ -64,6 +64,8 @@ struct Operator {
 
     Operator &operator=(const Operator &other) = delete;
 
+    void SetOutput(int fd);
+
     void Expand(std::list<std::string> &args) const;
 };
 
