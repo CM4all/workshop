@@ -75,11 +75,6 @@ int queue_open(const char *node_name, const char *conninfo,
                Queue **queue_r);
 
 /**
- * Close the queue database.
- */
-void queue_close(Queue **queue_r);
-
-/**
  * Configure a "plan" filter.
  */
 void queue_set_filter(Queue *queue, const char *plans_include,

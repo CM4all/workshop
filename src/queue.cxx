@@ -114,7 +114,7 @@ int queue_open(const char *node_name, const char *conninfo,
 
     queue->conn = PQconnectdb(conninfo);
     if (queue->conn == NULL) {
-        queue_close(&queue);
+        delete queue;
         return ENOMEM;
     }
 
@@ -138,7 +138,7 @@ int queue_open(const char *node_name, const char *conninfo,
 
     ret = pg_release_jobs(queue->conn, queue->node_name.c_str());
     if (ret < 0) {
-        queue_close(&queue);
+        delete queue;
         return -1;
     }
 
@@ -151,7 +151,7 @@ int queue_open(const char *node_name, const char *conninfo,
 
     ret = pg_listen(queue->conn);
     if (ret < 0) {
-        queue_close(&queue);
+        delete queue;
         return -1;
     }
 
@@ -166,18 +166,6 @@ int queue_open(const char *node_name, const char *conninfo,
 
     *queue_r = queue;
     return 0;
-}
-
-void queue_close(Queue **queue_r) {
-    Queue *queue;
-
-    assert(queue_r != NULL);
-    assert(*queue_r != NULL);
-
-    queue = *queue_r;
-    *queue_r = NULL;
-
-    delete queue;
 }
 
 /**

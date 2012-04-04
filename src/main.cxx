@@ -75,8 +75,10 @@ exit_callback(gcc_unused int fd, gcc_unused short event, void *arg)
             workplace_free(instance->workplace);
             instance->workplace = NULL;
 
-            if (instance->queue != NULL)
-                queue_close(&instance->queue);
+            if (instance->queue != NULL) {
+                delete instance->queue;
+                instance->queue = NULL;
+            }
         } else {
             daemon_log(1, "waiting for operators to finish\n");
         }
@@ -124,8 +126,10 @@ child_callback(gcc_unused int fd, gcc_unused short event, void *arg)
             workplace_free(instance->workplace);
             instance->workplace = NULL;
 
-            if (instance->queue != NULL)
-                queue_close(&instance->queue);
+            if (instance->queue != NULL) {
+                delete instance->queue;
+                instance->queue = NULL;
+            }
         }
     } else {
         update_library_and_filter(instance);
@@ -276,7 +280,7 @@ int main(int argc, char **argv) {
         workplace_free(instance.workplace);
 
     if (instance.queue != NULL)
-        queue_close(&instance.queue);
+        delete instance.queue;
 
     library_close(&instance.library);
 
