@@ -49,6 +49,8 @@ struct Plan {
     }
 
     Plan(const Plan &other) = delete;
+
+    Plan &operator=(const Plan &other) = delete;
 };
 
 int
