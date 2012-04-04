@@ -61,6 +61,8 @@ struct Operator {
     Operator(const Operator &other) = delete;
 
     ~Operator();
+
+    Operator &operator=(const Operator &other) = delete;
 };
 
 void
