@@ -36,14 +36,17 @@ Queue::~Queue()
         PQfinish(conn);
 }
 
-static bool
-queue_autoreconnect(Queue *queue);
+void
+Queue::OnSocket()
+{
+    PQconsumeInput(conn);
 
-static bool
-queue_has_notify(const Queue *queue);
+    if (!AutoReconnect())
+        return;
 
-static void
-queue_run(Queue *queue);
+    if (HasNotify())
+        Run();
+}
 
 /** the poll() callback handler; this function handles notifies sent
     by the PostgreSQL server */
@@ -56,15 +59,18 @@ queue_event_callback(gcc_unused int fd, gcc_unused short event,
     assert(fd == queue->fd);
     assert(!queue->running);
 
-    PQconsumeInput(queue->conn);
-
-    if (!queue_autoreconnect(queue))
-        return;
-
-    if (queue_has_notify(queue))
-        queue_run(queue);
+    queue->OnSocket();
 
     assert(!queue->running);
+}
+
+void
+Queue::OnTimer()
+{
+    if (!AutoReconnect())
+        return;
+
+    Run();
 }
 
 static void
@@ -75,30 +81,9 @@ queue_timer_event_callback(gcc_unused int fd, gcc_unused short event,
 
     assert(!queue->running);
 
-    if (!queue_autoreconnect(queue))
-        return;
-
-    queue_run(queue);
+    queue->OnTimer();
 
     assert(!queue->running);
-}
-
-static void queue_set_timeout(Queue *queue, struct timeval *tv) {
-    assert(tv != NULL);
-
-    evtimer_del(&queue->timer_event);
-    evtimer_add(&queue->timer_event, tv);
-}
-
-void
-queue_reschedule(Queue *queue)
-{
-    struct timeval tv;
-
-    tv.tv_sec = 0;
-    tv.tv_usec = 10000;
-
-    queue_set_timeout(queue, &tv);
 }
 
 int queue_open(const char *node_name, const char *conninfo,
@@ -119,14 +104,11 @@ int queue_open(const char *node_name, const char *conninfo,
     }
 
     if (PQstatus(queue->conn) != CONNECTION_OK) {
-        struct timeval tv;
-
         daemon_log(2, "connect to PostgreSQL failed: %s\n",
                    PQerrorMessage(queue->conn));
 
-        tv.tv_sec = 10;
-        tv.tv_usec = 0;
-        queue_set_timeout(queue, &tv);
+        static constexpr struct timeval tv { 10, 0 };
+        queue->ScheduleTimer(tv);
 
         *queue_r = queue;
         return 0;
@@ -174,49 +156,43 @@ int queue_open(const char *node_name, const char *conninfo,
  * @return true on success, false if a connection could not be
  * established
  */
-static bool
-queue_reconnect(Queue *queue)
+bool
+Queue::Reconnect()
 {
-    int ret;
-
     /* unregister old socket */
 
-    if (queue->fd >= 0) {
-        event_del(&queue->read_event);
-        queue->fd = -1;
+    if (fd >= 0) {
+        event_del(&read_event);
+        fd = -1;
     }
 
     /* reconnect */
 
-    PQreset(queue->conn);
+    PQreset(conn);
 
-    if (PQstatus(queue->conn) != CONNECTION_OK) {
-        struct timeval tv;
-
+    if (PQstatus(conn) != CONNECTION_OK) {
         daemon_log(2, "reconnect to PostgreSQL failed: %s\n",
-                   PQerrorMessage(queue->conn));
+                   PQerrorMessage(conn));
 
-        tv.tv_sec = 10;
-        tv.tv_usec = 0;
-        queue_set_timeout(queue, &tv);
+        static constexpr struct timeval tv { 10, 0 };
+        ScheduleTimer(tv);
 
         return false;
     }
 
     /* listen on notifications */
 
-    ret = pg_listen(queue->conn);
-    if (ret < 0)
+    if (pg_listen(conn) < 0)
         daemon_log(1, "re-LISTEN failed\n");
 
     /* register new socket */
 
-    queue->fd = PQsocket(queue->conn);
-    event_set(&queue->read_event, queue->fd, EV_READ|EV_PERSIST,
-              queue_event_callback, queue);
-    event_add(&queue->read_event, NULL);
+    fd = PQsocket(conn);
+    event_set(&read_event, fd, EV_READ|EV_PERSIST,
+              queue_event_callback, this);
+    event_add(&read_event, NULL);
 
-    queue_reschedule(queue);
+    Reschedule();
 
     return true;
 }
@@ -225,26 +201,27 @@ queue_reconnect(Queue *queue)
  * Check the status of the database connection, and reconnect when it
  * has gone bad.
  */
-static bool
-queue_autoreconnect(Queue *queue)
+bool
+Queue::AutoReconnect()
 {
-    if (PQstatus(queue->conn) == CONNECTION_OK)
+    if (PQstatus(conn) == CONNECTION_OK)
         return true;
 
-    if (queue->fd < 0)
+    if (fd < 0)
         daemon_log(2, "re-trying to reconnect to PostgreSQL\n");
     else
         daemon_log(2, "connection to PostgreSQL lost; trying to reconnect\n");
 
-    return queue_reconnect(queue);
+    return Reconnect();
 }
 
-static bool
-queue_has_notify(const Queue *queue) {
+bool
+Queue::HasNotify()
+{
     PGnotify *notify;
     bool ret = false;
 
-    while ((notify = PQnotifies(queue->conn)) != NULL) {
+    while ((notify = PQnotifies(conn)) != NULL) {
         daemon_log(6, "async notify '%s' received from backend pid %d\n",
                    notify->relname, notify->be_pid);
         if (strcmp(notify->relname, "new_job") == 0)
@@ -255,40 +232,18 @@ queue_has_notify(const Queue *queue) {
     return ret;
 }
 
-static void queue_check_notify(Queue *queue) {
-    if (queue_has_notify(queue))
-        /* there are pending notifies - set a very short timeout, so
-           libevent will call us very soon */
-        queue_reschedule(queue);
-}
-
-/**
- * Checks everything asynchronously: if the connection has failed,
- * schedule a reconnect.  If there are notifies, schedule a queue run.
- *
- * This is an extended version of queue_check_notify(), to be used by
- * public functions that (unlike the internal functions) do not
- * reschedule.
- */
-static void
-queue_check_all(Queue *queue)
+int
+Queue::GetNextScheduled(int *span_r)
 {
-    if (queue_has_notify(queue) || PQstatus(queue->conn) != CONNECTION_OK)
-        /* something needs to be done - schedule it for the timer
-           event callback */
-        queue_reschedule(queue);
-}
-
-static int queue_next_scheduled(Queue *queue, int *span_r) {
     int ret;
     long span;
 
-    if (queue->plans_include.empty()) {
+    if (plans_include.empty()) {
         *span_r = -1;
         return 0;
     }
 
-    ret = pg_next_scheduled_job(queue->conn, queue->plans_include.c_str(),
+    ret = pg_next_scheduled_job(conn, plans_include.c_str(),
                                 &span);
     if (ret > 0) {
         if (span < 0)
@@ -398,95 +353,95 @@ void queue_set_filter(Queue *queue, const char *plans_include,
         if (queue->running)
             queue->interrupt = true;
         else if (queue->fd >= 0)
-            queue_run(queue);
+            queue->Run();
     }
 }
 
-static void
-queue_run_result(Queue *queue, int num, PGresult *result)
+void
+Queue::RunResult(int num, PGresult *result)
 {
     int row, ret;
     Job *job;
 
-    for (row = 0; row < num && !queue->disabled && !queue->interrupt; ++row) {
-        ret = get_and_claim_job(queue, result, row, "5 minutes", &job);
+    for (row = 0; row < num && !disabled && !interrupt; ++row) {
+        ret = get_and_claim_job(this, result, row, "5 minutes", &job);
         if (ret > 0)
-            queue->callback(job, queue->ctx);
+            callback(job, ctx);
         else if (ret < 0)
             break;
     }
 }
 
-static void
-queue_run2(Queue *queue)
+void
+Queue::Run2()
 {
     PGresult *result;
     int ret, num;
     bool full = false;
     time_t now;
 
-    assert(!queue->disabled);
-    assert(queue->running);
-    assert(!queue->fd >= 0);
+    assert(!disabled);
+    assert(running);
+    assert(!fd >= 0);
 
-    if (queue->plans_include.empty() ||
-        queue->plans_include.compare("{}") == 0 ||
-        queue->plans_exclude.empty())
+    if (plans_include.empty() ||
+        plans_include.compare("{}") == 0 ||
+        plans_exclude.empty())
         return;
 
     /* check expired jobs from all other nodes except us */
 
     now = time(NULL);
-    if (now >= queue->next_expire_check) {
-        queue->next_expire_check = now + 60;
+    if (now >= next_expire_check) {
+        next_expire_check = now + 60;
 
-        ret = pg_expire_jobs(queue->conn, queue->node_name.c_str());
+        ret = pg_expire_jobs(conn, node_name.c_str());
         if (ret < 0)
             return;
 
         if (ret > 0) {
             daemon_log(2, "released %d expired jobs\n", ret);
-            pg_notify(queue->conn);
+            pg_notify(conn);
         }
     }
 
     /* query database */
 
-    queue->interrupt = false;
+    interrupt = false;
 
     daemon_log(7, "requesting new jobs from database; plans_include=%s plans_exclude=%s plans_lowprio=%s\n",
-               queue->plans_include.c_str(), queue->plans_exclude.c_str(),
-               queue->plans_lowprio.c_str());
+               plans_include.c_str(), plans_exclude.c_str(),
+               plans_lowprio.c_str());
 
-    num = pg_select_new_jobs(queue->conn,
-                             queue->plans_include.c_str(),
-                             queue->plans_exclude.c_str(),
-                             queue->plans_lowprio.c_str(),
+    num = pg_select_new_jobs(conn,
+                             plans_include.c_str(),
+                             plans_exclude.c_str(),
+                             plans_lowprio.c_str(),
                              16,
                              &result);
     if (num > 0) {
-        queue_run_result(queue, num, result);
+        RunResult(num, result);
         PQclear(result);
 
         if (num == 16)
             full = true;
     }
 
-    if (!queue->disabled && !queue->interrupt &&
-        queue->plans_lowprio.compare("{}") != 0) {
+    if (!disabled && !interrupt &&
+        plans_lowprio.compare("{}") != 0) {
         /* now also select plans which are already running */
 
         daemon_log(7, "requesting new jobs from database II; plans_lowprio=%s\n",
-                   queue->plans_lowprio.c_str());
+                   plans_lowprio.c_str());
 
-        num = pg_select_new_jobs(queue->conn,
-                                 queue->plans_lowprio.c_str(),
-                                 queue->plans_exclude.c_str(),
+        num = pg_select_new_jobs(conn,
+                                 plans_lowprio.c_str(),
+                                 plans_exclude.c_str(),
                                  "{}",
                                  16,
                                  &result);
         if (num > 0) {
-            queue_run_result(queue, num, result);
+            RunResult(num, result);
             PQclear(result);
 
             if (num == 16)
@@ -496,22 +451,22 @@ queue_run2(Queue *queue)
 
     /* update timeout */
 
-    if (queue->disabled) {
+    if (disabled) {
         daemon_log(7, "queue has been disabled\n");
-    } else if (queue->interrupt) {
+    } else if (interrupt) {
         /* we have been interrupted: run again in 100ms */
         daemon_log(7, "aborting queue run\n");
 
-        queue_reschedule(queue);
+        Reschedule();
     } else if (full) {
         /* 16 is our row limit, and exactly 16 rows were returned - we
            suspect there may be more.  schedule next queue run in 1
            second */
-        queue_reschedule(queue);
+        Reschedule();
     } else {
         struct timeval tv;
 
-        queue_next_scheduled(queue, &ret);
+        GetNextScheduled(&ret);
         if (ret >= 0)
             daemon_log(3, "next scheduled job is in %d seconds\n", ret);
         else
@@ -519,57 +474,73 @@ queue_run2(Queue *queue)
 
         tv.tv_sec = ret;
         tv.tv_usec = 0;
-        queue_set_timeout(queue, &tv);
+        ScheduleTimer(tv);
     }
 }
 
-static void
-queue_run(Queue *queue)
+void
+Queue::Run()
 {
-    assert(!queue->running);
-    assert(!queue->fd >= 0);
+    assert(!running);
+    assert(!fd >= 0);
 
-    if (queue->disabled)
+    if (disabled)
         return;
 
-    queue->running = true;
-    queue_run2(queue);
-    queue->running = false;
+    running = true;
+    Run2();
+    running = false;
 
-    queue_check_notify(queue);
+    CheckNotify();
 }
 
-void queue_disable(Queue *queue) {
-    if (queue->disabled)
+void
+Queue::Enable()
+{
+    assert(!running);
+
+    if (!disabled)
         return;
 
-    queue->disabled = true;
+    disabled = false;
+
+    if (fd >= 0)
+        Run();
 }
 
-void queue_enable(Queue *queue) {
-    assert(!queue->running);
+int
+Queue::SetJobProgress(const Job &job, unsigned progress, const char *timeout)
+{
+    assert(job.queue == this);
 
-    if (!queue->disabled)
-        return;
+    int ret = pg_set_job_progress(conn, job.id.c_str(), progress, timeout);
 
-    queue->disabled = false;
+    CheckAll();
 
-    if (queue->fd >= 0)
-        queue_run(queue);
+    return ret;
 }
 
 int job_set_progress(Job *job, unsigned progress,
                      const char *timeout) {
-    int ret;
-
     daemon_log(5, "job %s progress=%u\n", job->id.c_str(), progress);
 
-    ret = pg_set_job_progress(job->queue->conn, job->id.c_str(), progress,
-                              timeout);
+    return job->queue->SetJobProgress(*job, progress, timeout);
+}
 
-    queue_check_all(job->queue);
+bool
+Queue::RollbackJob(const Job &job)
+{
+    assert(job.queue == this);
 
-    return ret;
+    if (!AutoReconnect())
+        return false;
+
+    pg_rollback_job(conn, job.id.c_str());
+    pg_notify(conn);
+
+    CheckAll();
+
+    return true;
 }
 
 int job_rollback(Job **job_r) {
@@ -581,20 +552,27 @@ int job_rollback(Job **job_r) {
     job = *job_r;
     *job_r = NULL;
 
-    if (!queue_autoreconnect(job->queue))
-        return -1;
-
     daemon_log(6, "rolling back job %s\n", job->id.c_str());
 
-    pg_rollback_job(job->queue->conn, job->id.c_str());
-
-    pg_notify(job->queue->conn);
-
-    queue_check_all(job->queue);
+    if (!job->queue->RollbackJob(*job))
+        return -1;
 
     delete job;
-
     return 0;
+}
+
+bool
+Queue::SetJobDone(const Job &job, int status)
+{
+    assert(job.queue == this);
+
+    if (!AutoReconnect())
+        return false;
+
+    pg_set_job_done(conn, job.id.c_str(), status);
+
+    CheckAll();
+    return true;
 }
 
 int job_done(Job **job_r, int status) {
@@ -606,16 +584,11 @@ int job_done(Job **job_r, int status) {
     job = *job_r;
     *job_r = NULL;
 
-    if (!queue_autoreconnect(job->queue))
-        return -1;
-
     daemon_log(6, "job %s done with status %d\n", job->id.c_str(), status);
 
-    pg_set_job_done(job->queue->conn, job->id.c_str(), status);
-
-    queue_check_all(job->queue);
+    if (!job->queue->SetJobDone(*job, status))
+        return -1;
 
     delete job;
-
     return 0;
 }

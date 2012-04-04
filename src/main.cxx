@@ -67,7 +67,7 @@ exit_callback(gcc_unused int fd, gcc_unused short event, void *arg)
     event_del(&instance->sigquit_event);
     event_del(&instance->sighup_event);
 
-    queue_disable(instance->queue);
+    instance->queue->Disable();
 
     if (instance->workplace != NULL) {
         if (workplace_is_empty(instance->workplace)) {
@@ -107,7 +107,7 @@ reload_callback(gcc_unused int fd, gcc_unused short event, void *arg)
 
     daemon_log(4, "reloading\n");
     update_library_and_filter(instance);
-    queue_reschedule(instance->queue);
+    instance->queue->Reschedule();
 }
 
 static void
@@ -135,7 +135,7 @@ child_callback(gcc_unused int fd, gcc_unused short event, void *arg)
         update_library_and_filter(instance);
 
         if (!workplace_is_full(instance->workplace))
-            queue_enable(instance->queue);
+            instance->queue->Enable();
     }
 }
 
@@ -202,7 +202,7 @@ static void queue_callback(Job *job, void *ctx) {
 
     if (workplace_is_full(instance->workplace)) {
         job_rollback(&job);
-        queue_disable(instance->queue);
+        instance->queue->Disable();
         return;
     }
 
@@ -210,7 +210,7 @@ static void queue_callback(Job *job, void *ctx) {
 
     ret = start_job(instance, job);
     if (ret != 0 || workplace_is_full(instance->workplace))
-        queue_disable(instance->queue);
+        instance->queue->Disable();
 
     update_filter(instance);
 }

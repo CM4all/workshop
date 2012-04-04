@@ -51,14 +51,73 @@ struct Queue {
          callback(_callback), ctx(_ctx) {}
 
     ~Queue();
-};
 
-/**
- * Schedule a queue run.  It will occur "very soon" (in a few
- * milliseconds).
- */
-void
-queue_reschedule(Queue *queue);
+    void OnSocket();
+    void OnTimer();
+
+    void ScheduleTimer(const struct timeval &tv) {
+        evtimer_del(&timer_event);
+        evtimer_add(&timer_event, &tv);
+    }
+
+    /**
+     * Schedule a queue run.  It will occur "very soon" (in a few
+     * milliseconds).
+     */
+    void Reschedule() {
+        static constexpr struct timeval tv { 0, 10000 };
+        ScheduleTimer(tv);
+    }
+
+    bool Reconnect();
+    bool AutoReconnect();
+
+    bool HasNotify();
+
+    void CheckNotify() {
+        if (HasNotify())
+            /* there are pending notifies - set a very short timeout,
+               so libevent will call us very soon */
+            Reschedule();
+    }
+
+    /**
+     * Checks everything asynchronously: if the connection has failed,
+     * schedule a reconnect.  If there are notifies, schedule a queue run.
+     *
+     * This is an extended version of queue_check_notify(), to be used by
+     * public functions that (unlike the internal functions) do not
+     * reschedule.
+     */
+    void CheckAll() {
+        if (HasNotify() || PQstatus(conn) != CONNECTION_OK)
+            /* something needs to be done - schedule it for the timer
+               event callback */
+            Reschedule();
+    }
+
+    int GetNextScheduled(int *span_r);
+
+    void RunResult(int num, PGresult *result);
+    void Run2();
+    void Run();
+
+    /**
+     * Disable the queue, e.g. when the node is busy.
+     */
+    void Disable() {
+        disabled = true;
+    }
+
+    /**
+     * Enable the queue after it has been disabled with Disable().
+     */
+    void Enable();
+
+    int SetJobProgress(const Job &job, unsigned progress, const char *timeout);
+    bool RollbackJob(const Job &job);
+    bool SetJobDone(const Job &job, int status);
+};
 
 /**
  * Open a queue database.  It will listen for notifications.
@@ -80,15 +139,5 @@ int queue_open(const char *node_name, const char *conninfo,
 void queue_set_filter(Queue *queue, const char *plans_include,
                       const char *plans_exclude,
                       const char *plans_lowprio);
-
-/**
- * Disable the queue, e.g. when the node is busy.
- */
-void queue_disable(Queue *queue);
-
-/**
- * Enable the queue after it has been disabled with queue_disable().
- */
-void queue_enable(Queue *queue);
 
 #endif
