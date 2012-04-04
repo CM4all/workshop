@@ -63,16 +63,15 @@ expand_vars(std::string &p, const StringMap &vars)
 }
 
 void
-expand_operator_vars(const struct Operator *o,
-                     std::list<std::string> &args)
+Operator::Expand(std::list<std::string> &args) const
 {
     assert(!args.empty());
 
     StringMap vars;
     vars.insert(std::make_pair("0", args.front()));
-    vars.insert(std::make_pair("NODE", o->workplace->GetNodeName()));
-    vars.insert(std::make_pair("JOB", o->job->id));
-    vars.insert(std::make_pair("PLAN", o->job->plan_name));
+    vars.insert(std::make_pair("NODE", workplace->GetNodeName()));
+    vars.insert(std::make_pair("JOB", job->id));
+    vars.insert(std::make_pair("PLAN", job->plan_name));
 
     for (auto &i : args)
         expand_vars(i, vars);

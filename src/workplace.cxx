@@ -217,7 +217,7 @@ Workplace::Start(Job *job, Plan *plan)
     args.insert(args.end(), plan->args.begin(), plan->args.end());
     args.insert(args.end(), job->args.begin(), job->args.end());
 
-    expand_operator_vars(o, args);
+    o->Expand(args);
 
     /* fork */
 

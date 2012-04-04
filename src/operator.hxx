@@ -63,10 +63,8 @@ struct Operator {
     ~Operator();
 
     Operator &operator=(const Operator &other) = delete;
-};
 
-void
-expand_operator_vars(const struct Operator *o,
-                     std::list<std::string> &args);
+    void Expand(std::list<std::string> &args) const;
+};
 
 #endif
