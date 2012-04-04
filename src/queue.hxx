@@ -50,7 +50,11 @@ struct Queue {
          next_expire_check(0),
          callback(_callback), ctx(_ctx) {}
 
+    Queue(const Queue &other) = delete;
+
     ~Queue();
+
+    Queue &operator=(const Queue &other) = delete;
 
     void OnSocket();
     void OnTimer();
