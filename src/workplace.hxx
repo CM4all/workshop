@@ -18,7 +18,7 @@ struct Plan;
 struct Job;
 struct Operator;
 
-struct Workplace {
+class Workplace {
     std::string node_name;
 
     typedef std::list<Operator *> OperatorList;
@@ -28,6 +28,7 @@ struct Workplace {
 
     std::string plan_names, full_plan_names;
 
+public:
     Workplace(const char *_node_name, unsigned _max_operators)
         :node_name(_node_name),
          max_operators(_max_operators), num_operators(0) {
@@ -39,6 +40,11 @@ struct Workplace {
     ~Workplace() {
         assert(operators.empty());
         assert(num_operators == 0);
+    }
+
+    gcc_pure
+    const char *GetNodeName() const {
+        return node_name.c_str();
     }
 
     bool IsEmpty() const {
@@ -70,9 +76,11 @@ struct Workplace {
 
     int Start(Job *job, Plan *plan);
 
+private:
     gcc_pure
     Workplace::OperatorList::iterator FindByPid(pid_t pid);
 
+public:
     void WaitPid();
 };
 

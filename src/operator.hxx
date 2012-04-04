@@ -13,7 +13,7 @@
 #include <assert.h>
 
 struct Plan;
-struct Workplace;
+class Workplace;
 struct Job;
 
 /** an operator is a job being executed */

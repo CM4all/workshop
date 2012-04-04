@@ -82,7 +82,7 @@ expand_operator_vars(const struct Operator *o,
 
     StringMap vars;
     vars.insert(std::make_pair("0", args.front()));
-    vars.insert(std::make_pair("NODE", o->workplace->node_name));
+    vars.insert(std::make_pair("NODE", o->workplace->GetNodeName()));
     vars.insert(std::make_pair("JOB", o->job->id));
     vars.insert(std::make_pair("PLAN", o->job->plan_name));
 
