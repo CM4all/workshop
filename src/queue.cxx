@@ -23,6 +23,19 @@ extern "C" {
 #include <string.h>
 #include <time.h>
 
+static void
+queue_timer_event_callback(gcc_unused int fd, gcc_unused short event,
+                           void *ctx);
+
+Queue::Queue(const char *_node_name, queue_callback_t _callback, void *_ctx)
+    :node_name(_node_name),
+     conn(NULL), fd(-1),
+     disabled(false), running(false), interrupt(false),
+     next_expire_check(0),
+     callback(_callback), ctx(_ctx) {
+    evtimer_set(&timer_event, queue_timer_event_callback, this);
+}
+
 Queue::~Queue()
 {
     assert(!running);
@@ -92,8 +105,6 @@ int queue_open(const char *node_name, const char *conninfo,
     int ret;
 
     Queue *queue = new Queue(node_name, callback, ctx);
-
-    evtimer_set(&queue->timer_event, queue_timer_event_callback, queue);
 
     /* connect to PostgreSQL */
 

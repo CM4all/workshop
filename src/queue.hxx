@@ -43,12 +43,7 @@ struct Queue {
     queue_callback_t callback;
     void *ctx;
 
-    Queue(const char *_node_name, queue_callback_t _callback, void *_ctx)
-        :node_name(_node_name),
-         conn(NULL), fd(-1),
-         disabled(false), running(false), interrupt(false),
-         next_expire_check(0),
-         callback(_callback), ctx(_ctx) {}
+    Queue(const char *_node_name, queue_callback_t _callback, void *_ctx);
 
     Queue(const Queue &other) = delete;
 
