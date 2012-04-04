@@ -342,18 +342,19 @@ copy_string(std::string &dest, const char *src)
     return true;
 }
 
-void queue_set_filter(Queue *queue, const char *plans_include,
-                      const char *plans_exclude,
-                      const char *plans_lowprio) {
-    bool r1 = copy_string(queue->plans_include, plans_include);
-    bool r2 = copy_string(queue->plans_exclude, plans_exclude);
-    copy_string(queue->plans_lowprio, plans_lowprio);
+void
+Queue::SetFilter(const char *_plans_include, const char *_plans_exclude,
+                 const char *_plans_lowprio)
+{
+    bool r1 = copy_string(plans_include, _plans_include);
+    bool r2 = copy_string(plans_exclude, _plans_exclude);
+    copy_string(plans_lowprio, _plans_lowprio);
 
     if (r1 || r2) {
-        if (queue->running)
-            queue->interrupt = true;
-        else if (queue->fd >= 0)
-            queue->Run();
+        if (running)
+            interrupt = true;
+        else if (fd >= 0)
+            Run();
     }
 }
 

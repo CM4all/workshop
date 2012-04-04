@@ -98,6 +98,12 @@ struct Queue {
 
     int GetNextScheduled(int *span_r);
 
+    /**
+     * Configure a "plan" filter.
+     */
+    void SetFilter(const char *plans_include, const char *plans_exclude,
+                   const char *plans_lowprio);
+
     void RunResult(int num, PGresult *result);
     void Run2();
     void Run();
@@ -132,12 +138,5 @@ struct Queue {
 int queue_open(const char *node_name, const char *conninfo,
                queue_callback_t callback, void *ctx,
                Queue **queue_r);
-
-/**
- * Configure a "plan" filter.
- */
-void queue_set_filter(Queue *queue, const char *plans_include,
-                      const char *plans_exclude,
-                      const char *plans_lowprio);
 
 #endif

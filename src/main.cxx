@@ -86,10 +86,9 @@ exit_callback(gcc_unused int fd, gcc_unused short event, void *arg)
 }
 
 static void update_filter(struct instance *instance) {
-    queue_set_filter(instance->queue,
-                     library_plan_names(instance->library),
-                     workplace_full_plan_names(instance->workplace),
-                     workplace_plan_names(instance->workplace));
+    instance->queue->SetFilter(library_plan_names(instance->library),
+                               workplace_full_plan_names(instance->workplace),
+                               workplace_plan_names(instance->workplace));
 }
 
 static void update_library_and_filter(struct instance *instance) {
