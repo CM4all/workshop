@@ -7,6 +7,8 @@
 
 #include "operator.hxx"
 
+#include <inline/compiler.h>
+
 #include <string>
 #include <list>
 
@@ -47,6 +49,7 @@ struct Workplace {
         return num_operators == max_operators;
     }
 
+    gcc_pure
     bool IsRunning(const Plan *plan) const {
         for (const auto &i : operators)
             if (i->plan == plan)
@@ -54,41 +57,23 @@ struct Workplace {
 
         return false;
     }
+
+    gcc_pure
+    const char *GetRunningPlanNames();
+
+    /**
+     * Returns the plan names which have reached their concurrency
+     * limit.
+     */
+    gcc_pure
+    const char *GetFullPlanNames();
+
+    int Start(Job *job, Plan *plan);
+
+    gcc_pure
+    Workplace::OperatorList::iterator FindByPid(pid_t pid);
+
+    void WaitPid();
 };
-
-Workplace *
-workplace_open(const char *node_name, unsigned max_operators);
-
-void
-workplace_free(Workplace *workplace);
-
-bool
-workplace_plan_is_running(const Workplace *workplace, const Plan *plan);
-
-const char *
-workplace_plan_names(Workplace *workplace);
-
-/** returns the plan names which have reached their concurrency
-    limit */
-const char *
-workplace_full_plan_names(Workplace *workplace);
-
-int
-workplace_start(Workplace *workplace, Job *job, Plan *plan);
-
-static inline bool
-workplace_is_empty(const Workplace *workplace)
-{
-    return workplace->IsEmpty();
-}
-
-static inline bool
-workplace_is_full(const Workplace *workplace)
-{
-    return workplace->IsFull();
-}
-
-void
-workplace_waitpid(Workplace *workplace);
 
 #endif

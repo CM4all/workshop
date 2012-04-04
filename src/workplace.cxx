@@ -36,26 +36,6 @@ extern "C" {
 #include <sys/time.h>
 #include <sys/resource.h>
 
-Workplace *
-workplace_open(const char *node_name, unsigned max_operators)
-{
-    return new Workplace(node_name, max_operators);
-}
-
-void
-workplace_free(Workplace *workplace)
-{
-    assert(workplace != NULL);
-
-    delete workplace;
-}
-
-bool
-workplace_plan_is_running(const Workplace *workplace, const Plan *plan)
-{
-    return workplace->IsRunning(plan);
-}
-
 template<class C, typename V>
 static bool
 contains(const C &container, const V &value)
@@ -64,16 +44,15 @@ contains(const C &container, const V &value)
 }
 
 const char *
-workplace_plan_names(Workplace *workplace)
+Workplace::GetRunningPlanNames()
 {
-    std::list<std::string> plan_names;
-    for (const auto &o : workplace->operators)
-        if (!contains(plan_names, o->job->plan_name))
-            plan_names.push_back(o->job->plan_name);
+    std::list<std::string> list;
+    for (const auto &o : operators)
+        if (!contains(list, o->job->plan_name))
+            list.push_back(o->job->plan_name);
 
-    workplace->plan_names = pg_encode_array(plan_names);
-
-    return workplace->plan_names.c_str();
+    plan_names = pg_encode_array(list);
+    return plan_names.c_str();
 }
 
 struct plan_counter {
@@ -82,20 +61,22 @@ struct plan_counter {
     unsigned num;
 };
 
-const char *workplace_full_plan_names(Workplace *workplace) {
+const char *
+Workplace::GetFullPlanNames()
+{
     struct plan_counter *counters;
     unsigned num_counters = 0, i;
 
-    if (workplace->num_operators == 0)
+    if (num_operators == 0)
         return "{}";
 
     counters = (struct plan_counter *)
-        calloc(workplace->num_operators, sizeof(counters[0]));
+        calloc(num_operators, sizeof(counters[0]));
     if (counters == NULL)
         abort();
 
-    std::list<std::string> plan_names;
-    for (const auto &o : workplace->operators) {
+    std::list<std::string> list;
+    for (const auto &o : operators) {
         if (o->plan->concurrency == 0)
             continue;
 
@@ -113,17 +94,16 @@ const char *workplace_full_plan_names(Workplace *workplace) {
 
         assert(counters[i].plan->concurrency == 0 ||
                counters[i].num <= counters[i].plan->concurrency ||
-               contains(plan_names, counters[i].plan_name));
+               contains(list, counters[i].plan_name));
 
         if (counters[i].num == counters[i].plan->concurrency)
-            plan_names.push_back(counters[i].plan_name);
+            list.push_back(counters[i].plan_name);
     }
 
     free(counters);
 
-    workplace->full_plan_names = pg_encode_array(plan_names);
-
-    return workplace->full_plan_names.c_str();
+    full_plan_names = pg_encode_array(list);
+    return full_plan_names.c_str();
 }
 
 static void
@@ -201,16 +181,15 @@ stderr_callback(gcc_unused int fd, gcc_unused short event, void *ctx)
 }
 
 int
-workplace_start(Workplace *workplace, Job *job, Plan *plan)
+Workplace::Start(Job *job, Plan *plan)
 {
     int ret, stdout_fds[2], stderr_fds[2];
 
-    assert(plan != NULL);
     assert(!plan->args.empty());
 
     /* create operator object */
 
-    Operator *o = new Operator(workplace, job, plan);
+    Operator *o = new Operator(this, job, plan);
 
     ret = pipe(stdout_fds);
     if (ret < 0) {
@@ -232,7 +211,7 @@ workplace_start(Workplace *workplace, Job *job, Plan *plan)
         snprintf(ident, sizeof(ident), "%s[%s]",
                  job->plan_name.c_str(), job->id.c_str());
 
-        ret = syslog_open(workplace->node_name.c_str(), ident, 1,
+        ret = syslog_open(node_name.c_str(), ident, 1,
                           job->syslog_server.c_str(),
                           &o->syslog);
         if (ret != 0) {
@@ -369,14 +348,14 @@ workplace_start(Workplace *workplace, Job *job, Plan *plan)
     daemon_log(2, "job %s (plan '%s') running as pid %d\n",
                job->id.c_str(), job->plan_name.c_str(), o->pid);
 
-    workplace->operators.push_back(o);
-    ++workplace->num_operators;
+    operators.push_back(o);
+    ++num_operators;
 
     return 0;
 }
 
-static Workplace::OperatorList::iterator
-find_operator_by_pid(Workplace *workplace, pid_t pid)
+Workplace::OperatorList::iterator
+Workplace::FindByPid(pid_t pid)
 {
     struct ComparePid {
         pid_t pid;
@@ -388,18 +367,19 @@ find_operator_by_pid(Workplace *workplace, pid_t pid)
         }
     };
 
-    return std::find_if(workplace->operators.begin(),
-                        workplace->operators.end(),
+    return std::find_if(operators.begin(), operators.end(),
                         ComparePid(pid));
 }
 
-void workplace_waitpid(Workplace *workplace) {
+void
+Workplace::WaitPid()
+{
     pid_t pid;
     int status, exit_status;
 
     while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
-        auto i = find_operator_by_pid(workplace, pid);
-        if (i == workplace->operators.end())
+        auto i = FindByPid(pid);
+        if (i == operators.end())
             continue;
 
         Operator *o = *i;
@@ -424,8 +404,8 @@ void workplace_waitpid(Workplace *workplace) {
 
         job_done(&o->job, exit_status);
 
-        workplace->operators.erase(i);
-        --workplace->num_operators;
+        operators.erase(i);
+        --num_operators;
         free_operator(&o);
     }
 }

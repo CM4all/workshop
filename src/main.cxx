@@ -70,9 +70,10 @@ exit_callback(gcc_unused int fd, gcc_unused short event, void *arg)
     instance->queue->Disable();
 
     if (instance->workplace != NULL) {
-        if (workplace_is_empty(instance->workplace)) {
+        if (instance->workplace->IsEmpty()) {
             event_del(&instance->sigchld_event);
-            workplace_free(instance->workplace);
+
+            delete instance->workplace;
             instance->workplace = NULL;
 
             if (instance->queue != NULL) {
@@ -87,8 +88,8 @@ exit_callback(gcc_unused int fd, gcc_unused short event, void *arg)
 
 static void update_filter(struct instance *instance) {
     instance->queue->SetFilter(library_plan_names(instance->library),
-                               workplace_full_plan_names(instance->workplace),
-                               workplace_plan_names(instance->workplace));
+                               instance->workplace->GetFullPlanNames(),
+                               instance->workplace->GetRunningPlanNames());
 }
 
 static void update_library_and_filter(struct instance *instance) {
@@ -117,12 +118,13 @@ child_callback(gcc_unused int fd, gcc_unused short event, void *arg)
     if (instance->workplace == NULL)
         return;
 
-    workplace_waitpid(instance->workplace);
+    instance->workplace->WaitPid();
 
     if (instance->should_exit) {
-        if (workplace_is_empty(instance->workplace)) {
+        if (instance->workplace->IsEmpty()) {
             event_del(&instance->sigchld_event);
-            workplace_free(instance->workplace);
+
+            delete instance->workplace;
             instance->workplace = NULL;
 
             if (instance->queue != NULL) {
@@ -133,7 +135,7 @@ child_callback(gcc_unused int fd, gcc_unused short event, void *arg)
     } else {
         update_library_and_filter(instance);
 
-        if (!workplace_is_full(instance->workplace))
+        if (!instance->workplace->IsFull())
             instance->queue->Enable();
     }
 }
@@ -186,7 +188,7 @@ static int start_job(struct instance *instance, Job *job) {
         return ret;
     }
 
-    ret = workplace_start(instance->workplace, job, plan);
+    ret = instance->workplace->Start(job, plan);
     if (ret != 0) {
         plan_put(&plan);
         job_done(&job, -1);
@@ -199,7 +201,7 @@ static void queue_callback(Job *job, void *ctx) {
     struct instance *instance = (struct instance*)ctx;
     int ret;
 
-    if (workplace_is_full(instance->workplace)) {
+    if (instance->workplace->IsFull()) {
         job_rollback(&job);
         instance->queue->Disable();
         return;
@@ -208,7 +210,7 @@ static void queue_callback(Job *job, void *ctx) {
     library_update(instance->library);
 
     ret = start_job(instance, job);
-    if (ret != 0 || workplace_is_full(instance->workplace))
+    if (ret != 0 || instance->workplace->IsFull())
         instance->queue->Disable();
 
     update_filter(instance);
@@ -252,7 +254,7 @@ int main(int argc, char **argv) {
         exit(2);
     }
 
-    instance.workplace = workplace_open(config.node_name, config.concurrency);
+    instance.workplace = new Workplace(config.node_name, config.concurrency);
 
     setup_signal_handlers(&instance);
 
@@ -275,11 +277,8 @@ int main(int argc, char **argv) {
 
     daemon_log(5, "cleaning up\n");
 
-    if (instance.workplace != NULL)
-        workplace_free(instance.workplace);
-
-    if (instance.queue != NULL)
-        delete instance.queue;
+    delete instance.workplace;
+    delete instance.queue;
 
     library_close(&instance.library);
 
