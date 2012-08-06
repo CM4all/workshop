@@ -12,6 +12,7 @@ extern "C" {
 
 #include "Event.hxx"
 #include "Plan.hxx"
+#include "Library.hxx"
 #include "Queue.hxx"
 #include "Job.hxx"
 #include "Workplace.hxx"
@@ -277,7 +278,7 @@ int main(int argc, char **argv) {
     delete instance.workplace;
     delete instance.queue;
 
-    library_close(&instance.library);
+    delete instance.library;
 
     daemonize_cleanup();
 

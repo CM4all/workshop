@@ -61,9 +61,6 @@ struct Plan {
 int
 library_open(const char *path, Library **library_r);
 
-void
-library_close(Library **library_r);
-
 int
 library_update(Library *library);
 

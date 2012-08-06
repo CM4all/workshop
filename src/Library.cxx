@@ -47,18 +47,6 @@ library_open(const char *path, Library **library_r)
     return 0;
 }
 
-void
-library_close(Library **library_r)
-{
-    assert(library_r != NULL);
-    assert(*library_r != NULL);
-
-    Library *library = *library_r;
-    *library_r = NULL;
-
-    delete library;
-}
-
 static void
 update_plan_names(Library &library)
 {
