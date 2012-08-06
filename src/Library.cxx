@@ -18,8 +18,8 @@
 #include <string.h>
 #include <time.h>
 
-int
-library_open(const char *path, Library **library_r)
+Library *
+library_open(const char *path)
 {
     int ret;
     struct stat st;
@@ -32,19 +32,17 @@ library_open(const char *path, Library **library_r)
     if (ret < 0) {
         fprintf(stderr, "failed to stat '%s': %s\n",
                 path, strerror(errno));
-        return -1;
+        return NULL;
     }
 
     if (!S_ISDIR(st.st_mode)) {
         fprintf(stderr, "not a directory: %s\n", path);
-        return -1;
+        return NULL;
     }
 
     /* create library object */
 
-    Library *library = new Library(path);
-    *library_r = library;
-    return 0;
+    return new Library(path);
 }
 
 void

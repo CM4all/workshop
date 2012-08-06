@@ -171,21 +171,20 @@ static void setup_signal_handlers(struct instance *instance) {
     sigaction(SIGUSR2, &sa, NULL);
 }
 
-static int start_job(struct instance *instance, Job *job) {
-    int ret;
-    Plan *plan;
-
-    ret = library_get(instance->library, job->plan_name.c_str(), &plan);
-    if (ret != 0) {
+static bool
+start_job(struct instance *instance, Job *job)
+{
+    Plan *plan = library_get(instance->library, job->plan_name.c_str());
+    if (plan == nullptr) {
         fprintf(stderr, "library_get('%s') failed\n", job->plan_name.c_str());
         job_rollback(&job);
-        return ret;
+        return false;
     }
 
-    ret = job->SetProgress(0, plan->timeout.c_str());
+    int ret = job->SetProgress(0, plan->timeout.c_str());
     if (ret < 0) {
         job_rollback(&job);
-        return ret;
+        return false;
     }
 
     ret = instance->workplace->Start(job, plan);
@@ -194,12 +193,11 @@ static int start_job(struct instance *instance, Job *job) {
         job_done(&job, -1);
     }
 
-    return 0;
+    return true;
 }
 
 static void queue_callback(Job *job, void *ctx) {
     struct instance *instance = (struct instance*)ctx;
-    int ret;
 
     if (instance->workplace->IsFull()) {
         job_rollback(&job);
@@ -209,8 +207,7 @@ static void queue_callback(Job *job, void *ctx) {
 
     library_update(instance->library);
 
-    ret = start_job(instance, job);
-    if (ret != 0 || instance->workplace->IsFull())
+    if (!start_job(instance, job) || instance->workplace->IsFull())
         instance->queue->Disable();
 
     update_filter(instance);
@@ -236,8 +233,8 @@ int main(int argc, char **argv) {
     if (ret < 0)
         exit(2);
 
-    ret = library_open("/etc/cm4all/workshop/plans", &instance.library);
-    if (ret != 0) {
+    instance.library = library_open("/etc/cm4all/workshop/plans");
+    if (instance.library == nullptr) {
         fprintf(stderr, "library_open() failed\n");
         exit(2);
     }

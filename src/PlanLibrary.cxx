@@ -138,24 +138,22 @@ library_update(Library *library)
     return 0;
 }
 
-int
-library_get(Library *library, const char *name, Plan **plan_r)
+Plan *
+library_get(Library *library, const char *name)
 {
-    int ret;
     PlanEntry *entry;
 
     entry = find_plan_by_name(*library, name);
     if (entry == NULL)
-        return ENOENT;
+        return NULL;
 
-    ret = library_update_plan(*library, *entry);
+    int ret = library_update_plan(*library, *entry);
     if (ret != 0)
-        return ret;
+        return NULL;
 
-    *plan_r = entry->plan;
     ++entry->plan->ref;
     ++library->ref;
-    return 0;
+    return entry->plan;
 }
 
 static bool

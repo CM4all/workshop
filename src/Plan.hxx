@@ -58,14 +58,14 @@ struct Plan {
     Plan &operator=(const Plan &other) = delete;
 };
 
-int
-library_open(const char *path, Library **library_r);
+Library*
+library_open(const char *path);
 
 int
 library_update(Library *library);
 
-int
-library_get(Library *library, const char *name, Plan **plan_r);
+Plan *
+library_get(Library *library, const char *name);
 
 void
 plan_put(Plan **plan_r);
