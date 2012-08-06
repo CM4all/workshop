@@ -64,9 +64,6 @@ library_open(const char *path, Library **library_r);
 int
 library_update(Library *library);
 
-const char *
-library_plan_names(Library *library);
-
 int
 library_get(Library *library, const char *name, Plan **plan_r);
 

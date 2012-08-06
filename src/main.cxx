@@ -87,7 +87,7 @@ exit_callback(gcc_unused int fd, gcc_unused short event, void *arg)
 }
 
 static void update_filter(struct instance *instance) {
-    instance->queue->SetFilter(library_plan_names(instance->library),
+    instance->queue->SetFilter(instance->library->GetPlanNames(),
                                instance->workplace->GetFullPlanNames(),
                                instance->workplace->GetRunningPlanNames());
 }

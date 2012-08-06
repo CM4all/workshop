@@ -47,21 +47,21 @@ library_open(const char *path, Library **library_r)
     return 0;
 }
 
-static void
-update_plan_names(Library &library)
+void
+Library::UpdatePlanNames()
 {
     const time_t now = time(NULL);
 
-    if (!library.names.empty() && now < library.next_names_update)
+    if (!names.empty() && now < next_names_update)
         return;
 
-    library.next_names_update = now + 60;
+    next_names_update = now + 60;
 
     /* collect new list */
 
     std::list<std::string> plan_names;
 
-    for (const auto &i : library.plans) {
+    for (const auto &i : plans) {
         const std::string &name = i.first;
         const PlanEntry &entry = i.second;
 
@@ -69,13 +69,5 @@ update_plan_names(Library &library)
             plan_names.push_back(name);
     }
 
-    library.names = pg_encode_array(plan_names);
-}
-
-const char *
-library_plan_names(Library *library)
-{
-    update_plan_names(*library);
-
-    return library->names.c_str();
+    names = pg_encode_array(plan_names);
 }

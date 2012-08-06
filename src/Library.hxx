@@ -7,6 +7,8 @@
 
 #include "Plan.hxx"
 
+#include <inline/compiler.h>
+
 #include <string>
 #include <map>
 
@@ -69,6 +71,15 @@ public:
          next_names_update(0), ref(0), mtime(0) {}
 
     Library(const Library &other) = delete;
+
+    gcc_pure
+    const char *GetPlanNames() {
+        UpdatePlanNames();
+        return names.c_str();
+    }
+
+private:
+    void UpdatePlanNames();
 };
 
 #endif
