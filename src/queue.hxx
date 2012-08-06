@@ -18,13 +18,13 @@ typedef void (*queue_callback_t)(Job *job, void *ctx);
 
 struct Queue {
     std::string node_name;
-    PGconn *conn;
-    int fd;
-    bool disabled, running;
+    PGconn *conn = nullptr;
+    int fd = -1;
+    bool disabled = false, running = false;
 
-    /** if set to 1, the current queue run should be interrupted, to
-        be started again */
-    bool interrupt;
+    /** if set to true, the current queue run should be interrupted,
+        to be started again */
+    bool interrupt = false;
 
     /**
      * For detecting notifies from PostgreSQL.
@@ -38,7 +38,7 @@ struct Queue {
     struct event timer_event;
 
     std::string plans_include, plans_exclude, plans_lowprio;
-    time_t next_expire_check;
+    time_t next_expire_check = 0;
 
     queue_callback_t callback;
     void *ctx;

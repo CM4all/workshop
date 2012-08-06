@@ -23,33 +23,26 @@ struct Operator {
     Plan *plan;
     pid_t pid;
 
-    int stdout_fd;
+    int stdout_fd = -1;
     struct event stdout_event;
     char stdout_buffer[64];
-    size_t stdout_length;
-    unsigned progress;
+    size_t stdout_length = 0;
+    unsigned progress = 0;
 
-    int stderr_fd;
+    int stderr_fd = -1;
     struct event stderr_event;
     char stderr_buffer[512];
-    size_t stderr_length;
-    struct syslog_client *syslog;
+    size_t stderr_length = 0;
+    struct syslog_client *syslog = nullptr;
 
     Operator(Workplace *_workplace, Job *_job,
              Plan *_plan)
-        :workplace(_workplace), job(_job), plan(_plan),
-         stdout_fd(-1), stdout_length(0),
-         progress(0),
-         stderr_fd(-1), stderr_length(0),
-         syslog(NULL) {}
+        :workplace(_workplace), job(_job), plan(_plan) {}
 
 #if 0
     Operator(Operator &&other)
         :workplace(other.workplace), job(other.job), plan(other.plan),
          pid(other.pid),
-         stdout_fd(-1), stdout_length(0),
-         progress(0),
-         stderr_fd(-1), stderr_length(0),
          syslog(other.syslog) {
         assert(other.stdout_fd < 0);
         assert(other.stdout_length == 0);
