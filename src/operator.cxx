@@ -70,7 +70,7 @@ stdout_callback(gcc_unused int fd, gcc_unused short event, void *ctx)
     }
 
     if (progress > 0 && progress != o->progress) {
-        job_set_progress(o->job, progress, o->plan->timeout.c_str());
+        o->job->SetProgress(progress, o->plan->timeout.c_str());
         o->progress = progress;
     }
 }

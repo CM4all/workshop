@@ -182,7 +182,7 @@ static int start_job(struct instance *instance, Job *job) {
         return ret;
     }
 
-    ret = job_set_progress(job, 0, plan->timeout.c_str());
+    ret = job->SetProgress(0, plan->timeout.c_str());
     if (ret < 0) {
         job_rollback(&job);
         return ret;

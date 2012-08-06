@@ -542,13 +542,6 @@ Queue::SetJobProgress(const Job &job, unsigned progress, const char *timeout)
     return ret;
 }
 
-int job_set_progress(Job *job, unsigned progress,
-                     const char *timeout) {
-    daemon_log(5, "job %s progress=%u\n", job->id.c_str(), progress);
-
-    return job->queue->SetJobProgress(*job, progress, timeout);
-}
-
 bool
 Queue::RollbackJob(const Job &job)
 {
@@ -565,24 +558,6 @@ Queue::RollbackJob(const Job &job)
     return true;
 }
 
-int job_rollback(Job **job_r) {
-    Job *job;
-
-    assert(job_r != NULL);
-    assert(*job_r != NULL);
-
-    job = *job_r;
-    *job_r = NULL;
-
-    daemon_log(6, "rolling back job %s\n", job->id.c_str());
-
-    if (!job->queue->RollbackJob(*job))
-        return -1;
-
-    delete job;
-    return 0;
-}
-
 bool
 Queue::SetJobDone(const Job &job, int status)
 {
@@ -595,22 +570,4 @@ Queue::SetJobDone(const Job &job, int status)
 
     CheckAll();
     return true;
-}
-
-int job_done(Job **job_r, int status) {
-    Job *job;
-
-    assert(job_r != NULL);
-    assert(*job_r != NULL);
-
-    job = *job_r;
-    *job_r = NULL;
-
-    daemon_log(6, "job %s done with status %d\n", job->id.c_str(), status);
-
-    if (!job->queue->SetJobDone(*job, status))
-        return -1;
-
-    delete job;
-    return 0;
 }
