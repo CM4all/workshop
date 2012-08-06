@@ -72,11 +72,15 @@ public:
 
     Library(const Library &other) = delete;
 
+    bool Update();
+
     gcc_pure
     const char *GetPlanNames() {
         UpdatePlanNames();
         return names.c_str();
     }
+
+    Plan *Get(const char *name);
 
 private:
     void UpdatePlanNames();

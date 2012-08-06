@@ -93,7 +93,7 @@ static void update_filter(struct instance *instance) {
 }
 
 static void update_library_and_filter(struct instance *instance) {
-    library_update(instance->library);
+    instance->library->Update();
     update_filter(instance);
 }
 
@@ -174,7 +174,7 @@ static void setup_signal_handlers(struct instance *instance) {
 static bool
 start_job(struct instance *instance, Job *job)
 {
-    Plan *plan = library_get(instance->library, job->plan_name.c_str());
+    Plan *plan = instance->library->Get(job->plan_name.c_str());
     if (plan == nullptr) {
         fprintf(stderr, "library_get('%s') failed\n", job->plan_name.c_str());
         job_rollback(&job);
@@ -205,7 +205,7 @@ static void queue_callback(Job *job, void *ctx) {
         return;
     }
 
-    library_update(instance->library);
+    instance->library->Update();
 
     if (!start_job(instance, job) || instance->workplace->IsFull())
         instance->queue->Disable();

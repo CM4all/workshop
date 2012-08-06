@@ -61,12 +61,6 @@ struct Plan {
 Library*
 library_open(const char *path);
 
-int
-library_update(Library *library);
-
-Plan *
-library_get(Library *library, const char *name);
-
 void
 plan_put(Plan **plan_r);
 

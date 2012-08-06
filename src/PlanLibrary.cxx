@@ -100,8 +100,8 @@ library_update_plans(Library &library) {
     return 0;
 }
 
-int
-library_update(Library *library)
+bool
+Library::Update()
 {
     const time_t now = time(NULL);
     int ret;
@@ -109,50 +109,50 @@ library_update(Library *library)
 
     /* check directory time stamp */
 
-    ret = stat(library->path.c_str(), &st);
+    ret = stat(path.c_str(), &st);
     if (ret < 0) {
         fprintf(stderr, "failed to stat '%s': %s\n",
-                library->path.c_str(), strerror(errno));
-        return -1;
+                path.c_str(), strerror(errno));
+        return false;
     }
 
     if (!S_ISDIR(st.st_mode)) {
-        fprintf(stderr, "not a directory: %s\n", library->path.c_str());
-        return -1;
+        fprintf(stderr, "not a directory: %s\n", path.c_str());
+        return false;
     }
 
-    if (st.st_mtime == library->mtime && now < library->next_plans_check)
-        return 0;
+    if (st.st_mtime == mtime && now < next_plans_check)
+        return true;
 
     /* do it */
 
-    ret = library_update_plans(*library);
+    ret = library_update_plans(*this);
     if (ret != 0)
-        return ret;
-        
+        return false;
+
     /* update mtime */
 
-    library->mtime = st.st_mtime;
-    library->next_plans_check = now + 60;
+    mtime = st.st_mtime;
+    next_plans_check = now + 60;
 
-    return 0;
+    return true;
 }
 
 Plan *
-library_get(Library *library, const char *name)
+Library::Get(const char *name)
 {
     PlanEntry *entry;
 
-    entry = find_plan_by_name(*library, name);
+    entry = find_plan_by_name(*this, name);
     if (entry == NULL)
         return NULL;
 
-    int ret = library_update_plan(*library, *entry);
+    int ret = library_update_plan(*this, *entry);
     if (ret != 0)
         return NULL;
 
     ++entry->plan->ref;
-    ++library->ref;
+    ++ref;
     return entry->plan;
 }
 
