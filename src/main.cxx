@@ -31,7 +31,7 @@ extern "C" {
 #include <grp.h>
 
 #ifndef NDEBUG
-int debug_mode = 0;
+bool debug_mode = false;
 #endif
 
 struct instance {
@@ -222,7 +222,7 @@ int main(int argc, char **argv) {
 
 #ifndef NDEBUG
     if (geteuid() != 0)
-        debug_mode = 1;
+        debug_mode = true;
 #endif
 
     /* configuration */
