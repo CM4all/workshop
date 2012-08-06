@@ -13,8 +13,8 @@ class Library;
 
 /* plan-loader.c */
 
-int
-plan_load(const char *path, Plan **plan_r);
+Plan *
+plan_load(const char *path);
 
 /* plan-update.c */
 

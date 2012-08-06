@@ -119,10 +119,9 @@ validate_plan(PlanEntry &entry)
     return 0;
 }
 
-static int
+static bool
 load_plan_entry(Library &library, PlanEntry &entry)
 {
-    int ret;
     char path[1024];
 
     assert(entry.plan == NULL);
@@ -133,17 +132,17 @@ load_plan_entry(Library &library, PlanEntry &entry)
     snprintf(path, sizeof(path), "%s/%s",
              library.path.c_str(), entry.name.c_str());
 
-    ret = plan_load(path, &entry.plan);
-    if (ret != 0) {
+    entry.plan = plan_load(path);
+    if (entry.plan == nullptr) {
         disable_plan(library, entry, 600);
-        return ret;
+        return false;
     }
 
     entry.plan->library = &library;
 
     library.next_names_update = 0;
 
-    return 0;
+    return true;
 }
 
 int
@@ -155,11 +154,8 @@ library_update_plan(Library &library, PlanEntry &entry)
     if (ret != 0)
         return ret;
 
-    if (entry.plan == NULL) {
-        ret = load_plan_entry(library, entry);
-        if (ret != 0)
-            return ret;
-    }
+    if (entry.plan == NULL && !load_plan_entry(library, entry))
+        return ret;
 
     ret = validate_plan(entry);
     if (ret != 0)

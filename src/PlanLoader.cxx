@@ -188,8 +188,8 @@ parse_plan_config(Plan *plan, FILE *file)
     return 0;
 }
 
-int
-plan_load(const char *path, Plan **plan_r)
+Plan *
+plan_load(const char *path)
 {
     FILE *file;
     int ret;
@@ -203,7 +203,7 @@ plan_load(const char *path, Plan **plan_r)
         fprintf(stderr, "failed to open file '%s': %s\n",
                 path, strerror(errno));
         delete plan;
-        return -1;
+        return nullptr;
     }
 
     ret = parse_plan_config(plan, file);
@@ -211,9 +211,8 @@ plan_load(const char *path, Plan **plan_r)
     if (ret != 0) {
         fprintf(stderr, "parsing file '%s' failed\n", path);
         delete plan;
-        return ret;
+        return nullptr;
     }
 
-    *plan_r = plan;
-    return 0;
+    return plan;
 }
