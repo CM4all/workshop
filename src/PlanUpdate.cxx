@@ -5,9 +5,9 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#include "plan_internal.hxx"
-#include "plan.hxx"
-#include "library.hxx"
+#include "PlanInternal.hxx"
+#include "Plan.hxx"
+#include "Library.hxx"
 
 #include <daemon/log.h>
 

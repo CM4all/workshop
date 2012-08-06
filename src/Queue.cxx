@@ -4,8 +4,8 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#include "queue.hxx"
-#include "job.hxx"
+#include "Queue.hxx"
+#include "Job.hxx"
 #include "pg_array.hxx"
 
 extern "C" {

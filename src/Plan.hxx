@@ -4,8 +4,8 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#ifndef WORKSHOP_PLAN_H
-#define WORKSHOP_PLAN_H
+#ifndef WORKSHOP_PLAN_HXX
+#define WORKSHOP_PLAN_HXX
 
 #include <string>
 #include <list>

@@ -11,10 +11,10 @@ extern "C" {
 }
 
 #include "Event.hxx"
-#include "plan.hxx"
-#include "queue.hxx"
-#include "job.hxx"
-#include "workplace.hxx"
+#include "Plan.hxx"
+#include "Queue.hxx"
+#include "Job.hxx"
+#include "Workplace.hxx"
 #include "version.h"
 
 #include <inline/compiler.h>

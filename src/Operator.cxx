@@ -4,10 +4,10 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#include "operator.hxx"
-#include "workplace.hxx"
-#include "plan.hxx"
-#include "job.hxx"
+#include "Operator.hxx"
+#include "Workplace.hxx"
+#include "Plan.hxx"
+#include "Job.hxx"
 
 extern "C" {
 #include "syslog.h"

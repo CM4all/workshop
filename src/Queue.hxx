@@ -4,8 +4,8 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#ifndef __WORKSHOP_QUEUE_H
-#define __WORKSHOP_QUEUE_H
+#ifndef WORKSHOP_QUEUE_HXX
+#define WORKSHOP_QUEUE_HXX
 
 #include "Event.hxx"
 

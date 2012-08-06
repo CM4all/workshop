@@ -4,11 +4,11 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#include "workplace.hxx"
-#include "operator.hxx"
+#include "Workplace.hxx"
+#include "Operator.hxx"
 #include "debug.h"
-#include "plan.hxx"
-#include "job.hxx"
+#include "Plan.hxx"
+#include "Job.hxx"
 #include "pg_array.hxx"
 
 extern "C" {

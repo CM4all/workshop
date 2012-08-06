@@ -2,8 +2,8 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#ifndef WORKSHOP_OPERATOR_H
-#define WORKSHOP_OPERATOR_H
+#ifndef WORKSHOP_OPERATOR_HXX
+#define WORKSHOP_OPERATOR_HXX
 
 #include "Event.hxx"
 

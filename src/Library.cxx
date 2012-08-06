@@ -5,9 +5,9 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#include "library.hxx"
-#include "plan.hxx"
-#include "plan_internal.hxx"
+#include "Library.hxx"
+#include "Plan.hxx"
+#include "PlanInternal.hxx"
 #include "pg_array.hxx"
 
 #include <assert.h>

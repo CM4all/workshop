@@ -4,8 +4,8 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#include "plan_internal.hxx"
-#include "plan.hxx"
+#include "PlanInternal.hxx"
+#include "Plan.hxx"
 
 #include <assert.h>
 #include <sys/stat.h>

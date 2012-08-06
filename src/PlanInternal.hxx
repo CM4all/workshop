@@ -4,8 +4,8 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#ifndef __PLAN_INTERNAL_H
-#define __PLAN_INTERNAL_H
+#ifndef WORKSHOP_PLAN_INTERNAL_HXX
+#define WORKSHOP_PLAN_INTERNAL_HXX
 
 struct Plan;
 struct PlanEntry;

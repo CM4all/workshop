@@ -5,7 +5,7 @@
 #ifndef WORKSHOP_LIBRARY_HXX
 #define WORKSHOP_LIBRARY_HXX
 
-#include "plan.hxx"
+#include "Plan.hxx"
 
 #include <string>
 #include <map>

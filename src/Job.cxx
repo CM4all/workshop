@@ -2,8 +2,8 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#include "job.hxx"
-#include "queue.hxx"
+#include "Job.hxx"
+#include "Queue.hxx"
 
 #include <daemon/log.h>
 

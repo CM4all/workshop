@@ -2,10 +2,10 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#ifndef WORKSHOP_WORKPLACE_H
-#define WORKSHOP_WORKPLACE_H
+#ifndef WORKSHOP_WORKPLACE_HXX
+#define WORKSHOP_WORKPLACE_HXX
 
-#include "operator.hxx"
+#include "Operator.hxx"
 
 #include <inline/compiler.h>
 

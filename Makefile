@@ -42,10 +42,10 @@ C_SOURCES = src/cmdline.c \
 CXX_SOURCES = src/main.cxx \
 	src/Event.cxx \
 	src/pg_array.cxx \
-	src/queue.cxx src/job.cxx \
-	src/library.cxx \
-	src/plan-loader.cxx src/plan-library.cxx src/plan-update.cxx \
-	src/operator.cxx src/workplace.cxx
+	src/Queue.cxx src/Job.cxx \
+	src/Library.cxx \
+	src/PlanLoader.cxx src/PlanLibrary.cxx src/PlanUpdate.cxx \
+	src/Operator.cxx src/Workplace.cxx
 
 C_OBJECTS = $(patsubst %.c,%.o,$(C_SOURCES))
 CXX_OBJECTS = $(patsubst %.cxx,%.o,$(CXX_SOURCES))
