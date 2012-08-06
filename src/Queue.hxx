@@ -8,22 +8,22 @@
 #define WORKSHOP_QUEUE_HXX
 
 #include "Event.hxx"
+#include "DatabaseGlue.hxx"
 
 #include <inline/compiler.h>
-
-#include <postgresql/libpq-fe.h>
 
 #include <functional>
 #include <string>
 
 struct Job;
 
-class Queue {
+class Queue : private DatabaseHandler {
     typedef std::function<void(Job *job)> Callback;
 
     std::string node_name;
-    PGconn *conn;
-    int fd = -1;
+
+    DatabaseGlue db;
+
     bool disabled = false, running = false;
 
     /** if set to true, the current queue run should be interrupted,
@@ -31,13 +31,7 @@ class Queue {
     bool interrupt = false;
 
     /**
-     * For detecting notifies from PostgreSQL.
-     */
-    Event read_event;
-
-    /**
-     * Timer event for which runs the queue or reconnects to
-     * PostgreSQL.
+     * Timer event which runs the queue.
      */
     Event timer_event;
 
@@ -62,7 +56,6 @@ public:
 
     void Close();
 
-    void OnSocket();
     void OnTimer();
 
     void ScheduleTimer(const struct timeval &tv) {
@@ -80,16 +73,6 @@ public:
     }
 
     bool Reconnect();
-    bool AutoReconnect();
-
-    bool HasNotify();
-
-    void CheckNotify() {
-        if (HasNotify())
-            /* there are pending notifies - set a very short timeout,
-               so libevent will call us very soon */
-            Reschedule();
-    }
 
     /**
      * Checks everything asynchronously: if the connection has failed,
@@ -99,11 +82,8 @@ public:
      * public functions that (unlike the internal functions) do not
      * reschedule.
      */
-    void CheckAll() {
-        if (HasNotify() || PQstatus(conn) != CONNECTION_OK)
-            /* something needs to be done - schedule it for the timer
-               event callback */
-            Reschedule();
+    void CheckNotify() {
+        db.CheckNotify();
     }
 
     int GetNextScheduled(int *span_r);
@@ -114,7 +94,7 @@ public:
     void SetFilter(const char *plans_include, std::string &&plans_exclude,
                    std::string &&plans_lowprio);
 
-    void RunResult(int num, PGresult *result);
+    void RunResult(const DatabaseResult &result);
     void Run2();
     void Run();
 
@@ -133,6 +113,12 @@ public:
     int SetJobProgress(const Job &job, unsigned progress, const char *timeout);
     bool RollbackJob(const Job &job);
     bool SetJobDone(const Job &job, int status);
+
+private:
+    /* virtual methods from DatabaseHandler */
+    virtual void OnConnect();
+    virtual void OnDisconnect();
+    virtual void OnNotify(const char *name);
 };
 
 #endif

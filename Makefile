@@ -34,14 +34,14 @@ LIBDAEMON_LIBS := $(shell pkg-config --libs libcm4all-daemon)
 INCLUDES += $(LIBINLINE_CFLAGS) $(LIBDAEMON_CFLAGS)
 
 C_SOURCES = src/cmdline.c \
-	src/syslog.c \
-	src/pg-queue.c
+	src/syslog.c
 
 CXX_SOURCES = src/main.cxx \
 	src/Instance.cxx \
 	src/Event.cxx \
 	src/pg_array.cxx \
-	src/Queue.cxx src/Job.cxx \
+	src/Queue.cxx src/PGQueue.cxx src/Job.cxx \
+	src/DatabaseConnection.cxx src/DatabaseGlue.cxx src/DatabaseResult.cxx \
 	src/Library.cxx \
 	src/PlanLoader.cxx src/PlanLibrary.cxx src/PlanUpdate.cxx \
 	src/Operator.cxx src/Workplace.cxx

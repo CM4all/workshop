@@ -5,12 +5,9 @@
  */
 
 #include "Queue.hxx"
+#include "PGQueue.hxx"
 #include "Job.hxx"
 #include "pg_array.hxx"
-
-extern "C" {
-#include "pg-queue.h"
-}
 
 #include <inline/compiler.h>
 #include <daemon/log.h>
@@ -27,46 +24,9 @@ extern "C" {
 
 Queue::Queue(const char *_node_name, const char *conninfo, Callback _callback)
     :node_name(_node_name),
-     conn(::PQconnectdb(conninfo)),
-     read_event([this](int, short){ OnSocket(); }),
+     db(conninfo, *this),
      timer_event([this](int, short){ OnTimer(); }),
      callback(_callback) {
-    if (conn == nullptr)
-        throw std::bad_alloc();
-
-    timer_event.SetTimer();
-
-    /* connect to PostgreSQL */
-
-    if (PQstatus(conn) == CONNECTION_OK) {
-        /* release jobs which might be claimed by a former instance of
-           us */
-
-        int ret = pg_release_jobs(conn, node_name.c_str());
-        if (ret < 0)
-            throw std::runtime_error("pg_release_jobs() failed");
-
-        if (ret > 0) {
-            daemon_log(2, "released %d stale jobs\n", ret);
-            pg_notify(conn);
-        }
-
-        /* listen on notifications */
-
-        if (!pg_listen(conn))
-            throw std::runtime_error("LISTEN failed");
-
-        /* poll on libpq file descriptor */
-
-        fd = PQsocket(conn);
-        read_event.SetAdd(fd, EV_READ|EV_PERSIST);
-    } else {
-        daemon_log(2, "connect to PostgreSQL failed: %s\n",
-                   PQerrorMessage(conn));
-
-        static constexpr struct timeval tv { 10, 0 };
-        ScheduleTimer(tv);
-    }
 }
 
 Queue::~Queue()
@@ -81,41 +41,14 @@ Queue::Close()
 {
     assert(!running);
 
-    if (fd >= 0) {
-        fd = -1;
-        read_event.Delete();
-    }
+    db.Disconnect();
 
     timer_event.Delete();
-
-    if (conn != NULL) {
-        PQfinish(conn);
-        conn = NULL;
-    }
-}
-
-void
-Queue::OnSocket()
-{
-    assert(!running);
-
-    PQconsumeInput(conn);
-
-    if (!AutoReconnect())
-        return;
-
-    if (HasNotify())
-        Run();
-
-    assert(!running);
 }
 
 void
 Queue::OnTimer()
 {
-    if (!AutoReconnect())
-        return;
-
     Run();
 }
 
@@ -128,75 +61,8 @@ Queue::OnTimer()
 bool
 Queue::Reconnect()
 {
-    /* unregister old socket */
-
-    if (fd >= 0) {
-        read_event.Delete();
-        fd = -1;
-    }
-
-    /* reconnect */
-
-    PQreset(conn);
-
-    if (PQstatus(conn) != CONNECTION_OK) {
-        daemon_log(2, "reconnect to PostgreSQL failed: %s\n",
-                   PQerrorMessage(conn));
-
-        static constexpr struct timeval tv { 10, 0 };
-        ScheduleTimer(tv);
-
-        return false;
-    }
-
-    /* listen on notifications */
-
-    if (!pg_listen(conn))
-        daemon_log(1, "re-LISTEN failed\n");
-
-    /* register new socket */
-
-    fd = PQsocket(conn);
-    read_event.SetAdd(fd, EV_READ|EV_PERSIST);
-
-    Reschedule();
-
+    db.Reconnect();
     return true;
-}
-
-/**
- * Check the status of the database connection, and reconnect when it
- * has gone bad.
- */
-bool
-Queue::AutoReconnect()
-{
-    if (PQstatus(conn) == CONNECTION_OK)
-        return true;
-
-    if (fd < 0)
-        daemon_log(2, "re-trying to reconnect to PostgreSQL\n");
-    else
-        daemon_log(2, "connection to PostgreSQL lost; trying to reconnect\n");
-
-    return Reconnect();
-}
-
-bool
-Queue::HasNotify()
-{
-    PGnotify *notify;
-    bool ret = false;
-
-    while ((notify = PQnotifies(conn)) != NULL) {
-        daemon_log(6, "async notify '%s' received from backend pid %d\n",
-                   notify->relname, notify->be_pid);
-        if (strcmp(notify->relname, "new_job") == 0)
-            ret = true;
-        PQfreemem(notify);
-    }
-
-    return ret;
 }
 
 int
@@ -210,7 +76,7 @@ Queue::GetNextScheduled(int *span_r)
         return 0;
     }
 
-    ret = pg_next_scheduled_job(conn, plans_include.c_str(),
+    ret = pg_next_scheduled_job(db, plans_include.c_str(),
                                 &span);
     if (ret > 0) {
         if (span < 0)
@@ -231,18 +97,18 @@ Queue::GetNextScheduled(int *span_r)
 }
 
 static Job *
-get_job(Queue *queue, PGresult *res, int row)
+get_job(Queue *queue, const DatabaseResult &result, unsigned row)
 {
     Job *job;
 
     assert(queue != NULL);
-    assert(row < PQntuples(res));
+    assert(row < result.GetRowCount());
 
-    job = new Job(queue, PQgetvalue(res, row, 0), PQgetvalue(res, row, 1));
+    job = new Job(queue, result.GetValue(row, 0), result.GetValue(row, 1));
 
     std::list<std::string> args;
     try {
-        args = pg_decode_array(PQgetvalue(res, row, 2));
+        args = pg_decode_array(result.GetValue(row, 2));
     } catch (const std::invalid_argument &e) {
         delete job;
         daemon_log(1, "pg_decode_array() failed: %s\n", e.what());
@@ -251,8 +117,8 @@ get_job(Queue *queue, PGresult *res, int row)
 
     job->args.splice(job->args.end(), args, args.begin(), args.end());
 
-    if (!PQgetisnull(res, row, 3))
-        job->syslog_server = PQgetvalue(res, row, 3);
+    if (!result.IsValueNull(row, 3))
+        job->syslog_server = result.GetValue(row, 3);
 
     if (job->id.empty() || job->plan_name.empty()) {
         delete job;
@@ -263,17 +129,18 @@ get_job(Queue *queue, PGresult *res, int row)
 }
 
 static int
-get_and_claim_job(Queue *queue, PGconn *conn, PGresult *res, int row,
+get_and_claim_job(Queue *queue, DatabaseConnection &db,
+                  const DatabaseResult &result, unsigned row,
                   const char *timeout, Job **job_r) {
     int ret;
 
-    Job *job = get_job(queue, res, row);
+    Job *job = get_job(queue, result, row);
     if (job == nullptr)
         return -1;
 
     daemon_log(6, "attempting to claim job %s\n", job->id.c_str());
 
-    ret = pg_claim_job(conn, job->id.c_str(), queue->GetNodeName(),
+    ret = pg_claim_job(db, job->id.c_str(), queue->GetNodeName(),
                        timeout);
     if (ret < 0) {
         delete job;
@@ -330,19 +197,19 @@ Queue::SetFilter(const char *_plans_include, std::string &&_plans_exclude,
     if (r1 || r2) {
         if (running)
             interrupt = true;
-        else if (fd >= 0)
+        else if (db.IsReady())
             Run();
     }
 }
 
 void
-Queue::RunResult(int num, PGresult *result)
+Queue::RunResult(const DatabaseResult &result)
 {
-    int row, ret;
     Job *job;
 
-    for (row = 0; row < num && !disabled && !interrupt; ++row) {
-        ret = get_and_claim_job(this, conn, result, row, "5 minutes", &job);
+    for (unsigned row = 0, end = result.GetRowCount();
+         row != end && !disabled && !interrupt; ++row) {
+        int ret = get_and_claim_job(this, db, result, row, "5 minutes", &job);
         if (ret > 0)
             callback(job);
         else if (ret < 0)
@@ -353,14 +220,12 @@ Queue::RunResult(int num, PGresult *result)
 void
 Queue::Run2()
 {
-    PGresult *result;
-    int ret, num;
+    int ret;
     bool full = false;
     time_t now;
 
     assert(!disabled);
     assert(running);
-    assert(!fd >= 0);
 
     if (plans_include.empty() ||
         plans_include.compare("{}") == 0 ||
@@ -373,13 +238,13 @@ Queue::Run2()
     if (now >= next_expire_check) {
         next_expire_check = now + 60;
 
-        ret = pg_expire_jobs(conn, node_name.c_str());
+        ret = pg_expire_jobs(db, node_name.c_str());
         if (ret < 0)
             return;
 
         if (ret > 0) {
             daemon_log(2, "released %d expired jobs\n", ret);
-            pg_notify(conn);
+            pg_notify(db);
         }
     }
 
@@ -391,17 +256,16 @@ Queue::Run2()
                plans_include.c_str(), plans_exclude.c_str(),
                plans_lowprio.c_str());
 
-    num = pg_select_new_jobs(conn,
-                             plans_include.c_str(),
-                             plans_exclude.c_str(),
-                             plans_lowprio.c_str(),
-                             16,
-                             &result);
-    if (num > 0) {
-        RunResult(num, result);
-        PQclear(result);
+    constexpr unsigned MAX_JOBS = 16;
+    DatabaseResult result =
+        pg_select_new_jobs(db,
+                           plans_include.c_str(), plans_exclude.c_str(),
+                           plans_lowprio.c_str(),
+                           MAX_JOBS);
+    if (result.IsQuerySuccessful() && !result.IsEmpty()) {
+        RunResult(result);
 
-        if (num == 16)
+        if (result.GetRowCount() == MAX_JOBS)
             full = true;
     }
 
@@ -412,17 +276,15 @@ Queue::Run2()
         daemon_log(7, "requesting new jobs from database II; plans_lowprio=%s\n",
                    plans_lowprio.c_str());
 
-        num = pg_select_new_jobs(conn,
-                                 plans_lowprio.c_str(),
-                                 plans_exclude.c_str(),
-                                 "{}",
-                                 16,
-                                 &result);
-        if (num > 0) {
-            RunResult(num, result);
-            PQclear(result);
+        result = pg_select_new_jobs(db,
+                                    plans_lowprio.c_str(),
+                                    plans_exclude.c_str(),
+                                    "{}",
+                                    MAX_JOBS);
+        if (result.IsQuerySuccessful() && !result.IsEmpty()) {
+            RunResult(result);
 
-            if (num == 16)
+            if (result.GetRowCount() == MAX_JOBS)
                 full = true;
         }
     }
@@ -460,7 +322,6 @@ void
 Queue::Run()
 {
     assert(!running);
-    assert(!fd >= 0);
 
     if (disabled)
         return;
@@ -482,8 +343,8 @@ Queue::Enable()
 
     disabled = false;
 
-    if (fd >= 0)
-        Run();
+    if (db.IsReady())
+        Reschedule();
 }
 
 int
@@ -491,9 +352,9 @@ Queue::SetJobProgress(const Job &job, unsigned progress, const char *timeout)
 {
     assert(job.queue == this);
 
-    int ret = pg_set_job_progress(conn, job.id.c_str(), progress, timeout);
+    int ret = pg_set_job_progress(db, job.id.c_str(), progress, timeout);
 
-    CheckAll();
+    CheckNotify();
 
     return ret;
 }
@@ -503,13 +364,10 @@ Queue::RollbackJob(const Job &job)
 {
     assert(job.queue == this);
 
-    if (!AutoReconnect())
-        return false;
+    pg_rollback_job(db, job.id.c_str());
+    pg_notify(db);
 
-    pg_rollback_job(conn, job.id.c_str());
-    pg_notify(conn);
-
-    CheckAll();
+    CheckNotify();
 
     return true;
 }
@@ -519,11 +377,40 @@ Queue::SetJobDone(const Job &job, int status)
 {
     assert(job.queue == this);
 
-    if (!AutoReconnect())
-        return false;
+    pg_set_job_done(db, job.id.c_str(), status);
 
-    pg_set_job_done(conn, job.id.c_str(), status);
-
-    CheckAll();
+    CheckNotify();
     return true;
+}
+
+void
+Queue::OnConnect()
+{
+    int ret = pg_release_jobs(db, node_name.c_str());
+    if (ret > 0) {
+        daemon_log(2, "released %d stale jobs\n", ret);
+        pg_notify(db);
+    }
+
+    /* listen on notifications */
+
+    if (!pg_listen(db))
+        throw std::runtime_error("LISTEN failed");
+
+    Reschedule();
+}
+
+void
+Queue::OnDisconnect()
+{
+    daemon_log(4, "disconnected from database\n");
+
+    timer_event.Delete();
+}
+
+void
+Queue::OnNotify(const char *name)
+{
+    if (strcmp(name, "new_job") == 0)
+        Reschedule();
 }
