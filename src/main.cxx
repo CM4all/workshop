@@ -35,10 +35,10 @@ int debug_mode = 0;
 #endif
 
 struct instance {
-    Library *library;
-    Queue *queue;
-    Workplace *workplace;
-    int should_exit;
+    Library *library = nullptr;
+    Queue *queue = nullptr;
+    Workplace *workplace = nullptr;
+    bool should_exit = false;
     struct event sigterm_event, sigint_event, sigquit_event;
     struct event sighup_event, sigchld_event;
 };
@@ -60,7 +60,7 @@ exit_callback(gcc_unused int fd, gcc_unused short event, void *arg)
     if (instance->should_exit)
         return;
 
-    instance->should_exit = 1;
+    instance->should_exit = true;
     event_del(&instance->sigterm_event);
     event_del(&instance->sigint_event);
     event_del(&instance->sigquit_event);
@@ -230,8 +230,6 @@ int main(int argc, char **argv) {
     config_get(&config, argc, argv);
 
     /* set up */
-
-    memset(&instance, 0, sizeof(instance));
 
     ret = daemonize_prepare();
     if (ret < 0)
