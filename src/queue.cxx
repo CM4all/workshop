@@ -23,14 +23,12 @@ extern "C" {
 #include <string.h>
 #include <time.h>
 
-static void
-queue_timer_event_callback(gcc_unused int fd, gcc_unused short event,
-                           void *ctx);
-
 Queue::Queue(const char *_node_name, queue_callback_t _callback, void *_ctx)
     :node_name(_node_name),
+     read_event([this](int, short){ OnSocket(); }),
+     timer_event([this](int, short){ OnTimer(); }),
      callback(_callback), ctx(_ctx) {
-    evtimer_set(&timer_event, queue_timer_event_callback, this);
+    timer_event.SetTimer();
 }
 
 Queue::~Queue()
@@ -38,9 +36,9 @@ Queue::~Queue()
     assert(!running);
 
     if (fd >= 0)
-        event_del(&read_event);
+        read_event.Delete();
 
-    evtimer_del(&timer_event);
+    timer_event.Delete();
 
     if (conn != NULL)
         PQfinish(conn);
@@ -49,6 +47,8 @@ Queue::~Queue()
 void
 Queue::OnSocket()
 {
+    assert(!running);
+
     PQconsumeInput(conn);
 
     if (!AutoReconnect())
@@ -56,22 +56,8 @@ Queue::OnSocket()
 
     if (HasNotify())
         Run();
-}
 
-/** the poll() callback handler; this function handles notifies sent
-    by the PostgreSQL server */
-static void
-queue_event_callback(gcc_unused int fd, gcc_unused short event,
-                     void *ctx)
-{
-    Queue *queue = (Queue *)ctx;
-
-    assert(fd == queue->fd);
-    assert(!queue->running);
-
-    queue->OnSocket();
-
-    assert(!queue->running);
+    assert(!running);
 }
 
 void
@@ -81,19 +67,6 @@ Queue::OnTimer()
         return;
 
     Run();
-}
-
-static void
-queue_timer_event_callback(gcc_unused int fd, gcc_unused short event,
-                           void *ctx)
-{
-    Queue *queue = (Queue *)ctx;
-
-    assert(!queue->running);
-
-    queue->OnTimer();
-
-    assert(!queue->running);
 }
 
 int queue_open(const char *node_name, const char *conninfo,
@@ -148,9 +121,7 @@ int queue_open(const char *node_name, const char *conninfo,
     /* poll on libpq file descriptor */
 
     queue->fd = PQsocket(queue->conn);
-    event_set(&queue->read_event, queue->fd, EV_READ|EV_PERSIST,
-              queue_event_callback, queue);
-    event_add(&queue->read_event, NULL);
+    queue->read_event.SetAdd(queue->fd, EV_READ|EV_PERSIST);
 
     /* done */
 
@@ -170,7 +141,7 @@ Queue::Reconnect()
     /* unregister old socket */
 
     if (fd >= 0) {
-        event_del(&read_event);
+        read_event.Delete();
         fd = -1;
     }
 
@@ -196,9 +167,7 @@ Queue::Reconnect()
     /* register new socket */
 
     fd = PQsocket(conn);
-    event_set(&read_event, fd, EV_READ|EV_PERSIST,
-              queue_event_callback, this);
-    event_add(&read_event, NULL);
+    read_event.SetAdd(fd, EV_READ|EV_PERSIST);
 
     Reschedule();
 

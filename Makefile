@@ -40,6 +40,7 @@ C_SOURCES = src/cmdline.c \
 	src/pg-queue.c
 
 CXX_SOURCES = src/main.cxx \
+	src/Event.cxx \
 	src/pg_array.cxx \
 	src/queue.cxx src/job.cxx \
 	src/library.cxx \

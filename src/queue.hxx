@@ -7,8 +7,9 @@
 #ifndef __WORKSHOP_QUEUE_H
 #define __WORKSHOP_QUEUE_H
 
+#include "Event.hxx"
+
 #include <postgresql/libpq-fe.h>
-#include <event.h>
 
 #include <string>
 
@@ -29,13 +30,13 @@ struct Queue {
     /**
      * For detecting notifies from PostgreSQL.
      */
-    struct event read_event;
+    Event read_event;
 
     /**
      * Timer event for which runs the queue or reconnects to
      * PostgreSQL.
      */
-    struct event timer_event;
+    Event timer_event;
 
     std::string plans_include, plans_exclude, plans_lowprio;
     time_t next_expire_check = 0;
@@ -55,8 +56,8 @@ struct Queue {
     void OnTimer();
 
     void ScheduleTimer(const struct timeval &tv) {
-        evtimer_del(&timer_event);
-        evtimer_add(&timer_event, &tv);
+        timer_event.Delete();
+        timer_event.Add(&tv);
     }
 
     /**

@@ -22,12 +22,12 @@ extern "C" {
 Operator::~Operator()
 {
     if (stdout_fd >= 0) {
-        event_del(&stdout_event);
+        stdout_event.Delete();
         close(stdout_fd);
     }
 
     if (stderr_fd >= 0) {
-        event_del(&stderr_event);
+        stderr_event.Delete();
         close(stderr_fd);
     }
 
@@ -35,19 +35,18 @@ Operator::~Operator()
         syslog_close(&syslog);
 }
 
-static void
-stdout_callback(gcc_unused int fd, gcc_unused short event, void *ctx)
+void
+Operator::OnOutputReady()
 {
-    struct Operator *o = (struct Operator*)ctx;
     char buffer[512];
     ssize_t nbytes, i;
-    unsigned progress = 0, p;
+    unsigned new_progress = 0, p;
 
-    nbytes = read(o->stdout_fd, buffer, sizeof(buffer));
+    nbytes = read(stdout_fd, buffer, sizeof(buffer));
     if (nbytes <= 0) {
-        event_del(&o->stdout_event);
-        close(o->stdout_fd);
-        o->stdout_fd = -1;
+        stdout_event.Delete();
+        close(stdout_fd);
+        stdout_fd = -1;
         return;
     }
 
@@ -55,23 +54,23 @@ stdout_callback(gcc_unused int fd, gcc_unused short event, void *ctx)
         char ch = buffer[i];
 
         if (ch >= '0' && ch <= '9' &&
-            o->stdout_length < sizeof(o->stdout_buffer) - 1) {
-            o->stdout_buffer[o->stdout_length++] = ch;
+            stdout_length < sizeof(stdout_buffer) - 1) {
+            stdout_buffer[stdout_length++] = ch;
         } else {
-            if (o->stdout_length > 0) {
-                o->stdout_buffer[o->stdout_length] = 0;
-                p = (unsigned)strtoul(o->stdout_buffer, NULL, 10);
+            if (stdout_length > 0) {
+                stdout_buffer[stdout_length] = 0;
+                p = (unsigned)strtoul(stdout_buffer, NULL, 10);
                 if (p <= 100)
-                    progress = p;
+                    new_progress = p;
             }
 
-            o->stdout_length = 0;
+            stdout_length = 0;
         }
     }
 
-    if (progress > 0 && progress != o->progress) {
-        o->job->SetProgress(progress, o->plan->timeout.c_str());
-        o->progress = progress;
+    if (new_progress > 0 && new_progress != progress) {
+        job->SetProgress(new_progress, plan->timeout.c_str());
+        progress = new_progress;
     }
 }
 
@@ -82,42 +81,37 @@ Operator::SetOutput(int fd)
     assert(stdout_fd < 0);
 
     stdout_fd = fd;
-    event_set(&stdout_event, fd,
-              EV_READ|EV_PERSIST, stdout_callback, this);
-    event_add(&stdout_event, NULL);
+    stdout_event.SetAdd(fd, EV_READ|EV_PERSIST);
 
 }
 
-static void
-stderr_callback(gcc_unused int fd, gcc_unused short event, void *ctx)
+void
+Operator::OnErrorReady()
 {
-    struct Operator *o = (struct Operator*)ctx;
+    assert(syslog != NULL);
+
     char buffer[512];
-    ssize_t nbytes, i;
-
-    assert(o->syslog != NULL);
-
-    nbytes = read(o->stderr_fd, buffer, sizeof(buffer));
+    ssize_t nbytes = read(stderr_fd, buffer, sizeof(buffer));
     if (nbytes <= 0) {
-        event_del(&o->stderr_event);
-        close(o->stderr_fd);
-        o->stderr_fd = -1;
+        stderr_event.Delete();
+        close(stderr_fd);
+        stderr_fd = -1;
         return;
     }
 
-    for (i = 0; i < nbytes; ++i) {
+    for (ssize_t i = 0; i < nbytes; ++i) {
         char ch = buffer[i];
 
         if (ch == '\r' || ch == '\n') {
-            if (o->stderr_length > 0) {
-                o->stderr_buffer[o->stderr_length] = 0;
-                syslog_log(o->syslog, 6, o->stderr_buffer);
+            if (stderr_length > 0) {
+                stderr_buffer[stderr_length] = 0;
+                syslog_log(syslog, 6, stderr_buffer);
             }
 
-            o->stderr_length = 0;
+            stderr_length = 0;
         } else if (ch > 0 && (ch & ~0x7f) == 0 &&
-                   o->stderr_length < sizeof(o->stderr_buffer) - 1) {
-            o->stderr_buffer[o->stderr_length++] = ch;
+                   stderr_length < sizeof(stderr_buffer) - 1) {
+            stderr_buffer[stderr_length++] = ch;
         }
     }
 }
@@ -129,9 +123,7 @@ Operator::SetSyslog(int fd)
     assert(stderr_fd < 0);
 
     stderr_fd = fd;
-    event_set(&stderr_event, stderr_fd,
-              EV_READ|EV_PERSIST, stderr_callback, (void *)this);
-    event_add(&stderr_event, NULL);
+    stderr_event.SetAdd(stderr_fd, EV_READ|EV_PERSIST);
 }
 
 typedef std::map<std::string, std::string> StringMap;

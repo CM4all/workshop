@@ -10,6 +10,7 @@ extern "C" {
 #include "cmdline.h"
 }
 
+#include "Event.hxx"
 #include "plan.hxx"
 #include "queue.hxx"
 #include "job.hxx"
@@ -19,8 +20,6 @@ extern "C" {
 #include <inline/compiler.h>
 #include <daemon/log.h>
 #include <daemon/daemonize.h>
-
-#include <event.h>
 
 #include <assert.h>
 #include <unistd.h>
@@ -244,7 +243,7 @@ int main(int argc, char **argv) {
         exit(2);
     }
 
-    event_init();
+    EventBase event_base;
 
     ret = queue_open(config.node_name, config.database,
                      queue_callback, &instance,
@@ -271,7 +270,7 @@ int main(int argc, char **argv) {
 
     update_library_and_filter(&instance);
 
-    event_dispatch();
+    event_base.Dispatch();
 
     /* cleanup */
 

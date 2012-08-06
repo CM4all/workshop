@@ -5,6 +5,8 @@
 #ifndef WORKSHOP_OPERATOR_H
 #define WORKSHOP_OPERATOR_H
 
+#include "Event.hxx"
+
 #include <string>
 #include <list>
 
@@ -24,20 +26,23 @@ struct Operator {
     pid_t pid;
 
     int stdout_fd = -1;
-    struct event stdout_event;
+    Event stdout_event;
     char stdout_buffer[64];
     size_t stdout_length = 0;
     unsigned progress = 0;
 
     int stderr_fd = -1;
-    struct event stderr_event;
+    Event stderr_event;
     char stderr_buffer[512];
     size_t stderr_length = 0;
     struct syslog_client *syslog = nullptr;
 
     Operator(Workplace *_workplace, Job *_job,
              Plan *_plan)
-        :workplace(_workplace), job(_job), plan(_plan) {}
+        :workplace(_workplace), job(_job), plan(_plan),
+         stdout_event([this](int,short){ OnOutputReady(); }),
+         stderr_event([this](int,short){ OnErrorReady(); })
+    {}
 
 #if 0
     Operator(Operator &&other)
@@ -61,6 +66,10 @@ struct Operator {
     void SetSyslog(int fd);
 
     void Expand(std::list<std::string> &args) const;
+
+private:
+    void OnOutputReady();
+    void OnErrorReady();
 };
 
 #endif
