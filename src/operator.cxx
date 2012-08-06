@@ -88,6 +88,52 @@ Operator::SetOutput(int fd)
 
 }
 
+static void
+stderr_callback(gcc_unused int fd, gcc_unused short event, void *ctx)
+{
+    struct Operator *o = (struct Operator*)ctx;
+    char buffer[512];
+    ssize_t nbytes, i;
+
+    assert(o->syslog != NULL);
+
+    nbytes = read(o->stderr_fd, buffer, sizeof(buffer));
+    if (nbytes <= 0) {
+        event_del(&o->stderr_event);
+        close(o->stderr_fd);
+        o->stderr_fd = -1;
+        return;
+    }
+
+    for (i = 0; i < nbytes; ++i) {
+        char ch = buffer[i];
+
+        if (ch == '\r' || ch == '\n') {
+            if (o->stderr_length > 0) {
+                o->stderr_buffer[o->stderr_length] = 0;
+                syslog_log(o->syslog, 6, o->stderr_buffer);
+            }
+
+            o->stderr_length = 0;
+        } else if (ch > 0 && (ch & ~0x7f) == 0 &&
+                   o->stderr_length < sizeof(o->stderr_buffer) - 1) {
+            o->stderr_buffer[o->stderr_length++] = ch;
+        }
+    }
+}
+
+void
+Operator::SetSyslog(int fd)
+{
+    assert(fd >= 0);
+    assert(stderr_fd < 0);
+
+    stderr_fd = fd;
+    event_set(&stderr_event, stderr_fd,
+              EV_READ|EV_PERSIST, stderr_callback, (void *)this);
+    event_add(&stderr_event, NULL);
+}
+
 typedef std::map<std::string, std::string> StringMap;
 
 static void

@@ -80,40 +80,6 @@ Workplace::GetFullPlanNames() const
     return pg_encode_array(list);
 }
 
-static void
-stderr_callback(gcc_unused int fd, gcc_unused short event, void *ctx)
-{
-    struct Operator *o = (struct Operator*)ctx;
-    char buffer[512];
-    ssize_t nbytes, i;
-
-    assert(o->syslog != NULL);
-
-    nbytes = read(o->stderr_fd, buffer, sizeof(buffer));
-    if (nbytes <= 0) {
-        event_del(&o->stderr_event);
-        close(o->stderr_fd);
-        o->stderr_fd = -1;
-        return;
-    }
-
-    for (i = 0; i < nbytes; ++i) {
-        char ch = buffer[i];
-
-        if (ch == '\r' || ch == '\n') {
-            if (o->stderr_length > 0) {
-                o->stderr_buffer[o->stderr_length] = 0;
-                syslog_log(o->syslog, 6, o->stderr_buffer);
-            }
-
-            o->stderr_length = 0;
-        } else if (ch > 0 && (ch & ~0x7f) == 0 &&
-                   o->stderr_length < sizeof(o->stderr_buffer) - 1) {
-            o->stderr_buffer[o->stderr_length++] = ch;
-        }
-    }
-}
-
 int
 Workplace::Start(Job *job, Plan *plan)
 {
@@ -162,10 +128,7 @@ Workplace::Start(Job *job, Plan *plan)
             return -1;
         }
 
-        o->stderr_fd = stderr_fds[0];
-        event_set(&o->stderr_event, o->stderr_fd,
-                  EV_READ|EV_PERSIST, stderr_callback, (void *)o);
-        event_add(&o->stderr_event, NULL);
+        o->SetSyslog(stderr_fds[0]);
     }
 
     /* build command line */
