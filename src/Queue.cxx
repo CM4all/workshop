@@ -231,14 +231,12 @@ Queue::GetNextScheduled(int *span_r)
     return ret;
 }
 
-static bool
-get_job(Queue *queue, PGresult *res, int row,
-        Job **job_r)
+static Job *
+get_job(Queue *queue, PGresult *res, int row)
 {
     Job *job;
 
     assert(queue != NULL);
-    assert(job_r != NULL);
     assert(row < PQntuples(res));
 
     job = new Job(queue, PQgetvalue(res, row, 0), PQgetvalue(res, row, 1));
@@ -249,7 +247,7 @@ get_job(Queue *queue, PGresult *res, int row,
     } catch (const std::invalid_argument &e) {
         delete job;
         daemon_log(1, "pg_decode_array() failed: %s\n", e.what());
-        return false;
+        return nullptr;
     }
 
     job->args.splice(job->args.end(), args, args.begin(), args.end());
@@ -259,19 +257,18 @@ get_job(Queue *queue, PGresult *res, int row,
 
     if (job->id.empty() || job->plan_name.empty()) {
         delete job;
-        return false;
+        return nullptr;
     }
 
-    *job_r = job;
-    return true;
+    return job;
 }
 
 static int get_and_claim_job(Queue *queue, PGresult *res, int row,
                              const char *timeout, Job **job_r) {
     int ret;
-    Job *job;
 
-    if (!get_job(queue, res, row, &job))
+    Job *job = get_job(queue, res, row);
+    if (job == nullptr)
         return -1;
 
     daemon_log(6, "attempting to claim job %s\n", job->id.c_str());
