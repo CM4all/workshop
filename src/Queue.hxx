@@ -52,6 +52,8 @@ struct Queue {
 
     Queue &operator=(const Queue &other) = delete;
 
+    void Close();
+
     void OnSocket();
     void OnTimer();
 

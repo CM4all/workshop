@@ -6,6 +6,9 @@
 #define WORKSHOP_INSTANCE_HXX
 
 #include "Event.hxx"
+#include "Library.hxx"
+#include "Queue.hxx"
+#include "Workplace.hxx"
 
 class Library;
 struct Queue;
@@ -13,20 +16,25 @@ class Workplace;
 
 class Instance {
 public:
-    Library *library = nullptr;
-    Queue *queue = nullptr;
-    Workplace *workplace = nullptr;
     bool should_exit = false;
 
     SignalEvent sigterm_event, sigint_event, sigquit_event;
     SignalEvent sighup_event, sigchld_event;
 
-    Instance();
+    Library library;
+    Queue queue;
+    Workplace workplace;
+
+    Instance(const char *library_path,
+             const char *node_name, const char *conninfo,
+             unsigned concurrency);
 
     void UpdateFilter();
     void UpdateLibraryAndFilter();
 
 private:
+    bool StartJob(Job *job);
+    void OnJob(Job *job);
     void OnExit();
     void OnReload();
     void OnChild();

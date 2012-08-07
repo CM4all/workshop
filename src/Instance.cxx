@@ -3,35 +3,81 @@
  */
 
 #include "Instance.hxx"
-#include "Library.hxx"
-#include "Queue.hxx"
-#include "Workplace.hxx"
+#include "Job.hxx"
 
 #include <daemon/log.h>
 
 #include <signal.h>
 
-Instance::Instance()
+Instance::Instance(const char *library_path,
+                   const char *node_name, const char *conninfo,
+                   unsigned concurrency)
     :sigterm_event(SIGTERM, [this](){ OnExit(); }),
      sigint_event(SIGINT, [this](){ OnExit(); }),
      sigquit_event(SIGQUIT, [this](){ OnExit(); }),
      sighup_event(SIGHUP, [this](){ OnReload(); }),
-     sigchld_event(SIGCHLD, [this](){ OnChild(); })
+     sigchld_event(SIGCHLD, [this](){ OnChild(); }),
+     library(library_path),
+     queue(node_name, conninfo,
+           [this](Job *job){ OnJob(job); }),
+     workplace(node_name, concurrency)
 {
 }
 
 void
 Instance::UpdateFilter()
 {
-    queue->SetFilter(library->GetPlanNames(),
-                     workplace->GetFullPlanNames(),
-                     workplace->GetRunningPlanNames());
+    queue.SetFilter(library.GetPlanNames(),
+                    workplace.GetFullPlanNames(),
+                    workplace.GetRunningPlanNames());
 }
 
 void
 Instance::UpdateLibraryAndFilter()
 {
-    library->Update();
+    library.Update();
+    UpdateFilter();
+}
+
+bool
+Instance::StartJob(Job *job)
+{
+    Plan *plan = library.Get(job->plan_name.c_str());
+    if (plan == nullptr) {
+        fprintf(stderr, "library_get('%s') failed\n", job->plan_name.c_str());
+        job_rollback(&job);
+        return false;
+    }
+
+    int ret = job->SetProgress(0, plan->timeout.c_str());
+    if (ret < 0) {
+        job_rollback(&job);
+        return false;
+    }
+
+    ret = workplace.Start(job, plan);
+    if (ret != 0) {
+        plan_put(&plan);
+        job_done(&job, -1);
+    }
+
+    return true;
+}
+
+void
+Instance::OnJob(Job *job)
+{
+    if (workplace.IsFull()) {
+        job_rollback(&job);
+        queue.Disable();
+        return;
+    }
+
+    library.Update();
+
+    if (!StartJob(job) || workplace.IsFull())
+        queue.Disable();
+
     UpdateFilter();
 }
 
@@ -49,57 +95,36 @@ Instance::OnExit()
     sighup_event.Delete();
     sigchld_event.Delete();
 
-    queue->Disable();
+    queue.Disable();
 
-    if (workplace != NULL) {
-        if (workplace->IsEmpty()) {
-            delete workplace;
-            workplace = NULL;
-
-            if (queue != NULL) {
-                delete queue;
-                queue = NULL;
-            }
-        } else {
-            daemon_log(1, "waiting for operators to finish\n");
-        }
-    }
+    if (workplace.IsEmpty())
+        queue.Close();
+    else
+        daemon_log(1, "waiting for operators to finish\n");
 }
 
 void
 Instance::OnReload()
 {
-    if (queue == NULL)
-        return;
-
     daemon_log(4, "reloading\n");
     UpdateLibraryAndFilter();
-    queue->Reschedule();
+    queue.Reschedule();
 }
 
 void
 Instance::OnChild()
 {
-    if (workplace == NULL)
-        return;
-
-    workplace->WaitPid();
+    workplace.WaitPid();
 
     if (should_exit) {
-        if (workplace->IsEmpty()) {
-            delete workplace;
-            workplace = NULL;
-
-            if (queue != NULL) {
-                delete queue;
-                queue = NULL;
-            }
-        }
-    } else {
-        UpdateLibraryAndFilter();
-
-        if (!workplace->IsFull())
-            queue->Enable();
+        if (workplace.IsEmpty())
+            queue.Close();
+        return;
     }
+
+    UpdateLibraryAndFilter();
+
+    if (!workplace.IsFull())
+        queue.Enable();
 }
 

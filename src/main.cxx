@@ -57,62 +57,14 @@ setup_signal_handlers()
     sigaction(SIGUSR2, &sa, NULL);
 }
 
-static bool
-start_job(Instance &instance, Job *job)
-{
-    Plan *plan = instance.library->Get(job->plan_name.c_str());
-    if (plan == nullptr) {
-        fprintf(stderr, "library_get('%s') failed\n", job->plan_name.c_str());
-        job_rollback(&job);
-        return false;
-    }
-
-    int ret = job->SetProgress(0, plan->timeout.c_str());
-    if (ret < 0) {
-        job_rollback(&job);
-        return false;
-    }
-
-    ret = instance.workplace->Start(job, plan);
-    if (ret != 0) {
-        plan_put(&plan);
-        job_done(&job, -1);
-    }
-
-    return true;
-}
-
-static void
-queue_callback(Instance &instance, Job *job)
-{
-    if (instance.workplace->IsFull()) {
-        job_rollback(&job);
-        instance.queue->Disable();
-        return;
-    }
-
-    instance.library->Update();
-
-    if (!start_job(instance, job) || instance.workplace->IsFull())
-        instance.queue->Disable();
-
-    instance.UpdateFilter();
-}
-
 static void
 Run(struct config &config)
 {
     EventBase event_base;
 
-    Instance instance;
-    instance.library = new Library("/etc/cm4all/workshop/plans");
-
-    instance.queue = new Queue(config.node_name, config.database,
-                               [&instance](Job *job) {
-                                   queue_callback(instance, job);
-                               });
-
-    instance.workplace = new Workplace(config.node_name, config.concurrency);
+    Instance instance("/etc/cm4all/workshop/plans",
+                      config.node_name, config.database,
+                      config.concurrency);
 
     setup_signal_handlers();
 
@@ -133,11 +85,6 @@ Run(struct config &config)
     /* cleanup */
 
     daemon_log(5, "cleaning up\n");
-
-    delete instance.workplace;
-    delete instance.queue;
-
-    delete instance.library;
 }
 
 int main(int argc, char **argv) {

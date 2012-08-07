@@ -74,13 +74,25 @@ Queue::~Queue()
 {
     assert(!running);
 
-    if (fd >= 0)
+    Close();
+}
+
+void
+Queue::Close()
+{
+    assert(!running);
+
+    if (fd >= 0) {
+        fd = -1;
         read_event.Delete();
+    }
 
     timer_event.Delete();
 
-    if (conn != NULL)
+    if (conn != NULL) {
         PQfinish(conn);
+        conn = NULL;
+    }
 }
 
 void
