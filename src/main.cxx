@@ -111,14 +111,10 @@ Run(struct config &config)
         exit(2);
     }
 
-    instance.queue = Queue::Open(config.node_name, config.database,
-                                 [&instance](Job *job) {
-                                     queue_callback(instance, job);
-                                 });
-    if (instance.queue == nullptr) {
-        fprintf(stderr, "failed to open queue database\n");
-        exit(2);
-    }
+    instance.queue = new Queue(config.node_name, config.database,
+                               [&instance](Job *job) {
+                                   queue_callback(instance, job);
+                               });
 
     instance.workplace = new Workplace(config.node_name, config.concurrency);
 

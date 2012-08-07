@@ -20,7 +20,7 @@ struct Queue {
     typedef std::function<void(Job *job)> Callback;
 
     std::string node_name;
-    PGconn *conn = nullptr;
+    PGconn *conn;
     int fd = -1;
     bool disabled = false, running = false;
 
@@ -44,24 +44,13 @@ struct Queue {
 
     Callback callback;
 
-    Queue(const char *_node_name, Callback _callback);
+    Queue(const char *_node_name, const char *conninfo, Callback _callback);
 
     Queue(const Queue &other) = delete;
 
     ~Queue();
 
     Queue &operator=(const Queue &other) = delete;
-
-    /**
-     * Open a queue database.  It will listen for notifications.
-     *
-     * @param node_name the name of this node (host)
-     * @param conninfo the PostgreSQL conninfo string (e.g. "dbname=workshop")
-     * @param callback a callback that will be invoked when a new job has
-     * been claimed
-     */
-    static Queue *Open(const char *node_name, const char *conninfo,
-                       Callback callback);
 
     void OnSocket();
     void OnTimer();

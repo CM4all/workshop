@@ -25,12 +25,49 @@ extern "C" {
 #include <string.h>
 #include <time.h>
 
-Queue::Queue(const char *_node_name, Callback _callback)
+Queue::Queue(const char *_node_name, const char *conninfo, Callback _callback)
     :node_name(_node_name),
+     conn(::PQconnectdb(conninfo)),
      read_event([this](int, short){ OnSocket(); }),
      timer_event([this](int, short){ OnTimer(); }),
      callback(_callback) {
+    if (conn == nullptr)
+        throw std::bad_alloc();
+
     timer_event.SetTimer();
+
+    /* connect to PostgreSQL */
+
+    if (PQstatus(conn) == CONNECTION_OK) {
+        /* release jobs which might be claimed by a former instance of
+           us */
+
+        int ret = pg_release_jobs(conn, node_name.c_str());
+        if (ret < 0)
+            throw std::runtime_error("pg_release_jobs() failed");
+
+        if (ret > 0) {
+            daemon_log(2, "released %d stale jobs\n", ret);
+            pg_notify(conn);
+        }
+
+        /* listen on notifications */
+
+        ret = pg_listen(conn);
+        if (ret < 0)
+            throw std::runtime_error("LISTEN failed");
+
+        /* poll on libpq file descriptor */
+
+        fd = PQsocket(conn);
+        read_event.SetAdd(fd, EV_READ|EV_PERSIST);
+    } else {
+        daemon_log(2, "connect to PostgreSQL failed: %s\n",
+                   PQerrorMessage(conn));
+
+        static constexpr struct timeval tv { 10, 0 };
+        ScheduleTimer(tv);
+    }
 }
 
 Queue::~Queue()
@@ -69,65 +106,6 @@ Queue::OnTimer()
         return;
 
     Run();
-}
-
-Queue *
-Queue::Open(const char *node_name, const char *conninfo,
-            Callback callback)
-{
-    int ret;
-
-    Queue *queue = new Queue(node_name, callback);
-
-    /* connect to PostgreSQL */
-
-    queue->conn = PQconnectdb(conninfo);
-    if (queue->conn == NULL) {
-        delete queue;
-        return nullptr;
-    }
-
-    if (PQstatus(queue->conn) != CONNECTION_OK) {
-        daemon_log(2, "connect to PostgreSQL failed: %s\n",
-                   PQerrorMessage(queue->conn));
-
-        static constexpr struct timeval tv { 10, 0 };
-        queue->ScheduleTimer(tv);
-
-        return queue;
-
-    }
-
-    /* release jobs which might be claimed by a former instance of
-       us */
-
-    ret = pg_release_jobs(queue->conn, queue->node_name.c_str());
-    if (ret < 0) {
-        delete queue;
-        return nullptr;
-    }
-
-    if (ret > 0) {
-        daemon_log(2, "released %d stale jobs\n", ret);
-        pg_notify(queue->conn);
-    }
-
-    /* listen on notifications */
-
-    ret = pg_listen(queue->conn);
-    if (ret < 0) {
-        delete queue;
-        return nullptr;
-    }
-
-    /* poll on libpq file descriptor */
-
-    queue->fd = PQsocket(queue->conn);
-    queue->read_event.SetAdd(queue->fd, EV_READ|EV_PERSIST);
-
-    /* done */
-
-    return queue;
 }
 
 /**
