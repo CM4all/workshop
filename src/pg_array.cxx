@@ -6,22 +6,24 @@
 
 #include "pg_array.hxx"
 
+#include <stdexcept>
+
 #include <assert.h>
 #include <string.h>
 
-bool
-pg_decode_array(const char *p, std::list<std::string> &dest)
+std::list<std::string>
+pg_decode_array(const char *p)
 {
-    assert(dest.empty());
+    std::list<std::string> dest;
 
     if (p == NULL || *p == 0)
-        return true;
+        return dest;
 
     if (*p != '{')
-        return false;
+        throw std::invalid_argument("'{' expected");
 
     if (p[1] == '}' && p[2] == 0)
-        return true; /* special case: empty array */
+        return dest; /* special case: empty array */
 
     do {
         ++p;
@@ -36,11 +38,11 @@ pg_decode_array(const char *p, std::list<std::string> &dest)
                     ++p;
 
                     if (*p == 0)
-                        return false;
+                        throw std::invalid_argument("backslash at end of string");
 
                     value.push_back(*p++);
                 } else if (*p == 0) {
-                    return false;
+                    throw std::invalid_argument("missing closing double quote");
                 } else {
                     value.push_back(*p++);
                 }
@@ -49,17 +51,19 @@ pg_decode_array(const char *p, std::list<std::string> &dest)
             ++p;
 
             if (*p != '}' && *p != ',')
-                return false;;
+                throw std::invalid_argument("'}' or ',' expected");
 
             dest.push_back(std::move(value));
-        } else if (*p == 0 || *p == '{') {
-            return false;
+        } else if (*p == 0) {
+            throw std::invalid_argument("missing '}'");
+        } else if (*p == '{') {
+            throw std::invalid_argument("unexpected '{'");
         } else {
             const char *end = strchr(p, ',');
             if (end == NULL) {
                 end = strchr(p, '}');
                 if (end == NULL)
-                    return false;
+                    throw std::invalid_argument("missing '}'");
             }
 
             dest.push_back(std::string(p, end));
@@ -69,14 +73,14 @@ pg_decode_array(const char *p, std::list<std::string> &dest)
     } while (*p == ',');
 
     if (*p != '}')
-        return false;
+        throw std::invalid_argument("'}' expected");
 
     ++p;
 
     if (*p != 0)
-        return false;
+        throw std::invalid_argument("garbage after '}'");
 
-    return true;
+    return dest;
 }
 
 std::string

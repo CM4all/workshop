@@ -5,11 +5,7 @@
 #include <string.h>
 
 static void check_decode(const char *input, const char *const* expected) {
-    std::list<std::string> a;
-    if (!pg_decode_array(input, a)) {
-        fprintf(stderr, "decode '%s' failed\n", input);
-        exit(2);
-    }
+    std::list<std::string> a = pg_decode_array(input);
 
     unsigned i = 0;
     for (const auto &v : a) {

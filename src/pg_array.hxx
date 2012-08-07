@@ -10,8 +10,11 @@
 #include <list>
 #include <string>
 
-bool
-pg_decode_array(const char *p, std::list<std::string> &dest);
+/**
+ * Throws std::invalid_argument on syntax error.
+ */
+std::list<std::string>
+pg_decode_array(const char *p);
 
 std::string
 pg_encode_array(const std::list<std::string> &src);

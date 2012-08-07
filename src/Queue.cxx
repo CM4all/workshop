@@ -15,6 +15,8 @@ extern "C" {
 #include <inline/compiler.h>
 #include <daemon/log.h>
 
+#include <stdexcept>
+
 #include <stdbool.h>
 #include <sys/types.h>
 #include <assert.h>
@@ -253,9 +255,11 @@ get_job(Queue *queue, PGresult *res, int row,
     job = new Job(queue, PQgetvalue(res, row, 0), PQgetvalue(res, row, 1));
 
     std::list<std::string> args;
-    if (!pg_decode_array(PQgetvalue(res, row, 2), args)) {
-        fprintf(stderr, "pg_decode_array() failed\n");
+    try {
+        args = pg_decode_array(PQgetvalue(res, row, 2));
+    } catch (const std::invalid_argument &e) {
         delete job;
+        daemon_log(1, "pg_decode_array() failed: %s\n", e.what());
         return false;
     }
 
