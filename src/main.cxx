@@ -11,7 +11,6 @@ extern "C" {
 }
 
 #include "Event.hxx"
-#include "Plan.hxx"
 #include "Library.hxx"
 #include "Queue.hxx"
 #include "Job.hxx"
@@ -233,7 +232,7 @@ int main(int argc, char **argv) {
     if (ret < 0)
         exit(2);
 
-    instance.library = library_open("/etc/cm4all/workshop/plans");
+    instance.library = Library::Open("/etc/cm4all/workshop/plans");
     if (instance.library == nullptr) {
         fprintf(stderr, "library_open() failed\n");
         exit(2);

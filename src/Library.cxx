@@ -19,7 +19,7 @@
 #include <time.h>
 
 Library *
-library_open(const char *path)
+Library::Open(const char *path)
 {
     int ret;
     struct stat st;
