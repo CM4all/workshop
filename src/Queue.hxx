@@ -11,13 +11,14 @@
 
 #include <postgresql/libpq-fe.h>
 
+#include <functional>
 #include <string>
 
 struct Job;
 
-typedef void (*queue_callback_t)(Job *job, void *ctx);
-
 struct Queue {
+    typedef std::function<void(Job *job)> Callback;
+
     std::string node_name;
     PGconn *conn = nullptr;
     int fd = -1;
@@ -41,10 +42,9 @@ struct Queue {
     std::string plans_include, plans_exclude, plans_lowprio;
     time_t next_expire_check = 0;
 
-    queue_callback_t callback;
-    void *ctx;
+    Callback callback;
 
-    Queue(const char *_node_name, queue_callback_t _callback, void *_ctx);
+    Queue(const char *_node_name, Callback _callback);
 
     Queue(const Queue &other) = delete;
 
@@ -59,10 +59,9 @@ struct Queue {
      * @param conninfo the PostgreSQL conninfo string (e.g. "dbname=workshop")
      * @param callback a callback that will be invoked when a new job has
      * been claimed
-     * @param ctx a pointer that will be passed to the callback
      */
     static Queue *Open(const char *node_name, const char *conninfo,
-                       queue_callback_t callback, void *ctx);
+                       Callback callback);
 
     void OnSocket();
     void OnTimer();

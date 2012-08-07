@@ -80,9 +80,9 @@ start_job(Instance &instance, Job *job)
     return true;
 }
 
-static void queue_callback(Job *job, void *ctx) {
-    Instance &instance = *(Instance *)ctx;
-
+static void
+queue_callback(Instance &instance, Job *job)
+{
     if (instance.workplace->IsFull()) {
         job_rollback(&job);
         instance.queue->Disable();
@@ -110,7 +110,9 @@ Run(struct config &config)
     }
 
     instance.queue = Queue::Open(config.node_name, config.database,
-                                 queue_callback, &instance);
+                                 [&instance](Job *job) {
+                                     queue_callback(instance, job);
+                                 });
     if (instance.queue == nullptr) {
         fprintf(stderr, "failed to open queue database\n");
         exit(2);

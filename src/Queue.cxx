@@ -25,11 +25,11 @@ extern "C" {
 #include <string.h>
 #include <time.h>
 
-Queue::Queue(const char *_node_name, queue_callback_t _callback, void *_ctx)
+Queue::Queue(const char *_node_name, Callback _callback)
     :node_name(_node_name),
      read_event([this](int, short){ OnSocket(); }),
      timer_event([this](int, short){ OnTimer(); }),
-     callback(_callback), ctx(_ctx) {
+     callback(_callback) {
     timer_event.SetTimer();
 }
 
@@ -73,11 +73,11 @@ Queue::OnTimer()
 
 Queue *
 Queue::Open(const char *node_name, const char *conninfo,
-            queue_callback_t callback, void *ctx)
+            Callback callback)
 {
     int ret;
 
-    Queue *queue = new Queue(node_name, callback, ctx);
+    Queue *queue = new Queue(node_name, callback);
 
     /* connect to PostgreSQL */
 
@@ -357,7 +357,7 @@ Queue::RunResult(int num, PGresult *result)
     for (row = 0; row < num && !disabled && !interrupt; ++row) {
         ret = get_and_claim_job(this, result, row, "5 minutes", &job);
         if (ret > 0)
-            callback(job, ctx);
+            callback(job);
         else if (ret < 0)
             break;
     }
