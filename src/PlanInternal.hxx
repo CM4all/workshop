@@ -16,9 +16,4 @@ class Library;
 Plan *
 plan_load(const char *path);
 
-/* plan-update.c */
-
-int
-library_update_plan(Library &library, PlanEntry &entry);
-
 #endif

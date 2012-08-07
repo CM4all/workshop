@@ -84,6 +84,8 @@ public:
 
     Plan *Get(const char *name);
 
+    int UpdatePlan(PlanEntry &entry);
+
 private:
     void UpdatePlanNames();
 };

@@ -146,15 +146,15 @@ load_plan_entry(Library &library, PlanEntry &entry)
 }
 
 int
-library_update_plan(Library &library, PlanEntry &entry)
+Library::UpdatePlan(PlanEntry &entry)
 {
     int ret;
 
-    ret = check_plan_mtime(library, entry);
+    ret = check_plan_mtime(*this, entry);
     if (ret != 0)
         return ret;
 
-    if (entry.plan == NULL && !load_plan_entry(library, entry))
+    if (entry.plan == NULL && !load_plan_entry(*this, entry))
         return ret;
 
     ret = validate_plan(entry);

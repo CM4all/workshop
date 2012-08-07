@@ -75,7 +75,7 @@ library_update_plans(Library &library) {
             continue;
 
         PlanEntry &entry = make_plan_entry(library, ent->d_name);
-        library_update_plan(library, entry);
+        library.UpdatePlan(entry);
         entry.generation = library.generation;
     }
 
@@ -147,7 +147,7 @@ Library::Get(const char *name)
     if (entry == NULL)
         return NULL;
 
-    int ret = library_update_plan(*this, *entry);
+    int ret = UpdatePlan(*entry);
     if (ret != 0)
         return NULL;
 
