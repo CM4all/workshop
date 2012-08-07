@@ -9,7 +9,9 @@
 #include <assert.h>
 #include <stdlib.h>
 
-int pg_listen(PGconn *conn) {
+bool
+pg_listen(PGconn *conn)
+{
     PGresult *res;
 
     res = PQexec(conn, "LISTEN new_job");
@@ -17,14 +19,16 @@ int pg_listen(PGconn *conn) {
         fprintf(stderr, "LISTEN new_job failed: %s\n",
                 PQerrorMessage(conn));
         PQclear(res);
-        return -1;
+        return false;
     }
 
     PQclear(res);
-    return 0;
+    return true;
 }
 
-int pg_notify(PGconn *conn) {
+bool
+pg_notify(PGconn *conn)
+{
     PGresult *res;
 
     res = PQexec(conn, "NOTIFY new_job");
@@ -32,11 +36,11 @@ int pg_notify(PGconn *conn) {
         fprintf(stderr, "NOTIFY new_job failed: %s\n",
                 PQerrorMessage(conn));
         PQclear(res);
-        return -1;
+        return false;
     }
 
     PQclear(res);
-    return 0;
+    return true;
 }
 
 int pg_release_jobs(PGconn *conn, const char *node_name) {

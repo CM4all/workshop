@@ -53,8 +53,7 @@ Queue::Queue(const char *_node_name, const char *conninfo, Callback _callback)
 
         /* listen on notifications */
 
-        ret = pg_listen(conn);
-        if (ret < 0)
+        if (!pg_listen(conn))
             throw std::runtime_error("LISTEN failed");
 
         /* poll on libpq file descriptor */
@@ -152,7 +151,7 @@ Queue::Reconnect()
 
     /* listen on notifications */
 
-    if (pg_listen(conn) < 0)
+    if (!pg_listen(conn))
         daemon_log(1, "re-LISTEN failed\n");
 
     /* register new socket */
