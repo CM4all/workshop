@@ -209,24 +209,10 @@ static void queue_callback(Job *job, void *ctx) {
     update_filter(instance);
 }
 
-int main(int argc, char **argv) {
-    struct config config;
-    int ret;
-
-#ifndef NDEBUG
-    if (geteuid() != 0)
-        debug_mode = true;
-#endif
-
-    /* configuration */
-
-    config_get(&config, argc, argv);
-
-    /* set up */
-
-    ret = daemonize_prepare();
-    if (ret < 0)
-        exit(2);
+static void
+Run(struct config &config)
+{
+    EventBase event_base;
 
     Instance instance;
     instance.library = Library::Open("/etc/cm4all/workshop/plans");
@@ -235,11 +221,9 @@ int main(int argc, char **argv) {
         exit(2);
     }
 
-    EventBase event_base;
-
-    ret = queue_open(config.node_name, config.database,
-                     queue_callback, &instance,
-                     &instance.queue);
+    int ret = queue_open(config.node_name, config.database,
+                         queue_callback, &instance,
+                         &instance.queue);
     if (ret != 0) {
         fprintf(stderr, "failed to open queue database\n");
         exit(2);
@@ -272,6 +256,26 @@ int main(int argc, char **argv) {
     delete instance.queue;
 
     delete instance.library;
+}
+
+int main(int argc, char **argv) {
+    struct config config;
+
+#ifndef NDEBUG
+    if (geteuid() != 0)
+        debug_mode = true;
+#endif
+
+    /* configuration */
+
+    config_get(&config, argc, argv);
+
+    /* set up */
+
+    if (daemonize_prepare() < 0)
+        exit(2);
+
+    Run(config);
 
     daemonize_cleanup();
 
