@@ -44,121 +44,9 @@ static void config_get(struct config *config, int argc, char **argv) {
 }
 
 static void
-exit_callback(gcc_unused int fd, gcc_unused short event, void *arg)
-{
-    Instance &instance = *(Instance *)arg;
-
-    if (instance.should_exit)
-        return;
-
-    instance.should_exit = true;
-    event_del(&instance.sigterm_event);
-    event_del(&instance.sigint_event);
-    event_del(&instance.sigquit_event);
-    event_del(&instance.sighup_event);
-
-    instance.queue->Disable();
-
-    if (instance.workplace != NULL) {
-        if (instance.workplace->IsEmpty()) {
-            event_del(&instance.sigchld_event);
-
-            delete instance.workplace;
-            instance.workplace = NULL;
-
-            if (instance.queue != NULL) {
-                delete instance.queue;
-                instance.queue = NULL;
-            }
-        } else {
-            daemon_log(1, "waiting for operators to finish\n");
-        }
-    }
-}
-
-static void
-update_filter(Instance &instance)
-{
-    instance.queue->SetFilter(instance.library->GetPlanNames(),
-                               instance.workplace->GetFullPlanNames(),
-                               instance.workplace->GetRunningPlanNames());
-}
-
-static void
-update_library_and_filter(Instance &instance)
-{
-    instance.library->Update();
-    update_filter(instance);
-}
-
-static void
-reload_callback(gcc_unused int fd, gcc_unused short event, void *arg)
-{
-    Instance &instance = *(Instance *)arg;
-
-    if (instance.queue == NULL)
-        return;
-
-    daemon_log(4, "reloading\n");
-    update_library_and_filter(instance);
-    instance.queue->Reschedule();
-}
-
-static void
-child_callback(gcc_unused int fd, gcc_unused short event, void *arg)
-{
-    Instance &instance = *(Instance *)arg;
-
-    if (instance.workplace == NULL)
-        return;
-
-    instance.workplace->WaitPid();
-
-    if (instance.should_exit) {
-        if (instance.workplace->IsEmpty()) {
-            event_del(&instance.sigchld_event);
-
-            delete instance.workplace;
-            instance.workplace = NULL;
-
-            if (instance.queue != NULL) {
-                delete instance.queue;
-                instance.queue = NULL;
-            }
-        }
-    } else {
-        update_library_and_filter(instance);
-
-        if (!instance.workplace->IsFull())
-            instance.queue->Enable();
-    }
-}
-
-static void
-setup_signal_handlers(Instance &instance)
+setup_signal_handlers()
 {
     struct sigaction sa;
-
-    event_set(&instance.sigterm_event, SIGTERM, EV_SIGNAL|EV_PERSIST,
-              exit_callback, &instance);
-    event_add(&instance.sigterm_event, NULL);
-
-    event_set(&instance.sigint_event, SIGINT, EV_SIGNAL|EV_PERSIST,
-              exit_callback, &instance);
-    event_add(&instance.sigint_event, NULL);
-
-    event_set(&instance.sigquit_event, SIGQUIT, EV_SIGNAL|EV_PERSIST,
-              exit_callback, &instance);
-    event_add(&instance.sigquit_event, NULL);
-
-    event_set(&instance.sighup_event, SIGHUP, EV_SIGNAL|EV_PERSIST,
-              reload_callback, &instance);
-    event_add(&instance.sighup_event, NULL);
-
-    event_set(&instance.sigchld_event, SIGCHLD, EV_SIGNAL|EV_PERSIST,
-              child_callback, &instance);
-    event_add(&instance.sigchld_event, NULL);
-
     memset(&sa, 0, sizeof(sa));
     sa.sa_handler = SIG_IGN;
     sa.sa_flags = SA_RESTART;
@@ -206,7 +94,7 @@ static void queue_callback(Job *job, void *ctx) {
     if (!start_job(instance, job) || instance.workplace->IsFull())
         instance.queue->Disable();
 
-    update_filter(instance);
+    instance.UpdateFilter();
 }
 
 static void
@@ -231,7 +119,7 @@ Run(struct config &config)
 
     instance.workplace = new Workplace(config.node_name, config.concurrency);
 
-    setup_signal_handlers(instance);
+    setup_signal_handlers();
 
     ret = daemonize();
     if (ret < 0)
@@ -244,7 +132,7 @@ Run(struct config &config)
 
     /* main loop */
 
-    update_library_and_filter(instance);
+    instance.UpdateLibraryAndFilter();
 
     event_base.Dispatch();
 

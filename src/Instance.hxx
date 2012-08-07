@@ -5,7 +5,7 @@
 #ifndef WORKSHOP_INSTANCE_HXX
 #define WORKSHOP_INSTANCE_HXX
 
-#include <event.h>
+#include "Event.hxx"
 
 class Library;
 struct Queue;
@@ -17,8 +17,19 @@ public:
     Queue *queue = nullptr;
     Workplace *workplace = nullptr;
     bool should_exit = false;
-    struct event sigterm_event, sigint_event, sigquit_event;
-    struct event sighup_event, sigchld_event;
+
+    SignalEvent sigterm_event, sigint_event, sigquit_event;
+    SignalEvent sighup_event, sigchld_event;
+
+    Instance();
+
+    void UpdateFilter();
+    void UpdateLibraryAndFilter();
+
+private:
+    void OnExit();
+    void OnReload();
+    void OnChild();
 };
 
 #endif
