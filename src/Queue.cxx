@@ -72,8 +72,8 @@ Queue::OnTimer()
 }
 
 Queue *
-queue_open(const char *node_name, const char *conninfo,
-           queue_callback_t callback, void *ctx)
+Queue::Open(const char *node_name, const char *conninfo,
+            queue_callback_t callback, void *ctx)
 {
     int ret;
 

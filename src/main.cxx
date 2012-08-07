@@ -109,8 +109,8 @@ Run(struct config &config)
         exit(2);
     }
 
-    instance.queue = queue_open(config.node_name, config.database,
-                                queue_callback, &instance);
+    instance.queue = Queue::Open(config.node_name, config.database,
+                                 queue_callback, &instance);
     if (instance.queue == nullptr) {
         fprintf(stderr, "failed to open queue database\n");
         exit(2);

@@ -52,6 +52,18 @@ struct Queue {
 
     Queue &operator=(const Queue &other) = delete;
 
+    /**
+     * Open a queue database.  It will listen for notifications.
+     *
+     * @param node_name the name of this node (host)
+     * @param conninfo the PostgreSQL conninfo string (e.g. "dbname=workshop")
+     * @param callback a callback that will be invoked when a new job has
+     * been claimed
+     * @param ctx a pointer that will be passed to the callback
+     */
+    static Queue *Open(const char *node_name, const char *conninfo,
+                       queue_callback_t callback, void *ctx);
+
     void OnSocket();
     void OnTimer();
 
@@ -124,18 +136,5 @@ struct Queue {
     bool RollbackJob(const Job &job);
     bool SetJobDone(const Job &job, int status);
 };
-
-/**
- * Open a queue database.  It will listen for notifications.
- *
- * @param node_name the name of this node (host)
- * @param conninfo the PostgreSQL conninfo string (e.g. "dbname=workshop")
- * @param callback a callback that will be invoked when a new job has
- * been claimed
- * @param ctx a pointer that will be passed to the callback
- */
-Queue *
-queue_open(const char *node_name, const char *conninfo,
-           queue_callback_t callback, void *ctx);
 
 #endif
