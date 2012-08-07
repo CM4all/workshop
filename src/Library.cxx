@@ -18,33 +18,6 @@
 #include <string.h>
 #include <time.h>
 
-Library *
-Library::Open(const char *path)
-{
-    int ret;
-    struct stat st;
-
-    assert(path != NULL);
-
-    /* check path */
-
-    ret = stat(path, &st);
-    if (ret < 0) {
-        fprintf(stderr, "failed to stat '%s': %s\n",
-                path, strerror(errno));
-        return NULL;
-    }
-
-    if (!S_ISDIR(st.st_mode)) {
-        fprintf(stderr, "not a directory: %s\n", path);
-        return NULL;
-    }
-
-    /* create library object */
-
-    return new Library(path);
-}
-
 void
 Library::UpdatePlanNames()
 {

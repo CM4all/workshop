@@ -105,11 +105,7 @@ Run(struct config &config)
     EventBase event_base;
 
     Instance instance;
-    instance.library = Library::Open("/etc/cm4all/workshop/plans");
-    if (instance.library == nullptr) {
-        fprintf(stderr, "library_open() failed\n");
-        exit(2);
-    }
+    instance.library = new Library("/etc/cm4all/workshop/plans");
 
     instance.queue = new Queue(config.node_name, config.database,
                                [&instance](Job *job) {

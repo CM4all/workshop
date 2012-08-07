@@ -72,8 +72,6 @@ public:
 
     Library(const Library &other) = delete;
 
-    static Library *Open(const char *path);
-
     bool Update();
 
     gcc_pure
