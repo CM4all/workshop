@@ -21,6 +21,8 @@ extern "C" {
 #include <daemon/log.h>
 #include <daemon/daemonize.h>
 
+#include <stdexcept>
+
 #include <assert.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -163,7 +165,11 @@ int main(int argc, char **argv) {
     if (daemonize_prepare() < 0)
         exit(2);
 
-    Run(config);
+    try {
+        Run(config);
+    } catch (const std::exception &e) {
+        daemon_log(2, "%s\n", e.what());
+    }
 
     daemonize_cleanup();
 
