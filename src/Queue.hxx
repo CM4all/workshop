@@ -9,6 +9,8 @@
 
 #include "Event.hxx"
 
+#include <inline/compiler.h>
+
 #include <postgresql/libpq-fe.h>
 
 #include <functional>
@@ -16,7 +18,7 @@
 
 struct Job;
 
-struct Queue {
+class Queue {
     typedef std::function<void(Job *job)> Callback;
 
     std::string node_name;
@@ -44,6 +46,7 @@ struct Queue {
 
     Callback callback;
 
+public:
     Queue(const char *_node_name, const char *conninfo, Callback _callback);
 
     Queue(const Queue &other) = delete;
@@ -51,6 +54,11 @@ struct Queue {
     ~Queue();
 
     Queue &operator=(const Queue &other) = delete;
+
+    gcc_pure
+    const char *GetNodeName() const {
+        return node_name.c_str();
+    }
 
     void Close();
 

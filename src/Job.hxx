@@ -8,7 +8,7 @@
 #include <string>
 #include <list>
 
-struct Queue;
+class Queue;
 
 struct Job {
     Queue *queue;

@@ -263,8 +263,9 @@ get_job(Queue *queue, PGresult *res, int row)
     return job;
 }
 
-static int get_and_claim_job(Queue *queue, PGresult *res, int row,
-                             const char *timeout, Job **job_r) {
+static int
+get_and_claim_job(Queue *queue, PGconn *conn, PGresult *res, int row,
+                  const char *timeout, Job **job_r) {
     int ret;
 
     Job *job = get_job(queue, res, row);
@@ -273,7 +274,7 @@ static int get_and_claim_job(Queue *queue, PGresult *res, int row,
 
     daemon_log(6, "attempting to claim job %s\n", job->id.c_str());
 
-    ret = pg_claim_job(queue->conn, job->id.c_str(), queue->node_name.c_str(),
+    ret = pg_claim_job(conn, job->id.c_str(), queue->GetNodeName(),
                        timeout);
     if (ret < 0) {
         delete job;
@@ -342,7 +343,7 @@ Queue::RunResult(int num, PGresult *result)
     Job *job;
 
     for (row = 0; row < num && !disabled && !interrupt; ++row) {
-        ret = get_and_claim_job(this, result, row, "5 minutes", &job);
+        ret = get_and_claim_job(this, conn, result, row, "5 minutes", &job);
         if (ret > 0)
             callback(job);
         else if (ret < 0)

@@ -10,10 +10,6 @@
 #include "Queue.hxx"
 #include "Workplace.hxx"
 
-class Library;
-struct Queue;
-class Workplace;
-
 class Instance {
 public:
     bool should_exit = false;
