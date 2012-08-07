@@ -109,10 +109,9 @@ Run(struct config &config)
         exit(2);
     }
 
-    int ret = queue_open(config.node_name, config.database,
-                         queue_callback, &instance,
-                         &instance.queue);
-    if (ret != 0) {
+    instance.queue = queue_open(config.node_name, config.database,
+                                queue_callback, &instance);
+    if (instance.queue == nullptr) {
         fprintf(stderr, "failed to open queue database\n");
         exit(2);
     }
@@ -121,8 +120,7 @@ Run(struct config &config)
 
     setup_signal_handlers();
 
-    ret = daemonize();
-    if (ret < 0)
+    if (daemonize() < 0)
         exit(2);
 
     daemon_log(1, "cm4all-workshop v" VERSION "\n");

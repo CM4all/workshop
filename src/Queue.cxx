@@ -71,9 +71,10 @@ Queue::OnTimer()
     Run();
 }
 
-int queue_open(const char *node_name, const char *conninfo,
-               queue_callback_t callback, void *ctx,
-               Queue **queue_r) {
+Queue *
+queue_open(const char *node_name, const char *conninfo,
+           queue_callback_t callback, void *ctx)
+{
     int ret;
 
     Queue *queue = new Queue(node_name, callback, ctx);
@@ -83,7 +84,7 @@ int queue_open(const char *node_name, const char *conninfo,
     queue->conn = PQconnectdb(conninfo);
     if (queue->conn == NULL) {
         delete queue;
-        return ENOMEM;
+        return nullptr;
     }
 
     if (PQstatus(queue->conn) != CONNECTION_OK) {
@@ -93,8 +94,7 @@ int queue_open(const char *node_name, const char *conninfo,
         static constexpr struct timeval tv { 10, 0 };
         queue->ScheduleTimer(tv);
 
-        *queue_r = queue;
-        return 0;
+        return queue;
 
     }
 
@@ -104,7 +104,7 @@ int queue_open(const char *node_name, const char *conninfo,
     ret = pg_release_jobs(queue->conn, queue->node_name.c_str());
     if (ret < 0) {
         delete queue;
-        return -1;
+        return nullptr;
     }
 
     if (ret > 0) {
@@ -117,7 +117,7 @@ int queue_open(const char *node_name, const char *conninfo,
     ret = pg_listen(queue->conn);
     if (ret < 0) {
         delete queue;
-        return -1;
+        return nullptr;
     }
 
     /* poll on libpq file descriptor */
@@ -127,8 +127,7 @@ int queue_open(const char *node_name, const char *conninfo,
 
     /* done */
 
-    *queue_r = queue;
-    return 0;
+    return queue;
 }
 
 /**

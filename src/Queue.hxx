@@ -133,10 +133,9 @@ struct Queue {
  * @param callback a callback that will be invoked when a new job has
  * been claimed
  * @param ctx a pointer that will be passed to the callback
- * @return 0 on success
  */
-int queue_open(const char *node_name, const char *conninfo,
-               queue_callback_t callback, void *ctx,
-               Queue **queue_r);
+Queue *
+queue_open(const char *node_name, const char *conninfo,
+           queue_callback_t callback, void *ctx);
 
 #endif
