@@ -39,15 +39,6 @@ static int is_valid_plan_name(const char *name) {
     return 1;
 }
 
-static PlanEntry *
-find_plan_by_name(Library &library, const char *name)
-{
-    auto i = library.plans.find(name);
-    return i != library.plans.end()
-        ? &i->second
-        : NULL;
-}
-
 int
 Library::UpdatePlans()
 {
@@ -135,19 +126,19 @@ Library::Update()
 Plan *
 Library::Get(const char *name)
 {
-    PlanEntry *entry;
-
-    entry = find_plan_by_name(*this, name);
-    if (entry == NULL)
+    auto i = plans.find(name);
+    if (i == plans.end())
         return NULL;
 
-    int ret = UpdatePlan(*entry);
+    PlanEntry &entry = i->second;
+
+    int ret = UpdatePlan(entry);
     if (ret != 0)
         return NULL;
 
-    ++entry->plan->ref;
+    ++entry.plan->ref;
     ++ref;
-    return entry->plan;
+    return entry.plan;
 }
 
 static bool
