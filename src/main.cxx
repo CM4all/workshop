@@ -10,7 +10,7 @@ extern "C" {
 #include "cmdline.h"
 }
 
-#include "Event.hxx"
+#include "Instance.hxx"
 #include "Library.hxx"
 #include "Queue.hxx"
 #include "Job.hxx"
@@ -33,16 +33,6 @@ extern "C" {
 #ifndef NDEBUG
 bool debug_mode = false;
 #endif
-
-class Instance {
-public:
-    Library *library = nullptr;
-    Queue *queue = nullptr;
-    Workplace *workplace = nullptr;
-    bool should_exit = false;
-    struct event sigterm_event, sigint_event, sigquit_event;
-    struct event sighup_event, sigchld_event;
-};
 
 static void config_get(struct config *config, int argc, char **argv) {
     memset(config, 0, sizeof(*config));
