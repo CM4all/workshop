@@ -84,9 +84,15 @@ public:
 
     Plan *Get(const char *name);
 
-    int UpdatePlan(PlanEntry &entry);
-
 private:
+    PlanEntry &MakePlanEntry(const char *name) {
+        return plans.insert(std::make_pair(name, PlanEntry(name)))
+            .first->second;
+    }
+
+    int UpdatePlan(PlanEntry &entry);
+    int UpdatePlans();
+
     void UpdatePlanNames();
 };
 

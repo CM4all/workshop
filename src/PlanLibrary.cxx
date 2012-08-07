@@ -48,52 +48,46 @@ find_plan_by_name(Library &library, const char *name)
         : NULL;
 }
 
-static PlanEntry &
-make_plan_entry(Library &library, const char *name)
+int
+Library::UpdatePlans()
 {
-    return library.plans.insert(std::make_pair(name, PlanEntry(name)))
-        .first->second;
-}
-
-static int
-library_update_plans(Library &library) {
     struct dirent *ent;
 
     /* read list of plans from file system, update our list */
 
-    DIR *dir = opendir(library.path.c_str());
+    DIR *dir = opendir(path.c_str());
     if (dir == NULL) {
         fprintf(stderr, "failed to opendir '%s': %s\n",
-                library.path.c_str(), strerror(errno));
+                path.c_str(), strerror(errno));
         return -1;
     }
 
-    ++library.generation;
+    ++generation;
 
     while ((ent = readdir(dir)) != NULL) {
         if (!is_valid_plan_name(ent->d_name))
             continue;
 
-        PlanEntry &entry = make_plan_entry(library, ent->d_name);
-        library.UpdatePlan(entry);
-        entry.generation = library.generation;
+        PlanEntry &entry = MakePlanEntry(ent->d_name);
+        UpdatePlan(entry);
+        entry.generation = generation;
     }
 
     closedir(dir);
 
     /* remove all plans */
 
-    for (auto n = library.plans.begin(), end = library.plans.end();
+    for (auto n = plans.begin(), end = plans.end();
          n != end;) {
         auto i = n;
         ++n;
 
         PlanEntry &entry = i->second;
-        if (entry.generation != library.generation) {
+        if (entry.generation != generation) {
             daemon_log(3, "removed plan '%s'\n", i->first.c_str());
 
-            library.plans.erase(i);
-            library.next_names_update = 0;
+            plans.erase(i);
+            next_names_update = 0;
         }
     }
 
@@ -126,7 +120,7 @@ Library::Update()
 
     /* do it */
 
-    ret = library_update_plans(*this);
+    ret = UpdatePlans();
     if (ret != 0)
         return false;
 
