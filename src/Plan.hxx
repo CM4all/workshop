@@ -43,12 +43,21 @@ struct Plan {
 
     Plan() = default;
 
+    Plan(Plan &&other) = default;
+    /*
+        :library(other.library),
+         args(std::move(other.args)),
+         timeout(std::move(other.timeout)),
+         chroot
+    */
+
     Plan(const Plan &other) = delete;
 
     ~Plan() {
         assert(ref == 0);
     }
 
+    Plan &operator=(Plan &&other) = default;
     Plan &operator=(const Plan &other) = delete;
 };
 
