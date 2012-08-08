@@ -68,6 +68,8 @@ struct Operator {
 
     void Expand(std::list<std::string> &args) const;
 
+    void OnProcessExit(int status);
+
 private:
     void OnOutputReady();
     void OnErrorReady();

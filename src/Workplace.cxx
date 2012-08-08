@@ -259,7 +259,7 @@ void
 Workplace::WaitPid()
 {
     pid_t pid;
-    int status, exit_status;
+    int status;
 
     while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
         auto i = FindByPid(pid);
@@ -267,27 +267,7 @@ Workplace::WaitPid()
             continue;
 
         Operator *o = *i;
-
-        exit_status = WEXITSTATUS(status);
-
-        if (WIFSIGNALED(status)) {
-            daemon_log(1, "job %s (pid %d) died from signal %d%s\n",
-                       o->job.id.c_str(), pid,
-                       WTERMSIG(status),
-                       WCOREDUMP(status) ? " (core dumped)" : "");
-            exit_status = -1;
-        } else if (exit_status == 0)
-            daemon_log(3, "job %s (pid %d) exited with success\n",
-                       o->job.id.c_str(), pid);
-        else
-            daemon_log(2, "job %s (pid %d) exited with status %d\n",
-                       o->job.id.c_str(), pid,
-                       exit_status);
-
-        plan_put(&o->plan);
-
-        o->job.SetDone(exit_status);
-
+        o->OnProcessExit(status);
         operators.erase(i);
         --num_operators;
         delete o;

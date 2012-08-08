@@ -13,11 +13,14 @@ extern "C" {
 #include "syslog.h"
 }
 
+#include <daemon/log.h>
+
 #include <map>
 #include <string>
 
 #include <assert.h>
 #include <unistd.h>
+#include <sys/wait.h>
 
 Operator::~Operator()
 {
@@ -168,3 +171,26 @@ Operator::Expand(std::list<std::string> &args) const
         expand_vars(i, vars);
 }
 
+void
+Operator::OnProcessExit(int status)
+{
+    int exit_status = WEXITSTATUS(status);
+
+    if (WIFSIGNALED(status)) {
+        daemon_log(1, "job %s (pid %d) died from signal %d%s\n",
+                   job.id.c_str(), pid,
+                   WTERMSIG(status),
+                   WCOREDUMP(status) ? " (core dumped)" : "");
+        exit_status = -1;
+    } else if (exit_status == 0)
+        daemon_log(3, "job %s (pid %d) exited with success\n",
+                   job.id.c_str(), pid);
+    else
+        daemon_log(2, "job %s (pid %d) exited with status %d\n",
+                   job.id.c_str(), pid,
+                   exit_status);
+
+    plan_put(&plan);
+
+    job.SetDone(exit_status);
+}
