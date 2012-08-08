@@ -5,7 +5,6 @@
  */
 
 #include "Library.hxx"
-#include "PlanInternal.hxx"
 #include "Plan.hxx"
 
 #include <daemon/log.h>

@@ -4,7 +4,6 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#include "PlanInternal.hxx"
 #include "Plan.hxx"
 
 #include <assert.h>
@@ -188,31 +187,27 @@ parse_plan_config(Plan *plan, FILE *file)
     return 0;
 }
 
-Plan *
-plan_load(const char *path)
+bool
+Plan::LoadFile(const char *path)
 {
     FILE *file;
     int ret;
 
     assert(path != NULL);
 
-    Plan *plan = new Plan();
-
     file = fopen(path, "r");
     if (file == NULL) {
         fprintf(stderr, "failed to open file '%s': %s\n",
                 path, strerror(errno));
-        delete plan;
-        return nullptr;
+        return false;
     }
 
-    ret = parse_plan_config(plan, file);
+    ret = parse_plan_config(this, file);
     fclose(file);
     if (ret != 0) {
         fprintf(stderr, "parsing file '%s' failed\n", path);
-        delete plan;
-        return nullptr;
+        return false;
     }
 
-    return plan;
+    return true;
 }

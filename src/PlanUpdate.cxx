@@ -5,9 +5,8 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#include "PlanInternal.hxx"
-#include "Plan.hxx"
 #include "Library.hxx"
+#include "Plan.hxx"
 
 #include <daemon/log.h>
 
@@ -131,12 +130,13 @@ load_plan_entry(Library &library, PlanEntry &entry)
     snprintf(path, sizeof(path), "%s/%s",
              library.path.c_str(), entry.name.c_str());
 
-    entry.plan = plan_load(path);
-    if (entry.plan == nullptr) {
+    Plan plan;
+    if (!plan.LoadFile(path)) {
         disable_plan(library, entry, 600);
         return false;
     }
 
+    entry.plan = new Plan(std::move(plan));
     entry.plan->library = &library;
 
     library.next_names_update = 0;

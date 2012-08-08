@@ -7,7 +7,6 @@
 
 #include "Library.hxx"
 #include "Plan.hxx"
-#include "PlanInternal.hxx"
 #include "pg_array.hxx"
 
 #include <assert.h>

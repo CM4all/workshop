@@ -59,6 +59,8 @@ struct Plan {
 
     Plan &operator=(Plan &&other) = default;
     Plan &operator=(const Plan &other) = delete;
+
+    bool LoadFile(const char *path);
 };
 
 void
