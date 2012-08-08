@@ -251,18 +251,8 @@ Workplace::Start(const Job &job, Plan *plan)
 Workplace::OperatorList::iterator
 Workplace::FindByPid(pid_t pid)
 {
-    struct ComparePid {
-        pid_t pid;
-
-        ComparePid(pid_t _pid):pid(_pid) {}
-
-        bool operator()(const Operator *o) const {
-            return o->pid == pid;
-        }
-    };
-
     return std::find_if(operators.begin(), operators.end(),
-                        ComparePid(pid));
+                        [pid](const Operator *o) { return o->pid == pid; });
 }
 
 void
