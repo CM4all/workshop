@@ -352,6 +352,8 @@ Queue::SetJobProgress(const Job &job, unsigned progress, const char *timeout)
 {
     assert(job.queue == this);
 
+    daemon_log(5, "job %s progress=%u\n", job.id.c_str(), progress);
+
     int ret = pg_set_job_progress(db, job.id.c_str(), progress, timeout);
 
     CheckNotify();
@@ -363,6 +365,8 @@ bool
 Queue::RollbackJob(const Job &job)
 {
     assert(job.queue == this);
+
+    daemon_log(6, "rolling back job %s\n", job.id.c_str());
 
     pg_rollback_job(db, job.id.c_str());
     pg_notify(db);
@@ -376,6 +380,8 @@ bool
 Queue::SetJobDone(const Job &job, int status)
 {
     assert(job.queue == this);
+
+    daemon_log(6, "job %s done with status %d\n", job.id.c_str(), status);
 
     pg_set_job_done(db, job.id.c_str(), status);
 

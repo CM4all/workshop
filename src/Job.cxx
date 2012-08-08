@@ -5,15 +5,11 @@
 #include "Job.hxx"
 #include "Queue.hxx"
 
-#include <daemon/log.h>
-
 #include <assert.h>
 
 int
 Job::SetProgress(unsigned progress, const char *timeout)
 {
-    daemon_log(5, "job %s progress=%u\n", id.c_str(), progress);
-
     return queue->SetJobProgress(*this, progress, timeout);
 }
 
@@ -26,8 +22,6 @@ job_rollback(Job **job_r) {
 
     job = *job_r;
     *job_r = NULL;
-
-    daemon_log(6, "rolling back job %s\n", job->id.c_str());
 
     if (!job->queue->RollbackJob(*job))
         return -1;
@@ -44,8 +38,6 @@ int job_done(Job **job_r, int status) {
 
     job = *job_r;
     *job_r = NULL;
-
-    daemon_log(6, "job %s done with status %d\n", job->id.c_str(), status);
 
     if (!job->queue->SetJobDone(*job, status))
         return -1;
