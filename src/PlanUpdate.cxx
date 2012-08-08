@@ -87,7 +87,7 @@ check_plan_mtime(Library &library, PlanEntry &entry)
 }
 
 static int
-validate_plan(PlanEntry &entry)
+validate_plan(Library &library, PlanEntry &entry)
 {
     const Plan *plan = entry.plan;
     int ret;
@@ -96,7 +96,6 @@ validate_plan(PlanEntry &entry)
     assert(plan != NULL);
     assert(!plan->args.empty());
     assert(!plan->args.front().empty());
-    assert(plan->library != NULL);
 
     /* check if the executable exists; it would not if the Debian
        package has been deinstalled, but the plan's config file is
@@ -110,7 +109,7 @@ validate_plan(PlanEntry &entry)
         if (errno == ENOENT)
             entry.deinstalled = true;
         else
-            disable_plan(*plan->library, entry, 60);
+            disable_plan(library, entry, 60);
         return ENOENT;
     }
 
@@ -157,7 +156,7 @@ Library::UpdatePlan(PlanEntry &entry)
     if (entry.plan == NULL && !load_plan_entry(*this, entry))
         return ret;
 
-    ret = validate_plan(entry);
+    ret = validate_plan(*this, entry);
     if (ret != 0)
         return ret;
 
