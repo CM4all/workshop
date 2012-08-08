@@ -22,32 +22,26 @@ class Library;
 
 /** a plan describes how to perform a specific job */
 struct Plan {
-    Library *library;
+    Library *library = nullptr;
 
     std::list<std::string> args;
 
     std::string timeout, chroot;
 
-    uid_t uid;
-    gid_t gid;
+    uid_t uid = 65534;
+    gid_t gid = 65534;
 
     /** supplementary group ids */
     std::vector<gid_t> groups;
 
-    int priority;
+    int priority = 10;
 
     /** maximum concurrency for this plan */
-    unsigned concurrency;
+    unsigned concurrency = 0;
 
-    unsigned ref;
+    unsigned ref = 0;
 
-    Plan()
-        :library(NULL),
-         uid(65534), gid(65534),
-         priority(10),
-         concurrency(0),
-         ref(0) {
-    }
+    Plan() = default;
 
     Plan(const Plan &other) = delete;
 
