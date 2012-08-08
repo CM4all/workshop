@@ -31,19 +31,11 @@ struct Job {
      * @return 1 on success, 0 if the job was not found, -1 on error
      */
     int SetProgress(unsigned progress, const char *timeout);
+
+    /**
+     * Mark the job as "done".
+     */
+    bool SetDone(int status);
 };
-
-/**
- * Disassociate from the job, act as if this node had never claimed
- * it.  It will notify the other workshop nodes.
- *
- * @return 0 on success, -1 on error
- */
-int job_rollback(Job **job_r);
-
-/**
- * Mark the job as "done".
- */
-int job_done(Job **job_r, int status);
 
 #endif

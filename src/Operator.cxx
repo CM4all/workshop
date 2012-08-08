@@ -69,7 +69,7 @@ Operator::OnOutputReady()
     }
 
     if (new_progress > 0 && new_progress != progress) {
-        job->SetProgress(new_progress, plan->timeout.c_str());
+        job.SetProgress(new_progress, plan->timeout.c_str());
         progress = new_progress;
     }
 }
@@ -161,8 +161,8 @@ Operator::Expand(std::list<std::string> &args) const
     StringMap vars;
     vars.insert(std::make_pair("0", args.front()));
     vars.insert(std::make_pair("NODE", workplace->GetNodeName()));
-    vars.insert(std::make_pair("JOB", job->id));
-    vars.insert(std::make_pair("PLAN", job->plan_name));
+    vars.insert(std::make_pair("JOB", job.id));
+    vars.insert(std::make_pair("PLAN", job.plan_name));
 
     for (auto &i : args)
         expand_vars(i, vars);

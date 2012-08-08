@@ -29,8 +29,8 @@ public:
     void UpdateLibraryAndFilter();
 
 private:
-    bool StartJob(Job *job);
-    void OnJob(Job *job);
+    bool StartJob(Job &&job);
+    void OnJob(Job &&job);
     void OnExit();
     void OnReload();
     void OnChild();

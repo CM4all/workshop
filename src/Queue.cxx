@@ -210,9 +210,10 @@ Queue::RunResult(const DatabaseResult &result)
     for (unsigned row = 0, end = result.GetRowCount();
          row != end && !disabled && !interrupt; ++row) {
         int ret = get_and_claim_job(this, db, result, row, "5 minutes", &job);
-        if (ret > 0)
-            callback(job);
-        else if (ret < 0)
+        if (ret > 0) {
+            callback(std::move(*job));
+            delete job;
+        } else if (ret < 0)
             break;
     }
 }

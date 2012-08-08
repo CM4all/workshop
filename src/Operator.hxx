@@ -6,6 +6,7 @@
 #define WORKSHOP_OPERATOR_HXX
 
 #include "Event.hxx"
+#include "Job.hxx"
 
 #include <string>
 #include <list>
@@ -21,7 +22,7 @@ struct Job;
 /** an operator is a job being executed */
 struct Operator {
     Workplace *workplace;
-    Job *job;
+    Job job;
     Plan *plan;
     pid_t pid;
 
@@ -37,7 +38,7 @@ struct Operator {
     size_t stderr_length = 0;
     struct syslog_client *syslog = nullptr;
 
-    Operator(Workplace *_workplace, Job *_job,
+    Operator(Workplace *_workplace, const Job &_job,
              Plan *_plan)
         :workplace(_workplace), job(_job), plan(_plan),
          stdout_event([this](int,short){ OnOutputReady(); }),

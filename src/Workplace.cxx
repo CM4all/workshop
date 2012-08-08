@@ -48,8 +48,8 @@ Workplace::GetRunningPlanNames() const
 {
     std::list<std::string> list;
     for (const auto &o : operators)
-        if (!contains(list, o->job->plan_name))
-            list.push_back(o->job->plan_name);
+        if (!contains(list, o->job.plan_name))
+            list.push_back(o->job.plan_name);
 
     return pg_encode_array(list);
 }
@@ -64,7 +64,7 @@ Workplace::GetFullPlanNames() const
         if (plan.concurrency == 0)
             continue;
 
-        const std::string &plan_name = o->job->plan_name;
+        const std::string &plan_name = o->job.plan_name;
 
         auto i = counters.insert(std::make_pair(plan_name, 0));
         unsigned &n = i.first->second;
@@ -81,7 +81,7 @@ Workplace::GetFullPlanNames() const
 }
 
 int
-Workplace::Start(Job *job, Plan *plan)
+Workplace::Start(const Job &job, Plan *plan)
 {
     int ret, stdout_fds[2], stderr_fds[2];
 
@@ -102,19 +102,19 @@ Workplace::Start(Job *job, Plan *plan)
 
     o->SetOutput(stdout_fds[0]);
 
-    if (!job->syslog_server.empty()) {
+    if (!job.syslog_server.empty()) {
         char ident[256];
 
         snprintf(ident, sizeof(ident), "%s[%s]",
-                 job->plan_name.c_str(), job->id.c_str());
+                 job.plan_name.c_str(), job.id.c_str());
 
         ret = syslog_open(node_name.c_str(), ident, 1,
-                          job->syslog_server.c_str(),
+                          job.syslog_server.c_str(),
                           &o->syslog);
         if (ret != 0) {
             if (ret > 0)
                 fprintf(stderr, "syslog_open(%s) failed: %s\n",
-                        job->syslog_server.c_str(), strerror(ret));
+                        job.syslog_server.c_str(), strerror(ret));
             delete o;
             close(stdout_fds[1]);
             return -1;
@@ -135,7 +135,7 @@ Workplace::Start(Job *job, Plan *plan)
 
     std::list<std::string> args;
     args.insert(args.end(), plan->args.begin(), plan->args.end());
-    args.insert(args.end(), job->args.begin(), job->args.end());
+    args.insert(args.end(), job.args.begin(), job.args.end());
 
     o->Expand(args);
 
@@ -145,7 +145,7 @@ Workplace::Start(Job *job, Plan *plan)
     if (o->pid < 0) {
         fprintf(stderr, "fork() failed: %s\n", strerror(errno));
         close(stdout_fds[1]);
-        if (!job->syslog_server.empty())
+        if (!job.syslog_server.empty())
             close(stderr_fds[1]);
         return -1;
     }
@@ -207,12 +207,12 @@ Workplace::Start(Job *job, Plan *plan)
         /* connect pipes */
 
         dup2(stdout_fds[1], 1);
-        if (!job->syslog_server.empty())
+        if (!job.syslog_server.empty())
             dup2(stderr_fds[1], 2);
 
         close(stdout_fds[0]);
         close(stdout_fds[1]);
-        if (!job->syslog_server.empty()) {
+        if (!job.syslog_server.empty()) {
             close(stderr_fds[0]);
             close(stderr_fds[1]);
         }
@@ -236,11 +236,11 @@ Workplace::Start(Job *job, Plan *plan)
     }
 
     close(stdout_fds[1]);
-    if (!job->syslog_server.empty())
+    if (!job.syslog_server.empty())
         close(stderr_fds[1]);
 
     daemon_log(2, "job %s (plan '%s') running as pid %d\n",
-               job->id.c_str(), job->plan_name.c_str(), o->pid);
+               job.id.c_str(), job.plan_name.c_str(), o->pid);
 
     operators.push_back(o);
     ++num_operators;
@@ -282,21 +282,21 @@ Workplace::WaitPid()
 
         if (WIFSIGNALED(status)) {
             daemon_log(1, "job %s (pid %d) died from signal %d%s\n",
-                       o->job->id.c_str(), pid,
+                       o->job.id.c_str(), pid,
                        WTERMSIG(status),
                        WCOREDUMP(status) ? " (core dumped)" : "");
             exit_status = -1;
         } else if (exit_status == 0)
             daemon_log(3, "job %s (pid %d) exited with success\n",
-                       o->job->id.c_str(), pid);
+                       o->job.id.c_str(), pid);
         else
             daemon_log(2, "job %s (pid %d) exited with status %d\n",
-                       o->job->id.c_str(), pid,
+                       o->job.id.c_str(), pid,
                        exit_status);
 
         plan_put(&o->plan);
 
-        job_done(&o->job, exit_status);
+        o->job.SetDone(exit_status);
 
         operators.erase(i);
         --num_operators;

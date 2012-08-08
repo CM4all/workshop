@@ -18,7 +18,7 @@
 struct Job;
 
 class Queue : private DatabaseHandler {
-    typedef std::function<void(Job *job)> Callback;
+    typedef std::function<void(Job &&job)> Callback;
 
     std::string node_name;
 
@@ -111,7 +111,15 @@ public:
     void Enable();
 
     int SetJobProgress(const Job &job, unsigned progress, const char *timeout);
+
+    /**
+     * Disassociate from the job, act as if this node had never
+     * claimed it.  It will notify the other workshop nodes.
+     *
+     * @return true on success
+     */
     bool RollbackJob(const Job &job);
+
     bool SetJobDone(const Job &job, int status);
 
 private:

@@ -72,7 +72,7 @@ public:
     gcc_pure
     std::string GetFullPlanNames() const;
 
-    int Start(Job *job, Plan *plan);
+    int Start(const Job &job, Plan *plan);
 
 private:
     gcc_pure
