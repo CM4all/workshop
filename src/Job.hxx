@@ -17,6 +17,8 @@ struct Job {
 
     std::list<std::string> args;
 
+    Job(Queue *_queue):queue(_queue) {}
+
     Job(Queue *_queue, const char *_id, const char *_plan_name)
         :queue(_queue), id(_id), plan_name(_plan_name) {
     }

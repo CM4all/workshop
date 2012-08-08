@@ -96,66 +96,52 @@ Queue::GetNextScheduled(int *span_r)
     return ret;
 }
 
-static Job *
-get_job(Queue *queue, const DatabaseResult &result, unsigned row)
+static bool
+get_job(Job &job, const DatabaseResult &result, unsigned row)
 {
-    Job *job;
-
-    assert(queue != NULL);
     assert(row < result.GetRowCount());
 
-    job = new Job(queue, result.GetValue(row, 0), result.GetValue(row, 1));
+    job.id = result.GetValue(row, 0);
+    job.plan_name = result.GetValue(row, 1);
 
     std::list<std::string> args;
     try {
         args = pg_decode_array(result.GetValue(row, 2));
     } catch (const std::invalid_argument &e) {
-        delete job;
         daemon_log(1, "pg_decode_array() failed: %s\n", e.what());
-        return nullptr;
+        return false;
     }
 
-    job->args.splice(job->args.end(), args, args.begin(), args.end());
+    job.args.splice(job.args.end(), args, args.begin(), args.end());
 
     if (!result.IsValueNull(row, 3))
-        job->syslog_server = result.GetValue(row, 3);
+        job.syslog_server = result.GetValue(row, 3);
 
-    if (job->id.empty() || job->plan_name.empty()) {
-        delete job;
-        return nullptr;
-    }
-
-    return job;
+    return !job.id.empty() && !job.plan_name.empty();
 }
 
 static int
-get_and_claim_job(Queue *queue, DatabaseConnection &db,
+get_and_claim_job(Job &job, const char *node_name,
+                  DatabaseConnection &db,
                   const DatabaseResult &result, unsigned row,
-                  const char *timeout, Job **job_r) {
+                  const char *timeout) {
+    if (!get_job(job, result, row))
+        return -1;
+
     int ret;
 
-    Job *job = get_job(queue, result, row);
-    if (job == nullptr)
-        return -1;
+    daemon_log(6, "attempting to claim job %s\n", job.id.c_str());
 
-    daemon_log(6, "attempting to claim job %s\n", job->id.c_str());
-
-    ret = pg_claim_job(db, job->id.c_str(), queue->GetNodeName(),
-                       timeout);
-    if (ret < 0) {
-        delete job;
+    ret = pg_claim_job(db, job.id.c_str(), node_name, timeout);
+    if (ret < 0)
         return -1;
-    }
 
     if (ret == 0) {
-        daemon_log(6, "job %s was not claimed\n", job->id.c_str());
-        delete job;
+        daemon_log(6, "job %s was not claimed\n", job.id.c_str());
         return 0;
     }
 
-    daemon_log(6, "job %s claimed\n", job->id.c_str());
-
-    *job_r = job;
+    daemon_log(6, "job %s claimed\n", job.id.c_str());
     return 1;
 }
 
@@ -205,15 +191,14 @@ Queue::SetFilter(const char *_plans_include, std::string &&_plans_exclude,
 void
 Queue::RunResult(const DatabaseResult &result)
 {
-    Job *job;
-
     for (unsigned row = 0, end = result.GetRowCount();
          row != end && !disabled && !interrupt; ++row) {
-        int ret = get_and_claim_job(this, db, result, row, "5 minutes", &job);
-        if (ret > 0) {
-            callback(std::move(*job));
-            delete job;
-        } else if (ret < 0)
+        Job job(this);
+        int ret = get_and_claim_job(job, GetNodeName(),
+                                    db, result, row, "5 minutes");
+        if (ret > 0)
+            callback(std::move(job));
+        else if (ret < 0)
             break;
     }
 }
