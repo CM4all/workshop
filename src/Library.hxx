@@ -47,6 +47,10 @@ struct PlanEntry {
     bool IsDisabled(time_t now) const {
         return disabled_until > 0 && now < disabled_until;
     }
+
+    void Disable(time_t now, time_t duration) {
+        disabled_until = now + duration;
+    }
 };
 
 class Library {

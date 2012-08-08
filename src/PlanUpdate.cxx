@@ -22,7 +22,7 @@
 static void
 disable_plan(Library &library, PlanEntry &entry, time_t duration)
 {
-    entry.disabled_until = time(NULL) + duration;
+    entry.Disable(time(NULL), duration);
     library.next_names_update = 0;
 }
 
