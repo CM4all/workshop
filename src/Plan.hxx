@@ -43,13 +43,7 @@ struct Plan {
 
     Plan() = default;
 
-    Plan(Plan &&other) = default;
-    /*
-        :library(other.library),
-         args(std::move(other.args)),
-         timeout(std::move(other.timeout)),
-         chroot
-    */
+    Plan(Plan &&) = default;
 
     Plan(const Plan &other) = delete;
 
