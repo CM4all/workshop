@@ -4,6 +4,14 @@ cm4all-workshop (2.0) unstable; urgency=low
 
  --
 
+cm4all-workshop (1.0.6) unstable; urgency=low
+
+  * debian/init: use "exec" to invoke the logger
+  * debian/control: add "Vcs-git" header
+  * debian/control: add ${misc:Depends}
+
+ -- Max Kellermann <mk@cm4all.com>  Fri, 21 Sep 2012 07:51:15 -0000
+
 cm4all-workshop (1.0.5) unstable; urgency=low
 
   * jobs.sql: removed initial "DROP TABLE"

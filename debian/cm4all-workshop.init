@@ -26,7 +26,7 @@ CONCURRENCY=2
 DATABASE=""
 WORKSHOP_USER=cm4all-workshop
 LOGGER_USER=cm4all-logger
-LOGGER="/usr/bin/multilog t s1048576 /var/log/cm4all/workshop"
+LOGGER="exec /usr/bin/multilog t s1048576 /var/log/cm4all/workshop"
 OPTIONS=""
 
 unset USER

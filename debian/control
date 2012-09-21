@@ -6,11 +6,13 @@ Build-Depends: debhelper (>= 5), clang (>= 3.0), libevent-dev (>= 1.1),
  libpq-dev (>= 8.3.6),
  libcm4all-inline-dev (>= 0.3.2), libcm4all-daemon-dev (>= 0.3.1),
  xsltproc, docbook-xsl
-Standards-Version: 3.8.0
+Standards-Version: 3.9.3
+Vcs-git: ssh://git.intern.cm-ag/srv/git/master/workshop.git
 
 Package: cm4all-workshop
 Architecture: any
-Depends: ${shlibs:Depends}, lsb-base (>= 3.0-6), cm4all-thirdparty-multilog, adduser
+Depends: ${misc:Depends}, ${shlibs:Depends}, lsb-base (>= 3.0-6),
+ cm4all-thirdparty-multilog, adduser
 Description: Distributed job scheduler
  cm4all-workshop is a daemon which reads jobs from a database queue
  (PostgreSQL) and executes them.  Multiple instances distributed over
@@ -18,7 +20,7 @@ Description: Distributed job scheduler
 
 Package: cm4all-workshop-database
 Architecture: any
-Depends: 
+Depends: ${misc:Depends}
 Description: Distributed job scheduler database package
  Database package providing initial SQL statement used by cm4all-workshop.
  This package includes only a sql file which can be included by other packages.
@@ -28,6 +30,7 @@ Description: Distributed job scheduler database package
 Package: cm4all-workshop-doc
 Section: non-free/doc
 Architecture: all
+Depends: ${misc:Depends}
 Description: Documentation for cm4all-workshop
  cm4all-workshop is a daemon which reads jobs from a database queue
  (PostgreSQL) and executes them.  Multiple instances distributed over

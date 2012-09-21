@@ -57,7 +57,7 @@ doc/workshop.html: doc/workshop.xml
 	xsltproc -o $@ /usr/share/sgml/docbook/stylesheet/xsl/nwalsh/xhtml/docbook.xsl $<
 
 clean:
-	rm -f src/*.o src/cm4all-workshop doc/workshop.html
+	rm -f src/*.o t/*.o src/cm4all-workshop doc/workshop.html
 
 check: t/test-pg_decode_array t/test-pg_encode_array
 	./t/test-pg_decode_array
