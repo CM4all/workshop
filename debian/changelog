@@ -4,7 +4,7 @@ cm4all-workshop (1.0.6) unstable; urgency=low
   * debian/control: add "Vcs-git" header
   * debian/control: add ${misc:Depends}
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Fri, 21 Sep 2012 07:51:15 -0000
 
 cm4all-workshop (1.0.5) unstable; urgency=low
 
