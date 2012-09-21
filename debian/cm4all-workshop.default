@@ -12,8 +12,8 @@ CONCURRENCY=2
 #WORKSHOP_USER=cm4all-workshop
 
 # Process which receives the daemon's log messages 
-#LOGGER="/usr/bin/multilog t s1048576 /var/log/cm4all/workshop"
-#LOGGER="logger -p daemon.info -t cm4all-workshop"
+#LOGGER="exec /usr/bin/multilog t s1048576 /var/log/cm4all/workshop"
+#LOGGER="exec logger -p daemon.info -t cm4all-workshop"
 
 # Which user should workshop run as?
 #LOGGER_USER=cm4all-logger
