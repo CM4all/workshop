@@ -3,6 +3,10 @@ LD = ld
 #CFLAGS = -O3
 CFLAGS = -O0 -g
 override CFLAGS += -Wall -W -Werror -std=gnu99 -Wmissing-prototypes -Wwrite-strings -Wcast-qual -Wfloat-equal -Wshadow -Wpointer-arith -Wbad-function-cast -Wsign-compare -Wmissing-declarations -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls -Wnested-externs -Winline -Wdisabled-optimization -Wno-long-long -Wstrict-prototypes -Wundef
+
+# work around GLib 2.24 bug
+override CFLAGS += -Wno-error=cast-qual
+
 override CFLAGS += -funit-at-a-time
 INCLUDES =
 
