@@ -1,6 +1,7 @@
 cm4all-workshop (1.0.6) unstable; urgency=low
 
   * debian/init: use "exec" to invoke the logger
+  * debian/control: add "Vcs-git" header
 
  --   
 
