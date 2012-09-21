@@ -6,7 +6,7 @@ Build-Depends: debhelper (>= 5), gcc (>= 4), libevent-dev (>= 1.1),
  libpq-dev (>= 8.3.6), libcm4all-daemon-dev (>= 0.3), xsltproc,
  libglib2.0-dev (>= 2.16),
  docbook-xsl
-Standards-Version: 3.8.0
+Standards-Version: 3.9.3
 Vcs-git: ssh://git.intern.cm-ag/srv/git/master/workshop.git
 
 Package: cm4all-workshop
