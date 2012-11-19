@@ -527,7 +527,7 @@ nice 5</programlisting>
       <para>
         Ob ein Job fertig ist, kann man herausfinden, indem man die
         Spalte <varname>time_done</varname> oder
-        <varname>exit_status</varname> auf not-NULL prüft.
+        <varname>exit_status</varname> auf "NOT NULL" prüft.
       </para>
 
       <para>
