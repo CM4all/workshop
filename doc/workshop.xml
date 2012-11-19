@@ -538,7 +538,7 @@ nice 5</programlisting>
       </para>
 
       <para>
-        Dem Client sind nur 3 Operationen erlaubt:
+        Dem Client sind nur 4 Operationen erlaubt:
       </para>
 
       <itemizedlist>
@@ -550,6 +550,13 @@ nice 5</programlisting>
           <varname>priority</varname>, <varname>plan_name</varname>,
           <varname>args</varname>, <varname>syslog_server</varname>
           dürfen gesetzt werden)
+        </listitem>
+
+        <listitem>
+          Ändern von Datensätzen, die noch nicht zugewiesen sind,
+          d.h. "node_name IS NULL".  Anschließend muß der Notify
+          "new_job" generiert werden, damit Workshop diese Änderung
+          mitbekommt.
         </listitem>
 
         <listitem>
