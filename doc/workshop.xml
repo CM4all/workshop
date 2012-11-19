@@ -527,7 +527,13 @@ nice 5</programlisting>
       <para>
         Ob ein Job fertig ist, kann man herausfinden, indem man die
         Spalte <varname>time_done</varname> oder
-        <varname>exit_status</varname> auf "NOT NULL" prüft.
+        <varname>exit_status</varname> auf "NOT NULL" prüft.  Um auf
+        die Fertigstellung eines Job zu warten, kann man auf den
+        Notify "job_done" warten, dessen Payload die ID des
+        Job-Datensatzes ist (ab PostgreSQL 9.1).  Dabei muß zunächst
+        der Befehl "LISTEN job_done" abgesetzt werden, anschließend
+        prüfen, ob der Job bereits beendet wurde (sonst Race
+        Condition); erst dann auf den Notify warten.
       </para>
 
       <para>

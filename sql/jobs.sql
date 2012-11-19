@@ -60,3 +60,9 @@ CREATE INDEX jobs_name ON jobs(name);
 
 -- notify all cm4all-workshop daemons when a new job is added
 CREATE RULE new_job AS ON INSERT TO jobs DO NOTIFY new_job;
+
+-- notify all clients when a job was finished (requires PostgreSQL 9.x+)
+CREATE OR REPLACE RULE job_done AS ON UPDATE TO jobs
+        WHERE OLD.time_done IS NULL AND OLD.exit_status IS NULL
+        AND NEW.time_done IS NOT NULL AND NEW.exit_status IS NOT NULL
+        DO SELECT pg_notify('job_done', NEW.id::text);
