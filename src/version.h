@@ -7,6 +7,6 @@
 #ifndef __WORKSHOP_VERSION_H
 #define __WORKSHOP_VERSION_H
 
-#define VERSION "1.0.6"
+#define VERSION "1.0.7"
 
 #endif
