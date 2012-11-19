@@ -1,6 +1,4 @@
 --
---  $Id$
---
 --  Create the "jobs" table
 --
 --  author: Max Kellermann <mk@cm4all.com>
