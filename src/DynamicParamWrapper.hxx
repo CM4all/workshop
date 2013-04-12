@@ -25,7 +25,7 @@ struct DynamicParamWrapper {
 
     template<typename O>
     O Fill(O output) const {
-        *output = wrapper();
+        *output = wrapper.GetValue();
         return ++output;
     }
 };

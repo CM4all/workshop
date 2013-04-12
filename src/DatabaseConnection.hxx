@@ -166,7 +166,7 @@ protected:
         assert(query != nullptr);
 
         ParamWrapper<T> p(t);
-        values[i] = p();
+        values[i] = p.GetValue();
 
         return ExecuteParams3<i + 1, Params...>(query, values, params...);
     }

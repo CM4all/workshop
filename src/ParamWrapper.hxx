@@ -10,7 +10,7 @@
 template<typename T>
 struct ParamWrapper {
     ParamWrapper(const T &t);
-    const char *operator()() const;
+    const char *GetValue() const;
 };
 
 template<>
@@ -19,7 +19,7 @@ struct ParamWrapper<const char *> {
 
     constexpr ParamWrapper(const char *_value):value(_value) {}
 
-    constexpr const char *operator()() const {
+    constexpr const char *GetValue() const {
         return value;
     }
 };
@@ -32,7 +32,7 @@ struct ParamWrapper<int> {
         sprintf(buffer, "%i", i);
     }
 
-    const char *operator()() const {
+    const char *GetValue() const {
         return buffer;
     }
 };
@@ -45,7 +45,7 @@ struct ParamWrapper<unsigned> {
         sprintf(buffer, "%u", i);
     }
 
-    const char *operator()() const {
+    const char *GetValue() const {
         return buffer;
     }
 };
@@ -56,7 +56,7 @@ struct ParamWrapper<bool> {
 
     constexpr ParamWrapper(bool _value):value(_value ? "t" : "f") {}
 
-    constexpr const char *operator()() const {
+    constexpr const char *GetValue() const {
         return value;
     }
 };
