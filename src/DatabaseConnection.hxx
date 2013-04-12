@@ -177,7 +177,7 @@ protected:
 
     template<typename T, typename... Params>
     static size_t CountDynamic(const T &t, Params... params) {
-        return DynamicParamWrapper<T>::Size(t) + CountDynamic(params...);
+        return DynamicParamWrapper<T>::Count(t) + CountDynamic(params...);
     }
 
     DatabaseResult ExecuteDynamic2(const char *query,
