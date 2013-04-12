@@ -24,9 +24,9 @@ struct DynamicParamWrapper {
     }
 
     template<typename O>
-    O Fill(O output) const {
+    unsigned Fill(O output) const {
         *output = wrapper.GetValue();
-        return ++output;
+        return 1;
     }
 };
 
@@ -42,10 +42,15 @@ struct DynamicParamWrapper<std::vector<T>> {
     }
 
     template<typename O>
-    O Fill(O output) const {
-        for (const auto &i : items)
-            output = i.Fill(output);
-        return output;
+    unsigned Fill(O output) const {
+        unsigned total = 0;
+        for (const auto &i : items) {
+            const unsigned n = i.Fill(output);
+            std::advance(output, n);
+            total += n;
+        }
+
+        return total;
     }
 };
 

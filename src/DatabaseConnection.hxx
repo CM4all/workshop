@@ -185,27 +185,27 @@ protected:
 
     DatabaseResult ExecuteDynamic2(const char *query,
                                    const char *const*values,
-                                   const char *const*p) {
+                                   unsigned n) {
         assert(IsDefined());
         assert(query != nullptr);
 
-        return CheckResult(::PQexecParams(conn, query, p - values,
+        return CheckResult(::PQexecParams(conn, query, n,
                                           nullptr, values, nullptr, nullptr,
                                           false));
     }
 
     template<typename T, typename... Params>
     DatabaseResult ExecuteDynamic2(const char *query,
-                                   const char *const*values,
-                                   const char **p,
+                                   const char **values,
+                                   unsigned n,
                                    const T &t, Params... params) {
         assert(IsDefined());
         assert(query != nullptr);
 
         const DynamicParamWrapper<T> w(t);
-        p = w.Fill(p);
+        n += w.Fill(values + n);
 
-        return ExecuteDynamic2(query, values, p, params...);
+        return ExecuteDynamic2(query, values, n, params...);
     }
 
 public:
@@ -247,7 +247,7 @@ public:
         const size_t n = CountDynamic(params...);
         std::unique_ptr<const char *[]> values(new const char *[n]);
 
-        return ExecuteDynamic2<Params...>(query, values.get(), values.get(),
+        return ExecuteDynamic2<Params...>(query, values.get(), 0,
                                           params...);
     }
 
