@@ -218,7 +218,7 @@ public:
         assert(IsDefined());
         assert(query != nullptr);
 
-        const size_t n = sizeof...(Params);
+        constexpr size_t n = sizeof...(Params);
         const char *values[n];
 
         return ExecuteParams3<0, Params...>(query, values, params...);
