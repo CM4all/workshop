@@ -149,18 +149,20 @@ protected:
     }
 
     template<size_t i, typename... Params>
-    DatabaseResult ExecuteParams3(const char *query,
+    DatabaseResult ExecuteParams3(bool result_binary,
+                                  const char *query,
                                   const char *const*values) {
         assert(IsDefined());
         assert(query != nullptr);
 
         return CheckResult(::PQexecParams(conn, query, i,
                                           nullptr, values, nullptr, nullptr,
-                                          false));
+                                          result_binary));
     }
 
     template<size_t i, typename T, typename... Params>
-    DatabaseResult ExecuteParams3(const char *query, const char **values,
+    DatabaseResult ExecuteParams3(bool result_binary,
+                                  const char *query, const char **values,
                                   const T &t, Params... params) {
         assert(IsDefined());
         assert(query != nullptr);
@@ -168,7 +170,8 @@ protected:
         ParamWrapper<T> p(t);
         values[i] = p.GetValue();
 
-        return ExecuteParams3<i + 1, Params...>(query, values, params...);
+        return ExecuteParams3<i + 1, Params...>(result_binary, query,
+                                                values, params...);
     }
 
     static size_t CountDynamic() {
@@ -214,14 +217,21 @@ public:
     }
 
     template<typename... Params>
-    DatabaseResult ExecuteParams(const char *query, Params... params) {
+    DatabaseResult ExecuteParams(bool result_binary,
+                                 const char *query, Params... params) {
         assert(IsDefined());
         assert(query != nullptr);
 
         constexpr size_t n = sizeof...(Params);
         const char *values[n];
 
-        return ExecuteParams3<0, Params...>(query, values, params...);
+        return ExecuteParams3<0, Params...>(result_binary, query,
+                                            values, params...);
+    }
+
+    template<typename... Params>
+    DatabaseResult ExecuteParams(const char *query, Params... params) {
+        return ExecuteParams(false, query, params...);
     }
 
     /**
