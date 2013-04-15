@@ -5,6 +5,8 @@
 #ifndef SNOWBALL_DATABASE_RESULT_HXX
 #define SNOWBALL_DATABASE_RESULT_HXX
 
+#include "BinaryValue.hxx"
+
 #include <inline/compiler.h>
 
 #include <postgresql/libpq-fe.h>
@@ -160,6 +162,13 @@ public:
         assert(IsDefined());
 
         return ::PQgetisnull(result, row, column);
+    }
+
+    gcc_pure
+    BinaryValue GetBinaryValue(unsigned row, unsigned column) const {
+        assert(IsColumnBinary(column));
+
+        return BinaryValue(GetValue(row, column), GetValueLength(row, column));
     }
 
     /**
