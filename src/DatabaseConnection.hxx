@@ -168,10 +168,40 @@ protected:
         assert(query != nullptr);
 
         ParamWrapper<T> p(t);
+        assert(!p.IsBinary());
         values[i] = p.GetValue();
 
         return ExecuteParams3<i + 1, Params...>(result_binary, query,
                                                 values, params...);
+    }
+
+    template<size_t i, typename... Params>
+    DatabaseResult ExecuteBinary3(const char *query,
+                                  const char *const*values,
+                                  const int *lengths, const int *formats) {
+        assert(IsDefined());
+        assert(query != nullptr);
+
+        return CheckResult(::PQexecParams(conn, query, i,
+                                          nullptr, values, lengths, formats,
+                                          false));
+    }
+
+    template<size_t i, typename T, typename... Params>
+    DatabaseResult ExecuteBinary3(const char *query, const char **values,
+                                  int *lengths, int *formats,
+                                  const T &t, Params... params) {
+        assert(IsDefined());
+        assert(query != nullptr);
+
+        ParamWrapper<T> p(t);
+        values[i] = p.GetValue();
+        lengths[i] = p.GetSize();
+        formats[i] = p.IsBinary();
+
+        return ExecuteBinary3<i + 1, Params...>(query, values,
+                                                lengths, formats,
+                                                params...);
     }
 
     static size_t CountDynamic() {
@@ -185,27 +215,29 @@ protected:
 
     DatabaseResult ExecuteDynamic2(const char *query,
                                    const char *const*values,
+                                   const int *lengths, const int *formats,
                                    unsigned n) {
         assert(IsDefined());
         assert(query != nullptr);
 
         return CheckResult(::PQexecParams(conn, query, n,
-                                          nullptr, values, nullptr, nullptr,
+                                          nullptr, values, lengths, formats,
                                           false));
     }
 
     template<typename T, typename... Params>
     DatabaseResult ExecuteDynamic2(const char *query,
                                    const char **values,
+                                   int *lengths, int *formats,
                                    unsigned n,
                                    const T &t, Params... params) {
         assert(IsDefined());
         assert(query != nullptr);
 
         const DynamicParamWrapper<T> w(t);
-        n += w.Fill(values + n);
+        n += w.Fill(values + n, lengths + n, formats + n);
 
-        return ExecuteDynamic2(query, values, n, params...);
+        return ExecuteDynamic2(query, values, lengths, formats, n, params...);
     }
 
 public:
@@ -234,6 +266,19 @@ public:
         return ExecuteParams(false, query, params...);
     }
 
+    template<typename... Params>
+    DatabaseResult ExecuteBinary(const char *query, Params... params) {
+        assert(IsDefined());
+        assert(query != nullptr);
+
+        const size_t n = sizeof...(Params);
+        const char *values[n];
+        int lengths[n], formats[n];
+
+        return ExecuteBinary3<0, Params...>(query, values, lengths, formats,
+                                            params...);
+    }
+
     /**
      * Execute with dynamic parameter list: this variant of
      * ExecuteParams() allows std::vector arguments which get
@@ -246,8 +291,11 @@ public:
 
         const size_t n = CountDynamic(params...);
         std::unique_ptr<const char *[]> values(new const char *[n]);
+        std::unique_ptr<int[]> lengths(new int[n]);
+        std::unique_ptr<int[]> formats(new int[n]);
 
-        return ExecuteDynamic2<Params...>(query, values.get(), 0,
+        return ExecuteDynamic2<Params...>(query, values.get(),
+                                          lengths.get(), formats.get(), 0,
                                           params...);
     }
 

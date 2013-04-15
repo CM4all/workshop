@@ -23,9 +23,11 @@ struct DynamicParamWrapper {
         return 1;
     }
 
-    template<typename O>
-    unsigned Fill(O output) const {
+    template<typename O, typename S, typename F>
+    unsigned Fill(O output, S size, F format) const {
         *output = wrapper.GetValue();
+        *size = wrapper.GetSize();
+        *format = wrapper.IsBinary();
         return 1;
     }
 };
@@ -41,12 +43,14 @@ struct DynamicParamWrapper<std::vector<T>> {
         return v.size();
     }
 
-    template<typename O>
-    unsigned Fill(O output) const {
+    template<typename O, typename S, typename F>
+    unsigned Fill(O output, S size, F format) const {
         unsigned total = 0;
         for (const auto &i : items) {
-            const unsigned n = i.Fill(output);
+            const unsigned n = i.Fill(output, size, format);
             std::advance(output, n);
+            std::advance(size, n);
+            std::advance(format, n);
             total += n;
         }
 
