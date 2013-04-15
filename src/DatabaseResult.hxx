@@ -122,6 +122,26 @@ public:
     }
 
     gcc_pure
+    bool IsColumnBinary(unsigned column) const {
+        assert(IsDefined());
+
+        return ::PQfformat(result, column);
+    }
+
+    gcc_pure
+    Oid GetColumnType(unsigned column) const {
+        assert(IsDefined());
+
+        return ::PQftype(result, column);
+    }
+
+    gcc_pure
+    bool IsColumnTypeBinary(unsigned column) const {
+        /* 17 = bytea */
+        return GetColumnType(column) == 17;
+    }
+
+    gcc_pure
     const char *GetValue(unsigned row, unsigned column) const {
         assert(IsDefined());
 
