@@ -41,7 +41,8 @@ class Queue : private DatabaseHandler {
     Callback callback;
 
 public:
-    Queue(const char *_node_name, const char *conninfo, Callback _callback);
+    Queue(const char *_node_name, const char *conninfo, const char *schema,
+          Callback _callback);
 
     Queue(const Queue &other) = delete;
 

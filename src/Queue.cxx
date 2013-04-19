@@ -22,9 +22,10 @@
 #include <string.h>
 #include <time.h>
 
-Queue::Queue(const char *_node_name, const char *conninfo, Callback _callback)
+Queue::Queue(const char *_node_name, const char *conninfo, const char *schema,
+             Callback _callback)
     :node_name(_node_name),
-     db(conninfo, *this),
+     db(conninfo, schema, *this),
      timer_event([this](int, short){ OnTimer(); }),
      callback(_callback) {
 }

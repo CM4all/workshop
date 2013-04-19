@@ -10,7 +10,8 @@
 #include <signal.h>
 
 Instance::Instance(const char *library_path,
-                   const char *node_name, const char *conninfo,
+                   const char *node_name,
+                   const char *conninfo, const char *schema,
                    unsigned concurrency)
     :sigterm_event(SIGTERM, [this](){ OnExit(); }),
      sigint_event(SIGINT, [this](){ OnExit(); }),
@@ -18,7 +19,7 @@ Instance::Instance(const char *library_path,
      sighup_event(SIGHUP, [this](){ OnReload(); }),
      sigchld_event(SIGCHLD, [this](){ OnChild(); }),
      library(library_path),
-     queue(node_name, conninfo,
+     queue(node_name, conninfo, schema,
            [this](Job &&job){ OnJob(std::move(job)); }),
      workplace(node_name, concurrency)
 {

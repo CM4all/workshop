@@ -64,7 +64,7 @@ Run(struct config &config)
     EventBase event_base;
 
     Instance instance("/etc/cm4all/workshop/plans",
-                      config.node_name, config.database,
+                      config.node_name, config.database, "",
                       config.concurrency);
 
     setup_signal_handlers();

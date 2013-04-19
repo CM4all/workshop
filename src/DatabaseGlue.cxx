@@ -8,8 +8,9 @@
 using std::cerr;
 using std::endl;
 
-DatabaseGlue::DatabaseGlue(const char *conninfo, DatabaseHandler &_handler)
-    :handler(_handler), state(State::CONNECTING),
+DatabaseGlue::DatabaseGlue(const char *conninfo, const char *_schema,
+                           DatabaseHandler &_handler)
+    :schema(_schema), handler(_handler), state(State::CONNECTING),
      event([this](int, short){ OnEvent(); })
 {
     StartConnect(conninfo);
@@ -52,6 +53,18 @@ DatabaseGlue::Poll(PostgresPollingStatusType status)
         break;
 
     case PGRES_POLLING_OK:
+        if (!schema.empty() &&
+            (state == State::CONNECTING || state == State::RECONNECTING)) {
+            std::string sql = std::string("SET SCHEMA '") + schema
+                + std::string("'");
+            if (!Execute(sql.c_str()).IsCommandSuccessful()) {
+                cerr << "Failed to set schema '" << schema << "': "
+                     << GetErrorMessage() << endl;
+                Error();
+                break;
+            }
+        }
+
         state = State::READY;
         event.SetAdd(GetSocket(), EV_READ|EV_PERSIST);
 

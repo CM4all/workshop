@@ -29,6 +29,8 @@ public:
  * handler.
  */
 class DatabaseGlue : public DatabaseConnection {
+    std::string schema;
+
     DatabaseHandler &handler;
 
     enum class State {
@@ -55,7 +57,8 @@ class DatabaseGlue : public DatabaseConnection {
     Event event;
 
 public:
-    DatabaseGlue(const char *conninfo, DatabaseHandler &handler);
+    DatabaseGlue(const char *conninfo, const char *schema,
+                 DatabaseHandler &handler);
 
     ~DatabaseGlue() {
         Disconnect();

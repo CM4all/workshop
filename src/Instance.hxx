@@ -22,7 +22,8 @@ public:
     Workplace workplace;
 
     Instance(const char *library_path,
-             const char *node_name, const char *conninfo,
+             const char *node_name,
+             const char *conninfo, const char *schema,
              unsigned concurrency);
 
     void UpdateFilter();
