@@ -64,6 +64,10 @@ public:
         Disconnect();
     }
 
+    const std::string &GetSchemaName() const {
+        return schema;
+    }
+
     bool IsReady() {
         assert(IsDefined());
 
