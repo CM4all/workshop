@@ -85,6 +85,14 @@ public:
         ::event_del(&event);
     }
 
+    bool IsPending(short events) const {
+        return ::event_pending(&event, events, nullptr);
+    }
+
+    bool IsTimerPending() const {
+        return IsPending(EV_TIMEOUT);
+    }
+
 private:
     static void Callback(int fd, short event, void *ctx);
 };
