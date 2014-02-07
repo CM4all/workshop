@@ -527,7 +527,13 @@ nice 5</programlisting>
       <para>
         Ob ein Job fertig ist, kann man herausfinden, indem man die
         Spalte <varname>time_done</varname> oder
-        <varname>exit_status</varname> auf not-NULL prüft.
+        <varname>exit_status</varname> auf "NOT NULL" prüft.  Um auf
+        die Fertigstellung eines Job zu warten, kann man auf den
+        Notify "job_done" warten, dessen Payload die ID des
+        Job-Datensatzes ist (ab PostgreSQL 9.1).  Dabei muß zunächst
+        der Befehl "LISTEN job_done" abgesetzt werden, anschließend
+        prüfen, ob der Job bereits beendet wurde (sonst Race
+        Condition); erst dann auf den Notify warten.
       </para>
 
       <para>
@@ -538,7 +544,7 @@ nice 5</programlisting>
       </para>
 
       <para>
-        Dem Client sind nur 3 Operationen erlaubt:
+        Dem Client sind nur 4 Operationen erlaubt:
       </para>
 
       <itemizedlist>
@@ -550,6 +556,13 @@ nice 5</programlisting>
           <varname>priority</varname>, <varname>plan_name</varname>,
           <varname>args</varname>, <varname>syslog_server</varname>
           dürfen gesetzt werden)
+        </listitem>
+
+        <listitem>
+          Ändern von Datensätzen, die noch nicht zugewiesen sind,
+          d.h. "node_name IS NULL".  Anschließend muß der Notify
+          "new_job" generiert werden, damit Workshop diese Änderung
+          mitbekommt.
         </listitem>
 
         <listitem>

@@ -4,6 +4,15 @@ cm4all-workshop (2.0) unstable; urgency=low
 
  --
 
+cm4all-workshop (1.0.7) unstable; urgency=low
+
+  * doc: allow UPDATE on unassigned jobs
+  * sql: notify all clients when a job was finished
+    - requires PostgreSQL 9.1 or newer
+    - must reapply jobs.sql for the new "CREATE RULE" statement
+
+ -- Max Kellermann <mk@cm4all.com>  Mon, 19 Nov 2012 15:55:00 -0000
+
 cm4all-workshop (1.0.6) unstable; urgency=low
 
   * debian/init: use "exec" to invoke the logger
