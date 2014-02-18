@@ -5,6 +5,7 @@
  */
 
 #include "Plan.hxx"
+#include "util/CharUtil.hxx"
 
 #include <assert.h>
 #include <sys/stat.h>
@@ -19,7 +20,7 @@
 static char *next_word(char **pp) {
     char *word;
 
-    while (**pp > 0 && **pp <= 0x20)
+    while (IsWhitespaceNotNull(**pp))
         ++(*pp);
 
     if (**pp == 0)
@@ -31,7 +32,7 @@ static char *next_word(char **pp) {
             ++(*pp);
     } else {
         word = *pp;
-        while (((unsigned char)**pp) > 0x20)
+        while (!IsWhitespaceOrNull(**pp))
             ++(*pp);
     }
 
