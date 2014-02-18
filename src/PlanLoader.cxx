@@ -17,30 +17,32 @@
 #include <grp.h>
 
 /** parse the next word from the writable string */
-static char *next_word(char **pp) {
+static char *
+NextWord(char *&p)
+{
     char *word;
 
-    while (IsWhitespaceNotNull(**pp))
-        ++(*pp);
+    while (IsWhitespaceNotNull(*p))
+        ++p;
 
-    if (**pp == 0)
+    if (*p == 0)
         return nullptr;
 
-    if (**pp == '"') {
-        word = ++(*pp);
-        while (**pp != 0 && **pp != '"')
-            ++(*pp);
+    if (*p == '"') {
+        word = ++p;
+        while (*p != 0 && *p != '"')
+            ++p;
     } else {
-        word = *pp;
-        while (!IsWhitespaceOrNull(**pp))
-            ++(*pp);
+        word = p;
+        while (!IsWhitespaceOrNull(*p))
+            ++p;
     }
 
-    if (**pp == 0)
+    if (*p == 0)
         return word;
 
-    **pp = 0;
-    ++(*pp);
+    *p = 0;
+    ++p;
 
     return word;
 }
@@ -85,11 +87,11 @@ parse_plan_config(Plan *plan, FILE *file)
         ++line_no;
 
         p = line;
-        key = next_word(&p);
+        key = NextWord(p);
         if (key == nullptr || *key == '#')
             continue;
 
-        value = next_word(&p);
+        value = NextWord(p);
         if (value == nullptr) {
             fprintf(stderr, "line %u: value missing after keyword\n",
                     line_no);
@@ -111,10 +113,10 @@ parse_plan_config(Plan *plan, FILE *file)
 
             while (value != nullptr) {
                 plan->args.push_back(value);
-                value = next_word(&p);
+                value = NextWord(p);
             }
         } else {
-            p = next_word(&p);
+            p = NextWord(p);
             if (p != nullptr) {
                 fprintf(stderr, "line %u: too many arguments\n",
                         line_no);
