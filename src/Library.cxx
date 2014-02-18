@@ -20,7 +20,7 @@
 void
 Library::UpdatePlanNames()
 {
-    const time_t now = time(NULL);
+    const time_t now = time(nullptr);
 
     if (!names.empty() && now < next_names_update)
         return;

@@ -34,7 +34,7 @@ Operator::~Operator()
         close(stderr_fd);
     }
 
-    if (syslog != NULL)
+    if (syslog != nullptr)
         syslog_close(&syslog);
 }
 
@@ -62,7 +62,7 @@ Operator::OnOutputReady()
         } else {
             if (stdout_length > 0) {
                 stdout_buffer[stdout_length] = 0;
-                p = (unsigned)strtoul(stdout_buffer, NULL, 10);
+                p = (unsigned)strtoul(stdout_buffer, nullptr, 10);
                 if (p <= 100)
                     new_progress = p;
             }
@@ -91,7 +91,7 @@ Operator::SetOutput(int fd)
 void
 Operator::OnErrorReady()
 {
-    assert(syslog != NULL);
+    assert(syslog != nullptr);
 
     char buffer[512];
     ssize_t nbytes = read(stderr_fd, buffer, sizeof(buffer));

@@ -153,7 +153,7 @@ get_and_claim_job(Job &job, const char *node_name,
 static bool
 copy_string(std::string &dest, const char *src)
 {
-    assert(src != NULL);
+    assert(src != nullptr);
 
     if (dest.compare(src) == 0)
         return false;
@@ -220,7 +220,7 @@ Queue::Run2()
 
     /* check expired jobs from all other nodes except us */
 
-    now = time(NULL);
+    now = time(nullptr);
     if (now >= next_expire_check) {
         next_expire_check = now + 60;
 

@@ -25,7 +25,7 @@ struct PlanEntry {
     unsigned generation;
 
     PlanEntry(const char *_name)
-        :name(_name), plan(NULL),
+        :name(_name), plan(nullptr),
          deinstalled(false),
          mtime(0), disabled_until(0),
          generation(0) {}
@@ -35,7 +35,7 @@ struct PlanEntry {
          deinstalled(other.deinstalled),
          mtime(other.mtime), disabled_until(other.disabled_until),
          generation(other.generation) {
-        other.plan = NULL;
+        other.plan = nullptr;
     }
 
     PlanEntry(const PlanEntry &other) = delete;

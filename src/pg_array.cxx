@@ -16,7 +16,7 @@ pg_decode_array(const char *p)
 {
     std::list<std::string> dest;
 
-    if (p == NULL || *p == 0)
+    if (p == nullptr || *p == 0)
         return dest;
 
     if (*p != '{')
@@ -60,9 +60,9 @@ pg_decode_array(const char *p)
             throw std::invalid_argument("unexpected '{'");
         } else {
             const char *end = strchr(p, ',');
-            if (end == NULL) {
+            if (end == nullptr) {
                 end = strchr(p, '}');
-                if (end == NULL)
+                if (end == nullptr)
                     throw std::invalid_argument("missing '}'");
             }
 

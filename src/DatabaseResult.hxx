@@ -87,7 +87,7 @@ public:
         assert(IsDefined());
         assert(IsCommandSuccessful());
 
-        return std::strtoul(::PQcmdTuples(result), NULL, 10);
+        return std::strtoul(::PQcmdTuples(result), nullptr, 10);
     }
 
     /**
@@ -145,7 +145,7 @@ public:
     /**
      * Returns the only value (row 0, column 0) from the result.
      * Returns an empty string if the result is not valid or if there
-     * is no row or if the value is NULL.
+     * is no row or if the value is nullptr.
      */
     gcc_pure
     std::string GetOnlyStringChecked() const;

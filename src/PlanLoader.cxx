@@ -24,7 +24,7 @@ static char *next_word(char **pp) {
         ++(*pp);
 
     if (**pp == 0)
-        return NULL;
+        return nullptr;
 
     if (**pp == '"') {
         word = ++(*pp);
@@ -48,7 +48,7 @@ static char *next_word(char **pp) {
 static int user_in_group(const struct group *group, const char *user) {
     char **mem = group->gr_mem;
 
-    while (*mem != NULL) {
+    while (*mem != nullptr) {
         if (strcmp(*mem, user) == 0)
             return 1;
         ++mem;
@@ -65,7 +65,7 @@ get_user_groups(const char *user)
     setgrent();
 
     const struct group *group;
-    while ((group = getgrent()) != NULL) {
+    while ((group = getgrent()) != nullptr) {
         if (group->gr_gid > 0 && user_in_group(group, user))
             groups.push_back(group->gr_gid);
     }
@@ -81,16 +81,16 @@ parse_plan_config(Plan *plan, FILE *file)
     char line[1024], *p, *key, *value;
     unsigned line_no = 0;
 
-    while (fgets(line, sizeof(line), file) != NULL) {
+    while (fgets(line, sizeof(line), file) != nullptr) {
         ++line_no;
 
         p = line;
         key = next_word(&p);
-        if (key == NULL || *key == '#')
+        if (key == nullptr || *key == '#')
             continue;
 
         value = next_word(&p);
-        if (value == NULL) {
+        if (value == nullptr) {
             fprintf(stderr, "line %u: value missing after keyword\n",
                     line_no);
             return -1;
@@ -109,13 +109,13 @@ parse_plan_config(Plan *plan, FILE *file)
                 return -1;
             }
 
-            while (value != NULL) {
+            while (value != nullptr) {
                 plan->args.push_back(value);
                 value = next_word(&p);
             }
         } else {
             p = next_word(&p);
-            if (p != NULL) {
+            if (p != nullptr) {
                 fprintf(stderr, "line %u: too many arguments\n",
                         line_no);
                 return -1;
@@ -145,7 +145,7 @@ parse_plan_config(Plan *plan, FILE *file)
                 struct passwd *pw;
 
                 pw = getpwnam(value);
-                if (pw == NULL) {
+                if (pw == nullptr) {
                     fprintf(stderr, "line %u: no such user '%s'\n",
                             line_no, value);
                     return -1;
@@ -168,7 +168,7 @@ parse_plan_config(Plan *plan, FILE *file)
             } else if (strcmp(key, "nice") == 0) {
                 plan->priority = atoi(value);
             } else if (strcmp(key, "concurrency") == 0) {
-                plan->concurrency = (unsigned)strtoul(value, NULL, 0);
+                plan->concurrency = (unsigned)strtoul(value, nullptr, 0);
             } else {
                 fprintf(stderr, "line %u: unknown option '%s'\n",
                         line_no, key);
@@ -194,10 +194,10 @@ Plan::LoadFile(const char *path)
     FILE *file;
     int ret;
 
-    assert(path != NULL);
+    assert(path != nullptr);
 
     file = fopen(path, "r");
-    if (file == NULL) {
+    if (file == nullptr) {
         fprintf(stderr, "failed to open file '%s': %s\n",
                 path, strerror(errno));
         return false;

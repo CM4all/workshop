@@ -52,9 +52,9 @@ setup_signal_handlers()
     memset(&sa, 0, sizeof(sa));
     sa.sa_handler = SIG_IGN;
     sa.sa_flags = SA_RESTART;
-    sigaction(SIGALRM, &sa, NULL);
-    sigaction(SIGUSR1, &sa, NULL);
-    sigaction(SIGUSR2, &sa, NULL);
+    sigaction(SIGALRM, &sa, nullptr);
+    sigaction(SIGUSR1, &sa, nullptr);
+    sigaction(SIGUSR2, &sa, nullptr);
 }
 
 static void

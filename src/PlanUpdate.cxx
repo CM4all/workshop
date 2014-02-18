@@ -21,7 +21,7 @@
 static void
 disable_plan(Library &library, PlanEntry &entry, time_t duration)
 {
-    entry.Disable(time(NULL), duration);
+    entry.Disable(time(nullptr), duration);
     library.next_names_update = 0;
 }
 
@@ -46,12 +46,12 @@ check_plan_mtime(Library &library, PlanEntry &entry)
     }
 
     if (!S_ISREG(st.st_mode)) {
-        if (entry.plan != NULL) {
+        if (entry.plan != nullptr) {
             /* free memory of old plan only if there are no
                references on it anymore */
             if (entry.plan->ref == 0)
                 delete entry.plan;
-            entry.plan = NULL;
+            entry.plan = nullptr;
         }
 
         entry.mtime = 0;
@@ -63,19 +63,19 @@ check_plan_mtime(Library &library, PlanEntry &entry)
     if (st.st_mtime != entry.mtime) {
         entry.disabled_until = 0;
 
-        if (entry.plan != NULL) {
+        if (entry.plan != nullptr) {
             /* free memory of old plan only if there are no
                references on it anymore */
             if (entry.plan->ref == 0)
                 delete entry.plan;
-            entry.plan = NULL;
+            entry.plan = nullptr;
         }
 
         entry.mtime = st.st_mtime;
     }
 
     if (entry.disabled_until > 0) {
-        if (time(NULL) < entry.disabled_until)
+        if (time(nullptr) < entry.disabled_until)
             /* this plan is temporarily disabled due to previous errors */
             return ENOENT;
 
@@ -92,7 +92,7 @@ validate_plan(Library &library, PlanEntry &entry)
     int ret;
     struct stat st;
 
-    assert(plan != NULL);
+    assert(plan != nullptr);
     assert(!plan->args.empty());
     assert(!plan->args.front().empty());
 
@@ -122,7 +122,7 @@ load_plan_entry(Library &library, PlanEntry &entry)
 {
     char path[1024];
 
-    assert(entry.plan == NULL);
+    assert(entry.plan == nullptr);
     assert(entry.mtime != 0);
 
     daemon_log(6, "loading plan '%s'\n", entry.name.c_str());
@@ -153,7 +153,7 @@ Library::UpdatePlan(PlanEntry &entry)
     if (ret != 0)
         return ret;
 
-    if (entry.plan == NULL && !load_plan_entry(*this, entry))
+    if (entry.plan == nullptr && !load_plan_entry(*this, entry))
         return ret;
 
     ret = validate_plan(*this, entry);

@@ -228,7 +228,7 @@ Workplace::Start(const Job &job, Plan *plan)
         for (const auto &a : args)
             argv.push_back(a.c_str());
 
-        argv.push_back(NULL);
+        argv.push_back(nullptr);
 
         execv(argv[0], const_cast<char *const*>(&argv[0]));
         fprintf(stderr, "execv() failed: %s\n", strerror(errno));

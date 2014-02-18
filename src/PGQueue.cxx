@@ -76,7 +76,7 @@ int
 pg_next_scheduled_job(DatabaseConnection &db, const char *plans_include,
                       long *span_r)
 {
-    assert(plans_include != NULL && *plans_include == '{');
+    assert(plans_include != nullptr && *plans_include == '{');
 
     const auto result =
         db.ExecuteParams("SELECT EXTRACT(EPOCH FROM (MIN(scheduled_time) - NOW())) "
@@ -94,10 +94,10 @@ pg_next_scheduled_job(DatabaseConnection &db, const char *plans_include,
         return 0;
 
     const char *value = result.GetValue(0, 0);
-    if (value == NULL || *value == 0)
+    if (value == nullptr || *value == 0)
         return 0;
 
-    *span_r = strtol(value, NULL, 0);
+    *span_r = strtol(value, nullptr, 0);
     return 1;
 }
 
@@ -107,9 +107,9 @@ pg_select_new_jobs(DatabaseConnection &db,
                    const char *plans_lowprio,
                    unsigned limit)
 {
-    assert(plans_include != NULL && *plans_include == '{');
-    assert(plans_exclude != NULL && *plans_exclude == '{');
-    assert(plans_lowprio != NULL && *plans_lowprio == '{');
+    assert(plans_include != nullptr && *plans_include == '{');
+    assert(plans_exclude != nullptr && *plans_exclude == '{');
+    assert(plans_lowprio != nullptr && *plans_lowprio == '{');
 
     auto result =
         db.ExecuteParams("SELECT id,plan_name,args,syslog_server "

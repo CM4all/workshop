@@ -27,7 +27,7 @@ static int is_valid_plan_name_char(char ch) {
 }
 
 static int is_valid_plan_name(const char *name) {
-    assert(name != NULL);
+    assert(name != nullptr);
 
     do {
         if (!is_valid_plan_name_char(*name))
@@ -46,7 +46,7 @@ Library::UpdatePlans()
     /* read list of plans from file system, update our list */
 
     DIR *dir = opendir(path.c_str());
-    if (dir == NULL) {
+    if (dir == nullptr) {
         fprintf(stderr, "failed to opendir '%s': %s\n",
                 path.c_str(), strerror(errno));
         return -1;
@@ -54,7 +54,7 @@ Library::UpdatePlans()
 
     ++generation;
 
-    while ((ent = readdir(dir)) != NULL) {
+    while ((ent = readdir(dir)) != nullptr) {
         if (!is_valid_plan_name(ent->d_name))
             continue;
 
@@ -87,7 +87,7 @@ Library::UpdatePlans()
 bool
 Library::Update()
 {
-    const time_t now = time(NULL);
+    const time_t now = time(nullptr);
     int ret;
     struct stat st;
 
@@ -127,13 +127,13 @@ Library::Get(const char *name)
 {
     auto i = plans.find(name);
     if (i == plans.end())
-        return NULL;
+        return nullptr;
 
     PlanEntry &entry = i->second;
 
     int ret = UpdatePlan(entry);
     if (ret != 0)
-        return NULL;
+        return nullptr;
 
     ++entry.plan->ref;
     ++ref;
@@ -155,16 +155,16 @@ plan_put(Plan **plan_r)
 {
     Library *library;
 
-    assert(plan_r != NULL);
-    assert(*plan_r != NULL);
+    assert(plan_r != nullptr);
+    assert(*plan_r != nullptr);
 
     Plan *plan = *plan_r;
-    *plan_r = NULL;
+    *plan_r = nullptr;
 
     library = plan->library;
 
     assert(plan->ref > 0);
-    assert(library != NULL);
+    assert(library != nullptr);
     assert(library->ref > 0);
 
     --plan->ref;
