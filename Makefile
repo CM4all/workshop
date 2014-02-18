@@ -37,6 +37,7 @@ C_SOURCES = src/cmdline.c \
 	src/syslog.c
 
 CXX_SOURCES = src/main.cxx \
+	src/util/StringUtil.cxx \
 	src/Instance.cxx \
 	src/Event.cxx \
 	src/pg_array.cxx \

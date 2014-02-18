@@ -6,6 +6,7 @@
 
 #include "Plan.hxx"
 #include "util/CharUtil.hxx"
+#include "util/StringUtil.hxx"
 
 #include <assert.h>
 #include <sys/stat.h>
@@ -22,8 +23,7 @@ NextWord(char *&p)
 {
     char *word;
 
-    while (IsWhitespaceNotNull(*p))
-        ++p;
+    p = StripLeft(p);
 
     if (*p == 0)
         return nullptr;
