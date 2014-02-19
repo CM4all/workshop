@@ -7,6 +7,7 @@
 #include "Plan.hxx"
 #include "util/CharUtil.hxx"
 #include "util/StringUtil.hxx"
+#include "util/Tokenizer.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "io/TextFile.hxx"
@@ -19,36 +20,6 @@
 #include <grp.h>
 
 static constexpr Domain plan_loader_domain("plan_loader");
-
-/** parse the next word from the writable string */
-static char *
-NextWord(char *&p)
-{
-    char *word;
-
-    p = StripLeft(p);
-
-    if (*p == 0)
-        return nullptr;
-
-    if (*p == '"') {
-        word = ++p;
-        while (*p != 0 && *p != '"')
-            ++p;
-    } else {
-        word = p;
-        while (!IsWhitespaceOrNull(*p))
-            ++p;
-    }
-
-    if (*p == 0)
-        return word;
-
-    *p = 0;
-    ++p;
-
-    return word;
-}
 
 static int user_in_group(const struct group *group, const char *user) {
     char **mem = group->gr_mem;
@@ -81,16 +52,21 @@ get_user_groups(const char *user)
 }
 
 static bool
-parse_plan_line(Plan &plan, char *line, Error &error)
+parse_plan_line(Plan &plan, Tokenizer &tokenizer, Error &error)
 {
-    char *p = line;
-    const char *key = NextWord(p);
-    if (key == nullptr || *key == '#')
+    if (tokenizer.IsEnd() || tokenizer.CurrentChar() == '#')
         return true;
 
-    const char *value = NextWord(p);
+    const char *key = tokenizer.NextWord(error);
+    if (key == nullptr) {
+        assert(error.IsDefined());
+        return false;
+    }
+
+    const char *value = tokenizer.NextParam(error);
     if (value == nullptr) {
-        error.Set(plan_loader_domain, "value missing after keyword");
+        if (!error.IsDefined())
+            error.Set(plan_loader_domain, "value missing after keyword");
         return false;
     }
 
@@ -107,14 +83,16 @@ parse_plan_line(Plan &plan, char *line, Error &error)
 
         while (value != nullptr) {
             plan.args.push_back(value);
-            value = NextWord(p);
+            value = tokenizer.NextParam(error);
         }
+
+        if (error.IsDefined())
+            return false;
 
         return true;
     }
 
-    p = NextWord(p);
-    if (p != nullptr) {
+    if (!tokenizer.IsEnd()) {
         error.Set(plan_loader_domain, "too many arguments");
         return false;
     }
@@ -177,7 +155,8 @@ parse_plan_config(Plan &plan, TextFile &file, Error &error)
 {
     char *line;
     while ((line = file.ReadLine()) != nullptr) {
-        if (!parse_plan_line(plan, line, error)) {
+        Tokenizer tokenizer(line);
+        if (!parse_plan_line(plan, tokenizer, error)) {
             file.PrefixError(error);
             return false;
         }

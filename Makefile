@@ -38,6 +38,7 @@ C_SOURCES = src/cmdline.c \
 
 CXX_SOURCES = src/main.cxx \
 	src/util/StringUtil.cxx \
+	src/util/Tokenizer.cxx \
 	src/util/Error.cxx \
 	src/io/TextFile.cxx \
 	src/Instance.cxx \
