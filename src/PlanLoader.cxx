@@ -77,7 +77,7 @@ get_user_groups(const char *user)
     return groups;
 }
 
-static int
+static bool
 parse_plan_config(Plan *plan, FILE *file)
 {
     char line[1024], *p, *key, *value;
@@ -95,20 +95,20 @@ parse_plan_config(Plan *plan, FILE *file)
         if (value == nullptr) {
             fprintf(stderr, "line %u: value missing after keyword\n",
                     line_no);
-            return -1;
+            return false;
         }
 
         if (strcmp(key, "exec") == 0) {
             if (!plan->args.empty()) {
                 fprintf(stderr, "line %u: 'exec' already specified\n",
                         line_no);
-                return -1;
+                return false;
             }
 
             if (*value == 0) {
                 fprintf(stderr, "line %u: empty executable\n",
                         line_no);
-                return -1;
+                return false;
             }
 
             while (value != nullptr) {
@@ -120,7 +120,7 @@ parse_plan_config(Plan *plan, FILE *file)
             if (p != nullptr) {
                 fprintf(stderr, "line %u: too many arguments\n",
                         line_no);
-                return -1;
+                return false;
             }
 
             if (strcmp(key, "timeout") == 0) {
@@ -133,13 +133,13 @@ parse_plan_config(Plan *plan, FILE *file)
                 if (ret < 0) {
                     fprintf(stderr, "line %u: failed to stat '%s': %s\n",
                             line_no, value, strerror(errno));
-                    return -1;
+                    return false;
                 }
 
                 if (!S_ISDIR(st.st_mode)) {
                     fprintf(stderr, "line %u: not a directory: %s\n",
                             line_no, value);
-                    return -1;
+                    return false;
                 }
 
                 plan->chroot = value;
@@ -150,17 +150,17 @@ parse_plan_config(Plan *plan, FILE *file)
                 if (pw == nullptr) {
                     fprintf(stderr, "line %u: no such user '%s'\n",
                             line_no, value);
-                    return -1;
+                    return false;
                 }
 
                 if (pw->pw_uid == 0) {
                     fprintf(stderr, "user 'root' is forbidden\n");
-                    return -1;
+                    return false;
                 }
 
                 if (pw->pw_gid == 0) {
                     fprintf(stderr, "group 'root' is forbidden\n");
-                    return -1;
+                    return false;
                 }
 
                 plan->uid = pw->pw_uid;
@@ -174,27 +174,26 @@ parse_plan_config(Plan *plan, FILE *file)
             } else {
                 fprintf(stderr, "line %u: unknown option '%s'\n",
                         line_no, key);
-                return -1;
+                return false;
             }
         }
     }
 
     if (plan->args.empty()) {
         fprintf(stderr, "no 'exec'\n");
-        return -1;
+        return false;
     }
 
     if (plan->timeout.empty())
         plan->timeout = "10 minutes";
 
-    return 0;
+    return true;
 }
 
 bool
 Plan::LoadFile(const char *path)
 {
     FILE *file;
-    int ret;
 
     assert(path != nullptr);
 
@@ -205,9 +204,9 @@ Plan::LoadFile(const char *path)
         return false;
     }
 
-    ret = parse_plan_config(this, file);
+    const bool success = parse_plan_config(this, file);
     fclose(file);
-    if (ret != 0) {
+    if (!success) {
         fprintf(stderr, "parsing file '%s' failed\n", path);
         return false;
     }
