@@ -5,8 +5,6 @@
  */
 
 #include "Plan.hxx"
-#include "util/CharUtil.hxx"
-#include "util/StringUtil.hxx"
 #include "util/Tokenizer.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
