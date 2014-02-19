@@ -21,16 +21,19 @@
 
 static constexpr Domain plan_loader_domain("plan_loader");
 
-static int user_in_group(const struct group *group, const char *user) {
+gcc_pure
+static bool
+user_in_group(const struct group *group, const char *user)
+{
     char **mem = group->gr_mem;
 
     while (*mem != nullptr) {
         if (strcmp(*mem, user) == 0)
-            return 1;
+            return true;
         ++mem;
     }
 
-    return 0;
+    return false;
 }
 
 static std::vector<gid_t>
