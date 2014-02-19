@@ -7,15 +7,17 @@
 #include "Plan.hxx"
 #include "util/CharUtil.hxx"
 #include "util/StringUtil.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #include <assert.h>
 #include <sys/stat.h>
 #include <stdlib.h>
-#include <stdio.h>
-#include <errno.h>
 #include <string.h>
 #include <pwd.h>
 #include <grp.h>
+
+static constexpr Domain plan_loader_domain("plan_loader");
 
 /** parse the next word from the writable string */
 static char *
@@ -78,7 +80,7 @@ get_user_groups(const char *user)
 }
 
 static bool
-parse_plan_line(Plan &plan, char *line, unsigned line_no)
+parse_plan_line(Plan &plan, char *line, Error &error)
 {
     char *p = line;
     const char *key = NextWord(p);
@@ -87,21 +89,18 @@ parse_plan_line(Plan &plan, char *line, unsigned line_no)
 
     const char *value = NextWord(p);
     if (value == nullptr) {
-        fprintf(stderr, "line %u: value missing after keyword\n",
-                line_no);
+        error.Set(plan_loader_domain, "value missing after keyword");
         return false;
     }
 
     if (strcmp(key, "exec") == 0) {
         if (!plan.args.empty()) {
-            fprintf(stderr, "line %u: 'exec' already specified\n",
-                    line_no);
+            error.Set(plan_loader_domain, "'exec' already specified");
             return false;
         }
 
         if (*value == 0) {
-            fprintf(stderr, "line %u: empty executable\n",
-                    line_no);
+            error.Set(plan_loader_domain, "empty executable");
             return false;
         }
 
@@ -115,8 +114,7 @@ parse_plan_line(Plan &plan, char *line, unsigned line_no)
 
     p = NextWord(p);
     if (p != nullptr) {
-        fprintf(stderr, "line %u: too many arguments\n",
-                line_no);
+        error.Set(plan_loader_domain, "too many arguments");
         return false;
     }
 
@@ -128,14 +126,12 @@ parse_plan_line(Plan &plan, char *line, unsigned line_no)
 
         ret = stat(value, &st);
         if (ret < 0) {
-            fprintf(stderr, "line %u: failed to stat '%s': %s\n",
-                    line_no, value, strerror(errno));
+            error.FormatErrno("failed to stat '%s'", value);
             return false;
         }
 
         if (!S_ISDIR(st.st_mode)) {
-            fprintf(stderr, "line %u: not a directory: %s\n",
-                    line_no, value);
+            error.Format(plan_loader_domain, "not a directory: %s", value);
             return false;
         }
 
@@ -145,18 +141,17 @@ parse_plan_line(Plan &plan, char *line, unsigned line_no)
 
         pw = getpwnam(value);
         if (pw == nullptr) {
-            fprintf(stderr, "line %u: no such user '%s'\n",
-                    line_no, value);
+            error.Format(plan_loader_domain, "no such user '%s'", value);
             return false;
         }
 
         if (pw->pw_uid == 0) {
-            fprintf(stderr, "user 'root' is forbidden\n");
+            error.Set(plan_loader_domain, "user 'root' is forbidden");
             return false;
         }
 
         if (pw->pw_gid == 0) {
-            fprintf(stderr, "group 'root' is forbidden\n");
+            error.Set(plan_loader_domain, "group 'root' is forbidden");
             return false;
         }
 
@@ -169,8 +164,7 @@ parse_plan_line(Plan &plan, char *line, unsigned line_no)
     } else if (strcmp(key, "concurrency") == 0) {
         plan.concurrency = (unsigned)strtoul(value, nullptr, 0);
     } else {
-        fprintf(stderr, "line %u: unknown option '%s'\n",
-                line_no, key);
+        error.Format(plan_loader_domain, "unknown option '%s'", key);
         return false;
     }
 
@@ -178,7 +172,7 @@ parse_plan_line(Plan &plan, char *line, unsigned line_no)
 }
 
 static bool
-parse_plan_config(Plan &plan, FILE *file)
+parse_plan_config(Plan &plan, const char *path, FILE *file, Error &error)
 {
     char line[1024];
     unsigned line_no = 0;
@@ -186,12 +180,14 @@ parse_plan_config(Plan &plan, FILE *file)
     while (fgets(line, sizeof(line), file) != nullptr) {
         ++line_no;
 
-        if (!parse_plan_line(plan, line, line_no))
+        if (!parse_plan_line(plan, line, error)) {
+            error.FormatPrefix("in %s line %u: ", path, line_no);
             return false;
+        }
     }
 
     if (plan.args.empty()) {
-        fprintf(stderr, "no 'exec'\n");
+        error.Format(plan_loader_domain, "no 'exec' in %s", path);
         return false;
     }
 
@@ -202,7 +198,7 @@ parse_plan_config(Plan &plan, FILE *file)
 }
 
 bool
-Plan::LoadFile(const char *path)
+Plan::LoadFile(const char *path, Error &error)
 {
     FILE *file;
 
@@ -210,17 +206,11 @@ Plan::LoadFile(const char *path)
 
     file = fopen(path, "r");
     if (file == nullptr) {
-        fprintf(stderr, "failed to open file '%s': %s\n",
-                path, strerror(errno));
+        error.FormatErrno("Failed to open file %s", path);
         return false;
     }
 
-    const bool success = parse_plan_config(*this, file);
+    const bool success = parse_plan_config(*this, path, file, error);
     fclose(file);
-    if (!success) {
-        fprintf(stderr, "parsing file '%s' failed\n", path);
-        return false;
-    }
-
-    return true;
+    return success;
 }

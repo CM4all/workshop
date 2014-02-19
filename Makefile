@@ -38,6 +38,7 @@ C_SOURCES = src/cmdline.c \
 
 CXX_SOURCES = src/main.cxx \
 	src/util/StringUtil.cxx \
+	src/util/Error.cxx \
 	src/Instance.cxx \
 	src/Event.cxx \
 	src/pg_array.cxx \

@@ -7,6 +7,7 @@
 
 #include "Library.hxx"
 #include "Plan.hxx"
+#include "util/Error.hxx"
 
 #include <daemon/log.h>
 
@@ -131,7 +132,10 @@ load_plan_entry(Library &library, PlanEntry &entry)
              library.path.c_str(), entry.name.c_str());
 
     Plan plan;
-    if (!plan.LoadFile(path)) {
+    Error error;
+    if (!plan.LoadFile(path, error)) {
+        daemon_log(2, "failed to load plan '%s': %s\n",
+                   entry.name.c_str(), error.GetMessage());
         disable_plan(library, entry, 600);
         return false;
     }

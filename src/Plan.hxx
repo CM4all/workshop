@@ -17,6 +17,8 @@
 #include <sys/types.h>
 #include <stdlib.h>
 
+class Error;
+
 /** a library is a container for plan objects */
 class Library;
 
@@ -54,7 +56,7 @@ struct Plan {
     Plan &operator=(Plan &&other) = default;
     Plan &operator=(const Plan &other) = delete;
 
-    bool LoadFile(const char *path);
+    bool LoadFile(const char *path, Error &error);
 };
 
 void
