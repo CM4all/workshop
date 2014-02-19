@@ -78,105 +78,116 @@ get_user_groups(const char *user)
 }
 
 static bool
+parse_plan_line(Plan &plan, char *line, unsigned line_no)
+{
+    char *p = line;
+    const char *key = NextWord(p);
+    if (key == nullptr || *key == '#')
+        return true;
+
+    const char *value = NextWord(p);
+    if (value == nullptr) {
+        fprintf(stderr, "line %u: value missing after keyword\n",
+                line_no);
+        return false;
+    }
+
+    if (strcmp(key, "exec") == 0) {
+        if (!plan.args.empty()) {
+            fprintf(stderr, "line %u: 'exec' already specified\n",
+                    line_no);
+            return false;
+        }
+
+        if (*value == 0) {
+            fprintf(stderr, "line %u: empty executable\n",
+                    line_no);
+            return false;
+        }
+
+        while (value != nullptr) {
+            plan.args.push_back(value);
+            value = NextWord(p);
+        }
+
+        return true;
+    }
+
+    p = NextWord(p);
+    if (p != nullptr) {
+        fprintf(stderr, "line %u: too many arguments\n",
+                line_no);
+        return false;
+    }
+
+    if (strcmp(key, "timeout") == 0) {
+        plan.timeout = value;
+    } else if (strcmp(key, "chroot") == 0) {
+        int ret;
+        struct stat st;
+
+        ret = stat(value, &st);
+        if (ret < 0) {
+            fprintf(stderr, "line %u: failed to stat '%s': %s\n",
+                    line_no, value, strerror(errno));
+            return false;
+        }
+
+        if (!S_ISDIR(st.st_mode)) {
+            fprintf(stderr, "line %u: not a directory: %s\n",
+                    line_no, value);
+            return false;
+        }
+
+        plan.chroot = value;
+    } else if (strcmp(key, "user") == 0) {
+        struct passwd *pw;
+
+        pw = getpwnam(value);
+        if (pw == nullptr) {
+            fprintf(stderr, "line %u: no such user '%s'\n",
+                    line_no, value);
+            return false;
+        }
+
+        if (pw->pw_uid == 0) {
+            fprintf(stderr, "user 'root' is forbidden\n");
+            return false;
+        }
+
+        if (pw->pw_gid == 0) {
+            fprintf(stderr, "group 'root' is forbidden\n");
+            return false;
+        }
+
+        plan.uid = pw->pw_uid;
+        plan.gid = pw->pw_gid;
+
+        plan.groups = get_user_groups(value);
+    } else if (strcmp(key, "nice") == 0) {
+        plan.priority = atoi(value);
+    } else if (strcmp(key, "concurrency") == 0) {
+        plan.concurrency = (unsigned)strtoul(value, nullptr, 0);
+    } else {
+        fprintf(stderr, "line %u: unknown option '%s'\n",
+                line_no, key);
+        return false;
+    }
+
+    return true;
+}
+
+static bool
 parse_plan_config(Plan &plan, FILE *file)
 {
-    char line[1024], *p, *key, *value;
+    char line[1024];
     unsigned line_no = 0;
 
     while (fgets(line, sizeof(line), file) != nullptr) {
         ++line_no;
 
-        p = line;
-        key = NextWord(p);
-        if (key == nullptr || *key == '#')
-            continue;
-
-        value = NextWord(p);
-        if (value == nullptr) {
-            fprintf(stderr, "line %u: value missing after keyword\n",
-                    line_no);
+        if (!parse_plan_line(plan, line, line_no))
             return false;
-        }
-
-        if (strcmp(key, "exec") == 0) {
-            if (!plan.args.empty()) {
-                fprintf(stderr, "line %u: 'exec' already specified\n",
-                        line_no);
-                return false;
-            }
-
-            if (*value == 0) {
-                fprintf(stderr, "line %u: empty executable\n",
-                        line_no);
-                return false;
-            }
-
-            while (value != nullptr) {
-                plan.args.push_back(value);
-                value = NextWord(p);
-            }
-        } else {
-            p = NextWord(p);
-            if (p != nullptr) {
-                fprintf(stderr, "line %u: too many arguments\n",
-                        line_no);
-                return false;
-            }
-
-            if (strcmp(key, "timeout") == 0) {
-                plan.timeout = value;
-            } else if (strcmp(key, "chroot") == 0) {
-                int ret;
-                struct stat st;
-
-                ret = stat(value, &st);
-                if (ret < 0) {
-                    fprintf(stderr, "line %u: failed to stat '%s': %s\n",
-                            line_no, value, strerror(errno));
-                    return false;
-                }
-
-                if (!S_ISDIR(st.st_mode)) {
-                    fprintf(stderr, "line %u: not a directory: %s\n",
-                            line_no, value);
-                    return false;
-                }
-
-                plan.chroot = value;
-            } else if (strcmp(key, "user") == 0) {
-                struct passwd *pw;
-
-                pw = getpwnam(value);
-                if (pw == nullptr) {
-                    fprintf(stderr, "line %u: no such user '%s'\n",
-                            line_no, value);
-                    return false;
-                }
-
-                if (pw->pw_uid == 0) {
-                    fprintf(stderr, "user 'root' is forbidden\n");
-                    return false;
-                }
-
-                if (pw->pw_gid == 0) {
-                    fprintf(stderr, "group 'root' is forbidden\n");
-                    return false;
-                }
-
-                plan.uid = pw->pw_uid;
-                plan.gid = pw->pw_gid;
-
-                plan.groups = get_user_groups(value);
-            } else if (strcmp(key, "nice") == 0) {
-                plan.priority = atoi(value);
-            } else if (strcmp(key, "concurrency") == 0) {
-                plan.concurrency = (unsigned)strtoul(value, nullptr, 0);
-            } else {
-                fprintf(stderr, "line %u: unknown option '%s'\n",
-                        line_no, key);
-                return false;
-            }
-        }
     }
 
     if (plan.args.empty()) {
