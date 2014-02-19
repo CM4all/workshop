@@ -18,6 +18,8 @@
 #include <stdlib.h>
 
 class Error;
+class Tokenizer;
+class TextFile;
 
 /** a library is a container for plan objects */
 class Library;
@@ -56,6 +58,8 @@ struct Plan {
     Plan &operator=(Plan &&other) = default;
     Plan &operator=(const Plan &other) = delete;
 
+    bool ParseLine(Tokenizer &tokenizer, Error &error);
+    bool LoadFile(TextFile &file, Error &error);
     bool LoadFile(const char *path, Error &error);
 };
 

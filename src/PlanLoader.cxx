@@ -51,8 +51,8 @@ get_user_groups(const char *user)
     return groups;
 }
 
-static bool
-parse_plan_line(Plan &plan, Tokenizer &tokenizer, Error &error)
+inline bool
+Plan::ParseLine(Tokenizer &tokenizer, Error &error)
 {
     if (tokenizer.IsEnd() || tokenizer.CurrentChar() == '#')
         return true;
@@ -71,7 +71,7 @@ parse_plan_line(Plan &plan, Tokenizer &tokenizer, Error &error)
     }
 
     if (strcmp(key, "exec") == 0) {
-        if (!plan.args.empty()) {
+        if (!args.empty()) {
             error.Set(plan_loader_domain, "'exec' already specified");
             return false;
         }
@@ -82,7 +82,7 @@ parse_plan_line(Plan &plan, Tokenizer &tokenizer, Error &error)
         }
 
         while (value != nullptr) {
-            plan.args.push_back(value);
+            args.push_back(value);
             value = tokenizer.NextParam(error);
         }
 
@@ -98,7 +98,7 @@ parse_plan_line(Plan &plan, Tokenizer &tokenizer, Error &error)
     }
 
     if (strcmp(key, "timeout") == 0) {
-        plan.timeout = value;
+        timeout = value;
     } else if (strcmp(key, "chroot") == 0) {
         int ret;
         struct stat st;
@@ -114,7 +114,7 @@ parse_plan_line(Plan &plan, Tokenizer &tokenizer, Error &error)
             return false;
         }
 
-        plan.chroot = value;
+        chroot = value;
     } else if (strcmp(key, "user") == 0) {
         struct passwd *pw;
 
@@ -134,14 +134,14 @@ parse_plan_line(Plan &plan, Tokenizer &tokenizer, Error &error)
             return false;
         }
 
-        plan.uid = pw->pw_uid;
-        plan.gid = pw->pw_gid;
+        uid = pw->pw_uid;
+        gid = pw->pw_gid;
 
-        plan.groups = get_user_groups(value);
+        groups = get_user_groups(value);
     } else if (strcmp(key, "nice") == 0) {
-        plan.priority = atoi(value);
+        priority = atoi(value);
     } else if (strcmp(key, "concurrency") == 0) {
-        plan.concurrency = (unsigned)strtoul(value, nullptr, 0);
+        concurrency = (unsigned)strtoul(value, nullptr, 0);
     } else {
         error.Format(plan_loader_domain, "unknown option '%s'", key);
         return false;
@@ -150,25 +150,25 @@ parse_plan_line(Plan &plan, Tokenizer &tokenizer, Error &error)
     return true;
 }
 
-static bool
-parse_plan_config(Plan &plan, TextFile &file, Error &error)
+inline bool
+Plan::LoadFile(TextFile &file, Error &error)
 {
     char *line;
     while ((line = file.ReadLine()) != nullptr) {
         Tokenizer tokenizer(line);
-        if (!parse_plan_line(plan, tokenizer, error)) {
+        if (!ParseLine(tokenizer, error)) {
             file.PrefixError(error);
             return false;
         }
     }
 
-    if (plan.args.empty()) {
+    if (args.empty()) {
         error.Format(plan_loader_domain, "no 'exec' in %s", file.GetPath());
         return false;
     }
 
-    if (plan.timeout.empty())
-        plan.timeout = "10 minutes";
+    if (timeout.empty())
+        timeout = "10 minutes";
 
     return true;
 }
@@ -182,7 +182,7 @@ Plan::LoadFile(const char *path, Error &error)
     if (file == nullptr)
         return false;
 
-    const bool success = parse_plan_config(*this, *file, error);
+    const bool success = LoadFile(*file, error);
     delete file;
     return success;
 }
