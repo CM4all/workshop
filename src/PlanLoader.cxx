@@ -78,7 +78,7 @@ get_user_groups(const char *user)
 }
 
 static bool
-parse_plan_config(Plan *plan, FILE *file)
+parse_plan_config(Plan &plan, FILE *file)
 {
     char line[1024], *p, *key, *value;
     unsigned line_no = 0;
@@ -99,7 +99,7 @@ parse_plan_config(Plan *plan, FILE *file)
         }
 
         if (strcmp(key, "exec") == 0) {
-            if (!plan->args.empty()) {
+            if (!plan.args.empty()) {
                 fprintf(stderr, "line %u: 'exec' already specified\n",
                         line_no);
                 return false;
@@ -112,7 +112,7 @@ parse_plan_config(Plan *plan, FILE *file)
             }
 
             while (value != nullptr) {
-                plan->args.push_back(value);
+                plan.args.push_back(value);
                 value = NextWord(p);
             }
         } else {
@@ -124,7 +124,7 @@ parse_plan_config(Plan *plan, FILE *file)
             }
 
             if (strcmp(key, "timeout") == 0) {
-                plan->timeout = value;
+                plan.timeout = value;
             } else if (strcmp(key, "chroot") == 0) {
                 int ret;
                 struct stat st;
@@ -142,7 +142,7 @@ parse_plan_config(Plan *plan, FILE *file)
                     return false;
                 }
 
-                plan->chroot = value;
+                plan.chroot = value;
             } else if (strcmp(key, "user") == 0) {
                 struct passwd *pw;
 
@@ -163,14 +163,14 @@ parse_plan_config(Plan *plan, FILE *file)
                     return false;
                 }
 
-                plan->uid = pw->pw_uid;
-                plan->gid = pw->pw_gid;
+                plan.uid = pw->pw_uid;
+                plan.gid = pw->pw_gid;
 
-                plan->groups = get_user_groups(value);
+                plan.groups = get_user_groups(value);
             } else if (strcmp(key, "nice") == 0) {
-                plan->priority = atoi(value);
+                plan.priority = atoi(value);
             } else if (strcmp(key, "concurrency") == 0) {
-                plan->concurrency = (unsigned)strtoul(value, nullptr, 0);
+                plan.concurrency = (unsigned)strtoul(value, nullptr, 0);
             } else {
                 fprintf(stderr, "line %u: unknown option '%s'\n",
                         line_no, key);
@@ -179,13 +179,13 @@ parse_plan_config(Plan *plan, FILE *file)
         }
     }
 
-    if (plan->args.empty()) {
+    if (plan.args.empty()) {
         fprintf(stderr, "no 'exec'\n");
         return false;
     }
 
-    if (plan->timeout.empty())
-        plan->timeout = "10 minutes";
+    if (plan.timeout.empty())
+        plan.timeout = "10 minutes";
 
     return true;
 }
@@ -204,7 +204,7 @@ Plan::LoadFile(const char *path)
         return false;
     }
 
-    const bool success = parse_plan_config(this, file);
+    const bool success = parse_plan_config(*this, file);
     fclose(file);
     if (!success) {
         fprintf(stderr, "parsing file '%s' failed\n", path);
