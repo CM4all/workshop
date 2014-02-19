@@ -30,10 +30,33 @@
 #include "StringUtil.hxx"
 #include "CharUtil.hxx"
 
+#include <string.h>
+
 const char *
 StripLeft(const char *p)
 {
     while (IsWhitespaceNotNull(*p))
         ++p;
+    return p;
+}
+
+void
+StripRight(char *p)
+{
+    size_t length = strlen(p);
+    while (length > 0 && IsWhitespaceNotNull(p[length - 1]))
+        --length;
+
+    p[length] = 0;
+}
+
+void
+StripRight(char *p);
+
+char *
+Strip(char *p)
+{
+    p = StripLeft(p);
+    StripRight(p);
     return p;
 }

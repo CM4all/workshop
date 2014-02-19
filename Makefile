@@ -24,7 +24,7 @@ override CFLAGS += -Wall -W -Werror -std=gnu99 -Wmissing-prototypes -Wwrite-stri
 
 override CXXFLAGS += -Wall -W -Werror -std=gnu++0x -Wwrite-strings -Wcast-qual -Wfloat-equal -Wshadow -Wpointer-arith -Wsign-compare -Wmissing-declarations -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls -Winline -Wdisabled-optimization -Wno-long-long -Wundef
 
-INCLUDES =
+INCLUDES = -Isrc
 
 LIBINLINE_CFLAGS := $(shell pkg-config --cflags libcm4all-inline)
 
@@ -39,6 +39,7 @@ C_SOURCES = src/cmdline.c \
 CXX_SOURCES = src/main.cxx \
 	src/util/StringUtil.cxx \
 	src/util/Error.cxx \
+	src/io/TextFile.cxx \
 	src/Instance.cxx \
 	src/Event.cxx \
 	src/pg_array.cxx \

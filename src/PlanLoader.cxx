@@ -9,6 +9,7 @@
 #include "util/StringUtil.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "io/TextFile.hxx"
 
 #include <assert.h>
 #include <sys/stat.h>
@@ -172,22 +173,18 @@ parse_plan_line(Plan &plan, char *line, Error &error)
 }
 
 static bool
-parse_plan_config(Plan &plan, const char *path, FILE *file, Error &error)
+parse_plan_config(Plan &plan, TextFile &file, Error &error)
 {
-    char line[1024];
-    unsigned line_no = 0;
-
-    while (fgets(line, sizeof(line), file) != nullptr) {
-        ++line_no;
-
+    char *line;
+    while ((line = file.ReadLine()) != nullptr) {
         if (!parse_plan_line(plan, line, error)) {
-            error.FormatPrefix("in %s line %u: ", path, line_no);
+            file.PrefixError(error);
             return false;
         }
     }
 
     if (plan.args.empty()) {
-        error.Format(plan_loader_domain, "no 'exec' in %s", path);
+        error.Format(plan_loader_domain, "no 'exec' in %s", file.GetPath());
         return false;
     }
 
@@ -200,17 +197,13 @@ parse_plan_config(Plan &plan, const char *path, FILE *file, Error &error)
 bool
 Plan::LoadFile(const char *path, Error &error)
 {
-    FILE *file;
-
     assert(path != nullptr);
 
-    file = fopen(path, "r");
-    if (file == nullptr) {
-        error.FormatErrno("Failed to open file %s", path);
+    TextFile *file = TextFile::Open(path, error);
+    if (file == nullptr)
         return false;
-    }
 
-    const bool success = parse_plan_config(*this, path, file, error);
-    fclose(file);
+    const bool success = parse_plan_config(*this, *file, error);
+    delete file;
     return success;
 }

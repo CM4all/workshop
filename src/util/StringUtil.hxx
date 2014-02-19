@@ -43,4 +43,10 @@ StripLeft(char *p)
     return const_cast<char *>(static_cast<const char *>(p));
 }
 
+void
+StripRight(char *p);
+
+char *
+Strip(char *p);
+
 #endif
