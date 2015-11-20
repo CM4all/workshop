@@ -59,7 +59,7 @@ pg_expire_jobs(DatabaseConnection &db, const char *except_node_name)
     const auto result =
         db.ExecuteParams("UPDATE jobs "
                          "SET node_name=NULL, node_timeout=NULL, progress=0 "
-                         "WHERE time_done IS NULL AND "
+                         "WHERE time_done IS NULL AND exit_status IS NULL AND "
                          "node_name IS NOT NULL AND node_name <> $1 AND "
                          "node_timeout IS NOT NULL AND NOW() > node_timeout",
                          except_node_name);

@@ -2,9 +2,9 @@ Source: cm4all-workshop
 Section: non-free/admin
 Priority: optional
 Maintainer: Max Kellermann <mk@cm4all.com>
-Build-Depends: debhelper (>= 5), clang (>= 3.0), libevent-dev (>= 1.1),
+Build-Depends: debhelper (>= 9), clang (>= 3.0), libevent-dev (>= 1.1),
  libpq-dev (>= 8.3.6),
- libcm4all-inline-dev (>= 0.3.2), libcm4all-daemon-dev (>= 0.3.1),
+ libcm4all-inline-dev (>= 0.3.2), libcm4all-daemon-dev (>= 0.4.2),
  xsltproc, docbook-xsl
 Standards-Version: 3.9.3
 Vcs-git: ssh://git.intern.cm-ag/srv/git/master/workshop.git
