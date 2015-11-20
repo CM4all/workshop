@@ -7,7 +7,7 @@
 #ifndef WORKSHOP_QUEUE_HXX
 #define WORKSHOP_QUEUE_HXX
 
-#include "Event.hxx"
+#include "event/Event.hxx"
 #include "DatabaseGlue.hxx"
 
 #include <inline/compiler.h>

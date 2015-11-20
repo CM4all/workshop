@@ -6,7 +6,7 @@
 #define SNOWBALL_DATABASE_GLUE_HXX
 
 #include "DatabaseConnection.hxx"
-#include "Event.hxx"
+#include "event/Event.hxx"
 
 #include <inline/compiler.h>
 

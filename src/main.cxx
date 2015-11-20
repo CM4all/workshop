@@ -15,6 +15,7 @@ extern "C" {
 #include "Queue.hxx"
 #include "Job.hxx"
 #include "Workplace.hxx"
+#include "event/Base.hxx"
 #include "version.h"
 
 #include <inline/compiler.h>

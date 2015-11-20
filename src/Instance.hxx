@@ -5,7 +5,7 @@
 #ifndef WORKSHOP_INSTANCE_HXX
 #define WORKSHOP_INSTANCE_HXX
 
-#include "Event.hxx"
+#include "event/SignalEvent.hxx"
 #include "Library.hxx"
 #include "Queue.hxx"
 #include "Workplace.hxx"

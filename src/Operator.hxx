@@ -5,7 +5,7 @@
 #ifndef WORKSHOP_OPERATOR_HXX
 #define WORKSHOP_OPERATOR_HXX
 
-#include "Event.hxx"
+#include "event/Event.hxx"
 #include "Job.hxx"
 
 #include <string>
