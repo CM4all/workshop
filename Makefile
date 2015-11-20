@@ -84,5 +84,5 @@ src/cm4all-workshop: $(C_OBJECTS) $(CXX_OBJECTS)
 $(C_OBJECTS): %.o: %.c $(wildcard src/*.h)
 	$(CC) -c -o $@ $< $(CFLAGS) $(INCLUDES) $(INCLUDES)
 
-$(CXX_OBJECTS): %.o: %.cxx $(wildcard src/*.h) $(wildcard src/*.hxx)
+$(CXX_OBJECTS): %.o: %.cxx $(wildcard src/*.h) $(wildcard src/*.hxx) $(wildcard src/pg/*.hxx)
 	$(CXX) -c -o $@ $< $(CXXFLAGS) $(INCLUDES)
