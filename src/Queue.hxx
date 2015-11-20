@@ -7,7 +7,7 @@
 #ifndef WORKSHOP_QUEUE_HXX
 #define WORKSHOP_QUEUE_HXX
 
-#include "event/Event.hxx"
+#include "event/FunctionEvent.hxx"
 #include "DatabaseGlue.hxx"
 
 #include <inline/compiler.h>
@@ -33,7 +33,7 @@ class Queue : private DatabaseHandler {
     /**
      * Timer event which runs the queue.
      */
-    Event timer_event;
+    FunctionEvent timer_event;
 
     std::string plans_include, plans_exclude, plans_lowprio;
     time_t next_expire_check = 0;

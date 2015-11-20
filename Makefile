@@ -42,7 +42,7 @@ CXX_SOURCES = src/main.cxx \
 	src/util/Error.cxx \
 	src/io/TextFile.cxx \
 	src/Instance.cxx \
-	src/event/Event.cxx \
+	src/event/FunctionEvent.cxx \
 	src/event/SignalEvent.cxx \
 	src/pg_array.cxx \
 	src/Queue.cxx src/PGQueue.cxx src/Job.cxx \

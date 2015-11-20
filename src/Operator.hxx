@@ -5,7 +5,7 @@
 #ifndef WORKSHOP_OPERATOR_HXX
 #define WORKSHOP_OPERATOR_HXX
 
-#include "event/Event.hxx"
+#include "event/FunctionEvent.hxx"
 #include "Job.hxx"
 
 #include <string>
@@ -27,13 +27,13 @@ struct Operator {
     pid_t pid;
 
     int stdout_fd = -1;
-    Event stdout_event;
+    FunctionEvent stdout_event;
     char stdout_buffer[64];
     size_t stdout_length = 0;
     unsigned progress = 0;
 
     int stderr_fd = -1;
-    Event stderr_event;
+    FunctionEvent stderr_event;
     char stderr_buffer[512];
     size_t stderr_length = 0;
     struct syslog_client *syslog = nullptr;

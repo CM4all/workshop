@@ -6,7 +6,7 @@
 #define SNOWBALL_DATABASE_GLUE_HXX
 
 #include "DatabaseConnection.hxx"
-#include "event/Event.hxx"
+#include "event/FunctionEvent.hxx"
 
 #include <inline/compiler.h>
 
@@ -54,7 +54,7 @@ class DatabaseGlue : public DatabaseConnection {
      *
      * WAITING: a timer which reconnects.
      */
-    Event event;
+    FunctionEvent event;
 
 public:
     DatabaseGlue(const char *conninfo, const char *schema,
