@@ -9,6 +9,8 @@
 
 #include <postgresql/libpq-fe.h>
 
+#include <algorithm>
+
 /**
  * A thin C++ wrapper for a PGnotify pointer.
  */
@@ -35,10 +37,7 @@ public:
 
     PgNotify &operator=(const PgNotify &other) = delete;
     PgNotify &operator=(PgNotify &&other) {
-        if (notify != nullptr)
-            PQfreemem(notify);
-        notify = other.notify;
-        other.notify = nullptr;
+        std::swap(notify, other.notify);
         return *this;
     }
 

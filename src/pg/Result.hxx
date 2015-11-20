@@ -14,6 +14,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <string>
+#include <algorithm>
 
 /**
  * A thin C++ wrapper for a PGresult pointer.
@@ -41,10 +42,7 @@ public:
 
     PgResult &operator=(const PgResult &other) = delete;
     PgResult &operator=(PgResult &&other) {
-        if (result != nullptr)
-            ::PQclear(result);
-        result = other.result;
-        other.result = nullptr;
+        std::swap(result, other.result);
         return *this;
     }
 

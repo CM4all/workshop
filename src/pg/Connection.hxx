@@ -18,6 +18,7 @@
 #include <memory>
 #include <string>
 #include <cassert>
+#include <algorithm>
 
 /**
  * A thin C++ wrapper for a PGconn pointer.
@@ -36,12 +37,7 @@ public:
     PgConnection &operator=(const PgConnection &other) = delete;
 
     PgConnection &operator=(PgConnection &&other) {
-        if (conn != nullptr)
-            ::PQfinish(conn);
-
-        conn = other.conn;
-        other.conn = nullptr;
-
+        std::swap(conn, other.conn);
         return *this;
     }
 
