@@ -7,7 +7,7 @@
 #include "Queue.hxx"
 #include "PGQueue.hxx"
 #include "Job.hxx"
-#include "pg_array.hxx"
+#include "pg/Array.hxx"
 
 #include <inline/compiler.h>
 #include <daemon/log.h>

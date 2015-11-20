@@ -9,7 +9,7 @@
 #include "debug.h"
 #include "Plan.hxx"
 #include "Job.hxx"
-#include "pg_array.hxx"
+#include "pg/Array.hxx"
 
 extern "C" {
 #include "syslog.h"
