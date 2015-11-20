@@ -5,13 +5,13 @@
  */
 
 #include "PGQueue.hxx"
-#include "DatabaseConnection.hxx"
+#include "pg/Connection.hxx"
 
 #include <assert.h>
 #include <stdlib.h>
 
 bool
-pg_listen(DatabaseConnection &db)
+pg_listen(PgConnection &db)
 {
     const auto result = db.Execute("LISTEN new_job");
     if (!result.IsCommandSuccessful()) {
@@ -24,7 +24,7 @@ pg_listen(DatabaseConnection &db)
 }
 
 bool
-pg_notify(DatabaseConnection &db)
+pg_notify(PgConnection &db)
 {
     const auto result = db.Execute("NOTIFY new_job");
     if (!result.IsCommandSuccessful()) {
@@ -37,7 +37,7 @@ pg_notify(DatabaseConnection &db)
 }
 
 int
-pg_release_jobs(DatabaseConnection &db, const char *node_name)
+pg_release_jobs(PgConnection &db, const char *node_name)
 {
     const auto result =
         db.ExecuteParams("UPDATE jobs "
@@ -54,7 +54,7 @@ pg_release_jobs(DatabaseConnection &db, const char *node_name)
 }
 
 int
-pg_expire_jobs(DatabaseConnection &db, const char *except_node_name)
+pg_expire_jobs(PgConnection &db, const char *except_node_name)
 {
     const auto result =
         db.ExecuteParams("UPDATE jobs "
@@ -73,7 +73,7 @@ pg_expire_jobs(DatabaseConnection &db, const char *except_node_name)
 }
 
 int
-pg_next_scheduled_job(DatabaseConnection &db, const char *plans_include,
+pg_next_scheduled_job(PgConnection &db, const char *plans_include,
                       long *span_r)
 {
     assert(plans_include != nullptr && *plans_include == '{');
@@ -101,8 +101,8 @@ pg_next_scheduled_job(DatabaseConnection &db, const char *plans_include,
     return 1;
 }
 
-DatabaseResult
-pg_select_new_jobs(DatabaseConnection &db,
+PgResult
+pg_select_new_jobs(PgConnection &db,
                    const char *plans_include, const char *plans_exclude,
                    const char *plans_lowprio,
                    unsigned limit)
@@ -130,7 +130,7 @@ pg_select_new_jobs(DatabaseConnection &db,
 }
 
 int
-pg_claim_job(DatabaseConnection &db, const char *job_id, const char *node_name,
+pg_claim_job(PgConnection &db, const char *job_id, const char *node_name,
              const char *timeout)
 {
     const auto result =
@@ -148,7 +148,7 @@ pg_claim_job(DatabaseConnection &db, const char *job_id, const char *node_name,
 }
 
 int
-pg_set_job_progress(DatabaseConnection &db, const char *job_id,
+pg_set_job_progress(PgConnection &db, const char *job_id,
                     unsigned progress, const char *timeout)
 {
     const auto result =
@@ -166,7 +166,7 @@ pg_set_job_progress(DatabaseConnection &db, const char *job_id,
 }
 
 int
-pg_rollback_job(DatabaseConnection &db, const char *id)
+pg_rollback_job(PgConnection &db, const char *id)
 {
     const auto result =
         db.ExecuteParams("UPDATE jobs "
@@ -184,7 +184,7 @@ pg_rollback_job(DatabaseConnection &db, const char *id)
 }
 
 int
-pg_set_job_done(DatabaseConnection &db, const char *id, int status)
+pg_set_job_done(PgConnection &db, const char *id, int status)
 {
     const auto result =
         db.ExecuteParams("UPDATE jobs "

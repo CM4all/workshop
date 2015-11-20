@@ -2,8 +2,8 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#ifndef SNOWBALL_PARAM_WRAPPER_HXX
-#define SNOWBALL_PARAM_WRAPPER_HXX
+#ifndef PG_PARAM_WRAPPER_HXX
+#define PG_PARAM_WRAPPER_HXX
 
 #include "BinaryValue.hxx"
 
@@ -11,8 +11,8 @@
 #include <cstddef>
 
 template<typename T>
-struct ParamWrapper {
-    ParamWrapper(const T &t);
+struct PgParamWrapper {
+    PgParamWrapper(const T &t);
     const char *GetValue() const;
 
     /**
@@ -29,10 +29,10 @@ struct ParamWrapper {
 };
 
 template<>
-struct ParamWrapper<BinaryValue> {
-    BinaryValue value;
+struct PgParamWrapper<PgBinaryValue> {
+    PgBinaryValue value;
 
-    constexpr ParamWrapper(BinaryValue _value)
+    constexpr PgParamWrapper(PgBinaryValue _value)
         :value(_value) {}
 
     constexpr const char *GetValue() const {
@@ -49,10 +49,10 @@ struct ParamWrapper<BinaryValue> {
 };
 
 template<>
-struct ParamWrapper<const char *> {
+struct PgParamWrapper<const char *> {
     const char *value;
 
-    constexpr ParamWrapper(const char *_value):value(_value) {}
+    constexpr PgParamWrapper(const char *_value):value(_value) {}
 
     constexpr const char *GetValue() const {
         return value;
@@ -69,10 +69,10 @@ struct ParamWrapper<const char *> {
 };
 
 template<>
-struct ParamWrapper<int> {
+struct PgParamWrapper<int> {
     char buffer[16];
 
-    ParamWrapper(int i) {
+    PgParamWrapper(int i) {
         sprintf(buffer, "%i", i);
     }
 
@@ -91,10 +91,10 @@ struct ParamWrapper<int> {
 };
 
 template<>
-struct ParamWrapper<unsigned> {
+struct PgParamWrapper<unsigned> {
     char buffer[16];
 
-    ParamWrapper(unsigned i) {
+    PgParamWrapper(unsigned i) {
         sprintf(buffer, "%u", i);
     }
 
@@ -113,10 +113,10 @@ struct ParamWrapper<unsigned> {
 };
 
 template<>
-struct ParamWrapper<bool> {
+struct PgParamWrapper<bool> {
     const char *value;
 
-    constexpr ParamWrapper(bool _value):value(_value ? "t" : "f") {}
+    constexpr PgParamWrapper(bool _value):value(_value ? "t" : "f") {}
 
     constexpr bool IsBinary() const {
         return false;

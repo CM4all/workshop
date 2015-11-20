@@ -2,10 +2,10 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#include "DatabaseResult.hxx"
+#include "Result.hxx"
 
 std::string
-DatabaseResult::GetOnlyStringChecked() const
+PgResult::GetOnlyStringChecked() const
 {
     if (!IsQuerySuccessful() || GetRowCount() == 0)
         return std::string();

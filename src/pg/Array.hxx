@@ -4,8 +4,8 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#ifndef WORKSHOP_PG_ARRAY_HXX
-#define WORKSHOP_PG_ARRAY_HXX
+#ifndef PG_ARRAY_HXX
+#define PG_ARRAY_HXX
 
 #include <list>
 #include <string>

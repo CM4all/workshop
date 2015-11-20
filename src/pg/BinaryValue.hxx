@@ -2,19 +2,19 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#ifndef SNOWBALL_BINARY_VALUE_HXX
-#define SNOWBALL_BINARY_VALUE_HXX
+#ifndef PG_BINARY_VALUE_HXX
+#define PG_BINARY_VALUE_HXX
 
 #include <inline/compiler.h>
 
 #include <cstddef>
 
-struct BinaryValue {
+struct PgBinaryValue {
     const void *value;
     size_t size;
 
-    BinaryValue() = default;
-    constexpr BinaryValue(const void *_value, size_t _size)
+    PgBinaryValue() = default;
+    constexpr PgBinaryValue(const void *_value, size_t _size)
         :value(_value), size(_size) {}
 
     gcc_pure

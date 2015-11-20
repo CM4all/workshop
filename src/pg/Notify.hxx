@@ -2,8 +2,8 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#ifndef SNOWBALL_DATABASE_NOTIFY_HXX
-#define SNOWBALL_DATABASE_NOTIFY_HXX
+#ifndef PG_NOTIFY_HXX
+#define PG_NOTIFY_HXX
 
 #include <inline/compiler.h>
 
@@ -12,19 +12,19 @@
 /**
  * A thin C++ wrapper for a PGnotify pointer.
  */
-class DatabaseNotify {
+class PgNotify {
     PGnotify *notify;
 
 public:
-    DatabaseNotify():notify(nullptr) {}
-    explicit DatabaseNotify(PGnotify *_notify):notify(_notify) {}
+    PgNotify():notify(nullptr) {}
+    explicit PgNotify(PGnotify *_notify):notify(_notify) {}
 
-    DatabaseNotify(const DatabaseNotify &other) = delete;
-    DatabaseNotify(DatabaseNotify &&other):notify(other.notify) {
+    PgNotify(const PgNotify &other) = delete;
+    PgNotify(PgNotify &&other):notify(other.notify) {
         other.notify = nullptr;
     }
 
-    ~DatabaseNotify() {
+    ~PgNotify() {
         if (notify != nullptr)
             PQfreemem(notify);
     }
@@ -33,8 +33,8 @@ public:
         return notify != nullptr;
     }
 
-    DatabaseNotify &operator=(const DatabaseNotify &other) = delete;
-    DatabaseNotify &operator=(DatabaseNotify &&other) {
+    PgNotify &operator=(const PgNotify &other) = delete;
+    PgNotify &operator=(PgNotify &&other) {
         if (notify != nullptr)
             PQfreemem(notify);
         notify = other.notify;

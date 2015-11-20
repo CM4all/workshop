@@ -98,7 +98,7 @@ Queue::GetNextScheduled(int *span_r)
 }
 
 static bool
-get_job(Job &job, const DatabaseResult &result, unsigned row)
+get_job(Job &job, const PgResult &result, unsigned row)
 {
     assert(row < result.GetRowCount());
 
@@ -123,8 +123,8 @@ get_job(Job &job, const DatabaseResult &result, unsigned row)
 
 static int
 get_and_claim_job(Job &job, const char *node_name,
-                  DatabaseConnection &db,
-                  const DatabaseResult &result, unsigned row,
+                  PgConnection &db,
+                  const PgResult &result, unsigned row,
                   const char *timeout) {
     if (!get_job(job, result, row))
         return -1;
@@ -190,7 +190,7 @@ Queue::SetFilter(const char *_plans_include, std::string &&_plans_exclude,
 }
 
 void
-Queue::RunResult(const DatabaseResult &result)
+Queue::RunResult(const PgResult &result)
 {
     for (unsigned row = 0, end = result.GetRowCount();
          row != end && !disabled && !interrupt; ++row) {
@@ -244,7 +244,7 @@ Queue::Run2()
                plans_lowprio.c_str());
 
     constexpr unsigned MAX_JOBS = 16;
-    DatabaseResult result =
+    auto result =
         pg_select_new_jobs(db,
                            plans_include.c_str(), plans_exclude.c_str(),
                            plans_lowprio.c_str(),

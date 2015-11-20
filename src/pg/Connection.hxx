@@ -2,13 +2,13 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#ifndef SNOWBALL_DATABASE_CONNECTION_HXX
-#define SNOWBALL_DATABASE_CONNECTION_HXX
+#ifndef PG_CONNECTION_HXX
+#define PG_CONNECTION_HXX
 
 #include "ParamWrapper.hxx"
 #include "DynamicParamWrapper.hxx"
-#include "DatabaseResult.hxx"
-#include "DatabaseNotify.hxx"
+#include "Result.hxx"
+#include "Notify.hxx"
 
 #include <inline/compiler.h>
 
@@ -22,20 +22,20 @@
 /**
  * A thin C++ wrapper for a PGconn pointer.
  */
-class DatabaseConnection {
+class PgConnection {
     PGconn *conn;
 
 public:
-    DatabaseConnection():conn(nullptr) {}
-    DatabaseConnection(const DatabaseConnection &other) = delete;
+    PgConnection():conn(nullptr) {}
+    PgConnection(const PgConnection &other) = delete;
 
-    DatabaseConnection(DatabaseConnection &&other):conn(other.conn) {
+    PgConnection(PgConnection &&other):conn(other.conn) {
         other.conn = nullptr;
     }
 
-    DatabaseConnection &operator=(const DatabaseConnection &other) = delete;
+    PgConnection &operator=(const PgConnection &other) = delete;
 
-    DatabaseConnection &operator=(DatabaseConnection &&other) {
+    PgConnection &operator=(PgConnection &&other) {
         if (conn != nullptr)
             ::PQfinish(conn);
 
@@ -45,7 +45,7 @@ public:
         return *this;
     }
 
-    ~DatabaseConnection() {
+    ~PgConnection() {
         Disconnect();
     }
 
@@ -134,22 +134,22 @@ public:
         ::PQconsumeInput(conn);
     }
 
-    DatabaseNotify GetNextNotify() {
+    PgNotify GetNextNotify() {
         assert(IsDefined());
 
-        return DatabaseNotify(::PQnotifies(conn));
+        return PgNotify(::PQnotifies(conn));
     }
 
 protected:
-    DatabaseResult CheckResult(PGresult *result) {
+    PgResult CheckResult(PGresult *result) {
         if (result == nullptr)
             throw std::bad_alloc();
 
-        return DatabaseResult(result);
+        return PgResult(result);
     }
 
     template<size_t i, typename... Params>
-    DatabaseResult ExecuteParams3(bool result_binary,
+    PgResult ExecuteParams3(bool result_binary,
                                   const char *query,
                                   const char *const*values) {
         assert(IsDefined());
@@ -161,13 +161,13 @@ protected:
     }
 
     template<size_t i, typename T, typename... Params>
-    DatabaseResult ExecuteParams3(bool result_binary,
+    PgResult ExecuteParams3(bool result_binary,
                                   const char *query, const char **values,
                                   const T &t, Params... params) {
         assert(IsDefined());
         assert(query != nullptr);
 
-        ParamWrapper<T> p(t);
+        PgParamWrapper<T> p(t);
         assert(!p.IsBinary());
         values[i] = p.GetValue();
 
@@ -176,7 +176,7 @@ protected:
     }
 
     template<size_t i, typename... Params>
-    DatabaseResult ExecuteBinary3(const char *query,
+    PgResult ExecuteBinary3(const char *query,
                                   const char *const*values,
                                   const int *lengths, const int *formats) {
         assert(IsDefined());
@@ -188,13 +188,13 @@ protected:
     }
 
     template<size_t i, typename T, typename... Params>
-    DatabaseResult ExecuteBinary3(const char *query, const char **values,
+    PgResult ExecuteBinary3(const char *query, const char **values,
                                   int *lengths, int *formats,
                                   const T &t, Params... params) {
         assert(IsDefined());
         assert(query != nullptr);
 
-        ParamWrapper<T> p(t);
+        PgParamWrapper<T> p(t);
         values[i] = p.GetValue();
         lengths[i] = p.GetSize();
         formats[i] = p.IsBinary();
@@ -210,13 +210,13 @@ protected:
 
     template<typename T, typename... Params>
     static size_t CountDynamic(const T &t, Params... params) {
-        return DynamicParamWrapper<T>::Count(t) + CountDynamic(params...);
+        return PgDynamicParamWrapper<T>::Count(t) + CountDynamic(params...);
     }
 
-    DatabaseResult ExecuteDynamic2(const char *query,
-                                   const char *const*values,
-                                   const int *lengths, const int *formats,
-                                   unsigned n) {
+    PgResult ExecuteDynamic2(const char *query,
+                             const char *const*values,
+                             const int *lengths, const int *formats,
+                             unsigned n) {
         assert(IsDefined());
         assert(query != nullptr);
 
@@ -226,22 +226,22 @@ protected:
     }
 
     template<typename T, typename... Params>
-    DatabaseResult ExecuteDynamic2(const char *query,
-                                   const char **values,
-                                   int *lengths, int *formats,
-                                   unsigned n,
-                                   const T &t, Params... params) {
+    PgResult ExecuteDynamic2(const char *query,
+                             const char **values,
+                             int *lengths, int *formats,
+                             unsigned n,
+                             const T &t, Params... params) {
         assert(IsDefined());
         assert(query != nullptr);
 
-        const DynamicParamWrapper<T> w(t);
+        const PgDynamicParamWrapper<T> w(t);
         n += w.Fill(values + n, lengths + n, formats + n);
 
         return ExecuteDynamic2(query, values, lengths, formats, n, params...);
     }
 
 public:
-    DatabaseResult Execute(const char *query) {
+    PgResult Execute(const char *query) {
         assert(IsDefined());
         assert(query != nullptr);
 
@@ -249,8 +249,8 @@ public:
     }
 
     template<typename... Params>
-    DatabaseResult ExecuteParams(bool result_binary,
-                                 const char *query, Params... params) {
+    PgResult ExecuteParams(bool result_binary,
+                           const char *query, Params... params) {
         assert(IsDefined());
         assert(query != nullptr);
 
@@ -262,12 +262,12 @@ public:
     }
 
     template<typename... Params>
-    DatabaseResult ExecuteParams(const char *query, Params... params) {
+    PgResult ExecuteParams(const char *query, Params... params) {
         return ExecuteParams(false, query, params...);
     }
 
     template<typename... Params>
-    DatabaseResult ExecuteBinary(const char *query, Params... params) {
+    PgResult ExecuteBinary(const char *query, Params... params) {
         assert(IsDefined());
         assert(query != nullptr);
 
@@ -285,7 +285,7 @@ public:
      * expanded.
      */
     template<typename... Params>
-    DatabaseResult ExecuteDynamic(const char *query, Params... params) {
+    PgResult ExecuteDynamic(const char *query, Params... params) {
         assert(IsDefined());
         assert(query != nullptr);
 
@@ -328,7 +328,7 @@ public:
         return ::PQsendQuery(conn, query) != 0;
     }
 
-    DatabaseResult ReceiveResult() {
+    PgResult ReceiveResult() {
         assert(IsDefined());
 
         return CheckResult(::PQgetResult(conn));

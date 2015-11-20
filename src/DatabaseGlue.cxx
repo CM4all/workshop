@@ -90,7 +90,7 @@ DatabaseGlue::PollConnect()
     assert(IsDefined());
     assert(state == State::CONNECTING);
 
-    Poll(DatabaseConnection::PollConnect());
+    Poll(PgConnection::PollConnect());
 }
 
 void
@@ -99,7 +99,7 @@ DatabaseGlue::PollReconnect()
     assert(IsDefined());
     assert(state == State::RECONNECTING);
 
-    Poll(DatabaseConnection::PollReconnect());
+    Poll(PgConnection::PollReconnect());
 }
 
 void
@@ -110,7 +110,7 @@ DatabaseGlue::PollNotify()
 
     ConsumeInput();
 
-    DatabaseNotify notify;
+    PgNotify notify;
     switch (GetStatus()) {
     case CONNECTION_OK:
         while ((notify = GetNextNotify()))
@@ -139,7 +139,7 @@ void
 DatabaseGlue::Disconnect()
 {
     event.Delete();
-    DatabaseConnection::Disconnect();
+    PgConnection::Disconnect();
     state = State::DISCONNECTED;
 }
 

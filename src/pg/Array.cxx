@@ -4,7 +4,7 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#include "pg_array.hxx"
+#include "Array.hxx"
 
 #include <stdexcept>
 

@@ -2,8 +2,8 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#ifndef SNOWBALL_DATABASE_RESULT_HXX
-#define SNOWBALL_DATABASE_RESULT_HXX
+#ifndef PG_RESULT_HXX
+#define PG_RESULT_HXX
 
 #include "BinaryValue.hxx"
 
@@ -18,19 +18,19 @@
 /**
  * A thin C++ wrapper for a PGresult pointer.
  */
-class DatabaseResult {
+class PgResult {
     PGresult *result;
 
 public:
-    DatabaseResult():result(nullptr) {}
-    explicit DatabaseResult(PGresult *_result):result(_result) {}
+    PgResult():result(nullptr) {}
+    explicit PgResult(PGresult *_result):result(_result) {}
 
-    DatabaseResult(const DatabaseResult &other) = delete;
-    DatabaseResult(DatabaseResult &&other):result(other.result) {
+    PgResult(const PgResult &other) = delete;
+    PgResult(PgResult &&other):result(other.result) {
         other.result = nullptr;
     }
 
-    ~DatabaseResult() {
+    ~PgResult() {
         if (result != nullptr)
             ::PQclear(result);
     }
@@ -39,8 +39,8 @@ public:
         return result != nullptr;
     }
 
-    DatabaseResult &operator=(const DatabaseResult &other) = delete;
-    DatabaseResult &operator=(DatabaseResult &&other) {
+    PgResult &operator=(const PgResult &other) = delete;
+    PgResult &operator=(PgResult &&other) {
         if (result != nullptr)
             ::PQclear(result);
         result = other.result;
@@ -165,10 +165,11 @@ public:
     }
 
     gcc_pure
-    BinaryValue GetBinaryValue(unsigned row, unsigned column) const {
+    PgBinaryValue GetBinaryValue(unsigned row, unsigned column) const {
         assert(IsColumnBinary(column));
 
-        return BinaryValue(GetValue(row, column), GetValueLength(row, column));
+        return PgBinaryValue(GetValue(row, column),
+                             GetValueLength(row, column));
     }
 
     /**

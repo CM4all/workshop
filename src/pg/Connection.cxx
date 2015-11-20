@@ -2,12 +2,12 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#include "DatabaseConnection.hxx"
+#include "Connection.hxx"
 
 #include <string.h>
 
 std::string
-DatabaseConnection::Escape(const char *p, size_t length) const
+PgConnection::Escape(const char *p, size_t length) const
 {
     assert(p != nullptr || length == 0);
 
@@ -20,7 +20,7 @@ DatabaseConnection::Escape(const char *p, size_t length) const
 }
 
 std::string
-DatabaseConnection::Escape(const char *p) const
+PgConnection::Escape(const char *p) const
 {
     assert(p != nullptr);
 

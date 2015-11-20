@@ -44,9 +44,10 @@ CXX_SOURCES = src/main.cxx \
 	src/Instance.cxx \
 	src/event/FunctionEvent.cxx \
 	src/event/SignalEvent.cxx \
-	src/pg_array.cxx \
 	src/Queue.cxx src/PGQueue.cxx src/Job.cxx \
-	src/DatabaseConnection.cxx src/DatabaseGlue.cxx src/DatabaseResult.cxx \
+	src/pg/Connection.cxx src/pg/Result.cxx \
+	src/pg/Array.cxx \
+	src/DatabaseGlue.cxx \
 	src/Library.cxx \
 	src/PlanLoader.cxx src/PlanLibrary.cxx src/PlanUpdate.cxx \
 	src/Operator.cxx src/Workplace.cxx
@@ -71,10 +72,10 @@ check: t/test-pg_decode_array t/test-pg_encode_array
 t/test-pg_decode_array.o t/test-pg_encode_array.o: %.o: %.cxx
 	$(CXX) -c -o $@ $< $(CXXFLAGS) $(INCLUDES)
 
-t/test-pg_decode_array: t/test-pg_decode_array.o src/pg_array.o
+t/test-pg_decode_array: t/test-pg_decode_array.o src/pg/Array.o
 	$(CC) -o $@ $^ $(LDFLAGS) $(LIBS)
 
-t/test-pg_encode_array: t/test-pg_encode_array.o src/pg_array.o
+t/test-pg_encode_array: t/test-pg_encode_array.o src/pg/Array.o
 	$(CC) -o $@ $^ $(LDFLAGS) $(LIBS)
 
 src/cm4all-workshop: $(C_OBJECTS) $(CXX_OBJECTS)

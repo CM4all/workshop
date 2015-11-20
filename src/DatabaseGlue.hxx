@@ -5,7 +5,7 @@
 #ifndef SNOWBALL_DATABASE_GLUE_HXX
 #define SNOWBALL_DATABASE_GLUE_HXX
 
-#include "DatabaseConnection.hxx"
+#include "pg/Connection.hxx"
 #include "event/FunctionEvent.hxx"
 
 #include <inline/compiler.h>
@@ -28,7 +28,7 @@ public:
  * reconnects automatically and provides an asynchronous notify
  * handler.
  */
-class DatabaseGlue : public DatabaseConnection {
+class DatabaseGlue : public PgConnection {
     std::string schema;
 
     DatabaseHandler &handler;

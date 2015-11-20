@@ -2,8 +2,8 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#ifndef SNOWBALL_DYNAMIC_PARAM_WRAPPER_HXX
-#define SNOWBALL_DYNAMIC_PARAM_WRAPPER_HXX
+#ifndef PG_DYNAMIC_PARAM_WRAPPER_HXX
+#define PG_DYNAMIC_PARAM_WRAPPER_HXX
 
 #include "ParamWrapper.hxx"
 
@@ -14,10 +14,10 @@
 #include <cstdio>
 
 template<typename T>
-struct DynamicParamWrapper {
-    ParamWrapper<T> wrapper;
+struct PgDynamicParamWrapper {
+    PgParamWrapper<T> wrapper;
 
-    DynamicParamWrapper(const T &t):wrapper(t) {}
+    PgDynamicParamWrapper(const T &t):wrapper(t) {}
 
     constexpr static size_t Count(gcc_unused const T &t) {
         return 1;
@@ -33,10 +33,10 @@ struct DynamicParamWrapper {
 };
 
 template<typename T>
-struct DynamicParamWrapper<std::vector<T>> {
-    std::vector<DynamicParamWrapper<T>> items;
+struct PgDynamicParamWrapper<std::vector<T>> {
+    std::vector<PgDynamicParamWrapper<T>> items;
 
-    constexpr DynamicParamWrapper(const std::vector<T> &params)
+    constexpr PgDynamicParamWrapper(const std::vector<T> &params)
         :items(params.begin(), params.end()) {}
 
     constexpr static size_t Count(gcc_unused const std::vector<T> &v) {

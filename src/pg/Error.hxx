@@ -2,29 +2,29 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#ifndef SNOWBALL_DATABASE_ERROR_HXX
-#define SNOWBALL_DATABASE_ERROR_HXX
+#ifndef PG_ERROR_HXX
+#define PG_ERROR_HXX
 
-#include "DatabaseResult.hxx"
+#include "Result.hxx"
 
-class DatabaseError {
-    DatabaseResult result;
+class PgError {
+    PgResult result;
 
 public:
-    DatabaseError(const DatabaseError &other) = delete;
-    DatabaseError(DatabaseError &&other)
+    PgError(const PgError &other) = delete;
+    PgError(PgError &&other)
         :result(std::move(other.result)) {}
-    explicit DatabaseError(DatabaseResult &&_result)
+    explicit PgError(PgResult &&_result)
         :result(std::move(_result)) {}
 
-    DatabaseResult &operator=(const DatabaseResult &other) = delete;
+    PgResult &operator=(const PgResult &other) = delete;
 
-    DatabaseError &operator=(DatabaseError &&other) {
+    PgError &operator=(PgError &&other) {
         result = std::move(other.result);
         return *this;
     }
 
-    DatabaseError &operator=(DatabaseResult &&other) {
+    PgError &operator=(PgResult &&other) {
         result = std::move(other);
         return *this;
     }

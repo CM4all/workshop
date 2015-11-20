@@ -95,7 +95,7 @@ public:
     void SetFilter(const char *plans_include, std::string &&plans_exclude,
                    std::string &&plans_lowprio);
 
-    void RunResult(const DatabaseResult &result);
+    void RunResult(const PgResult &result);
     void Run2();
     void Run();
 
