@@ -6,6 +6,19 @@
 
 #include <string.h>
 
+void
+PgConnection::Connect(const char *conninfo)
+{
+    assert(!IsDefined());
+
+    conn = ::PQconnectdb(conninfo);
+    if (conn == nullptr)
+        throw std::bad_alloc();
+
+    if (GetStatus() != CONNECTION_OK)
+        throw std::runtime_error(GetErrorMessage());
+}
+
 bool
 PgConnection::SetSchema(const char *schema)
 {

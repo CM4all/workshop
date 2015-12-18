@@ -19,6 +19,7 @@
 #include <string>
 #include <cassert>
 #include <algorithm>
+#include <stdexcept>
 
 /**
  * A thin C++ wrapper for a PGconn pointer.
@@ -28,6 +29,16 @@ class PgConnection {
 
 public:
     PgConnection() = default;
+
+    PgConnection(const char *conninfo) {
+        try {
+            Connect(conninfo);
+        } catch (...) {
+            Disconnect();
+            throw;
+        }
+    }
+
     PgConnection(const PgConnection &other) = delete;
 
     PgConnection(PgConnection &&other):conn(other.conn) {
@@ -97,6 +108,8 @@ public:
             conn = nullptr;
         }
     }
+
+    void Connect(const char *conninfo);
 
     void StartConnect(const char *conninfo) {
         assert(!IsDefined());
