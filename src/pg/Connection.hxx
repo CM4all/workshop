@@ -295,6 +295,8 @@ public:
                                           params...);
     }
 
+    bool SetSchema(const char *schema);
+
     bool BeginSerializable() {
         const auto result = Execute("BEGIN ISOLATION LEVEL SERIALIZABLE");
         return result.IsCommandSuccessful();

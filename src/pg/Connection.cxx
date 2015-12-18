@@ -6,6 +6,13 @@
 
 #include <string.h>
 
+bool
+PgConnection::SetSchema(const char *schema)
+{
+    std::string sql = "SET SCHEMA '" + Escape(schema) + "'";
+    return Execute(sql.c_str()).IsCommandSuccessful();
+}
+
 std::string
 PgConnection::Escape(const char *p, size_t length) const
 {

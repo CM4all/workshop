@@ -54,15 +54,12 @@ DatabaseGlue::Poll(PostgresPollingStatusType status)
 
     case PGRES_POLLING_OK:
         if (!schema.empty() &&
-            (state == State::CONNECTING || state == State::RECONNECTING)) {
-            std::string sql = std::string("SET SCHEMA '") + schema
-                + std::string("'");
-            if (!Execute(sql.c_str()).IsCommandSuccessful()) {
-                cerr << "Failed to set schema '" << schema << "': "
-                     << GetErrorMessage() << endl;
-                Error();
-                break;
-            }
+            (state == State::CONNECTING || state == State::RECONNECTING) &&
+            !SetSchema(schema.c_str())) {
+            cerr << "Failed to set schema '" << schema << "': "
+                 << GetErrorMessage() << endl;
+            Error();
+            break;
         }
 
         state = State::READY;
