@@ -177,6 +177,78 @@ public:
      */
     gcc_pure
     std::string GetOnlyStringChecked() const;
+
+    class RowIterator {
+        PGresult *result;
+        unsigned row;
+
+    public:
+        constexpr RowIterator(PGresult *_result, unsigned _row)
+            :result(_result), row(_row) {}
+
+        constexpr bool operator==(const RowIterator &other) const {
+            return row == other.row;
+        }
+
+        constexpr bool operator!=(const RowIterator &other) const {
+            return row != other.row;
+        }
+
+        RowIterator &operator++() {
+            ++row;
+            return *this;
+        }
+
+        RowIterator &operator*() {
+            return *this;
+        }
+
+        gcc_pure
+        const char *GetValue(unsigned column) const {
+            assert(result != nullptr);
+            assert(row < (unsigned)::PQntuples(result));
+            assert(column < (unsigned)::PQnfields(result));
+
+            return ::PQgetvalue(result, row, column);
+        }
+
+        gcc_pure
+        unsigned GetValueLength(unsigned column) const {
+            assert(result != nullptr);
+            assert(row < (unsigned)::PQntuples(result));
+            assert(column < (unsigned)::PQnfields(result));
+
+            return ::PQgetlength(result, row, column);
+        }
+
+        gcc_pure
+        bool IsValueNull(unsigned column) const {
+            assert(result != nullptr);
+            assert(row < (unsigned)::PQntuples(result));
+            assert(column < (unsigned)::PQnfields(result));
+
+            return ::PQgetisnull(result, row, column);
+        }
+
+        gcc_pure
+        PgBinaryValue GetBinaryValue(unsigned column) const {
+            assert(result != nullptr);
+            assert(row < (unsigned)::PQntuples(result));
+            assert(column < (unsigned)::PQnfields(result));
+
+            return PgBinaryValue(GetValue(column), GetValueLength(column));
+        }
+    };
+
+    typedef RowIterator iterator;
+
+    iterator begin() {
+        return iterator{result, 0};
+    }
+
+    iterator end() {
+        return iterator{result, GetRowCount()};
+    }
 };
 
 #endif
