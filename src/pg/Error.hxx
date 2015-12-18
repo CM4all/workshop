@@ -19,7 +19,7 @@ public:
     explicit PgError(PgResult &&_result)
         :result(std::move(_result)) {}
 
-    PgResult &operator=(const PgResult &other) = delete;
+    PgError &operator=(const PgError &other) = delete;
 
     PgError &operator=(PgError &&other) {
         result = std::move(other.result);
