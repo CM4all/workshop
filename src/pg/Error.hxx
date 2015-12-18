@@ -7,7 +7,9 @@
 
 #include "Result.hxx"
 
-class PgError {
+#include <exception>
+
+class PgError final : public std::exception {
     PgResult result;
 
 public:
@@ -35,7 +37,7 @@ public:
     }
 
     gcc_pure
-    const char *GetMessage() const {
+    const char *what() const noexcept override {
         return result.GetErrorMessage();
     }
 };
