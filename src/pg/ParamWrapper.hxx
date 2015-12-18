@@ -23,7 +23,7 @@ struct PgParamWrapper {
 
     /**
      * Returns the size of the value in bytes.  Only applicable if
-     * IsBinary() returns true and the value is non-NULL.
+     * IsBinary() returns true and the value is non-nullptr.
      */
     size_t GetSize() const;
 };

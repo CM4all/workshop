@@ -24,10 +24,10 @@
  * A thin C++ wrapper for a PGconn pointer.
  */
 class PgConnection {
-    PGconn *conn;
+    PGconn *conn = nullptr;
 
 public:
-    PgConnection():conn(nullptr) {}
+    PgConnection() = default;
     PgConnection(const PgConnection &other) = delete;
 
     PgConnection(PgConnection &&other):conn(other.conn) {
