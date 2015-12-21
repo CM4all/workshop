@@ -2,7 +2,7 @@ cm4all-workshop (1.0.9) unstable; urgency=low
 
   * systemd support, log to journald
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Mon, 21 Dec 2015 09:04:34 -0000
 
 cm4all-workshop (1.0.8) unstable; urgency=low
 
