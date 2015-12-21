@@ -13,8 +13,8 @@ INCLUDES =
 LIBDAEMON_CFLAGS := $(shell pkg-config --cflags libcm4all-daemon)
 LIBDAEMON_LIBS := $(shell pkg-config --libs libcm4all-daemon)
 
-GLIB_CFLAGS := $(shell pkg-config --cflags "glib-2.0 >= 2.16")
-GLIB_LIBS := $(shell pkg-config --libs "glib-2.0 >= 2.16")
+GLIB_CFLAGS := $(shell pkg-config --cflags "glib-2.0 >= 2.24")
+GLIB_LIBS := $(shell pkg-config --libs "glib-2.0 >= 2.24")
 
 INCLUDES += $(LIBDAEMON_CFLAGS) $(GLIB_CFLAGS)
 
