@@ -1,0 +1,12 @@
+[Unit]
+Description=CM4all Workshop
+After=network.target
+
+[Service]
+ExecStart=/usr/lib/cm4all/workshop/systemd/run.sh
+KillMode=process
+Restart=on-failure
+
+[Install]
+Alias=workshop.service
+WantedBy=multi-user.target
