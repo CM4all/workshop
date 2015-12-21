@@ -499,7 +499,7 @@ queue_run2(struct queue *queue)
 
     assert(!queue->disabled);
     assert(queue->running);
-    assert(!queue->fd >= 0);
+    assert(queue->fd >= 0);
 
     if (queue->plans_include == NULL ||
         strcmp(queue->plans_include, "{}") == 0 ||
@@ -598,7 +598,7 @@ static void
 queue_run(struct queue *queue)
 {
     assert(!queue->running);
-    assert(!queue->fd >= 0);
+    assert(queue->fd >= 0);
 
     if (queue->disabled)
         return;
