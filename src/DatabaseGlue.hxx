@@ -8,10 +8,6 @@
 #include "pg/Connection.hxx"
 #include "event/FunctionEvent.hxx"
 
-#include <inline/compiler.h>
-
-#include <postgresql/libpq-fe.h>
-
 #include <cassert>
 
 class DatabaseGlue;

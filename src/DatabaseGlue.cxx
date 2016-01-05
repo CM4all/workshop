@@ -6,7 +6,8 @@
 
 DatabaseGlue::DatabaseGlue(const char *conninfo, const char *_schema,
                            DatabaseHandler &_handler)
-    :schema(_schema), handler(_handler), state(State::CONNECTING),
+    :schema(_schema),
+     handler(_handler), state(State::CONNECTING),
      event([this](int, short){ OnEvent(); })
 {
     StartConnect(conninfo);
