@@ -31,10 +31,31 @@ class DatabaseGlue : public PgConnection {
     DatabaseHandler &handler;
 
     enum class State {
+        /**
+         * No database connection exists.
+         */
         DISCONNECTED,
+
+        /**
+         * Connecting to the database asynchronously.
+         */
         CONNECTING,
+
+        /**
+         * Reconnecting to the database asynchronously.
+         */
         RECONNECTING,
+
+        /**
+         * Connection is ready to be used.  As soon as the socket
+         * becomes readable, notifications will be received and
+         * forwarded to DatabaseHandler::OnNotify().
+         */
         READY,
+
+        /**
+         * Waiting to reconnect.  A timer was scheduled to do this.
+         */
         WAITING,
     };
 
