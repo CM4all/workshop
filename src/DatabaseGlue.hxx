@@ -59,7 +59,7 @@ class DatabaseGlue : public PgConnection {
         WAITING,
     };
 
-    State state;
+    State state = State::DISCONNECTED;
 
     /**
      * DISCONNECTED: not used.

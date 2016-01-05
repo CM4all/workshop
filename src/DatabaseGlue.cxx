@@ -8,10 +8,11 @@
 DatabaseGlue::DatabaseGlue(const char *conninfo, const char *_schema,
                            DatabaseHandler &_handler)
     :schema(_schema),
-     handler(_handler), state(State::CONNECTING),
+     handler(_handler),
      event(-1, 0, MakeSimpleEventCallback(DatabaseGlue, OnEvent), this)
 {
     StartConnect(conninfo);
+    state = State::CONNECTING;
     PollConnect();
 }
 
