@@ -86,7 +86,7 @@ public:
 protected:
     /**
      * This method is called when an fatal error on the connection has
-     * occurred.  It will set the state to DISCONNECT, notify the
+     * occurred.  It will set the state to DISCONNECTED, notify the
      * handler, and schedule a reconnect.
      */
     void Error();
