@@ -407,3 +407,9 @@ Queue::OnNotify(const char *name)
     if (strcmp(name, "new_job") == 0)
         Reschedule();
 }
+
+void
+Queue::OnError(const char *prefix, const char *error)
+{
+    daemon_log(2, "%s: %s\n", prefix, error);
+}

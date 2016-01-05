@@ -21,6 +21,7 @@ public:
     virtual void OnConnect() = 0;
     virtual void OnDisconnect() = 0;
     virtual void OnNotify(const char *name) = 0;
+    virtual void OnError(const char *prefix, const char *error) = 0;
 };
 
 /**

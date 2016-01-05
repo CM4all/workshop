@@ -4,10 +4,6 @@
 
 #include "DatabaseGlue.hxx"
 
-#include <iostream>
-using std::cerr;
-using std::endl;
-
 DatabaseGlue::DatabaseGlue(const char *conninfo, const char *_schema,
                            DatabaseHandler &_handler)
     :schema(_schema), handler(_handler), state(State::CONNECTING),
@@ -40,7 +36,7 @@ DatabaseGlue::Poll(PostgresPollingStatusType status)
 {
     switch (status) {
     case PGRES_POLLING_FAILED:
-        cerr << "Failed to connect to database: " << GetErrorMessage() << endl;
+        handler.OnError("Failed to connect to database", GetErrorMessage());
         Error();
         break;
 
@@ -56,8 +52,7 @@ DatabaseGlue::Poll(PostgresPollingStatusType status)
         if (!schema.empty() &&
             (state == State::CONNECTING || state == State::RECONNECTING) &&
             !SetSchema(schema.c_str())) {
-            cerr << "Failed to set schema '" << schema << "': "
-                 << GetErrorMessage() << endl;
+            handler.OnError("Failed to set schema", GetErrorMessage());
             Error();
             break;
         }
