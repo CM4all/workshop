@@ -125,9 +125,9 @@ public:
 
 private:
     /* virtual methods from DatabaseHandler */
-    virtual void OnConnect();
-    virtual void OnDisconnect();
-    virtual void OnNotify(const char *name);
+    void OnConnect() override;
+    void OnDisconnect() override;
+    void OnNotify(const char *name) override;
 };
 
 #endif
