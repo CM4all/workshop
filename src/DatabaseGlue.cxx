@@ -153,7 +153,8 @@ DatabaseGlue::ScheduleReconnect()
     assert(state == State::DISCONNECTED);
 
     state = State::WAITING;
-    event.SetTimer(MakeSimpleEventCallback(DatabaseGlue, OnEvent), this);
+    event.SetTimer(MakeSimpleEventCallback(DatabaseGlue, OnReconnectTimer),
+                   this);
     event.Add(delay);
 }
 
@@ -162,7 +163,9 @@ DatabaseGlue::OnEvent()
 {
     switch (state) {
     case State::DISCONNECTED:
+    case State::WAITING:
         assert(false);
+        gcc_unreachable();
 
     case State::CONNECTING:
         PollConnect();
@@ -175,9 +178,13 @@ DatabaseGlue::OnEvent()
     case State::READY:
         PollNotify();
         break;
-
-    case State::WAITING:
-        Reconnect();
-        break;
     }
+}
+
+inline void
+DatabaseGlue::OnReconnectTimer()
+{
+    assert(state == State::WAITING);
+
+    Reconnect();
 }

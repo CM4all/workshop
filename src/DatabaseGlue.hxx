@@ -98,6 +98,7 @@ protected:
 
 private:
     void OnEvent();
+    void OnReconnectTimer();
 };
 
 #endif
