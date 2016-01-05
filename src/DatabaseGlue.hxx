@@ -29,7 +29,7 @@ public:
  * handler.
  */
 class DatabaseGlue : public PgConnection {
-    std::string schema;
+    const std::string schema;
 
     DatabaseHandler &handler;
 
