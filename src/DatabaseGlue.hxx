@@ -6,7 +6,7 @@
 #define SNOWBALL_DATABASE_GLUE_HXX
 
 #include "pg/Connection.hxx"
-#include "event/FunctionEvent.hxx"
+#include "event/Event.hxx"
 
 #include <cassert>
 
@@ -51,7 +51,7 @@ class DatabaseGlue : public PgConnection {
      *
      * WAITING: a timer which reconnects.
      */
-    FunctionEvent event;
+    Event event;
 
 public:
     DatabaseGlue(const char *conninfo, const char *schema,

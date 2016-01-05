@@ -3,12 +3,13 @@
  */
 
 #include "DatabaseGlue.hxx"
+#include "event/Callback.hxx"
 
 DatabaseGlue::DatabaseGlue(const char *conninfo, const char *_schema,
                            DatabaseHandler &_handler)
     :schema(_schema),
      handler(_handler), state(State::CONNECTING),
-     event([this](int, short){ OnEvent(); })
+     event(-1, 0, MakeSimpleEventCallback(DatabaseGlue, OnEvent), this)
 {
     StartConnect(conninfo);
     PollConnect();
@@ -42,11 +43,15 @@ DatabaseGlue::Poll(PostgresPollingStatusType status)
         break;
 
     case PGRES_POLLING_READING:
-        event.SetAdd(GetSocket(), EV_READ);
+        event.Set(GetSocket(), EV_READ,
+                  MakeSimpleEventCallback(DatabaseGlue, OnEvent), this);
+        event.Add();
         break;
 
     case PGRES_POLLING_WRITING:
-        event.SetAdd(GetSocket(), EV_WRITE);
+        event.Set(GetSocket(), EV_WRITE,
+                  MakeSimpleEventCallback(DatabaseGlue, OnEvent), this);
+        event.Add();
         break;
 
     case PGRES_POLLING_OK:
@@ -59,7 +64,9 @@ DatabaseGlue::Poll(PostgresPollingStatusType status)
         }
 
         state = State::READY;
-        event.SetAdd(GetSocket(), EV_READ|EV_PERSIST);
+        event.Set(GetSocket(), EV_READ|EV_PERSIST,
+                  MakeSimpleEventCallback(DatabaseGlue, OnEvent), this);
+        event.Add();
 
         handler.OnConnect();
 
@@ -146,10 +153,11 @@ DatabaseGlue::ScheduleReconnect()
     assert(state == State::DISCONNECTED);
 
     state = State::WAITING;
-    event.SetAddTimer(delay);
+    event.SetTimer(MakeSimpleEventCallback(DatabaseGlue, OnEvent), this);
+    event.Add(delay);
 }
 
-void
+inline void
 DatabaseGlue::OnEvent()
 {
     switch (state) {
