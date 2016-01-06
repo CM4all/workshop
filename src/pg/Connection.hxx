@@ -342,7 +342,7 @@ public:
     PgResult ReceiveResult() {
         assert(IsDefined());
 
-        return CheckResult(::PQgetResult(conn));
+        return PgResult(PQgetResult(conn));
     }
 
     gcc_pure
