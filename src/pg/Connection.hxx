@@ -159,8 +159,8 @@ protected:
 
     template<size_t i, typename... Params>
     PgResult ExecuteParams3(bool result_binary,
-                                  const char *query,
-                                  const char *const*values) {
+                            const char *query,
+                            const char *const*values) {
         assert(IsDefined());
         assert(query != nullptr);
 
@@ -171,8 +171,8 @@ protected:
 
     template<size_t i, typename T, typename... Params>
     PgResult ExecuteParams3(bool result_binary,
-                                  const char *query, const char **values,
-                                  const T &t, Params... params) {
+                            const char *query, const char **values,
+                            const T &t, Params... params) {
         assert(IsDefined());
         assert(query != nullptr);
 
@@ -186,8 +186,8 @@ protected:
 
     template<size_t i, typename... Params>
     PgResult ExecuteBinary3(const char *query,
-                                  const char *const*values,
-                                  const int *lengths, const int *formats) {
+                            const char *const*values,
+                            const int *lengths, const int *formats) {
         assert(IsDefined());
         assert(query != nullptr);
 
@@ -198,8 +198,8 @@ protected:
 
     template<size_t i, typename T, typename... Params>
     PgResult ExecuteBinary3(const char *query, const char **values,
-                                  int *lengths, int *formats,
-                                  const T &t, Params... params) {
+                            int *lengths, int *formats,
+                            const T &t, Params... params) {
         assert(IsDefined());
         assert(query != nullptr);
 
