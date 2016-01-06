@@ -46,8 +46,8 @@ CXX_SOURCES = src/main.cxx \
 	src/event/SignalEvent.cxx \
 	src/Queue.cxx src/PGQueue.cxx src/Job.cxx \
 	src/pg/Connection.cxx src/pg/Result.cxx \
+	src/pg/AsyncConnection.cxx \
 	src/pg/Array.cxx \
-	src/DatabaseGlue.cxx \
 	src/Library.cxx \
 	src/PlanLoader.cxx src/PlanLibrary.cxx src/PlanUpdate.cxx \
 	src/Operator.cxx src/Workplace.cxx

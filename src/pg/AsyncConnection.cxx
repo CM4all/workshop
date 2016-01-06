@@ -2,14 +2,14 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#include "DatabaseGlue.hxx"
+#include "AsyncConnection.hxx"
 #include "event/Callback.hxx"
 
-DatabaseGlue::DatabaseGlue(const char *conninfo, const char *_schema,
-                           DatabaseHandler &_handler)
+AsyncPgConnection::AsyncPgConnection(const char *conninfo, const char *_schema,
+                                     AsyncPgConnectionHandler &_handler)
     :schema(_schema),
      handler(_handler),
-     event(-1, 0, MakeSimpleEventCallback(DatabaseGlue, OnEvent), this)
+     event(-1, 0, MakeSimpleEventCallback(AsyncPgConnection, OnEvent), this)
 {
     StartConnect(conninfo);
     state = State::CONNECTING;
@@ -17,7 +17,7 @@ DatabaseGlue::DatabaseGlue(const char *conninfo, const char *_schema,
 }
 
 void
-DatabaseGlue::Error()
+AsyncPgConnection::Error()
 {
     assert(state == State::CONNECTING ||
            state == State::RECONNECTING ||
@@ -35,7 +35,7 @@ DatabaseGlue::Error()
 }
 
 void
-DatabaseGlue::Poll(PostgresPollingStatusType status)
+AsyncPgConnection::Poll(PostgresPollingStatusType status)
 {
     switch (status) {
     case PGRES_POLLING_FAILED:
@@ -45,13 +45,13 @@ DatabaseGlue::Poll(PostgresPollingStatusType status)
 
     case PGRES_POLLING_READING:
         event.Set(GetSocket(), EV_READ,
-                  MakeSimpleEventCallback(DatabaseGlue, OnEvent), this);
+                  MakeSimpleEventCallback(AsyncPgConnection, OnEvent), this);
         event.Add();
         break;
 
     case PGRES_POLLING_WRITING:
         event.Set(GetSocket(), EV_WRITE,
-                  MakeSimpleEventCallback(DatabaseGlue, OnEvent), this);
+                  MakeSimpleEventCallback(AsyncPgConnection, OnEvent), this);
         event.Add();
         break;
 
@@ -66,7 +66,7 @@ DatabaseGlue::Poll(PostgresPollingStatusType status)
 
         state = State::READY;
         event.Set(GetSocket(), EV_READ|EV_PERSIST,
-                  MakeSimpleEventCallback(DatabaseGlue, OnEvent), this);
+                  MakeSimpleEventCallback(AsyncPgConnection, OnEvent), this);
         event.Add();
 
         handler.OnConnect();
@@ -86,7 +86,7 @@ DatabaseGlue::Poll(PostgresPollingStatusType status)
 }
 
 void
-DatabaseGlue::PollConnect()
+AsyncPgConnection::PollConnect()
 {
     assert(IsDefined());
     assert(state == State::CONNECTING);
@@ -95,7 +95,7 @@ DatabaseGlue::PollConnect()
 }
 
 void
-DatabaseGlue::PollReconnect()
+AsyncPgConnection::PollReconnect()
 {
     assert(IsDefined());
     assert(state == State::RECONNECTING);
@@ -104,7 +104,7 @@ DatabaseGlue::PollReconnect()
 }
 
 void
-DatabaseGlue::PollNotify()
+AsyncPgConnection::PollNotify()
 {
     assert(IsDefined());
     assert(state == State::READY);
@@ -128,7 +128,7 @@ DatabaseGlue::PollNotify()
 }
 
 void
-DatabaseGlue::Reconnect()
+AsyncPgConnection::Reconnect()
 {
     event.Delete();
     StartReconnect();
@@ -137,7 +137,7 @@ DatabaseGlue::Reconnect()
 }
 
 void
-DatabaseGlue::Disconnect()
+AsyncPgConnection::Disconnect()
 {
     event.Delete();
     PgConnection::Disconnect();
@@ -145,7 +145,7 @@ DatabaseGlue::Disconnect()
 }
 
 void
-DatabaseGlue::ScheduleReconnect()
+AsyncPgConnection::ScheduleReconnect()
 {
     /* attempt to reconnect every 10 seconds */
     static constexpr struct timeval delay{ 10, 0 };
@@ -154,13 +154,13 @@ DatabaseGlue::ScheduleReconnect()
     assert(state == State::DISCONNECTED);
 
     state = State::WAITING;
-    event.SetTimer(MakeSimpleEventCallback(DatabaseGlue, OnReconnectTimer),
+    event.SetTimer(MakeSimpleEventCallback(AsyncPgConnection, OnReconnectTimer),
                    this);
     event.Add(delay);
 }
 
 inline void
-DatabaseGlue::OnEvent()
+AsyncPgConnection::OnEvent()
 {
     switch (state) {
     case State::DISCONNECTED:
@@ -183,7 +183,7 @@ DatabaseGlue::OnEvent()
 }
 
 inline void
-DatabaseGlue::OnReconnectTimer()
+AsyncPgConnection::OnReconnectTimer()
 {
     assert(state == State::WAITING);
 

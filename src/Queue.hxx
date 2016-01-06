@@ -8,7 +8,7 @@
 #define WORKSHOP_QUEUE_HXX
 
 #include "event/FunctionEvent.hxx"
-#include "DatabaseGlue.hxx"
+#include "pg/AsyncConnection.hxx"
 
 #include <inline/compiler.h>
 
@@ -17,12 +17,12 @@
 
 struct Job;
 
-class Queue : private DatabaseHandler {
+class Queue : private AsyncPgConnectionHandler {
     typedef std::function<void(Job &&job)> Callback;
 
     std::string node_name;
 
-    DatabaseGlue db;
+    AsyncPgConnection db;
 
     bool disabled = false, running = false;
 
@@ -124,7 +124,7 @@ public:
     bool SetJobDone(const Job &job, int status);
 
 private:
-    /* virtual methods from DatabaseHandler */
+    /* virtual methods from AsyncPgConnectionHandler */
     void OnConnect() override;
     void OnDisconnect() override;
     void OnNotify(const char *name) override;

@@ -2,17 +2,15 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#ifndef SNOWBALL_DATABASE_GLUE_HXX
-#define SNOWBALL_DATABASE_GLUE_HXX
+#ifndef ASYNC_PG_CONNECTION_HXX
+#define ASYNC_PG_CONNECTION_HXX
 
-#include "pg/Connection.hxx"
+#include "Connection.hxx"
 #include "event/Event.hxx"
 
 #include <cassert>
 
-class DatabaseGlue;
-
-class DatabaseHandler {
+class AsyncPgConnectionHandler {
 public:
     virtual void OnConnect() = 0;
     virtual void OnDisconnect() = 0;
@@ -25,10 +23,10 @@ public:
  * reconnects automatically and provides an asynchronous notify
  * handler.
  */
-class DatabaseGlue : public PgConnection {
+class AsyncPgConnection : public PgConnection {
     const std::string schema;
 
-    DatabaseHandler &handler;
+    AsyncPgConnectionHandler &handler;
 
     enum class State {
         /**
@@ -49,7 +47,7 @@ class DatabaseGlue : public PgConnection {
         /**
          * Connection is ready to be used.  As soon as the socket
          * becomes readable, notifications will be received and
-         * forwarded to DatabaseHandler::OnNotify().
+         * forwarded to AsyncPgConnectionHandler::OnNotify().
          */
         READY,
 
@@ -75,10 +73,10 @@ class DatabaseGlue : public PgConnection {
     Event event;
 
 public:
-    DatabaseGlue(const char *conninfo, const char *schema,
-                 DatabaseHandler &handler);
+    AsyncPgConnection(const char *conninfo, const char *schema,
+                      AsyncPgConnectionHandler &handler);
 
-    ~DatabaseGlue() {
+    ~AsyncPgConnection() {
         Disconnect();
     }
 
