@@ -28,6 +28,7 @@ Queue::Queue(const char *_node_name, const char *conninfo, const char *schema,
      db(conninfo, schema, *this),
      timer_event([this](int, short){ OnTimer(); }),
      callback(_callback) {
+    db.Connect();
 }
 
 Queue::~Queue()
