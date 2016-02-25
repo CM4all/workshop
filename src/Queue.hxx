@@ -8,6 +8,7 @@
 #define WORKSHOP_QUEUE_HXX
 
 #include "event/FunctionEvent.hxx"
+#include "event/Duration.hxx"
 #include "pg/AsyncConnection.hxx"
 
 #include <inline/compiler.h>
@@ -69,8 +70,7 @@ public:
      * milliseconds).
      */
     void Reschedule() {
-        static constexpr struct timeval tv { 0, 10000 };
-        ScheduleTimer(tv);
+        ScheduleTimer(EventDuration<0, 10000>::value);
     }
 
     bool Reconnect();
