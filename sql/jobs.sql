@@ -6,7 +6,7 @@
 
 -- DROP TABLE jobs;
 
-CREATE TABLE jobs (
+CREATE TABLE IF NOT EXISTS jobs (
         id SERIAL PRIMARY KEY,
 
         -- non-unique name of the job
