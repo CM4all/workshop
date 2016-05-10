@@ -42,6 +42,8 @@ CXX_SOURCES = src/main.cxx \
 	src/util/Error.cxx \
 	src/io/TextFile.cxx \
 	src/Instance.cxx \
+	src/event/Loop.cxx \
+	src/event/DeferEvent.cxx \
 	src/event/FunctionEvent.cxx \
 	src/event/SignalEvent.cxx \
 	src/Queue.cxx src/PGQueue.cxx src/Job.cxx \
