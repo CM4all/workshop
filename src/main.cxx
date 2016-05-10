@@ -15,7 +15,7 @@ extern "C" {
 #include "Queue.hxx"
 #include "Job.hxx"
 #include "Workplace.hxx"
-#include "event/Base.hxx"
+#include "event/Loop.hxx"
 #include "version.h"
 
 #include <inline/compiler.h>
@@ -61,7 +61,7 @@ setup_signal_handlers()
 static void
 Run(struct config &config)
 {
-    EventBase event_base;
+    EventLoop event_loop;
 
     Instance instance("/etc/cm4all/workshop/plans",
                       config.node_name, config.database, "",
@@ -81,7 +81,7 @@ Run(struct config &config)
 
     instance.UpdateLibraryAndFilter();
 
-    event_base.Dispatch();
+    event_loop.Dispatch();
 
     /* cleanup */
 
