@@ -35,9 +35,9 @@ public:
 private:
     bool StartJob(Job &&job);
     void OnJob(Job &&job);
-    void OnExit();
-    void OnReload();
-    void OnChild();
+    void OnExit(int);
+    void OnReload(int);
+    void OnChild(int);
 };
 
 #endif

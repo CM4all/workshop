@@ -45,7 +45,6 @@ CXX_SOURCES = src/main.cxx \
 	src/event/Loop.cxx \
 	src/event/DeferEvent.cxx \
 	src/event/FunctionEvent.cxx \
-	src/event/SignalEvent.cxx \
 	src/Queue.cxx src/PGQueue.cxx src/Job.cxx \
 	src/pg/Connection.cxx src/pg/Result.cxx \
 	src/pg/AsyncConnection.cxx \

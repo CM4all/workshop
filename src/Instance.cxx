@@ -13,16 +13,21 @@ Instance::Instance(const char *library_path,
                    const char *node_name,
                    const char *conninfo, const char *schema,
                    unsigned concurrency)
-    :sigterm_event(SIGTERM, [this](){ OnExit(); }),
-     sigint_event(SIGINT, [this](){ OnExit(); }),
-     sigquit_event(SIGQUIT, [this](){ OnExit(); }),
-     sighup_event(SIGHUP, [this](){ OnReload(); }),
-     sigchld_event(SIGCHLD, [this](){ OnChild(); }),
+    :sigterm_event(event_loop, SIGTERM, BIND_THIS_METHOD(OnExit)),
+     sigint_event(event_loop, SIGINT, BIND_THIS_METHOD(OnExit)),
+     sigquit_event(event_loop, SIGQUIT, BIND_THIS_METHOD(OnExit)),
+     sighup_event(event_loop, SIGHUP, BIND_THIS_METHOD(OnReload)),
+     sigchld_event(event_loop, SIGCHLD, BIND_THIS_METHOD(OnChild)),
      library(library_path),
      queue(node_name, conninfo, schema,
            [this](Job &&job){ OnJob(std::move(job)); }),
      workplace(node_name, concurrency)
 {
+    sigterm_event.Add();
+    sigint_event.Add();
+    sigquit_event.Add();
+    sighup_event.Add();
+    sigchld_event.Add();
 }
 
 void
@@ -83,7 +88,7 @@ Instance::OnJob(Job &&job)
 }
 
 void
-Instance::OnExit()
+Instance::OnExit(int)
 {
     if (should_exit)
         return;
@@ -105,7 +110,7 @@ Instance::OnExit()
 }
 
 void
-Instance::OnReload()
+Instance::OnReload(int)
 {
     daemon_log(4, "reloading\n");
     UpdateLibraryAndFilter();
@@ -113,7 +118,7 @@ Instance::OnReload()
 }
 
 void
-Instance::OnChild()
+Instance::OnChild(int)
 {
     workplace.WaitPid();
 
