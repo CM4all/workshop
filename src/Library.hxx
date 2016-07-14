@@ -9,6 +9,7 @@
 
 #include <inline/compiler.h>
 
+#include <memory>
 #include <string>
 #include <map>
 
@@ -19,7 +20,7 @@ struct Plan;
 struct PlanEntry {
     const std::string name;
 
-    Plan *plan = nullptr;
+    std::shared_ptr<Plan> plan;
     bool deinstalled = false;
     time_t mtime = 0, disabled_until = 0;
     unsigned generation = 0;
@@ -27,19 +28,7 @@ struct PlanEntry {
     PlanEntry(const char *_name)
         :name(_name) {}
 
-    PlanEntry(PlanEntry &&other)
-        :name(std::move(other.name)), plan(other.plan),
-         deinstalled(other.deinstalled),
-         mtime(other.mtime), disabled_until(other.disabled_until),
-         generation(other.generation) {
-        other.plan = nullptr;
-    }
-
-    PlanEntry(const PlanEntry &other) = delete;
-
-    ~PlanEntry() {
-        delete plan;
-    }
+    PlanEntry(PlanEntry &&other) = default;
 
     bool IsDisabled(time_t now) const {
         return disabled_until > 0 && now < disabled_until;
@@ -78,7 +67,7 @@ public:
         return names.c_str();
     }
 
-    Plan *Get(const char *name);
+    std::shared_ptr<Plan> Get(const char *name);
 
 private:
     PlanEntry &MakePlanEntry(const char *name) {

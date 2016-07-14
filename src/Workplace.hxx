@@ -9,6 +9,7 @@
 
 #include <inline/compiler.h>
 
+#include <memory>
 #include <string>
 #include <list>
 
@@ -63,7 +64,7 @@ public:
     gcc_pure
     std::string GetFullPlanNames() const;
 
-    int Start(const Job &job, Plan *plan);
+    int Start(const Job &job, std::shared_ptr<Plan> &&plan);
 
 private:
     gcc_pure

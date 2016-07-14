@@ -190,7 +190,5 @@ Operator::OnProcessExit(int status)
                    job.id.c_str(), pid,
                    exit_status);
 
-    plan_put(&plan);
-
     job.SetDone(exit_status);
 }

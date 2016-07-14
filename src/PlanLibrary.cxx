@@ -119,7 +119,7 @@ Library::Update()
     return true;
 }
 
-Plan *
+std::shared_ptr<Plan>
 Library::Get(const char *name)
 {
     auto i = plans.find(name);
@@ -132,41 +132,5 @@ Library::Get(const char *name)
     if (ret != 0)
         return nullptr;
 
-    ++entry.plan->ref;
     return entry.plan;
-}
-
-static bool
-find_plan_pointer(const Library &library, const Plan *plan)
-{
-    for (const auto &i : library.plans)
-        if (i.second.plan == plan)
-            return true;
-
-    return false;
-}
-
-void
-plan_put(Plan **plan_r)
-{
-    Library *library;
-
-    assert(plan_r != nullptr);
-    assert(*plan_r != nullptr);
-
-    Plan *plan = *plan_r;
-    *plan_r = nullptr;
-
-    library = plan->library;
-
-    assert(plan->ref > 0);
-    assert(library != nullptr);
-
-    --plan->ref;
-
-    if (plan->ref == 0) {
-        /* free "old" plans which have refcount 0 */
-        if (!find_plan_pointer(*library, plan))
-            delete plan;
-    }
 }

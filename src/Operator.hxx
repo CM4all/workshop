@@ -8,6 +8,7 @@
 #include "event/FunctionEvent.hxx"
 #include "Job.hxx"
 
+#include <memory>
 #include <string>
 #include <list>
 
@@ -23,7 +24,7 @@ struct Job;
 struct Operator {
     Workplace *workplace;
     Job job;
-    Plan *plan;
+    std::shared_ptr<Plan> plan;
     pid_t pid;
 
     int stdout_fd = -1;
@@ -39,7 +40,7 @@ struct Operator {
     struct syslog_client *syslog = nullptr;
 
     Operator(Workplace *_workplace, const Job &_job,
-             Plan *_plan)
+             const std::shared_ptr<Plan> &_plan)
         :workplace(_workplace), job(_job), plan(_plan),
          stdout_event([this](int,short){ OnOutputReady(); }),
          stderr_event([this](int,short){ OnErrorReady(); })

@@ -48,8 +48,8 @@ Instance::UpdateLibraryAndFilter()
 bool
 Instance::StartJob(Job &&job)
 {
-    Plan *plan = library.Get(job.plan_name.c_str());
-    if (plan == nullptr) {
+    auto plan = library.Get(job.plan_name.c_str());
+    if (!plan) {
         fprintf(stderr, "library_get('%s') failed\n", job.plan_name.c_str());
         queue.RollbackJob(job);
         return false;
@@ -61,9 +61,8 @@ Instance::StartJob(Job &&job)
         return false;
     }
 
-    ret = workplace.Start(job, plan);
+    ret = workplace.Start(job, std::move(plan));
     if (ret != 0) {
-        plan_put(&plan);
         queue.SetJobDone(job, -1);
     }
 

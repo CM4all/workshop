@@ -47,13 +47,7 @@ check_plan_mtime(Library &library, PlanEntry &entry)
     }
 
     if (!S_ISREG(st.st_mode)) {
-        if (entry.plan != nullptr) {
-            /* free memory of old plan only if there are no
-               references on it anymore */
-            if (entry.plan->ref == 0)
-                delete entry.plan;
-            entry.plan = nullptr;
-        }
+        entry.plan.reset();
 
         entry.mtime = 0;
 
@@ -63,14 +57,7 @@ check_plan_mtime(Library &library, PlanEntry &entry)
 
     if (st.st_mtime != entry.mtime) {
         entry.disabled_until = 0;
-
-        if (entry.plan != nullptr) {
-            /* free memory of old plan only if there are no
-               references on it anymore */
-            if (entry.plan->ref == 0)
-                delete entry.plan;
-            entry.plan = nullptr;
-        }
+        entry.plan.reset();
 
         entry.mtime = st.st_mtime;
     }
@@ -89,11 +76,11 @@ check_plan_mtime(Library &library, PlanEntry &entry)
 static int
 validate_plan(Library &library, PlanEntry &entry)
 {
-    const Plan *plan = entry.plan;
+    const auto &plan = entry.plan;
     int ret;
     struct stat st;
 
-    assert(plan != nullptr);
+    assert(plan);
     assert(!plan->args.empty());
     assert(!plan->args.front().empty());
 
@@ -140,8 +127,7 @@ load_plan_entry(Library &library, PlanEntry &entry)
         return false;
     }
 
-    entry.plan = new Plan(std::move(plan));
-    entry.plan->library = &library;
+    entry.plan.reset(new Plan(std::move(plan)));
 
     library.next_names_update = 0;
 

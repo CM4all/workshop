@@ -81,7 +81,7 @@ Workplace::GetFullPlanNames() const
 }
 
 int
-Workplace::Start(const Job &job, Plan *plan)
+Workplace::Start(const Job &job, std::shared_ptr<Plan> &&plan)
 {
     int ret, stdout_fds[2], stderr_fds[2];
 

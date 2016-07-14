@@ -21,13 +21,8 @@ class Error;
 class Tokenizer;
 class TextFile;
 
-/** a library is a container for plan objects */
-class Library;
-
 /** a plan describes how to perform a specific job */
 struct Plan {
-    Library *library = nullptr;
-
     std::list<std::string> args;
 
     std::string timeout, chroot;
@@ -43,17 +38,11 @@ struct Plan {
     /** maximum concurrency for this plan */
     unsigned concurrency = 0;
 
-    unsigned ref = 0;
-
     Plan() = default;
 
     Plan(Plan &&) = default;
 
     Plan(const Plan &other) = delete;
-
-    ~Plan() {
-        assert(ref == 0);
-    }
 
     Plan &operator=(Plan &&other) = default;
     Plan &operator=(const Plan &other) = delete;
@@ -62,8 +51,5 @@ struct Plan {
     bool LoadFile(TextFile &file, Error &error);
     bool LoadFile(const char *path, Error &error);
 };
-
-void
-plan_put(Plan **plan_r);
 
 #endif
