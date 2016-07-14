@@ -15,6 +15,7 @@
 
 #include <functional>
 #include <string>
+#include <chrono>
 
 struct Job;
 class EventLoop;
@@ -38,7 +39,8 @@ class Queue : private AsyncPgConnectionHandler {
     TimerEvent timer_event;
 
     std::string plans_include, plans_exclude, plans_lowprio;
-    time_t next_expire_check = 0;
+    std::chrono::steady_clock::time_point next_expire_check =
+        std::chrono::steady_clock::time_point::min();
 
     Callback callback;
 

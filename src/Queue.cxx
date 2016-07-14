@@ -211,7 +211,6 @@ Queue::Run2()
 {
     int ret;
     bool full = false;
-    time_t now;
 
     assert(!disabled);
     assert(running);
@@ -223,9 +222,9 @@ Queue::Run2()
 
     /* check expired jobs from all other nodes except us */
 
-    now = time(nullptr);
+    const auto now = std::chrono::steady_clock::now();
     if (now >= next_expire_check) {
-        next_expire_check = now + 60;
+        next_expire_check = now + std::chrono::seconds(60);
 
         ret = pg_expire_jobs(db, node_name.c_str());
         if (ret < 0)
