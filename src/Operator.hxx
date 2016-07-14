@@ -12,10 +12,6 @@
 #include <string>
 #include <list>
 
-#include <event.h>
-
-#include <assert.h>
-
 struct Plan;
 class Workplace;
 struct Job;
@@ -45,18 +41,6 @@ struct Operator {
          stdout_event([this](int,short){ OnOutputReady(); }),
          stderr_event([this](int,short){ OnErrorReady(); })
     {}
-
-#if 0
-    Operator(Operator &&other)
-        :workplace(other.workplace), job(other.job), plan(other.plan),
-         pid(other.pid),
-         syslog(other.syslog) {
-        assert(other.stdout_fd < 0);
-        assert(other.stdout_length == 0);
-        assert(other.stderr_fd < 0);
-        assert(other.stderr_length == 0);
-    }
-#endif
 
     Operator(const Operator &other) = delete;
 
