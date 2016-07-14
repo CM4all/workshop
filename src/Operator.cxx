@@ -164,10 +164,10 @@ Operator::Expand(std::list<std::string> &args) const
     assert(!args.empty());
 
     StringMap vars;
-    vars.insert(std::make_pair("0", args.front()));
-    vars.insert(std::make_pair("NODE", workplace.GetNodeName()));
-    vars.insert(std::make_pair("JOB", job.id));
-    vars.insert(std::make_pair("PLAN", job.plan_name));
+    vars.emplace("0", args.front());
+    vars.emplace("NODE", workplace.GetNodeName());
+    vars.emplace("JOB", job.id);
+    vars.emplace("PLAN", job.plan_name);
 
     for (auto &i : args)
         expand_vars(i, vars);
