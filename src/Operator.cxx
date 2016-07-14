@@ -38,8 +38,6 @@ Operator::~Operator()
         stderr_event.Delete();
         close(stderr_fd);
     }
-
-    delete syslog;
 }
 
 void

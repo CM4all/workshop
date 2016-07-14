@@ -34,7 +34,7 @@ struct Operator {
     SocketEvent stderr_event;
     char stderr_buffer[512];
     size_t stderr_length = 0;
-    SyslogClient *syslog = nullptr;
+    std::unique_ptr<SyslogClient> syslog;
 
     Operator(EventLoop &event_loop, Workplace &_workplace, const Job &_job,
              const std::shared_ptr<Plan> &_plan);

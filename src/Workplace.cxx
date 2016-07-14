@@ -106,8 +106,8 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
                  job.plan_name.c_str(), job.id.c_str());
 
         try {
-            o->syslog = SyslogClient::Create(node_name.c_str(), ident, 1,
-                                             job.syslog_server.c_str());
+            o->syslog.reset(SyslogClient::Create(node_name.c_str(), ident, 1,
+                                                 job.syslog_server.c_str()));
         } catch (const std::runtime_error &e) {
             fprintf(stderr, "syslog_open(%s) failed: %s\n",
                     job.syslog_server.c_str(), e.what());
