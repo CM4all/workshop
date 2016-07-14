@@ -27,6 +27,7 @@ extern "C" {
 #include <assert.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
@@ -92,8 +93,7 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
 
     std::unique_ptr<Operator> o(new Operator(event_loop, *this, job, plan));
 
-    ret = pipe(stdout_fds);
-    if (ret < 0) {
+    if (pipe2(stdout_fds, O_CLOEXEC) < 0) {
         fprintf(stderr, "pipe() failed: %s\n", strerror(errno));
         return -1;
     }
@@ -119,8 +119,7 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
             return -1;
         }
 
-        ret = pipe(stderr_fds);
-        if (ret < 0) {
+        if (pipe2(stderr_fds, O_CLOEXEC) < 0) {
             fprintf(stderr, "pipe() failed: %s\n", strerror(errno));
             close(stdout_fds[1]);
             return -1;
@@ -207,13 +206,6 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
         dup2(stdout_fds[1], 1);
         if (!job.syslog_server.empty())
             dup2(stderr_fds[1], 2);
-
-        close(stdout_fds[0]);
-        close(stdout_fds[1]);
-        if (!job.syslog_server.empty()) {
-            close(stderr_fds[0]);
-            close(stderr_fds[1]);
-        }
 
         /* session */
 
