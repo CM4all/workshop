@@ -196,7 +196,7 @@ Queue::RunResult(const PgResult &result)
 {
     for (unsigned row = 0, end = result.GetRowCount();
          row != end && !disabled && !interrupt; ++row) {
-        Job job(this);
+        Job job(*this);
         int ret = get_and_claim_job(job, GetNodeName(),
                                     db, result, row, "5 minutes");
         if (ret > 0)
@@ -338,7 +338,7 @@ Queue::Enable()
 int
 Queue::SetJobProgress(const Job &job, unsigned progress, const char *timeout)
 {
-    assert(job.queue == this);
+    assert(&job.queue == this);
 
     daemon_log(5, "job %s progress=%u\n", job.id.c_str(), progress);
 
@@ -352,7 +352,7 @@ Queue::SetJobProgress(const Job &job, unsigned progress, const char *timeout)
 bool
 Queue::RollbackJob(const Job &job)
 {
-    assert(job.queue == this);
+    assert(&job.queue == this);
 
     daemon_log(6, "rolling back job %s\n", job.id.c_str());
 
@@ -367,7 +367,7 @@ Queue::RollbackJob(const Job &job)
 bool
 Queue::SetJobDone(const Job &job, int status)
 {
-    assert(job.queue == this);
+    assert(&job.queue == this);
 
     daemon_log(6, "job %s done with status %d\n", job.id.c_str(), status);
 

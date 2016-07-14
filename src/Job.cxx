@@ -10,11 +10,11 @@
 int
 Job::SetProgress(unsigned progress, const char *timeout)
 {
-    return queue->SetJobProgress(*this, progress, timeout);
+    return queue.SetJobProgress(*this, progress, timeout);
 }
 
 bool
 Job::SetDone(int status)
 {
-    return queue->SetJobDone(*this, status);
+    return queue.SetJobDone(*this, status);
 }
