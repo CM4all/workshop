@@ -37,11 +37,7 @@ struct Operator {
     SyslogClient *syslog = nullptr;
 
     Operator(EventLoop &event_loop, Workplace &_workplace, const Job &_job,
-             const std::shared_ptr<Plan> &_plan)
-        :workplace(_workplace), job(_job), plan(_plan),
-         stdout_event(event_loop, BIND_THIS_METHOD(OnOutputReady)),
-         stderr_event(event_loop, BIND_THIS_METHOD(OnErrorReady))
-    {}
+             const std::shared_ptr<Plan> &_plan);
 
     Operator(const Operator &other) = delete;
 

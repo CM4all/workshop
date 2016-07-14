@@ -19,6 +19,14 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
+Operator::Operator(EventLoop &event_loop, Workplace &_workplace, const Job &_job,
+                   const std::shared_ptr<Plan> &_plan)
+    :workplace(_workplace), job(_job), plan(_plan),
+     stdout_event(event_loop, BIND_THIS_METHOD(OnOutputReady)),
+     stderr_event(event_loop, BIND_THIS_METHOD(OnErrorReady))
+{
+}
+
 Operator::~Operator()
 {
     if (stdout_fd >= 0) {
