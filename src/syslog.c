@@ -73,28 +73,31 @@ int syslog_open(const char *me, const char *ident,
         return -1;
     }
 
-    syslog = calloc(1, sizeof(*syslog));
-    if (syslog == NULL) {
-        freeaddrinfo(ai);
-        return ENOMEM;
-    }
-
-    syslog->fd = socket(ai->ai_family, ai->ai_socktype, SOCK_CLOEXEC);
-    if (syslog->fd < 0) {
+    const int fd = socket(ai->ai_family, ai->ai_socktype, 0);
+    if (fd < 0) {
         int save_errno = errno;
         syslog_close(&syslog);
         freeaddrinfo(ai);
         return save_errno;
     }
 
-    ret = connect(syslog->fd, ai->ai_addr, ai->ai_addrlen);
+    ret = connect(fd, ai->ai_addr, ai->ai_addrlen);
     freeaddrinfo(ai);
     if (ret < 0) {
         int save_errno = errno;
-        syslog_close(&syslog);
+        close(fd);
         return save_errno;
     }
 
+
+    syslog = calloc(1, sizeof(*syslog));
+    if (syslog == NULL) {
+        freeaddrinfo(ai);
+        close(fd);
+        return ENOMEM;
+    }
+
+    syslog->fd = fd;
     syslog->me = strdup(me);
     syslog->ident = strdup(ident);
     if (syslog->me == NULL || syslog->ident == NULL) {
