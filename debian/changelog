@@ -1,9 +1,3 @@
-cm4all-workshop (1.0.10) unstable; urgency=low
-
-  * jobs.sql: use CREATE TABLE IF NOT EXISTS where appropriate (cw)
- 
- -- 
-
 cm4all-workshop (1.0.9) unstable; urgency=low
 
   * systemd support, log to journald
