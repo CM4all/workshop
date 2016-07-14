@@ -29,9 +29,12 @@ public:
     int Log(int priority, const char *msg);
 };
 
-int syslog_open(const char *me, const char *ident,
-                int facility,
-                const char *host_and_port,
-                SyslogClient **syslog_r);
+/**
+ * Throws std::runtime_error on error.
+ */
+SyslogClient *
+syslog_open(const char *me, const char *ident,
+            int facility,
+            const char *host_and_port);
 
 #endif

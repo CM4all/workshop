@@ -105,13 +105,12 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
         snprintf(ident, sizeof(ident), "%s[%s]",
                  job.plan_name.c_str(), job.id.c_str());
 
-        ret = syslog_open(node_name.c_str(), ident, 1,
-                          job.syslog_server.c_str(),
-                          &o->syslog);
-        if (ret != 0) {
-            if (ret > 0)
-                fprintf(stderr, "syslog_open(%s) failed: %s\n",
-                        job.syslog_server.c_str(), strerror(ret));
+        try {
+            o->syslog = syslog_open(node_name.c_str(), ident, 1,
+                                    job.syslog_server.c_str());
+        } catch (const std::runtime_error &e) {
+            fprintf(stderr, "syslog_open(%s) failed: %s\n",
+                    job.syslog_server.c_str(), e.what());
             close(stdout_fds[1]);
             return -1;
         }

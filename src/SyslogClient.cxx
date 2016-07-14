@@ -7,6 +7,8 @@
 #include "SyslogClient.hxx"
 #include "util/ScopeExit.hxx"
 
+#include <system_error>
+
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -55,10 +57,10 @@ static int getaddrinfo_helper(const char *host_and_port, const char *default_por
     return getaddrinfo(host, port, hints, ai_r);
 }
 
-int syslog_open(const char *me, const char *ident,
-                int facility,
-                const char *host_and_port,
-                SyslogClient **syslog_r) {
+SyslogClient *
+syslog_open(const char *me, const char *ident,
+            int facility,
+            const char *host_and_port) {
     int ret;
     struct addrinfo hints, *ai;
 
@@ -68,26 +70,27 @@ int syslog_open(const char *me, const char *ident,
 
     ret = getaddrinfo_helper(host_and_port, "syslog", &hints, &ai);
     if (ret != 0) {
-        fprintf(stderr, "getaddrinfo('%s') failed: %s\n",
-                host_and_port, gai_strerror(ret));
-        return -1;
+        char msg[256];
+        snprintf(msg, sizeof(msg), "getaddrinfo('%s') failed: %s",
+                 host_and_port, gai_strerror(ret));
+        throw std::runtime_error(msg);
     }
 
     AtScopeExit(ai) { freeaddrinfo(ai); };
 
     const int fd = socket(ai->ai_family, ai->ai_socktype, 0);
     if (fd < 0)
-        return errno;
+        throw std::system_error(std::error_code(errno, std::system_category()),
+                                "Failed to create socket");
 
     ret = connect(fd, ai->ai_addr, ai->ai_addrlen);
     if (ret < 0) {
-        int save_errno = errno;
-        close(fd);
-        return save_errno;
+        AtScopeExit(fd) { close(fd); };
+        throw std::system_error(std::error_code(errno, std::system_category()),
+                                "Failed to connect to syslog server");
     }
 
-    *syslog_r = new SyslogClient(fd, me, ident, facility);
-    return 0;
+    return new SyslogClient(fd, me, ident, facility);
 }
 
 /** hack to put const char* into struct iovec */
