@@ -79,7 +79,7 @@ int syslog_open(const char *me, const char *ident,
         return ENOMEM;
     }
 
-    syslog->fd = socket(ai->ai_family, ai->ai_socktype, 0);
+    syslog->fd = socket(ai->ai_family, ai->ai_socktype, SOCK_CLOEXEC);
     if (syslog->fd < 0) {
         int save_errno = errno;
         syslog_close(&syslog);
@@ -89,13 +89,6 @@ int syslog_open(const char *me, const char *ident,
 
     ret = connect(syslog->fd, ai->ai_addr, ai->ai_addrlen);
     freeaddrinfo(ai);
-    if (ret < 0) {
-        int save_errno = errno;
-        syslog_close(&syslog);
-        return save_errno;
-    }
-
-    ret = fcntl(syslog->fd, F_SETFD, 1);
     if (ret < 0) {
         int save_errno = errno;
         syslog_close(&syslog);
