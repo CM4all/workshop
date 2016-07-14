@@ -39,7 +39,7 @@ Operator::~Operator()
 }
 
 void
-Operator::OnOutputReady()
+Operator::OnOutputReady(short)
 {
     char buffer[512];
     ssize_t nbytes, i;
@@ -84,12 +84,13 @@ Operator::SetOutput(int fd)
     assert(stdout_fd < 0);
 
     stdout_fd = fd;
-    stdout_event.SetAdd(fd, EV_READ|EV_PERSIST);
+    stdout_event.Set(fd, EV_READ|EV_PERSIST);
+    stdout_event.Add();
 
 }
 
 void
-Operator::OnErrorReady()
+Operator::OnErrorReady(short)
 {
     assert(syslog != nullptr);
 
@@ -126,7 +127,8 @@ Operator::SetSyslog(int fd)
     assert(stderr_fd < 0);
 
     stderr_fd = fd;
-    stderr_event.SetAdd(stderr_fd, EV_READ|EV_PERSIST);
+    stderr_event.Set(stderr_fd, EV_READ|EV_PERSIST);
+    stderr_event.Add();
 }
 
 typedef std::map<std::string, std::string> StringMap;

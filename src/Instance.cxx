@@ -61,7 +61,7 @@ Instance::StartJob(Job &&job)
         return false;
     }
 
-    ret = workplace.Start(job, std::move(plan));
+    ret = workplace.Start(event_loop, job, std::move(plan));
     if (ret != 0) {
         queue.SetJobDone(job, -1);
     }

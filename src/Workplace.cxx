@@ -81,7 +81,8 @@ Workplace::GetFullPlanNames() const
 }
 
 int
-Workplace::Start(const Job &job, std::shared_ptr<Plan> &&plan)
+Workplace::Start(EventLoop &event_loop, const Job &job,
+                 std::shared_ptr<Plan> &&plan)
 {
     int ret, stdout_fds[2], stderr_fds[2];
 
@@ -89,7 +90,7 @@ Workplace::Start(const Job &job, std::shared_ptr<Plan> &&plan)
 
     /* create operator object */
 
-    Operator *o = new Operator(*this, job, plan);
+    Operator *o = new Operator(event_loop, *this, job, plan);
 
     ret = pipe(stdout_fds);
     if (ret < 0) {

@@ -5,7 +5,7 @@
 #ifndef WORKSHOP_OPERATOR_HXX
 #define WORKSHOP_OPERATOR_HXX
 
-#include "event/FunctionEvent.hxx"
+#include "event/SocketEvent.hxx"
 #include "Job.hxx"
 
 #include <memory>
@@ -24,22 +24,22 @@ struct Operator {
     pid_t pid;
 
     int stdout_fd = -1;
-    FunctionEvent stdout_event;
+    SocketEvent stdout_event;
     char stdout_buffer[64];
     size_t stdout_length = 0;
     unsigned progress = 0;
 
     int stderr_fd = -1;
-    FunctionEvent stderr_event;
+    SocketEvent stderr_event;
     char stderr_buffer[512];
     size_t stderr_length = 0;
     struct syslog_client *syslog = nullptr;
 
-    Operator(Workplace &_workplace, const Job &_job,
+    Operator(EventLoop &event_loop, Workplace &_workplace, const Job &_job,
              const std::shared_ptr<Plan> &_plan)
         :workplace(_workplace), job(_job), plan(_plan),
-         stdout_event([this](int,short){ OnOutputReady(); }),
-         stderr_event([this](int,short){ OnErrorReady(); })
+         stdout_event(event_loop, BIND_THIS_METHOD(OnOutputReady)),
+         stderr_event(event_loop, BIND_THIS_METHOD(OnErrorReady))
     {}
 
     Operator(const Operator &other) = delete;
@@ -56,8 +56,8 @@ struct Operator {
     void OnProcessExit(int status);
 
 private:
-    void OnOutputReady();
-    void OnErrorReady();
+    void OnOutputReady(short events);
+    void OnErrorReady(short events);
 };
 
 #endif

@@ -64,7 +64,8 @@ public:
     gcc_pure
     std::string GetFullPlanNames() const;
 
-    int Start(const Job &job, std::shared_ptr<Plan> &&plan);
+    int Start(EventLoop &event_loop, const Job &job,
+              std::shared_ptr<Plan> &&plan);
 
 private:
     gcc_pure
