@@ -66,13 +66,12 @@ public:
 
     time_t next_names_update;
 
-    unsigned ref;
     time_t mtime;
 
     Library(const char *_path)
         :path(_path),
          next_plans_check(0), generation(0),
-         next_names_update(0), ref(0), mtime(0) {}
+         next_names_update(0), mtime(0) {}
 
     Library(const Library &other) = delete;
 

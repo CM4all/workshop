@@ -133,7 +133,6 @@ Library::Get(const char *name)
         return nullptr;
 
     ++entry.plan->ref;
-    ++ref;
     return entry.plan;
 }
 
@@ -162,10 +161,8 @@ plan_put(Plan **plan_r)
 
     assert(plan->ref > 0);
     assert(library != nullptr);
-    assert(library->ref > 0);
 
     --plan->ref;
-    --library->ref;
 
     if (plan->ref == 0) {
         /* free "old" plans which have refcount 0 */
