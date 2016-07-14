@@ -17,7 +17,7 @@
 struct Plan;
 
 struct PlanEntry {
-    std::string name;
+    const std::string name;
 
     Plan *plan = nullptr;
     bool deinstalled = false;
