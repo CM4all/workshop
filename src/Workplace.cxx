@@ -66,7 +66,7 @@ Workplace::GetFullPlanNames() const
 
         const std::string &plan_name = o->job.plan_name;
 
-        auto i = counters.insert(std::make_pair(plan_name, 0));
+        auto i = counters.emplace(plan_name, 0);
         unsigned &n = i.first->second;
 
         ++n;
