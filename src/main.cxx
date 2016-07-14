@@ -61,8 +61,6 @@ setup_signal_handlers()
 static void
 Run(struct config &config)
 {
-    EventLoop event_loop;
-
     Instance instance("/etc/cm4all/workshop/plans",
                       config.node_name, config.database, "",
                       config.concurrency);
@@ -81,7 +79,7 @@ Run(struct config &config)
 
     instance.UpdateLibraryAndFilter();
 
-    event_loop.Dispatch();
+    instance.event_loop.Dispatch();
 
     /* cleanup */
 

@@ -5,6 +5,7 @@
 #ifndef WORKSHOP_INSTANCE_HXX
 #define WORKSHOP_INSTANCE_HXX
 
+#include "event/Loop.hxx"
 #include "event/SignalEvent.hxx"
 #include "Library.hxx"
 #include "Queue.hxx"
@@ -12,6 +13,8 @@
 
 class Instance {
 public:
+    EventLoop event_loop;
+
     bool should_exit = false;
 
     SignalEvent sigterm_event, sigint_event, sigquit_event;
