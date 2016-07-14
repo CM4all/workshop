@@ -77,7 +77,7 @@ public:
 
 private:
     PlanEntry &MakePlanEntry(const char *name) {
-        return plans.insert(std::make_pair(name, PlanEntry(name)))
+        return plans.emplace(name, name)
             .first->second;
     }
 
