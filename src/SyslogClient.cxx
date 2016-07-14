@@ -5,6 +5,7 @@
  */
 
 #include "SyslogClient.hxx"
+#include "util/ScopeExit.hxx"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -72,15 +73,13 @@ int syslog_open(const char *me, const char *ident,
         return -1;
     }
 
+    AtScopeExit(ai) { freeaddrinfo(ai); };
+
     const int fd = socket(ai->ai_family, ai->ai_socktype, 0);
-    if (fd < 0) {
-        int save_errno = errno;
-        freeaddrinfo(ai);
-        return save_errno;
-    }
+    if (fd < 0)
+        return errno;
 
     ret = connect(fd, ai->ai_addr, ai->ai_addrlen);
-    freeaddrinfo(ai);
     if (ret < 0) {
         int save_errno = errno;
         close(fd);
