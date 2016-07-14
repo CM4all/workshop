@@ -59,19 +59,17 @@ public:
 
     std::map<std::string, PlanEntry> plans;
 
-    time_t next_plans_check;
-    unsigned generation;
+    time_t next_plans_check = 0;
+    unsigned generation = 0;
 
     std::string names;
 
-    time_t next_names_update;
+    time_t next_names_update = 0;
 
-    time_t mtime;
+    time_t mtime = 0;
 
     Library(const char *_path)
-        :path(_path),
-         next_plans_check(0), generation(0),
-         next_names_update(0), mtime(0) {}
+        :path(_path) {}
 
     Library(const Library &other) = delete;
 
