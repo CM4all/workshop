@@ -19,16 +19,13 @@ struct Plan;
 struct PlanEntry {
     std::string name;
 
-    Plan *plan;
-    bool deinstalled;
-    time_t mtime, disabled_until;
-    unsigned generation;
+    Plan *plan = nullptr;
+    bool deinstalled = false;
+    time_t mtime = 0, disabled_until = 0;
+    unsigned generation = 0;
 
     PlanEntry(const char *_name)
-        :name(_name), plan(nullptr),
-         deinstalled(false),
-         mtime(0), disabled_until(0),
-         generation(0) {}
+        :name(_name) {}
 
     PlanEntry(PlanEntry &&other)
         :name(std::move(other.name)), plan(other.plan),
