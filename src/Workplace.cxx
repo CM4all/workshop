@@ -89,7 +89,7 @@ Workplace::Start(const Job &job, std::shared_ptr<Plan> &&plan)
 
     /* create operator object */
 
-    Operator *o = new Operator(this, job, plan);
+    Operator *o = new Operator(*this, job, plan);
 
     ret = pipe(stdout_fds);
     if (ret < 0) {

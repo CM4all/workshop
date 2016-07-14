@@ -18,7 +18,7 @@ struct Job;
 
 /** an operator is a job being executed */
 struct Operator {
-    Workplace *workplace;
+    Workplace &workplace;
     Job job;
     std::shared_ptr<Plan> plan;
     pid_t pid;
@@ -35,7 +35,7 @@ struct Operator {
     size_t stderr_length = 0;
     struct syslog_client *syslog = nullptr;
 
-    Operator(Workplace *_workplace, const Job &_job,
+    Operator(Workplace &_workplace, const Job &_job,
              const std::shared_ptr<Plan> &_plan)
         :workplace(_workplace), job(_job), plan(_plan),
          stdout_event([this](int,short){ OnOutputReady(); }),

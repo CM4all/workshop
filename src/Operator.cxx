@@ -163,7 +163,7 @@ Operator::Expand(std::list<std::string> &args) const
 
     StringMap vars;
     vars.insert(std::make_pair("0", args.front()));
-    vars.insert(std::make_pair("NODE", workplace->GetNodeName()));
+    vars.insert(std::make_pair("NODE", workplace.GetNodeName()));
     vars.insert(std::make_pair("JOB", job.id));
     vars.insert(std::make_pair("PLAN", job.plan_name));
 
