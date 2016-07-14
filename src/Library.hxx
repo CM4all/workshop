@@ -55,7 +55,7 @@ struct PlanEntry {
 
 class Library {
 public:
-    std::string path;
+    const std::string path;
 
     std::map<std::string, PlanEntry> plans;
 
