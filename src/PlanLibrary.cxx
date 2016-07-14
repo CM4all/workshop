@@ -67,18 +67,15 @@ Library::UpdatePlans()
 
     /* remove all plans */
 
-    for (auto n = plans.begin(), end = plans.end();
-         n != end;) {
-        auto i = n;
-        ++n;
-
+    for (auto i = plans.begin(), end = plans.end(); i != end;) {
         PlanEntry &entry = i->second;
         if (entry.generation != generation) {
             daemon_log(3, "removed plan '%s'\n", i->first.c_str());
 
-            plans.erase(i);
+            i = plans.erase(i);
             next_names_update = 0;
-        }
+        } else
+            ++i;
     }
 
     return 0;
