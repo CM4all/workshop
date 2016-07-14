@@ -31,8 +31,7 @@ Operator::~Operator()
         close(stderr_fd);
     }
 
-    if (syslog != nullptr)
-        syslog_close(&syslog);
+    delete syslog;
 }
 
 void
@@ -106,7 +105,7 @@ Operator::OnErrorReady(short)
         if (ch == '\r' || ch == '\n') {
             if (stderr_length > 0) {
                 stderr_buffer[stderr_length] = 0;
-                syslog_log(syslog, 6, stderr_buffer);
+                syslog->Log(6, stderr_buffer);
             }
 
             stderr_length = 0;

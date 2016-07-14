@@ -6,8 +6,6 @@
 
 #include "SyslogClient.hxx"
 
-#include <string>
-
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -19,28 +17,11 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-class SyslogClient {
-    int fd;
-    const std::string me, ident;
-    const int facility;
-
-public:
-    SyslogClient(int _fd, const char *_me, const char *_ident, int _facility)
-        :fd(_fd), me(_me), ident(_ident), facility(_facility) {}
-
-    SyslogClient(SyslogClient &&src)
-        :fd(src.fd), me(std::move(src.me)), ident(std::move(src.ident)),
-         facility(src.facility) {
-        src.fd = -1;
-    }
-
-    ~SyslogClient() {
-        if (fd >= 0)
-            close(fd);
-    }
-
-    int Log(int priority, const char *msg);
-};
+SyslogClient::~SyslogClient()
+{
+    if (fd >= 0)
+        close(fd);
+}
 
 static int getaddrinfo_helper(const char *host_and_port, const char *default_port,
                               const struct addrinfo *hints,
@@ -110,18 +91,6 @@ int syslog_open(const char *me, const char *ident,
     return 0;
 }
 
-void syslog_close(SyslogClient **syslog_r) {
-    SyslogClient *syslog;
-
-    assert(syslog_r != nullptr);
-    assert(*syslog_r != nullptr);
-
-    syslog = *syslog_r;
-    *syslog_r = nullptr;
-
-    delete syslog;
-}
-
 /** hack to put const char* into struct iovec */
 static inline void *deconst(const char *p) {
     union {
@@ -163,10 +132,4 @@ SyslogClient::Log(int priority, const char *msg)
         return -1;
 
     return 0;
-}
-
-int syslog_log(SyslogClient *syslog, int priority, const char *msg) {
-    assert(syslog != nullptr);
-
-    return syslog->Log(priority, msg);
 }
