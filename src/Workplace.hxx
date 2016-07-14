@@ -54,15 +54,6 @@ public:
     }
 
     gcc_pure
-    bool IsRunning(const Plan *plan) const {
-        for (const auto &i : operators)
-            if (i->plan == plan)
-                return true;
-
-        return false;
-    }
-
-    gcc_pure
     std::string GetRunningPlanNames() const;
 
     /**
