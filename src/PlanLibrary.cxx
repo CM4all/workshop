@@ -59,7 +59,7 @@ Library::UpdatePlans()
             continue;
 
         PlanEntry &entry = MakePlanEntry(ent->d_name);
-        UpdatePlan(entry);
+        UpdatePlan(ent->d_name, entry);
         entry.generation = generation;
     }
 
@@ -128,7 +128,7 @@ Library::Get(const char *name)
 
     PlanEntry &entry = i->second;
 
-    int ret = UpdatePlan(entry);
+    int ret = UpdatePlan(name, entry);
     if (ret != 0)
         return nullptr;
 

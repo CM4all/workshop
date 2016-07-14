@@ -19,8 +19,6 @@
 struct Plan;
 
 struct PlanEntry {
-    const std::string name;
-
     std::shared_ptr<Plan> plan;
     bool deinstalled = false;
     time_t mtime = 0;
@@ -28,8 +26,7 @@ struct PlanEntry {
         std::chrono::steady_clock::time_point::min();
     unsigned generation = 0;
 
-    PlanEntry(const char *_name)
-        :name(_name) {}
+    PlanEntry(const char *) {}
 
     PlanEntry(PlanEntry &&other) = default;
 
@@ -81,7 +78,7 @@ private:
             .first->second;
     }
 
-    int UpdatePlan(PlanEntry &entry);
+    int UpdatePlan(const char *name, PlanEntry &entry);
     int UpdatePlans();
 
     void UpdatePlanNames();

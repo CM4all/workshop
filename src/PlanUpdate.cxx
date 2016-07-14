@@ -28,14 +28,14 @@ disable_plan(Library &library, PlanEntry &entry,
 }
 
 static int
-check_plan_mtime(Library &library, PlanEntry &entry)
+check_plan_mtime(Library &library, const char *name, PlanEntry &entry)
 {
     int ret;
     char path[1024];
     struct stat st;
 
     snprintf(path, sizeof(path), "%s/%s",
-             library.path.c_str(), entry.name.c_str());
+             library.path.c_str(), name);
     ret = stat(path, &st);
     if (ret < 0) {
         if (ret != ENOENT)
@@ -107,23 +107,23 @@ validate_plan(Library &library, PlanEntry &entry)
 }
 
 static bool
-load_plan_entry(Library &library, PlanEntry &entry)
+load_plan_entry(Library &library, const char *name, PlanEntry &entry)
 {
     char path[1024];
 
     assert(entry.plan == nullptr);
     assert(entry.mtime != 0);
 
-    daemon_log(6, "loading plan '%s'\n", entry.name.c_str());
+    daemon_log(6, "loading plan '%s'\n", name);
 
     snprintf(path, sizeof(path), "%s/%s",
-             library.path.c_str(), entry.name.c_str());
+             library.path.c_str(), name);
 
     Plan plan;
     Error error;
     if (!plan.LoadFile(path, error)) {
         daemon_log(2, "failed to load plan '%s': %s\n",
-                   entry.name.c_str(), error.GetMessage());
+                   name, error.GetMessage());
         disable_plan(library, entry, std::chrono::seconds(600));
         return false;
     }
@@ -136,15 +136,15 @@ load_plan_entry(Library &library, PlanEntry &entry)
 }
 
 int
-Library::UpdatePlan(PlanEntry &entry)
+Library::UpdatePlan(const char *name, PlanEntry &entry)
 {
     int ret;
 
-    ret = check_plan_mtime(*this, entry);
+    ret = check_plan_mtime(*this, name, entry);
     if (ret != 0)
         return ret;
 
-    if (entry.plan == nullptr && !load_plan_entry(*this, entry))
+    if (entry.plan == nullptr && !load_plan_entry(*this, name, entry))
         return ret;
 
     ret = validate_plan(*this, entry);
