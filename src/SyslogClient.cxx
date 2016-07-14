@@ -58,9 +58,10 @@ static int getaddrinfo_helper(const char *host_and_port, const char *default_por
 }
 
 SyslogClient *
-syslog_open(const char *me, const char *ident,
-            int facility,
-            const char *host_and_port) {
+SyslogClient::Create(const char *me, const char *ident,
+                     int facility,
+                     const char *host_and_port)
+{
     int ret;
     struct addrinfo hints, *ai;
 

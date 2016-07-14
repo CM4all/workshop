@@ -26,15 +26,14 @@ public:
 
     ~SyslogClient();
 
+    /**
+     * Throws std::runtime_error on error.
+     */
+    static SyslogClient *Create(const char *me, const char *ident,
+                                int facility,
+                                const char *host_and_port);
+
     int Log(int priority, const char *msg);
 };
-
-/**
- * Throws std::runtime_error on error.
- */
-SyslogClient *
-syslog_open(const char *me, const char *ident,
-            int facility,
-            const char *host_and_port);
 
 #endif
