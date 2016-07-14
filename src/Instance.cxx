@@ -19,7 +19,7 @@ Instance::Instance(const char *library_path,
      sighup_event(event_loop, SIGHUP, BIND_THIS_METHOD(OnReload)),
      sigchld_event(event_loop, SIGCHLD, BIND_THIS_METHOD(OnChild)),
      library(library_path),
-     queue(node_name, conninfo, schema,
+     queue(event_loop, node_name, conninfo, schema,
            [this](Job &&job){ OnJob(std::move(job)); }),
      workplace(node_name, concurrency)
 {

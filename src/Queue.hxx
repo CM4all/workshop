@@ -7,7 +7,7 @@
 #ifndef WORKSHOP_QUEUE_HXX
 #define WORKSHOP_QUEUE_HXX
 
-#include "event/FunctionEvent.hxx"
+#include "event/TimerEvent.hxx"
 #include "event/Duration.hxx"
 #include "pg/AsyncConnection.hxx"
 
@@ -17,6 +17,7 @@
 #include <string>
 
 struct Job;
+class EventLoop;
 
 class Queue : private AsyncPgConnectionHandler {
     typedef std::function<void(Job &&job)> Callback;
@@ -34,7 +35,7 @@ class Queue : private AsyncPgConnectionHandler {
     /**
      * Timer event which runs the queue.
      */
-    FunctionEvent timer_event;
+    TimerEvent timer_event;
 
     std::string plans_include, plans_exclude, plans_lowprio;
     time_t next_expire_check = 0;
@@ -42,7 +43,8 @@ class Queue : private AsyncPgConnectionHandler {
     Callback callback;
 
 public:
-    Queue(const char *_node_name, const char *conninfo, const char *schema,
+    Queue(EventLoop &event_loop,
+          const char *_node_name, const char *conninfo, const char *schema,
           Callback _callback);
 
     Queue(const Queue &other) = delete;
@@ -61,8 +63,7 @@ public:
     void OnTimer();
 
     void ScheduleTimer(const struct timeval &tv) {
-        timer_event.Delete();
-        timer_event.Add(&tv);
+        timer_event.Add(tv);
     }
 
     /**
