@@ -14,6 +14,7 @@
 
 struct Plan;
 class Workplace;
+class SyslogClient;
 struct Job;
 
 /** an operator is a job being executed */
@@ -33,7 +34,7 @@ struct Operator {
     SocketEvent stderr_event;
     char stderr_buffer[512];
     size_t stderr_length = 0;
-    struct syslog_client *syslog = nullptr;
+    SyslogClient *syslog = nullptr;
 
     Operator(EventLoop &event_loop, Workplace &_workplace, const Job &_job,
              const std::shared_ptr<Plan> &_plan)

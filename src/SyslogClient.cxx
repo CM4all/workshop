@@ -4,7 +4,9 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#include "syslog.h"
+#include "SyslogClient.hxx"
+
+#include <string>
 
 #include <assert.h>
 #include <stdlib.h>
@@ -17,10 +19,27 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-struct syslog_client {
+class SyslogClient {
     int fd;
-    char *me, *ident;
-    int facility;
+    const std::string me, ident;
+    const int facility;
+
+public:
+    SyslogClient(int _fd, const char *_me, const char *_ident, int _facility)
+        :fd(_fd), me(_me), ident(_ident), facility(_facility) {}
+
+    SyslogClient(SyslogClient &&src)
+        :fd(src.fd), me(std::move(src.me)), ident(std::move(src.ident)),
+         facility(src.facility) {
+        src.fd = -1;
+    }
+
+    ~SyslogClient() {
+        if (fd >= 0)
+            close(fd);
+    }
+
+    int Log(int priority, const char *msg);
 };
 
 static int getaddrinfo_helper(const char *host_and_port, const char *default_port,
@@ -30,7 +49,7 @@ static int getaddrinfo_helper(const char *host_and_port, const char *default_por
     char buffer[256];
 
     colon = strchr(host_and_port, ':');
-    if (colon == NULL) {
+    if (colon == nullptr) {
         host = host_and_port;
         port = default_port;
     } else {
@@ -57,10 +76,9 @@ static int getaddrinfo_helper(const char *host_and_port, const char *default_por
 int syslog_open(const char *me, const char *ident,
                 int facility,
                 const char *host_and_port,
-                struct syslog_client **syslog_r) {
+                SyslogClient **syslog_r) {
     int ret;
     struct addrinfo hints, *ai;
-    struct syslog_client *syslog;
 
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = PF_INET;
@@ -76,7 +94,6 @@ int syslog_open(const char *me, const char *ident,
     const int fd = socket(ai->ai_family, ai->ai_socktype, 0);
     if (fd < 0) {
         int save_errno = errno;
-        syslog_close(&syslog);
         freeaddrinfo(ai);
         return save_errno;
     }
@@ -89,48 +106,20 @@ int syslog_open(const char *me, const char *ident,
         return save_errno;
     }
 
-
-    syslog = calloc(1, sizeof(*syslog));
-    if (syslog == NULL) {
-        freeaddrinfo(ai);
-        close(fd);
-        return ENOMEM;
-    }
-
-    syslog->fd = fd;
-    syslog->me = strdup(me);
-    syslog->ident = strdup(ident);
-    if (syslog->me == NULL || syslog->ident == NULL) {
-        int save_errno = errno;
-        syslog_close(&syslog);
-        return save_errno;
-    }
-
-    syslog->facility = facility;
-
-    *syslog_r = syslog;
+    *syslog_r = new SyslogClient(fd, me, ident, facility);
     return 0;
 }
 
-void syslog_close(struct syslog_client **syslog_r) {
-    struct syslog_client *syslog;
+void syslog_close(SyslogClient **syslog_r) {
+    SyslogClient *syslog;
 
-    assert(syslog_r != NULL);
-    assert(*syslog_r != NULL);
+    assert(syslog_r != nullptr);
+    assert(*syslog_r != nullptr);
 
     syslog = *syslog_r;
-    *syslog_r = NULL;
+    *syslog_r = nullptr;
 
-    if (syslog->fd >= 0)
-        close(syslog->fd);
-
-    if (syslog->me != NULL)
-        free(syslog->me);
-
-    if (syslog->ident != NULL)
-        free(syslog->ident);
-
-    free(syslog);
+    delete syslog;
 }
 
 /** hack to put const char* into struct iovec */
@@ -142,30 +131,31 @@ static inline void *deconst(const char *p) {
     return u.out;
 }
 
-int syslog_log(struct syslog_client *syslog, int priority, const char *msg) {
+int
+SyslogClient::Log(int priority, const char *msg)
+{
     static const char space = ' ';
     static const char newline = '\n';
     static const char colon[] = ": ";
     char code[16];
     struct iovec iovec[] = {
         { .iov_base = code },
-        { .iov_base = syslog->me, .iov_len = strlen(syslog->me) },
+        { .iov_base = deconst(me.c_str()), .iov_len = me.length() },
         { .iov_base = deconst(&space), .iov_len = 1 },
-        { .iov_base = syslog->ident, .iov_len = strlen(syslog->ident) },
+        { .iov_base = deconst(ident.c_str()), .iov_len = ident.length() },
         { .iov_base = deconst(colon), .iov_len = strlen(colon) },
         { .iov_base = deconst(msg), .iov_len = strlen(msg) },
         { .iov_base = deconst(&newline), .iov_len = 1 },
     };
     ssize_t nbytes;
 
-    assert(syslog != NULL);
-    assert(syslog->fd >= 0);
+    assert(fd >= 0);
     assert(priority >= 0 && priority < 8);
 
-    snprintf(code, sizeof(code), "<%d>", syslog->facility * 8 + priority);
+    snprintf(code, sizeof(code), "<%d>", facility * 8 + priority);
     iovec[0].iov_len = strlen(code);
 
-    nbytes = writev(syslog->fd, iovec, sizeof(iovec) / sizeof(iovec[0]));
+    nbytes = writev(fd, iovec, sizeof(iovec) / sizeof(iovec[0]));
     if (nbytes < 0)
         return errno;
 
@@ -173,4 +163,10 @@ int syslog_log(struct syslog_client *syslog, int priority, const char *msg) {
         return -1;
 
     return 0;
+}
+
+int syslog_log(SyslogClient *syslog, int priority, const char *msg) {
+    assert(syslog != nullptr);
+
+    return syslog->Log(priority, msg);
 }

@@ -7,13 +7,10 @@
 #include "Workplace.hxx"
 #include "Operator.hxx"
 #include "debug.h"
+#include "SyslogClient.hxx"
 #include "Plan.hxx"
 #include "Job.hxx"
 #include "pg/Array.hxx"
-
-extern "C" {
-#include "syslog.h"
-}
 
 #include <inline/compiler.h>
 #include <daemon/log.h>

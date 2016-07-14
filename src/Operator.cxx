@@ -8,10 +8,7 @@
 #include "Workplace.hxx"
 #include "Plan.hxx"
 #include "Job.hxx"
-
-extern "C" {
-#include "syslog.h"
-}
+#include "SyslogClient.hxx"
 
 #include <daemon/log.h>
 
