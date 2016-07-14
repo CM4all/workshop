@@ -90,12 +90,11 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
 
     /* create operator object */
 
-    Operator *o = new Operator(event_loop, *this, job, plan);
+    std::unique_ptr<Operator> o(new Operator(event_loop, *this, job, plan));
 
     ret = pipe(stdout_fds);
     if (ret < 0) {
         fprintf(stderr, "pipe() failed: %s\n", strerror(errno));
-        delete o;
         return -1;
     }
 
@@ -116,7 +115,6 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
             if (ret > 0)
                 fprintf(stderr, "syslog_open(%s) failed: %s\n",
                         job.syslog_server.c_str(), strerror(ret));
-            delete o;
             close(stdout_fds[1]);
             return -1;
         }
@@ -124,7 +122,6 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
         ret = pipe(stderr_fds);
         if (ret < 0) {
             fprintf(stderr, "pipe() failed: %s\n", strerror(errno));
-            delete o;
             close(stdout_fds[1]);
             return -1;
         }
@@ -243,7 +240,7 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
     daemon_log(2, "job %s (plan '%s') running as pid %d\n",
                job.id.c_str(), job.plan_name.c_str(), o->pid);
 
-    operators.push_back(o);
+    operators.push_back(o.release());
     ++num_operators;
 
     return 0;
