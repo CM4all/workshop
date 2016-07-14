@@ -9,6 +9,7 @@
 
 #include <inline/compiler.h>
 
+#include <chrono>
 #include <memory>
 #include <string>
 #include <map>
@@ -22,7 +23,9 @@ struct PlanEntry {
 
     std::shared_ptr<Plan> plan;
     bool deinstalled = false;
-    time_t mtime = 0, disabled_until = 0;
+    time_t mtime = 0;
+    std::chrono::steady_clock::time_point disabled_until =
+        std::chrono::steady_clock::time_point::min();
     unsigned generation = 0;
 
     PlanEntry(const char *_name)
@@ -30,11 +33,12 @@ struct PlanEntry {
 
     PlanEntry(PlanEntry &&other) = default;
 
-    bool IsDisabled(time_t now) const {
-        return disabled_until > 0 && now < disabled_until;
+    bool IsDisabled(std::chrono::steady_clock::time_point now) const {
+        return now < disabled_until;
     }
 
-    void Disable(time_t now, time_t duration) {
+    void Disable(std::chrono::steady_clock::time_point now,
+                 std::chrono::steady_clock::duration duration) {
         disabled_until = now + duration;
     }
 };
@@ -45,12 +49,14 @@ public:
 
     std::map<std::string, PlanEntry> plans;
 
-    time_t next_plans_check = 0;
+    std::chrono::steady_clock::time_point next_plans_check =
+        std::chrono::steady_clock::time_point::min();
     unsigned generation = 0;
 
     std::string names;
 
-    time_t next_names_update = 0;
+    std::chrono::steady_clock::time_point next_names_update =
+        std::chrono::steady_clock::time_point::min();
 
     time_t mtime = 0;
 

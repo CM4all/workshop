@@ -20,10 +20,11 @@
 #include <sys/stat.h>
 
 static void
-disable_plan(Library &library, PlanEntry &entry, time_t duration)
+disable_plan(Library &library, PlanEntry &entry,
+             std::chrono::steady_clock::duration duration)
 {
-    entry.Disable(time(nullptr), duration);
-    library.next_names_update = 0;
+    entry.Disable(std::chrono::steady_clock::now(), duration);
+    library.next_names_update = std::chrono::steady_clock::time_point::min();
 }
 
 static int
@@ -51,23 +52,23 @@ check_plan_mtime(Library &library, PlanEntry &entry)
 
         entry.mtime = 0;
 
-        disable_plan(library, entry, 60);
+        disable_plan(library, entry, std::chrono::seconds(60));
         return ENOENT;
     }
 
     if (st.st_mtime != entry.mtime) {
-        entry.disabled_until = 0;
+        entry.disabled_until = std::chrono::steady_clock::time_point::min();
         entry.plan.reset();
 
         entry.mtime = st.st_mtime;
     }
 
-    if (entry.disabled_until > 0) {
-        if (time(nullptr) < entry.disabled_until)
+    if (entry.disabled_until > std::chrono::steady_clock::time_point::min()) {
+        if (std::chrono::steady_clock::now() < entry.disabled_until)
             /* this plan is temporarily disabled due to previous errors */
             return ENOENT;
 
-        entry.disabled_until = 0;
+        entry.disabled_until = std::chrono::steady_clock::time_point::min();
     }
 
     return 0;
@@ -96,7 +97,7 @@ validate_plan(Library &library, PlanEntry &entry)
         if (errno == ENOENT)
             entry.deinstalled = true;
         else
-            disable_plan(library, entry, 60);
+            disable_plan(library, entry, std::chrono::seconds(60));
         return ENOENT;
     }
 
@@ -123,13 +124,13 @@ load_plan_entry(Library &library, PlanEntry &entry)
     if (!plan.LoadFile(path, error)) {
         daemon_log(2, "failed to load plan '%s': %s\n",
                    entry.name.c_str(), error.GetMessage());
-        disable_plan(library, entry, 600);
+        disable_plan(library, entry, std::chrono::seconds(600));
         return false;
     }
 
     entry.plan.reset(new Plan(std::move(plan)));
 
-    library.next_names_update = 0;
+    library.next_names_update = std::chrono::steady_clock::time_point::min();
 
     return true;
 }

@@ -20,12 +20,12 @@
 void
 Library::UpdatePlanNames()
 {
-    const time_t now = time(nullptr);
+    const auto now = std::chrono::steady_clock::now();
 
     if (!names.empty() && now < next_names_update)
         return;
 
-    next_names_update = now + 60;
+    next_names_update = now + std::chrono::seconds(60);
 
     /* collect new list */
 

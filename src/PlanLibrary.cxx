@@ -73,7 +73,7 @@ Library::UpdatePlans()
             daemon_log(3, "removed plan '%s'\n", i->first.c_str());
 
             i = plans.erase(i);
-            next_names_update = 0;
+            next_names_update = std::chrono::steady_clock::time_point::min();
         } else
             ++i;
     }
@@ -84,7 +84,6 @@ Library::UpdatePlans()
 bool
 Library::Update()
 {
-    const time_t now = time(nullptr);
     int ret;
     struct stat st;
 
@@ -102,6 +101,7 @@ Library::Update()
         return false;
     }
 
+    const auto now = std::chrono::steady_clock::now();
     if (st.st_mtime == mtime && now < next_plans_check)
         return true;
 
@@ -114,7 +114,7 @@ Library::Update()
     /* update mtime */
 
     mtime = st.st_mtime;
-    next_plans_check = now + 60;
+    next_plans_check = now + std::chrono::seconds(60);
 
     return true;
 }
