@@ -5,6 +5,7 @@ After=network.target
 [Service]
 ExecStart=/usr/lib/cm4all/workshop/systemd/run.sh
 KillMode=process
+ExecReload=/bin/kill -HUP $MAINPID
 Restart=on-failure
 
 [Install]
