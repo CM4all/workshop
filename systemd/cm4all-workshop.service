@@ -8,6 +8,8 @@ KillMode=process
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=on-failure
 
+SyslogIdentifier=cm4all-workshop
+
 [Install]
 Alias=workshop.service
 WantedBy=multi-user.target
