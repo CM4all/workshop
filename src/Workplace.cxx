@@ -82,8 +82,6 @@ int
 Workplace::Start(EventLoop &event_loop, const Job &job,
                  std::shared_ptr<Plan> &&plan)
 {
-    int ret;
-
     assert(!plan->args.empty());
 
     /* create operator object */
@@ -148,8 +146,7 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
         /* swap effective uid back to root */
 
         if (!debug_mode) {
-            ret = setreuid(0, 0);
-            if (ret < 0) {
+            if (setreuid(0, 0) < 0) {
                 perror("setreuid() to root failed");
                 exit(1);
             }
@@ -157,8 +154,7 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
 
         /* chroot */
 
-        if (!plan->chroot.empty()) {
-            ret = chroot(plan->chroot.c_str());
+        if (!plan->chroot.empty() && chroot(plan->chroot.c_str()) < 0) {
             fprintf(stderr, "chroot('%s') failed: %s\n",
                     plan->chroot.c_str(), strerror(errno));
             exit(1);
@@ -166,8 +162,7 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
 
         /* priority */
 
-        ret = setpriority(PRIO_PROCESS, getpid(), plan->priority);
-        if (ret < 0) {
+        if (setpriority(PRIO_PROCESS, getpid(), plan->priority) < 0) {
             fprintf(stderr, "setpriority() failed: %s\n", strerror(errno));
             exit(1);
         }
@@ -175,20 +170,17 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
         /* UID / GID */
 
         if (!debug_mode) {
-            ret = setgroups(plan->groups.size(), &plan->groups[0]);
-            if (ret < 0) {
+            if (setgroups(plan->groups.size(), &plan->groups[0]) < 0) {
                 fprintf(stderr, "setgroups() failed: %s\n", strerror(errno));
                 exit(1);
             }
 
-            ret = setregid(plan->gid, plan->gid);
-            if (ret < 0) {
+            if (setregid(plan->gid, plan->gid) < 0) {
                 fprintf(stderr, "setregid() failed: %s\n", strerror(errno));
                 exit(1);
             }
 
-            ret = setreuid(plan->uid, plan->uid);
-            if (ret < 0) {
+            if (setreuid(plan->uid, plan->uid) < 0) {
                 fprintf(stderr, "setreuid() failed: %s\n", strerror(errno));
                 exit(1);
             }
