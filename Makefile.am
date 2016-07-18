@@ -63,16 +63,15 @@ libevent_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBEVENT_CFLAGS)
 
 libpg_a_SOURCES = \
-	src/pg/Array.hxx \
+	src/pg/Array.cxx src/pg/Array.hxx \
 	src/pg/BinaryValue.hxx \
 	src/pg/Connection.cxx src/pg/Connection.hxx \
+	src/pg/AsyncConnection.cxx src/pg/AsyncConnection.hxx \
 	src/pg/Error.hxx \
 	src/pg/Notify.hxx \
 	src/pg/ParamWrapper.hxx \
 	src/pg/DynamicParamWrapper.hxx \
-	src/pg/Result.cxx src/pg/Result.hxx \
-	src/pg/AsyncConnection.cxx src/pg/AsyncConnection.hxx \
-	src/pg/Array.cxx
+	src/pg/Result.cxx src/pg/Result.hxx
 libpg_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBCM4ALL_INLINE_CFLAGS) \
 	$(LIBPQ_CPPFLAGS)
