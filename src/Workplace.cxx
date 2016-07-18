@@ -82,7 +82,7 @@ int
 Workplace::Start(EventLoop &event_loop, const Job &job,
                  std::shared_ptr<Plan> &&plan)
 {
-    int ret, stdout_fds[2], stderr_fds[2];
+    int ret;
 
     assert(!plan->args.empty());
 
@@ -90,15 +90,17 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
 
     std::unique_ptr<Operator> o(new Operator(event_loop, *this, job, plan));
 
-    if (pipe2(stdout_fds, O_CLOEXEC) < 0) {
+    /* create stdout/stderr pipes */
+
+    UniqueFileDescriptor stdout_r, stdout_w;
+    if (!UniqueFileDescriptor::CreatePipe(stdout_r, stdout_w)) {
         fprintf(stderr, "pipe() failed: %s\n", strerror(errno));
         return -1;
     }
 
-    /* create stdout/stderr pipes */
+    o->SetOutput(std::move(stdout_r));
 
-    o->SetOutput(UniqueFileDescriptor(FileDescriptor(stdout_fds[0])));
-
+    UniqueFileDescriptor stderr_r, stderr_w;
     if (!job.syslog_server.empty()) {
         char ident[256];
 
@@ -111,17 +113,15 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
         } catch (const std::runtime_error &e) {
             fprintf(stderr, "syslog_open(%s) failed: %s\n",
                     job.syslog_server.c_str(), e.what());
-            close(stdout_fds[1]);
             return -1;
         }
 
-        if (pipe2(stderr_fds, O_CLOEXEC) < 0) {
+        if (!UniqueFileDescriptor::CreatePipe(stderr_r, stderr_w)) {
             fprintf(stderr, "pipe() failed: %s\n", strerror(errno));
-            close(stdout_fds[1]);
             return -1;
         }
 
-        o->SetSyslog(UniqueFileDescriptor(FileDescriptor(stderr_fds[0])));
+        o->SetSyslog(std::move(stderr_r));
     }
 
     /* build command line */
@@ -137,9 +137,6 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
     o->pid = fork();
     if (o->pid < 0) {
         fprintf(stderr, "fork() failed: %s\n", strerror(errno));
-        close(stdout_fds[1]);
-        if (!job.syslog_server.empty())
-            close(stderr_fds[1]);
         return -1;
     }
 
@@ -199,9 +196,9 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
 
         /* connect pipes */
 
-        dup2(stdout_fds[1], 1);
+        stdout_w.Duplicate(STDOUT_FILENO);
         if (!job.syslog_server.empty())
-            dup2(stderr_fds[1], 2);
+            stderr_w.Duplicate(STDERR_FILENO);
 
         /* session */
 
@@ -220,10 +217,6 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
         fprintf(stderr, "execv() failed: %s\n", strerror(errno));
         exit(1);
     }
-
-    close(stdout_fds[1]);
-    if (!job.syslog_server.empty())
-        close(stderr_fds[1]);
 
     daemon_log(2, "job %s (plan '%s') running as pid %d\n",
                job.id.c_str(), job.plan_name.c_str(), o->pid);
