@@ -30,7 +30,7 @@ SyslogClient::Create(const char *me, const char *ident,
     struct addrinfo hints, *ai;
 
     memset(&hints, 0, sizeof(hints));
-    hints.ai_family = PF_INET;
+    hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_DGRAM;
 
     int ret = socket_resolve_host_port(host_and_port, 514, &hints, &ai);
