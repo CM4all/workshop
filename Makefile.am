@@ -9,7 +9,6 @@ cm4all_workshop_SOURCES = \
 	src/version.h \
 	src/CommandLine.cxx src/CommandLine.hxx \
 	src/SyslogClient.cxx src/SyslogClient.hxx \
-	src/io/TextFile.cxx src/io/TextFile.hxx \
 	src/Instance.cxx src/Instance.hxx \
 	src/Queue.cxx src/Queue.hxx \
 	src/PGQueue.cxx src/PGQueue.hxx \
@@ -25,12 +24,12 @@ cm4all_workshop_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBEVENT_CFLAGS) \
 	$(LIBPQ_CPPFLAGS)
 cm4all_workshop_LDADD = $(AM_LDADD) \
-	libpg.a libevent.a libutil.a \
+	libpg.a libevent.a libio.a libutil.a \
 	$(LIBCM4ALL_DAEMON_LIBS) \
 	$(LIBEVENT_LIBS) \
 	$(LIBPQ_LIBS)
 
-noinst_LIBRARIES = libutil.a libevent.a libpg.a
+noinst_LIBRARIES = libutil.a libio.a libevent.a libpg.a
 
 libutil_a_SOURCES = \
 	src/util/BindMethod.hxx \
@@ -42,6 +41,11 @@ libutil_a_SOURCES = \
 	src/util/Tokenizer.cxx src/util/Tokenizer.hxx \
 	src/util/ScopeExit.hxx
 libutil_a_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(LIBCM4ALL_INLINE_CFLAGS)
+
+libio_a_SOURCES = \
+	src/io/TextFile.cxx src/io/TextFile.hxx
+libio_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBCM4ALL_INLINE_CFLAGS)
 
 libevent_a_SOURCES = \
