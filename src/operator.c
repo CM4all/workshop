@@ -482,8 +482,7 @@ int workplace_start(struct workplace *workplace,
 
         /* chroot */
 
-        if (plan->chroot != NULL) {
-            ret = chroot(plan->chroot);
+        if (plan->chroot != NULL && chroot(plan->chroot) < 0) {
             fprintf(stderr, "chroot('%s') failed: %s\n",
                     plan->chroot, strerror(errno));
             exit(1);
