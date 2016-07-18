@@ -2,8 +2,8 @@ AUTOMAKE_OPTIONS = foreign 1.11 subdir-objects
 
 AM_CPPFLAGS += -I$(srcdir)/src
 
-bin_PROGRAMS = src/cm4all-workshop
-src_cm4all_workshop_SOURCES = \
+bin_PROGRAMS = cm4all-workshop
+cm4all_workshop_SOURCES = \
 	src/main.cxx \
 	src/debug.h \
 	src/version.h \
@@ -19,12 +19,12 @@ src_cm4all_workshop_SOURCES = \
 	src/Plan.hxx \
 	src/Operator.cxx src/Operator.hxx \
 	src/Workplace.cxx src/Workplace.hxx
-src_cm4all_workshop_CPPFLAGS = $(AM_CPPFLAGS) \
+cm4all_workshop_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBCM4ALL_INLINE_CFLAGS) \
 	$(LIBCM4ALL_DAEMON_CFLAGS) \
 	$(LIBEVENT_CFLAGS) \
 	$(LIBPQ_CPPFLAGS)
-src_cm4all_workshop_LDADD = $(AM_LDADD) \
+cm4all_workshop_LDADD = $(AM_LDADD) \
 	libpg.a libevent.a libutil.a \
 	$(LIBCM4ALL_DAEMON_LIBS) \
 	$(LIBEVENT_LIBS) \

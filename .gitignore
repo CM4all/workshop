@@ -6,7 +6,7 @@
 /conftest.cpp
 
 doc/*.html
-src/cm4all-workshop
+/cm4all-workshop
 
 *.cache
 build
