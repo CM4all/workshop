@@ -94,9 +94,22 @@ SyslogClient::Create(const char *me, const char *ident,
     return new SyslogClient(fd, me, ident, facility);
 }
 
-/** hack to put const char* into struct iovec */
-static inline void *deconst(const char *p) {
-    return const_cast<char *>(p);
+static constexpr struct iovec
+MakeIovec(const void *data, size_t size)
+{
+    return { const_cast<void *>(data), size };
+}
+
+static struct iovec
+MakeIovec(const char *value)
+{
+    return MakeIovec(value, strlen(value));
+}
+
+static struct iovec
+MakeIovec(const std::string &value)
+{
+    return MakeIovec(value.data(), value.length());
 }
 
 int
@@ -107,13 +120,13 @@ SyslogClient::Log(int priority, const char *msg)
     static const char colon[] = ": ";
     char code[16];
     struct iovec iovec[] = {
-        { .iov_base = code },
-        { .iov_base = deconst(me.c_str()), .iov_len = me.length() },
-        { .iov_base = deconst(&space), .iov_len = 1 },
-        { .iov_base = deconst(ident.c_str()), .iov_len = ident.length() },
-        { .iov_base = deconst(colon), .iov_len = strlen(colon) },
-        { .iov_base = deconst(msg), .iov_len = strlen(msg) },
-        { .iov_base = deconst(&newline), .iov_len = 1 },
+        MakeIovec(code, 0),
+        MakeIovec(me),
+        MakeIovec(&space, sizeof(space)),
+        MakeIovec(ident),
+        MakeIovec(colon),
+        MakeIovec(msg),
+        MakeIovec(&newline, 1),
     };
     ssize_t nbytes;
 
