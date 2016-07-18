@@ -97,7 +97,7 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
 
     /* create stdout/stderr pipes */
 
-    o->SetOutput(stdout_fds[0]);
+    o->SetOutput(UniqueFileDescriptor(FileDescriptor(stdout_fds[0])));
 
     if (!job.syslog_server.empty()) {
         char ident[256];
@@ -121,7 +121,7 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
             return -1;
         }
 
-        o->SetSyslog(stderr_fds[0]);
+        o->SetSyslog(UniqueFileDescriptor(FileDescriptor(stderr_fds[0])));
     }
 
     /* build command line */

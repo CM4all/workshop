@@ -6,6 +6,7 @@
 #define WORKSHOP_OPERATOR_HXX
 
 #include "event/SocketEvent.hxx"
+#include "io/UniqueFileDescriptor.hxx"
 #include "Job.hxx"
 
 #include <memory>
@@ -24,13 +25,13 @@ struct Operator {
     std::shared_ptr<Plan> plan;
     pid_t pid;
 
-    int stdout_fd = -1;
+    UniqueFileDescriptor stdout_fd;
     SocketEvent stdout_event;
     char stdout_buffer[64];
     size_t stdout_length = 0;
     unsigned progress = 0;
 
-    int stderr_fd = -1;
+    UniqueFileDescriptor stderr_fd;
     SocketEvent stderr_event;
     char stderr_buffer[512];
     size_t stderr_length = 0;
@@ -45,8 +46,8 @@ struct Operator {
 
     Operator &operator=(const Operator &other) = delete;
 
-    void SetOutput(int fd);
-    void SetSyslog(int fd);
+    void SetOutput(UniqueFileDescriptor &&fd);
+    void SetSyslog(UniqueFileDescriptor &&fd);
 
     void Expand(std::list<std::string> &args) const;
 

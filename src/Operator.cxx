@@ -29,15 +29,11 @@ Operator::Operator(EventLoop &event_loop, Workplace &_workplace, const Job &_job
 
 Operator::~Operator()
 {
-    if (stdout_fd >= 0) {
+    if (stdout_fd.IsDefined())
         stdout_event.Delete();
-        close(stdout_fd);
-    }
 
-    if (stderr_fd >= 0) {
+    if (stderr_fd.IsDefined())
         stderr_event.Delete();
-        close(stderr_fd);
-    }
 }
 
 void
@@ -47,11 +43,10 @@ Operator::OnOutputReady(short)
     ssize_t nbytes, i;
     unsigned new_progress = 0, p;
 
-    nbytes = read(stdout_fd, buffer, sizeof(buffer));
+    nbytes = stdout_fd.Read(buffer, sizeof(buffer));
     if (nbytes <= 0) {
         stdout_event.Delete();
-        close(stdout_fd);
-        stdout_fd = -1;
+        stdout_fd.Close();
         return;
     }
 
@@ -80,13 +75,13 @@ Operator::OnOutputReady(short)
 }
 
 void
-Operator::SetOutput(int fd)
+Operator::SetOutput(UniqueFileDescriptor &&fd)
 {
-    assert(fd >= 0);
-    assert(stdout_fd < 0);
+    assert(fd.IsDefined());
+    assert(!stdout_fd.IsDefined());
 
-    stdout_fd = fd;
-    stdout_event.Set(fd, EV_READ|EV_PERSIST);
+    stdout_fd = std::move(fd);
+    stdout_event.Set(stdout_fd.Get(), EV_READ|EV_PERSIST);
     stdout_event.Add();
 
 }
@@ -97,11 +92,10 @@ Operator::OnErrorReady(short)
     assert(syslog != nullptr);
 
     char buffer[512];
-    ssize_t nbytes = read(stderr_fd, buffer, sizeof(buffer));
+    ssize_t nbytes = stderr_fd.Read(buffer, sizeof(buffer));
     if (nbytes <= 0) {
         stderr_event.Delete();
-        close(stderr_fd);
-        stderr_fd = -1;
+        stderr_fd.Close();
         return;
     }
 
@@ -123,13 +117,13 @@ Operator::OnErrorReady(short)
 }
 
 void
-Operator::SetSyslog(int fd)
+Operator::SetSyslog(UniqueFileDescriptor &&fd)
 {
-    assert(fd >= 0);
-    assert(stderr_fd < 0);
+    assert(fd.IsDefined());
+    assert(!stderr_fd.IsDefined());
 
-    stderr_fd = fd;
-    stderr_event.Set(stderr_fd, EV_READ|EV_PERSIST);
+    stderr_fd = std::move(fd);
+    stderr_event.Set(stderr_fd.Get(), EV_READ|EV_PERSIST);
     stderr_event.Add();
 }
 
