@@ -7,6 +7,8 @@
 #include "SyslogClient.hxx"
 #include "util/ScopeExit.hxx"
 
+#include <socket/resolver.h>
+
 #include <system_error>
 
 #include <assert.h>
@@ -20,50 +22,18 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-static int getaddrinfo_helper(const char *host_and_port, const char *default_port,
-                              const struct addrinfo *hints,
-                              struct addrinfo **ai_r) {
-    const char *colon, *host, *port;
-    char buffer[256];
-
-    colon = strchr(host_and_port, ':');
-    if (colon == nullptr) {
-        host = host_and_port;
-        port = default_port;
-    } else {
-        size_t len = colon - host_and_port;
-
-        if (len >= sizeof(buffer)) {
-            errno = ENAMETOOLONG;
-            return EAI_SYSTEM;
-        }
-
-        memcpy(buffer, host_and_port, len);
-        buffer[len] = 0;
-
-        host = buffer;
-        port = colon + 1;
-    }
-
-    if (strcmp(host, "*") == 0)
-        host = "0.0.0.0";
-
-    return getaddrinfo(host, port, hints, ai_r);
-}
-
 SyslogClient *
 SyslogClient::Create(const char *me, const char *ident,
                      int facility,
                      const char *host_and_port)
 {
-    int ret;
     struct addrinfo hints, *ai;
 
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = PF_INET;
     hints.ai_socktype = SOCK_DGRAM;
 
-    ret = getaddrinfo_helper(host_and_port, "syslog", &hints, &ai);
+    int ret = socket_resolve_host_port(host_and_port, 514, &hints, &ai);
     if (ret != 0) {
         char msg[256];
         snprintf(msg, sizeof(msg), "getaddrinfo('%s') failed: %s",

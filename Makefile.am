@@ -21,11 +21,13 @@ cm4all_workshop_SOURCES = \
 cm4all_workshop_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBCM4ALL_INLINE_CFLAGS) \
 	$(LIBCM4ALL_DAEMON_CFLAGS) \
+	$(LIBCM4ALL_SOCKET_CFLAGS) \
 	$(LIBEVENT_CFLAGS) \
 	$(LIBPQ_CPPFLAGS)
 cm4all_workshop_LDADD = $(AM_LDADD) \
 	libpg.a libevent.a libio.a libutil.a \
 	$(LIBCM4ALL_DAEMON_LIBS) \
+	$(LIBCM4ALL_SOCKET_LIBS) \
 	$(LIBEVENT_LIBS) \
 	$(LIBPQ_LIBS)
 
