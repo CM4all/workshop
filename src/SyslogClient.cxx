@@ -96,11 +96,7 @@ SyslogClient::Create(const char *me, const char *ident,
 
 /** hack to put const char* into struct iovec */
 static inline void *deconst(const char *p) {
-    union {
-        const char *in;
-        void *out;
-    } u = { .in = p };
-    return u.out;
+    return const_cast<char *>(p);
 }
 
 int
