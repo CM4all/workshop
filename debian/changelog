@@ -3,7 +3,7 @@ cm4all-workshop (1.0.10) unstable; urgency=low
   * systemd: implement "reload" using SIGHUP
   * systemd: enforce journal identifier "cm4all-workshop"
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Mon, 18 Jul 2016 11:50:28 -0000
 
 cm4all-workshop (1.0.9) unstable; urgency=low
 
