@@ -5,7 +5,7 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#include "cmdline.h"
+#include "CommandLine.hxx"
 #include "debug.h"
 #include "version.h"
 
@@ -75,7 +75,7 @@ static void arg_error(const char *argv0, const char *fmt, ...)
      __attribute__ ((noreturn))
      __attribute__((format(printf,2,3)));
 static void arg_error(const char *argv0, const char *fmt, ...) {
-    if (fmt != NULL) {
+    if (fmt != nullptr) {
         va_list ap;
 
         fputs(argv0, stderr);
@@ -150,7 +150,7 @@ void parse_cmdline(struct config *config, int argc, char **argv) {
             break;
 
         case 'c':
-            config->concurrency = (unsigned)strtoul(optarg, NULL, 10);
+            config->concurrency = (unsigned)strtoul(optarg, nullptr, 10);
             if (config->concurrency == 0)
                 arg_error(argv[0], "invalid concurrency specification");
             break;
@@ -175,7 +175,7 @@ void parse_cmdline(struct config *config, int argc, char **argv) {
             if (debug_mode)
                 arg_error(argv[0], "cannot specify a user in debug mode");
 
-            daemon_user_by_name(&daemon_config.user, optarg, NULL);
+            daemon_user_by_name(&daemon_config.user, optarg, nullptr);
             daemon_config.user.real_uid_root = 1;
             if (!daemon_user_defined(&daemon_config.user))
                 arg_error(argv[0], "refusing to run as root");
@@ -185,11 +185,11 @@ void parse_cmdline(struct config *config, int argc, char **argv) {
             if (debug_mode)
                 arg_error(argv[0], "cannot specify a user in debug mode");
 
-            daemon_user_by_name(&daemon_config.logger_user, optarg, NULL);
+            daemon_user_by_name(&daemon_config.logger_user, optarg, nullptr);
             break;
 
         case '?':
-            arg_error(argv[0], NULL);
+            arg_error(argv[0], nullptr);
 
         default:
             exit(1);
@@ -203,10 +203,10 @@ void parse_cmdline(struct config *config, int argc, char **argv) {
 
     /* check completeness */
 
-    if (config->node_name == NULL)
+    if (config->node_name == nullptr)
         arg_error(argv[0], "no node name specified");
 
-    if (config->database == NULL)
+    if (config->database == nullptr)
         arg_error(argv[0], "no database specified");
 
     if (!debug_mode && !daemon_user_defined(&daemon_config.user))

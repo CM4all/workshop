@@ -5,8 +5,8 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#ifndef WORKSHOP_CMDLINE_H
-#define WORKSHOP_CMDLINE_H
+#ifndef WORKSHOP_COMMAND_LINE_HXX
+#define WORKSHOP_COMMAND_LINE_HXX
 
 struct config {
     const char *node_name;

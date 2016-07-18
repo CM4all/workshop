@@ -5,11 +5,7 @@
  */
 
 #include "debug.h"
-
-extern "C" {
-#include "cmdline.h"
-}
-
+#include "CommandLine.hxx"
 #include "Instance.hxx"
 #include "Library.hxx"
 #include "Queue.hxx"

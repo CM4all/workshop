@@ -33,9 +33,10 @@ LIBDAEMON_LIBS := $(shell pkg-config --libs libcm4all-daemon)
 
 INCLUDES += $(LIBINLINE_CFLAGS) $(LIBDAEMON_CFLAGS)
 
-C_SOURCES = src/cmdline.c
+C_SOURCES =
 
 CXX_SOURCES = src/main.cxx \
+	src/CommandLine.cxx \
 	src/SyslogClient.cxx \
 	src/util/StringUtil.cxx \
 	src/util/Tokenizer.cxx \
