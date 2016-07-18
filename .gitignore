@@ -1,6 +1,10 @@
 .stgit*
 *~
 *.o
+/*.a
+/confdefs.h
+/conftest.cpp
+
 doc/*.html
 src/cm4all-workshop
 
@@ -9,6 +13,7 @@ build
 libtool
 *.log
 *.status
+*.trs
 Makefile
 Makefile.in
 configure
@@ -16,7 +21,6 @@ aclocal.m4
 .libs
 .deps
 .dirstamp
-*.pc
 perf.data
 
 t/test-pg_decode_array

@@ -4,21 +4,48 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
+DEB_HOST_GNU_TYPE ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
+DEB_BUILD_GNU_TYPE ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
+
 CFLAGS = -Wall -g
+CXXFLAGS = -Wall -g
 
 ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
-  NOOPT = y
+  CFLAGS += -O0
+  CXXFLAGS += -O0
 else
-  NOOPT = n
+  CFLAGS += -O2
+  CXXFLAGS += -O2
 endif
 
-build: debian/stamp-build
-debian/stamp-build:
+DEB_CONFIGURE_EXTRA_FLAGS := --enable-debug --enable-documentation
+
+configure: debian/stamp-configure
+debian/stamp-configure:
 	dh_testdir
 
-	$(MAKE) DEBUG=y NOOPT=$(NOOPT)
+	mkdir -p build
+	aclocal
+	automake --add-missing --foreign
+	autoconf
 
-	touch $@
+	./configure \
+		--host=$(DEB_HOST_GNU_TYPE) --build=$(DEB_CONFIGURE_GNU_TYPE) \
+		--disable-dependency-tracking \
+		--prefix=/usr \
+		CFLAGS="$(CFLAGS)" \
+		CXXFLAGS="$(CXXFLAGS)" \
+		$(DEB_CONFIGURE_EXTRA_FLAGS)
+
+	@touch $@
+
+build: debian/stamp-build
+debian/stamp-build: debian/stamp-configure
+	dh_testdir
+
+	$(MAKE)
+
+	@touch $@
 
 check: debian/stamp-check
 debian/stamp-check: debian/stamp-build
@@ -33,7 +60,7 @@ clean:
 	dh_testroot
 	rm -f debian/stamp-*
 
-	$(MAKE) clean
+	[ ! -f Makefile ] || $(MAKE) distclean
 
 	dh_clean
 
