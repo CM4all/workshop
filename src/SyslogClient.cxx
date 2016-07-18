@@ -20,12 +20,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-SyslogClient::~SyslogClient()
-{
-    if (fd >= 0)
-        close(fd);
-}
-
 static int getaddrinfo_helper(const char *host_and_port, const char *default_port,
                               const struct addrinfo *hints,
                               struct addrinfo **ai_r) {
@@ -79,19 +73,16 @@ SyslogClient::Create(const char *me, const char *ident,
 
     AtScopeExit(ai) { freeaddrinfo(ai); };
 
-    const int fd = socket(ai->ai_family, ai->ai_socktype, 0);
-    if (fd < 0)
+    UniqueFileDescriptor fd(FileDescriptor(socket(ai->ai_family, ai->ai_socktype, 0)));
+    if (!fd.IsDefined())
         throw std::system_error(std::error_code(errno, std::system_category()),
                                 "Failed to create socket");
 
-    ret = connect(fd, ai->ai_addr, ai->ai_addrlen);
-    if (ret < 0) {
-        AtScopeExit(fd) { close(fd); };
+    if (connect(fd.Get(), ai->ai_addr, ai->ai_addrlen) < 0)
         throw std::system_error(std::error_code(errno, std::system_category()),
                                 "Failed to connect to syslog server");
-    }
 
-    return new SyslogClient(fd, me, ident, facility);
+    return new SyslogClient(std::move(fd), me, ident, facility);
 }
 
 static constexpr struct iovec
@@ -130,13 +121,13 @@ SyslogClient::Log(int priority, const char *msg)
     };
     ssize_t nbytes;
 
-    assert(fd >= 0);
+    assert(fd.IsDefined());
     assert(priority >= 0 && priority < 8);
 
     snprintf(code, sizeof(code), "<%d>", facility * 8 + priority);
     iovec[0].iov_len = strlen(code);
 
-    nbytes = writev(fd, iovec, sizeof(iovec) / sizeof(iovec[0]));
+    nbytes = writev(fd.Get(), iovec, sizeof(iovec) / sizeof(iovec[0]));
     if (nbytes < 0)
         return errno;
 
