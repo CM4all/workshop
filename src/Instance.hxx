@@ -11,10 +11,10 @@
 #include "Queue.hxx"
 #include "Workplace.hxx"
 #include "spawn/Registry.hxx"
-#include "spawn/Local.hxx"
 #include "spawn/ExitListener.hxx"
 
 struct Config;
+class SpawnServerClient;
 
 class Instance final : ExitListener {
 public:
@@ -27,7 +27,7 @@ public:
 
     ChildProcessRegistry child_process_registry;
 
-    LocalSpawnService spawn_service;
+    std::unique_ptr<SpawnServerClient> spawn_service;
 
     Library library;
     Queue queue;
@@ -36,6 +36,8 @@ public:
     Instance(const char *library_path,
              const Config &config,
              const char *schema);
+
+    ~Instance();
 
     void Start() {
         queue.Connect();

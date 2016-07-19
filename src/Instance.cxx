@@ -5,6 +5,8 @@
 #include "Instance.hxx"
 #include "Config.hxx"
 #include "Job.hxx"
+#include "spawn/Client.hxx"
+#include "spawn/Glue.hxx"
 #include "util/PrintException.hxx"
 
 #include <daemon/log.h>
@@ -19,16 +21,24 @@ Instance::Instance(const char *library_path,
      sigquit_event(event_loop, SIGQUIT, BIND_THIS_METHOD(OnExit)),
      sighup_event(event_loop, SIGHUP, BIND_THIS_METHOD(OnReload)),
      child_process_registry(event_loop),
-     spawn_service(config.spawn, child_process_registry),
+     spawn_service(StartSpawnServer(config.spawn, child_process_registry,
+                                    [this](){
+                                        event_loop.Reinit();
+                                        event_loop.~EventLoop();
+                                    })),
      library(library_path),
      queue(event_loop, config.node_name, config.database, schema,
            [this](Job &&job){ OnJob(std::move(job)); }),
-     workplace(spawn_service, *this, config.node_name, config.concurrency)
+     workplace(*spawn_service, *this, config.node_name, config.concurrency)
 {
     sigterm_event.Add();
     sigint_event.Add();
     sigquit_event.Add();
     sighup_event.Add();
+}
+
+Instance::~Instance()
+{
 }
 
 void
@@ -105,6 +115,8 @@ Instance::OnExit(int)
     child_process_registry.SetVolatile();
 
     queue.Disable();
+
+    spawn_service->Shutdown();
 
     if (workplace.IsEmpty())
         queue.Close();

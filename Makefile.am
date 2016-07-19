@@ -88,19 +88,26 @@ libpg_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBPQ_CPPFLAGS)
 
 libspawn_a_SOURCES = \
+	src/spawn/Builder.hxx \
 	src/spawn/CgroupOptions.cxx src/spawn/CgroupOptions.hxx \
 	src/spawn/CgroupState.hxx \
+	src/spawn/Client.cxx src/spawn/Client.hxx \
 	src/spawn/Config.hxx \
 	src/spawn/Direct.cxx src/spawn/Direct.hxx \
 	src/spawn/ExitListener.hxx \
+	src/spawn/Glue.cxx src/spawn/Glue.hxx \
 	src/spawn/Interface.cxx src/spawn/Interface.hxx \
+	src/spawn/Launch.cxx src/spawn/Launch.hxx \
 	src/spawn/Local.cxx src/spawn/Local.hxx \
 	src/spawn/mount_list.cxx src/spawn/mount_list.hxx \
 	src/spawn/NamespaceOptions.cxx src/spawn/NamespaceOptions.hxx \
+	src/spawn/Parser.hxx \
 	src/spawn/Prepared.cxx src/spawn/Prepared.hxx \
+	src/spawn/Protocol.hxx \
 	src/spawn/RefenceOptions.cxx src/spawn/RefenceOptions.hxx \
 	src/spawn/Registry.cxx src/spawn/Registry.hxx \
 	src/spawn/ResourceLimits.cxx src/spawn/ResourceLimits.hxx \
+	src/spawn/Server.cxx src/spawn/Server.hxx \
 	src/spawn/UidGid.cxx src/spawn/UidGid.hxx
 libspawn_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBCM4ALL_INLINE_CFLAGS) \
