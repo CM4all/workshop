@@ -8,6 +8,7 @@ cm4all_workshop_SOURCES = \
 	src/debug.h \
 	src/version.h \
 	src/CommandLine.cxx src/CommandLine.hxx \
+	src/AllocatorPtr.cxx src/AllocatorPtr.hxx \
 	src/SyslogClient.cxx src/SyslogClient.hxx \
 	src/Instance.cxx src/Instance.hxx \
 	src/Queue.cxx src/Queue.hxx \
@@ -22,24 +23,31 @@ cm4all_workshop_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBCM4ALL_INLINE_CFLAGS) \
 	$(LIBCM4ALL_DAEMON_CFLAGS) \
 	$(LIBCM4ALL_SOCKET_CFLAGS) \
+	$(LIBSYSTEMD_CFLAGS) \
 	$(LIBEVENT_CFLAGS) \
 	$(LIBPQ_CPPFLAGS)
 cm4all_workshop_LDADD = $(AM_LDADD) \
-	libpg.a libevent.a libio.a libutil.a \
+	libpg.a libspawn.a libevent.a libio.a libsystem.a libutil.a \
 	$(LIBCM4ALL_DAEMON_LIBS) \
 	$(LIBCM4ALL_SOCKET_LIBS) \
+	$(LIBSYSTEMD_LIBS) \
 	$(LIBEVENT_LIBS) \
 	$(LIBPQ_LIBS)
 
-noinst_LIBRARIES = libutil.a libio.a libevent.a libpg.a
+noinst_LIBRARIES = libutil.a libio.a libevent.a libpg.a libspawn.a libsystem.a
 
 libutil_a_SOURCES = \
 	src/util/BindMethod.hxx \
 	src/util/CharUtil.hxx \
 	src/util/ConstBuffer.hxx \
+	src/util/DeleteDisposer.hxx \
+	src/util/djbhash.c src/util/djbhash.h \
 	src/util/PrintException.cxx src/util/PrintException.hxx \
 	src/util/RuntimeError.hxx \
+	src/util/TrivialArray.hxx \
+	src/util/StaticArray.hxx \
 	src/util/StringUtil.cxx src/util/StringUtil.hxx \
+	src/util/StringView.cxx src/util/StringView.hxx \
 	src/util/Tokenizer.cxx src/util/Tokenizer.hxx \
 	src/util/ScopeExit.hxx
 libutil_a_CPPFLAGS = $(AM_CPPFLAGS) \
@@ -77,6 +85,30 @@ libpg_a_SOURCES = \
 libpg_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBCM4ALL_INLINE_CFLAGS) \
 	$(LIBPQ_CPPFLAGS)
+
+libspawn_a_SOURCES = \
+	src/spawn/CgroupOptions.cxx src/spawn/CgroupOptions.hxx \
+	src/spawn/CgroupState.hxx \
+	src/spawn/Config.hxx \
+	src/spawn/Direct.cxx src/spawn/Direct.hxx \
+	src/spawn/mount_list.cxx src/spawn/mount_list.hxx \
+	src/spawn/NamespaceOptions.cxx src/spawn/NamespaceOptions.hxx \
+	src/spawn/Prepared.cxx src/spawn/Prepared.hxx \
+	src/spawn/RefenceOptions.cxx src/spawn/RefenceOptions.hxx \
+	src/spawn/ResourceLimits.cxx src/spawn/ResourceLimits.hxx \
+	src/spawn/UidGid.cxx src/spawn/UidGid.hxx
+libspawn_a_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(LIBCM4ALL_INLINE_CFLAGS) \
+	$(LIBSYSTEMD_CFLAGS)
+
+libsystem_a_SOURCES = \
+	src/system/Error.hxx \
+	src/system/FileDescriptor.hxx \
+	src/system/UniqueFileDescriptor.hxx \
+	src/system/fd_util.c src/system/fd_util.h \
+	src/system/bind_mount.c src/system/bind_mount.h \
+	src/system/pivot_root.h \
+	src/system/sigutil.h
 
 #
 # Unit tests

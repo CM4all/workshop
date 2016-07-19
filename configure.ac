@@ -10,6 +10,7 @@ dnl Checks for programs.
 
 AC_PROG_MAKE_SET
 AC_PROG_INSTALL
+AC_PROG_CC_C99
 AC_PROG_CXX
 AC_PROG_RANLIB
 
@@ -17,6 +18,9 @@ dnl Checks for libraries.
 
 PKG_CHECK_MODULES([LIBEVENT], [libevent >= 2.0.19],,
 	[AC_MSG_ERROR([libevent not found])])
+
+PKG_CHECK_MODULES([LIBSYSTEMD], [libsystemd],,
+	[AC_MSG_ERROR([libsystemd not found])])
 
 PKG_CHECK_MODULES([LIBCM4ALL_DAEMON], [libcm4all-daemon >= 0.4.2],,
 	[AC_MSG_ERROR([libcm4all-daemon not found])])
@@ -40,13 +44,17 @@ dnl
 dnl CFLAGS
 dnl
 
+AC_SUBST(AM_CFLAGS)
 AC_SUBST(AM_CXXFLAGS)
 AC_SUBST(AM_CPPFLAGS)
 AC_SUBST(AM_LDFLAGS)
 
+AM_CFLAGS=""
 AM_CXXFLAGS="-std=c++14"
 AM_CPPFLAGS="-D_REENTRANT -D_GNU_SOURCE"
 AM_LDFLAGS="-Wl,--as-needed"
+
+AM_CFLAGS="$AM_CFLAGS -Wall -Wextra -Wmissing-prototypes -Wwrite-strings -Wcast-qual -Wfloat-equal -Wshadow -Wpointer-arith -Wbad-function-cast -Wsign-compare -Waggregate-return -Wmissing-declarations -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls -Wnested-externs -Wno-long-long -Wstrict-prototypes -Wundef -pedantic"
 
 AM_CXXFLAGS="$AM_CXXFLAGS -Wall"
 AM_CXXFLAGS="$AM_CXXFLAGS -Wextra"
@@ -78,6 +86,7 @@ AM_CONDITIONAL(TEST, test x$enable_test = xyes)
 if test x$enable_debug = xyes; then
 	:
 else
+	AM_CFLAGS="$AM_CFLAGS -ffunction-sections -fdata-sections -fvisibility=hidden"
 	AM_CXXFLAGS="$AM_CXXFLAGS -ffunction-sections -fdata-sections -fvisibility=hidden"
 	AM_CPPFLAGS="$AM_CPPFLAGS -DNDEBUG"
 	AM_LDFLAGS="$AM_LDFLAGS -Wl,-gc-sections"
@@ -89,6 +98,7 @@ AC_ARG_ENABLE(werror,
 	enable_werror=$enable_debug)
 
 if test x$enable_werror = xyes; then
+	AM_CFLAGS="$AM_CFLAGS -Werror -pedantic-errors"
 	AM_CXXFLAGS="$AM_CXXFLAGS -Werror"
 fi
 
