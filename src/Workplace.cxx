@@ -5,6 +5,7 @@
  */
 
 #include "Workplace.hxx"
+#include "Instance.hxx"
 #include "Operator.hxx"
 #include "debug.h"
 #include "SyslogClient.hxx"
@@ -170,32 +171,17 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
     daemon_log(2, "job %s (plan '%s') running as pid %d\n",
                job.id.c_str(), job.plan_name.c_str(), o->pid);
 
+    instance.child_process_registry.Add(o->pid, job.id.c_str(), o.get());
     operators.push_back(*o.release());
 
     return 0;
 }
 
-Workplace::OperatorList::iterator
-Workplace::FindByPid(pid_t pid)
-{
-    return std::find_if(operators.begin(), operators.end(),
-                        [pid](const Operator &o) { return o.pid == pid; });
-}
-
 void
-Workplace::WaitPid()
+Workplace::OnExit(Operator *o)
 {
-    pid_t pid;
-    int status;
+    operators.erase(operators.iterator_to(*o));
+    delete o;
 
-    while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
-        auto i = FindByPid(pid);
-        if (i == operators.end())
-            continue;
-
-        Operator *o = &*i;
-        o->OnProcessExit(status);
-        operators.erase(i);
-        delete o;
-    }
+    instance.OnChildProcessExit();
 }

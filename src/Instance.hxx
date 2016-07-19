@@ -10,6 +10,7 @@
 #include "Library.hxx"
 #include "Queue.hxx"
 #include "Workplace.hxx"
+#include "spawn/Registry.hxx"
 
 class Instance {
 public:
@@ -18,7 +19,9 @@ public:
     bool should_exit = false;
 
     SignalEvent sigterm_event, sigint_event, sigquit_event;
-    SignalEvent sighup_event, sigchld_event;
+    SignalEvent sighup_event;
+
+    ChildProcessRegistry child_process_registry;
 
     Library library;
     Queue queue;
@@ -32,12 +35,13 @@ public:
     void UpdateFilter();
     void UpdateLibraryAndFilter();
 
+    void OnChildProcessExit();
+
 private:
     bool StartJob(Job &&job);
     void OnJob(Job &&job);
     void OnExit(int);
     void OnReload(int);
-    void OnChild(int);
 };
 
 #endif

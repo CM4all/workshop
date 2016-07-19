@@ -17,17 +17,16 @@ Instance::Instance(const char *library_path,
      sigint_event(event_loop, SIGINT, BIND_THIS_METHOD(OnExit)),
      sigquit_event(event_loop, SIGQUIT, BIND_THIS_METHOD(OnExit)),
      sighup_event(event_loop, SIGHUP, BIND_THIS_METHOD(OnReload)),
-     sigchld_event(event_loop, SIGCHLD, BIND_THIS_METHOD(OnChild)),
+     child_process_registry(event_loop),
      library(library_path),
      queue(event_loop, node_name, conninfo, schema,
            [this](Job &&job){ OnJob(std::move(job)); }),
-     workplace(node_name, concurrency)
+     workplace(*this, node_name, concurrency)
 {
     sigterm_event.Add();
     sigint_event.Add();
     sigquit_event.Add();
     sighup_event.Add();
-    sigchld_event.Add();
 }
 
 void
@@ -98,7 +97,7 @@ Instance::OnExit(int)
     sigint_event.Delete();
     sigquit_event.Delete();
     sighup_event.Delete();
-    sigchld_event.Delete();
+    child_process_registry.SetVolatile();
 
     queue.Disable();
 
@@ -117,10 +116,8 @@ Instance::OnReload(int)
 }
 
 void
-Instance::OnChild(int)
+Instance::OnChildProcessExit()
 {
-    workplace.WaitPid();
-
     if (should_exit) {
         if (workplace.IsEmpty())
             queue.Close();

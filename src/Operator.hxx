@@ -5,6 +5,7 @@
 #ifndef WORKSHOP_OPERATOR_HXX
 #define WORKSHOP_OPERATOR_HXX
 
+#include "spawn/ExitListener.hxx"
 #include "event/SocketEvent.hxx"
 #include "io/UniqueFileDescriptor.hxx"
 #include "Job.hxx"
@@ -22,7 +23,8 @@ struct Job;
 
 /** an operator is a job being executed */
 struct Operator final
-    : public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>> {
+    : public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>,
+      public ExitListener {
 
     Workplace &workplace;
     Job job;
@@ -55,11 +57,13 @@ struct Operator final
 
     void Expand(std::list<std::string> &args) const;
 
-    void OnProcessExit(int status);
-
 private:
     void OnOutputReady(short events);
     void OnErrorReady(short events);
+
+public:
+    /* virtual methods from ExitListener */
+    void OnChildProcessExit(int status) override;
 };
 
 #endif

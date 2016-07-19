@@ -91,14 +91,17 @@ libspawn_a_SOURCES = \
 	src/spawn/CgroupState.hxx \
 	src/spawn/Config.hxx \
 	src/spawn/Direct.cxx src/spawn/Direct.hxx \
+	src/spawn/ExitListener.hxx \
 	src/spawn/mount_list.cxx src/spawn/mount_list.hxx \
 	src/spawn/NamespaceOptions.cxx src/spawn/NamespaceOptions.hxx \
 	src/spawn/Prepared.cxx src/spawn/Prepared.hxx \
 	src/spawn/RefenceOptions.cxx src/spawn/RefenceOptions.hxx \
+	src/spawn/Registry.cxx src/spawn/Registry.hxx \
 	src/spawn/ResourceLimits.cxx src/spawn/ResourceLimits.hxx \
 	src/spawn/UidGid.cxx src/spawn/UidGid.hxx
 libspawn_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBCM4ALL_INLINE_CFLAGS) \
+	$(LIBCM4ALL_DAEMON_CFLAGS) \
 	$(LIBSYSTEMD_CFLAGS)
 
 libsystem_a_SOURCES = \

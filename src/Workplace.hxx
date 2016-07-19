@@ -20,8 +20,11 @@
 struct Plan;
 struct Job;
 struct Operator;
+class Instance;
 
 class Workplace {
+    Instance &instance;
+
     const std::string node_name;
 
     typedef boost::intrusive::list<Operator,
@@ -32,8 +35,10 @@ class Workplace {
     const unsigned max_operators;
 
 public:
-    Workplace(const char *_node_name, unsigned _max_operators)
-        :node_name(_node_name),
+    Workplace(Instance &_instance, const char *_node_name,
+              unsigned _max_operators)
+        :instance(_instance),
+         node_name(_node_name),
          max_operators(_max_operators) {
         assert(max_operators > 0);
     }
@@ -70,12 +75,7 @@ public:
     int Start(EventLoop &event_loop, const Job &job,
               std::shared_ptr<Plan> &&plan);
 
-private:
-    gcc_pure
-    Workplace::OperatorList::iterator FindByPid(pid_t pid);
-
-public:
-    void WaitPid();
+    void OnExit(Operator *o);
 };
 
 #endif

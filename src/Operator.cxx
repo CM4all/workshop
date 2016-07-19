@@ -170,7 +170,7 @@ Operator::Expand(std::list<std::string> &args) const
 }
 
 void
-Operator::OnProcessExit(int status)
+Operator::OnChildProcessExit(int status)
 {
     int exit_status = WEXITSTATUS(status);
 
@@ -189,4 +189,6 @@ Operator::OnProcessExit(int status)
                    exit_status);
 
     job.SetDone(exit_status);
+
+    workplace.OnExit(this);
 }
