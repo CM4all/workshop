@@ -11,10 +11,7 @@
 #include "Plan.hxx"
 #include "Job.hxx"
 #include "pg/Array.hxx"
-#include "spawn/Direct.hxx"
 #include "spawn/Prepared.hxx"
-#include "spawn/Config.hxx"
-#include "spawn/CgroupState.hxx"
 #include "system/Error.hxx"
 #include "util/RuntimeError.hxx"
 
@@ -157,7 +154,9 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
 
     /* fork */
 
-    o->pid = SpawnChildProcess(std::move(p), SpawnConfig(), CgroupState());
+    o->pid = instance.spawn_service.SpawnChildProcess(job.id.c_str(),
+                                                      std::move(p),
+                                                      o.get());
 
     if (o->pid < 0)
         throw MakeErrno(-o->pid, "fork() failed");
@@ -165,7 +164,6 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
     daemon_log(2, "job %s (plan '%s') running as pid %d\n",
                job.id.c_str(), job.plan_name.c_str(), o->pid);
 
-    instance.child_process_registry.Add(o->pid, job.id.c_str(), o.get());
     operators.push_back(*o.release());
 }
 

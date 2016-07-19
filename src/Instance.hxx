@@ -11,6 +11,10 @@
 #include "Queue.hxx"
 #include "Workplace.hxx"
 #include "spawn/Registry.hxx"
+#include "spawn/Config.hxx"
+#include "spawn/Local.hxx"
+
+class SpawnService;
 
 class Instance {
 public:
@@ -22,6 +26,9 @@ public:
     SignalEvent sighup_event;
 
     ChildProcessRegistry child_process_registry;
+
+    const SpawnConfig spawn_config;
+    LocalSpawnService spawn_service;
 
     Library library;
     Queue queue;

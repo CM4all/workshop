@@ -92,6 +92,8 @@ libspawn_a_SOURCES = \
 	src/spawn/Config.hxx \
 	src/spawn/Direct.cxx src/spawn/Direct.hxx \
 	src/spawn/ExitListener.hxx \
+	src/spawn/Interface.cxx src/spawn/Interface.hxx \
+	src/spawn/Local.cxx src/spawn/Local.hxx \
 	src/spawn/mount_list.cxx src/spawn/mount_list.hxx \
 	src/spawn/NamespaceOptions.cxx src/spawn/NamespaceOptions.hxx \
 	src/spawn/Prepared.cxx src/spawn/Prepared.hxx \
