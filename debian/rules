@@ -18,6 +18,9 @@ else
   CXXFLAGS += -O2
 endif
 
+CFLAGS += -fno-omit-frame-pointer
+CXXFLAGS += -fno-omit-frame-pointer
+
 DEB_CONFIGURE_EXTRA_FLAGS := --enable-debug --enable-documentation
 
 configure: debian/stamp-configure
@@ -72,6 +75,8 @@ binary-indep: build check
 	dh_installdocs -i
 	dh_installchangelogs -i
 	dh_installinit -i
+	dh_systemd_enable -i
+	dh_systemd_start -i
 	dh_install -i
 	dh_link -i
 	#dh_strip -i
@@ -91,6 +96,8 @@ binary-arch: build check
 	dh_installdocs -a
 	dh_installchangelogs -a
 	dh_installinit -a
+	dh_systemd_enable -a
+	dh_systemd_start -a
 	dh_install -a
 	dh_link -a
 	#dh_strip -a
