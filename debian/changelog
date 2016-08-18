@@ -1,6 +1,7 @@
 cm4all-workshop (1.0.11) unstable; urgency=low
 
   * fix chroot
+  * enable the systemd service automatically
 
  --   
 

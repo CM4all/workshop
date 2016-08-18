@@ -2,7 +2,8 @@ Source: cm4all-workshop
 Section: non-free/admin
 Priority: optional
 Maintainer: Max Kellermann <mk@cm4all.com>
-Build-Depends: debhelper (>= 9), gcc (>= 4:4.4), libevent-dev (>= 2.0.19),
+Build-Depends: debhelper (>= 9), dh-systemd,
+ gcc (>= 4:4.4), libevent-dev (>= 2.0.19),
  libpq-dev (>= 8.4), libcm4all-daemon-dev (>= 0.4.2), xsltproc,
  libglib2.0-dev (>= 2.24),
  docbook-xsl

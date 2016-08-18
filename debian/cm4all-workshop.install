@@ -1,3 +1,2 @@
 src/cm4all-workshop usr/sbin
-systemd/cm4all-workshop.service lib/systemd/system
 systemd/run.sh usr/lib/cm4all/workshop/systemd
