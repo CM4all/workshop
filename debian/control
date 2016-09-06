@@ -9,7 +9,7 @@ Build-Depends: debhelper (>= 9), dh-systemd,
  libcm4all-socket-dev (>= 0.3.5),
  xsltproc, docbook-xsl
 Standards-Version: 3.9.3
-Vcs-git: ssh://git.intern.cm-ag/srv/git/master/workshop.git
+Vcs-git: git@dev.intern.cm-ag:max/workshop.git
 
 Package: cm4all-workshop
 Architecture: any

@@ -20,7 +20,8 @@ test -f /usr/sbin/cm4all-workshop || exit 0
 
 source /lib/lsb/init-functions
 
-PIDFILE=/var/run/cm4all/workshop.pid
+RUNDIR=/var/run/cm4all
+PIDFILE=$RUNDIR/workshop.pid
 NODE_NAME=""
 CONCURRENCY=2
 DATABASE=""
@@ -59,6 +60,7 @@ test -z "$LOGGER" || export WORKSHOP_LOGGER=$LOGGER
 case "$1" in
     start)
 	log_begin_msg "Starting CM4all Workshop daemon"
+        install -d -m 0711 $RUNDIR
         start-stop-daemon --start --quiet \
             --exec /usr/sbin/cm4all-workshop \
             --pidfile "$PIDFILE" \

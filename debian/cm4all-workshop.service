@@ -1,3 +1,4 @@
+
 [Unit]
 Description=CM4all Workshop
 After=network.target
@@ -7,6 +8,10 @@ ExecStart=/usr/lib/cm4all/workshop/systemd/run.sh
 KillMode=process
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=on-failure
+
+CPUSchedulingPolicy=batch
+RestrictRealtime=yes
+TimerSlackNSec=1s
 
 SyslogIdentifier=cm4all-workshop
 
