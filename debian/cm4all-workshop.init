@@ -20,7 +20,8 @@ test -f /usr/sbin/cm4all-workshop || exit 0
 
 source /lib/lsb/init-functions
 
-PIDFILE=/var/run/cm4all/workshop.pid
+RUNDIR=/var/run/cm4all
+PIDFILE=$RUNDIR/workshop.pid
 NODE_NAME=""
 CONCURRENCY=2
 DATABASE=""
