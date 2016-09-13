@@ -54,7 +54,6 @@ AM_CXXFLAGS="$AM_CXXFLAGS -Wwrite-strings -Wcast-qual -Wcast-align -Wfloat-equal
 AM_CXXFLAGS="$AM_CXXFLAGS -Wshadow -Wpointer-arith -Wsign-compare"
 AM_CXXFLAGS="$AM_CXXFLAGS -Wmissing-declarations -Wmissing-noreturn -Wmissing-format-attribute"
 AM_CXXFLAGS="$AM_CXXFLAGS -Wredundant-decls -Wno-long-long -Wundef"
-AM_CXXFLAGS="$AM_CXXFLAGS -pedantic"
 
 dnl
 dnl Compile-time options
@@ -77,7 +76,7 @@ AC_ARG_ENABLE(debug,
 AM_CONDITIONAL(TEST, test x$enable_test = xyes)
 
 if test x$enable_debug = xyes; then
-	AM_CXXFLAGS="$AM_CXXFLAGS -Werror -pedantic-errors"
+	AM_CXXFLAGS="$AM_CXXFLAGS -Werror"
 else
 	AM_CXXFLAGS="$AM_CXXFLAGS -ffunction-sections -fdata-sections"
 	AM_CPPFLAGS="$AM_CPPFLAGS -DNDEBUG"
