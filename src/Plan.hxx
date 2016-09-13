@@ -47,9 +47,9 @@ struct Plan {
     Plan &operator=(Plan &&other) = default;
     Plan &operator=(const Plan &other) = delete;
 
-    bool ParseLine(Tokenizer &tokenizer, Error &error);
-    bool LoadFile(TextFile &file, Error &error);
-    bool LoadFile(const char *path, Error &error);
+    void ParseLine(Tokenizer &tokenizer);
+    void LoadFile(TextFile &file);
+    void LoadFile(const char *path);
 };
 
 #endif

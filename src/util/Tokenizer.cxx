@@ -30,10 +30,8 @@
 #include "Tokenizer.hxx"
 #include "CharUtil.hxx"
 #include "StringUtil.hxx"
-#include "Error.hxx"
-#include "Domain.hxx"
 
-static constexpr Domain tokenizer_domain("tokenizer");
+#include <stdexcept>
 
 static inline bool
 valid_word_first_char(char ch)
@@ -48,7 +46,7 @@ valid_word_char(char ch)
 }
 
 char *
-Tokenizer::NextWord(Error &error)
+Tokenizer::NextWord()
 {
 	char *const word = input;
 
@@ -58,7 +56,7 @@ Tokenizer::NextWord(Error &error)
 	/* check the first character */
 
 	if (!valid_word_first_char(*input)) {
-		error.Set(tokenizer_domain, "Letter expected");
+		throw std::runtime_error("Letter expected");
 		return nullptr;
 	}
 
@@ -75,7 +73,7 @@ Tokenizer::NextWord(Error &error)
 		}
 
 		if (!valid_word_char(*input)) {
-			error.Set(tokenizer_domain, "Invalid word character");
+			throw std::runtime_error("Invalid word character");
 			return nullptr;
 		}
 	}
@@ -93,7 +91,7 @@ valid_unquoted_char(char ch)
 }
 
 char *
-Tokenizer::NextUnquoted(Error &error)
+Tokenizer::NextUnquoted()
 {
 	char *const word = input;
 
@@ -103,7 +101,7 @@ Tokenizer::NextUnquoted(Error &error)
 	/* check the first character */
 
 	if (!valid_unquoted_char(*input)) {
-		error.Set(tokenizer_domain, "Invalid unquoted character");
+		throw std::runtime_error("Invalid unquoted character");
 		return nullptr;
 	}
 
@@ -120,8 +118,7 @@ Tokenizer::NextUnquoted(Error &error)
 		}
 
 		if (!valid_unquoted_char(*input)) {
-			error.Set(tokenizer_domain,
-				  "Invalid unquoted character");
+			throw std::runtime_error("Invalid unquoted character");
 			return nullptr;
 		}
 	}
@@ -133,7 +130,7 @@ Tokenizer::NextUnquoted(Error &error)
 }
 
 char *
-Tokenizer::NextString(Error &error)
+Tokenizer::NextString()
 {
 	char *const word = input, *dest = input;
 
@@ -144,7 +141,7 @@ Tokenizer::NextString(Error &error)
 	/* check for the opening " */
 
 	if (*input != '"') {
-		error.Set(tokenizer_domain, "'\"' expected");
+		throw std::runtime_error("'\"' expected");
 		return nullptr;
 	}
 
@@ -163,7 +160,7 @@ Tokenizer::NextString(Error &error)
 			   difference between "end of line" and
 			   "error" */
 			--input;
-			error.Set(tokenizer_domain, "Missing closing '\"'");
+			throw std::runtime_error("Missing closing '\"'");
 			return nullptr;
 		}
 
@@ -176,8 +173,7 @@ Tokenizer::NextString(Error &error)
 
 	++input;
 	if (!IsWhitespaceOrNull(*input)) {
-		error.Set(tokenizer_domain,
-			  "Space expected after closing '\"'");
+		throw std::runtime_error("Space expected after closing '\"'");
 		return nullptr;
 	}
 
@@ -189,10 +185,10 @@ Tokenizer::NextString(Error &error)
 }
 
 char *
-Tokenizer::NextParam(Error &error)
+Tokenizer::NextParam()
 {
 	if (*input == '"')
-		return NextString(error);
+		return NextString();
 	else
-		return NextUnquoted(error);
+		return NextUnquoted();
 }

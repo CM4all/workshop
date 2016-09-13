@@ -7,8 +7,6 @@
 
 #include <stdio.h>
 
-class Error;
-
 /**
  * Read a file line-by-line.
  */
@@ -16,27 +14,29 @@ class TextFile {
     const char *const path;
     FILE *const file;
 
-    unsigned no;
+    unsigned no = 0;
 
     char buffer[4096];
 
-    TextFile(const char *_path, FILE *_file)
-        :path(_path), file(_file), no(0) {}
-
 public:
+    TextFile(const char *_path);
+
     ~TextFile() {
         fclose(file);
     }
 
-    static TextFile *Open(const char *path, Error &error);
+    TextFile(const TextFile &) = delete;
+    TextFile &operator=(const TextFile &) = delete;
 
     const char *GetPath() const {
         return path;
     }
 
-    char *ReadLine();
+    unsigned GetLineNumber() {
+        return no;
+    }
 
-    void PrefixError(Error &error);
+    char *ReadLine();
 };
 
 #endif

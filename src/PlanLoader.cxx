@@ -5,10 +5,12 @@
  */
 
 #include "Plan.hxx"
-#include "util/Tokenizer.hxx"
-#include "util/Error.hxx"
-#include "util/Domain.hxx"
+#include "system/Error.hxx"
 #include "io/TextFile.hxx"
+#include "util/Tokenizer.hxx"
+#include "util/RuntimeError.hxx"
+
+#include <inline/compiler.h>
 
 #include <assert.h>
 #include <sys/stat.h>
@@ -16,8 +18,6 @@
 #include <string.h>
 #include <pwd.h>
 #include <grp.h>
-
-static constexpr Domain plan_loader_domain("plan_loader");
 
 gcc_pure
 static bool
@@ -52,51 +52,36 @@ get_user_groups(const char *user)
     return groups;
 }
 
-inline bool
-Plan::ParseLine(Tokenizer &tokenizer, Error &error)
+inline void
+Plan::ParseLine(Tokenizer &tokenizer)
 {
     if (tokenizer.IsEnd() || tokenizer.CurrentChar() == '#')
-        return true;
+        return;
 
-    const char *key = tokenizer.NextWord(error);
-    if (key == nullptr) {
-        assert(error.IsDefined());
-        return false;
-    }
+    const char *key = tokenizer.NextWord();
+    assert(key != nullptr);
 
-    const char *value = tokenizer.NextParam(error);
-    if (value == nullptr) {
-        if (!error.IsDefined())
-            error.Set(plan_loader_domain, "value missing after keyword");
-        return false;
-    }
+    const char *value = tokenizer.NextParam();
+    if (value == nullptr)
+        throw std::runtime_error("value missing after keyword");
 
     if (strcmp(key, "exec") == 0) {
-        if (!args.empty()) {
-            error.Set(plan_loader_domain, "'exec' already specified");
-            return false;
-        }
+        if (!args.empty())
+            throw std::runtime_error("'exec' already specified");
 
-        if (*value == 0) {
-            error.Set(plan_loader_domain, "empty executable");
-            return false;
-        }
+        if (*value == 0)
+            throw std::runtime_error("empty executable");
 
         while (value != nullptr) {
             args.push_back(value);
-            value = tokenizer.NextParam(error);
+            value = tokenizer.NextParam();
         }
 
-        if (error.IsDefined())
-            return false;
-
-        return true;
+        return;
     }
 
-    if (!tokenizer.IsEnd()) {
-        error.Set(plan_loader_domain, "too many arguments");
-        return false;
-    }
+    if (!tokenizer.IsEnd())
+        throw std::runtime_error("too many arguments");
 
     if (strcmp(key, "timeout") == 0) {
         timeout = value;
@@ -105,35 +90,25 @@ Plan::ParseLine(Tokenizer &tokenizer, Error &error)
         struct stat st;
 
         ret = stat(value, &st);
-        if (ret < 0) {
-            error.FormatErrno("failed to stat '%s'", value);
-            return false;
-        }
+        if (ret < 0)
+            throw FormatErrno("failed to stat '%s'", value);
 
-        if (!S_ISDIR(st.st_mode)) {
-            error.Format(plan_loader_domain, "not a directory: %s", value);
-            return false;
-        }
+        if (!S_ISDIR(st.st_mode))
+            throw FormatRuntimeError("not a directory: %s", value);
 
         chroot = value;
     } else if (strcmp(key, "user") == 0) {
         struct passwd *pw;
 
         pw = getpwnam(value);
-        if (pw == nullptr) {
-            error.Format(plan_loader_domain, "no such user '%s'", value);
-            return false;
-        }
+        if (pw == nullptr)
+            throw FormatRuntimeError("no such user '%s'", value);
 
-        if (pw->pw_uid == 0) {
-            error.Set(plan_loader_domain, "user 'root' is forbidden");
-            return false;
-        }
+        if (pw->pw_uid == 0)
+            throw std::runtime_error("user 'root' is forbidden");
 
-        if (pw->pw_gid == 0) {
-            error.Set(plan_loader_domain, "group 'root' is forbidden");
-            return false;
-        }
+        if (pw->pw_gid == 0)
+            throw std::runtime_error("group 'root' is forbidden");
 
         uid = pw->pw_uid;
         gid = pw->pw_gid;
@@ -143,47 +118,37 @@ Plan::ParseLine(Tokenizer &tokenizer, Error &error)
         priority = atoi(value);
     } else if (strcmp(key, "concurrency") == 0) {
         concurrency = (unsigned)strtoul(value, nullptr, 0);
-    } else {
-        error.Format(plan_loader_domain, "unknown option '%s'", key);
-        return false;
-    }
-
-    return true;
+    } else
+        throw FormatRuntimeError("unknown option '%s'", key);
 }
 
-inline bool
-Plan::LoadFile(TextFile &file, Error &error)
+inline void
+Plan::LoadFile(TextFile &file)
 {
     char *line;
     while ((line = file.ReadLine()) != nullptr) {
-        Tokenizer tokenizer(line);
-        if (!ParseLine(tokenizer, error)) {
-            file.PrefixError(error);
-            return false;
+        try {
+            Tokenizer tokenizer(line);
+            ParseLine(tokenizer);
+        } catch (const std::runtime_error &e) {
+            std::throw_with_nested(FormatRuntimeError("%s line %u",
+                                                      file.GetPath(),
+                                                      file.GetLineNumber()));
         }
     }
 
-    if (args.empty()) {
-        error.Format(plan_loader_domain, "no 'exec' in %s", file.GetPath());
-        return false;
-    }
+    if (args.empty())
+        throw FormatRuntimeError("no 'exec' in %s", file.GetPath());
 
     if (timeout.empty())
         timeout = "10 minutes";
-
-    return true;
 }
 
-bool
-Plan::LoadFile(const char *path, Error &error)
+void
+Plan::LoadFile(const char *path)
 {
     assert(path != nullptr);
 
-    TextFile *file = TextFile::Open(path, error);
-    if (file == nullptr)
-        return false;
-
-    const bool success = LoadFile(*file, error);
-    delete file;
-    return success;
+    TextFile file(path);
+    LoadFile(file);
 }

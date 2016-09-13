@@ -37,8 +37,8 @@ libutil_a_SOURCES = \
 	src/util/BindMethod.hxx \
 	src/util/CharUtil.hxx \
 	src/util/ConstBuffer.hxx \
-	src/util/Domain.hxx \
-	src/util/Error.cxx src/util/Error.hxx \
+	src/util/PrintException.cxx src/util/PrintException.hxx \
+	src/util/RuntimeError.hxx \
 	src/util/StringUtil.cxx src/util/StringUtil.hxx \
 	src/util/Tokenizer.cxx src/util/Tokenizer.hxx \
 	src/util/ScopeExit.hxx

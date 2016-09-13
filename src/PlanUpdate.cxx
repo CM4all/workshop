@@ -7,7 +7,7 @@
 
 #include "Library.hxx"
 #include "Plan.hxx"
-#include "util/Error.hxx"
+#include "util/PrintException.hxx"
 
 #include <daemon/log.h>
 
@@ -120,10 +120,13 @@ load_plan_entry(Library &library, const char *name, PlanEntry &entry)
              library.path.c_str(), name);
 
     Plan plan;
-    Error error;
-    if (!plan.LoadFile(path, error)) {
+
+    try {
+        plan.LoadFile(path);
+    } catch (const std::runtime_error &e) {
         daemon_log(2, "failed to load plan '%s': %s\n",
-                   name, error.GetMessage());
+                   name, e.what());
+        PrintException(e);
         disable_plan(library, entry, std::chrono::seconds(600));
         return false;
     }

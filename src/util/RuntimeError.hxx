@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Max Kellermann <max@duempel.org>
+ * Copyright (C) 2013-2015 Max Kellermann <max@duempel.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,30 +27,21 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DOMAIN_HXX
-#define DOMAIN_HXX
+#ifndef RUNTIME_ERROR_HXX
+#define RUNTIME_ERROR_HXX
 
-class Domain {
-	const char *const name;
+#include <stdexcept>
+#include <utility>
 
-public:
-	constexpr explicit Domain(const char *_name)
-		:name(_name) {}
+#include <stdio.h>
 
-	Domain(const Domain &) = delete;
-	Domain &operator=(const Domain &) = delete;
-
-	constexpr const char *GetName() const {
-		return name;
-	}
-
-	bool operator==(const Domain &other) const {
-		return this == &other;
-	}
-
-	bool operator!=(const Domain &other) const {
-		return !(*this == other);
-	}
-};
+template<typename... Args>
+static inline std::runtime_error
+FormatRuntimeError(const char *fmt, Args&&... args) noexcept
+{
+	char buffer[1024];
+	snprintf(buffer, sizeof(buffer), fmt, std::forward<Args>(args)...);
+	return std::runtime_error(buffer);
+}
 
 #endif

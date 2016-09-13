@@ -3,21 +3,16 @@
  */
 
 #include "TextFile.hxx"
+#include "system/Error.hxx"
 #include "util/StringUtil.hxx"
-#include "util/Error.hxx"
 
 #include <string.h>
 
-TextFile *
-TextFile::Open(const char *path, Error &error)
+TextFile::TextFile(const char *_path)
+    :path(_path), file(fopen(path, "rt"))
 {
-    FILE *file = fopen(path, "rt");
-    if (file == nullptr) {
-        error.FormatErrno("Failed to open %s", path);
-        return nullptr;
-    }
-
-    return new TextFile(path, file);
+    if (file == nullptr)
+        throw FormatErrno("Failed to open %s", path);
 }
 
 char *
@@ -31,10 +26,4 @@ TextFile::ReadLine()
 
     ++no;
     return line;
-}
-
-void
-TextFile::PrefixError(Error &error)
-{
-    error.FormatPrefix("%s line %u: ", path, no);
 }
