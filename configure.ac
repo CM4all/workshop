@@ -78,7 +78,7 @@ AM_CONDITIONAL(TEST, test x$enable_test = xyes)
 if test x$enable_debug = xyes; then
 	:
 else
-	AM_CXXFLAGS="$AM_CXXFLAGS -ffunction-sections -fdata-sections"
+	AM_CXXFLAGS="$AM_CXXFLAGS -ffunction-sections -fdata-sections -fvisibility=hidden"
 	AM_CPPFLAGS="$AM_CPPFLAGS -DNDEBUG"
 	AM_LDFLAGS="$AM_LDFLAGS -Wl,-gc-sections"
 fi
