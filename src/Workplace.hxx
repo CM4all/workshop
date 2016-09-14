@@ -20,13 +20,13 @@ struct Job;
 struct Operator;
 
 class Workplace {
-    std::string node_name;
+    const std::string node_name;
 
     typedef std::list<Operator *> OperatorList;
     OperatorList operators;
     unsigned num_operators = 0;
 
-    unsigned max_operators;
+    const unsigned max_operators;
 
 public:
     Workplace(const char *_node_name, unsigned _max_operators)
