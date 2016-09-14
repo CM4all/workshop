@@ -5,7 +5,6 @@
  */
 
 #include "Workplace.hxx"
-#include "Instance.hxx"
 #include "debug.h"
 #include "SyslogClient.hxx"
 #include "Plan.hxx"
@@ -174,5 +173,5 @@ Workplace::OnExit(Operator *o)
     operators.erase(operators.iterator_to(*o));
     delete o;
 
-    instance.OnChildProcessExit();
+    exit_listener.OnChildProcessExit(-1);
 }

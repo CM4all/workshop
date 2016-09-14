@@ -18,12 +18,12 @@
 
 struct Plan;
 struct Job;
-class Instance;
 class SpawnService;
+class ExitListener;
 
 class Workplace {
-    Instance &instance;
     SpawnService &spawn_service;
+    ExitListener &exit_listener;
 
     const std::string node_name;
 
@@ -35,10 +35,10 @@ class Workplace {
     const unsigned max_operators;
 
 public:
-    Workplace(Instance &_instance, SpawnService &_spawn_service,
+    Workplace(SpawnService &_spawn_service, ExitListener &_exit_listener,
               const char *_node_name,
               unsigned _max_operators)
-        :instance(_instance), spawn_service(_spawn_service),
+        :spawn_service(_spawn_service), exit_listener(_exit_listener),
          node_name(_node_name),
          max_operators(_max_operators) {
         assert(max_operators > 0);

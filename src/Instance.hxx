@@ -13,10 +13,11 @@
 #include "spawn/Registry.hxx"
 #include "spawn/Config.hxx"
 #include "spawn/Local.hxx"
+#include "spawn/ExitListener.hxx"
 
 class SpawnService;
 
-class Instance {
+class Instance final : ExitListener {
 public:
     EventLoop event_loop;
 
@@ -42,13 +43,14 @@ public:
     void UpdateFilter();
     void UpdateLibraryAndFilter();
 
-    void OnChildProcessExit();
-
 private:
     bool StartJob(Job &&job);
     void OnJob(Job &&job);
     void OnExit(int);
     void OnReload(int);
+
+    /* virtual methods from ExitListener */
+    void OnChildProcessExit(int status) override;
 };
 
 #endif
