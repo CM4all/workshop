@@ -9,6 +9,8 @@
 #include "io/UniqueFileDescriptor.hxx"
 #include "Job.hxx"
 
+#include <boost/intrusive/list.hpp>
+
 #include <memory>
 #include <string>
 #include <list>
@@ -19,7 +21,9 @@ class SyslogClient;
 struct Job;
 
 /** an operator is a job being executed */
-struct Operator {
+struct Operator final
+    : public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>> {
+
     Workplace &workplace;
     Job job;
     std::shared_ptr<Plan> plan;

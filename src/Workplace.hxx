@@ -9,6 +9,8 @@
 
 #include <inline/compiler.h>
 
+#include <boost/intrusive/list.hpp>
+
 #include <memory>
 #include <string>
 #include <list>
@@ -22,9 +24,10 @@ struct Operator;
 class Workplace {
     const std::string node_name;
 
-    typedef std::list<Operator *> OperatorList;
+    typedef boost::intrusive::list<Operator,
+                                   boost::intrusive::constant_time_size<true>> OperatorList;
+
     OperatorList operators;
-    unsigned num_operators = 0;
 
     const unsigned max_operators;
 
@@ -39,7 +42,6 @@ public:
 
     ~Workplace() {
         assert(operators.empty());
-        assert(num_operators == 0);
     }
 
     gcc_pure
@@ -48,11 +50,11 @@ public:
     }
 
     bool IsEmpty() const {
-        return num_operators == 0;
+        return operators.empty();
     }
 
     bool IsFull() const {
-        return num_operators == max_operators;
+        return operators.size() == max_operators;
     }
 
     gcc_pure

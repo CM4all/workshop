@@ -50,8 +50,8 @@ Workplace::GetRunningPlanNames() const
 {
     std::list<std::string> list;
     for (const auto &o : operators)
-        if (!contains(list, o->job.plan_name))
-            list.push_back(o->job.plan_name);
+        if (!contains(list, o.job.plan_name))
+            list.push_back(o.job.plan_name);
 
     return pg_encode_array(list);
 }
@@ -62,11 +62,11 @@ Workplace::GetFullPlanNames() const
     std::map<std::string, unsigned> counters;
     std::list<std::string> list;
     for (const auto &o : operators) {
-        const Plan &plan = *o->plan;
+        const Plan &plan = *o.plan;
         if (plan.concurrency == 0)
             continue;
 
-        const std::string &plan_name = o->job.plan_name;
+        const std::string &plan_name = o.job.plan_name;
 
         auto i = counters.emplace(plan_name, 0);
         unsigned &n = i.first->second;
@@ -170,8 +170,7 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
     daemon_log(2, "job %s (plan '%s') running as pid %d\n",
                job.id.c_str(), job.plan_name.c_str(), o->pid);
 
-    operators.push_back(o.release());
-    ++num_operators;
+    operators.push_back(*o.release());
 
     return 0;
 }
@@ -180,7 +179,7 @@ Workplace::OperatorList::iterator
 Workplace::FindByPid(pid_t pid)
 {
     return std::find_if(operators.begin(), operators.end(),
-                        [pid](const Operator *o) { return o->pid == pid; });
+                        [pid](const Operator &o) { return o.pid == pid; });
 }
 
 void
@@ -194,10 +193,9 @@ Workplace::WaitPid()
         if (i == operators.end())
             continue;
 
-        Operator *o = *i;
+        Operator *o = &*i;
         o->OnProcessExit(status);
         operators.erase(i);
-        --num_operators;
         delete o;
     }
 }
