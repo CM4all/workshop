@@ -16,6 +16,8 @@
 #include "spawn/Prepared.hxx"
 #include "spawn/Config.hxx"
 #include "spawn/CgroupState.hxx"
+#include "system/Error.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <inline/compiler.h>
 #include <daemon/log.h>
@@ -83,7 +85,7 @@ Workplace::GetFullPlanNames() const
     return pg_encode_array(list);
 }
 
-int
+void
 Workplace::Start(EventLoop &event_loop, const Job &job,
                  std::shared_ptr<Plan> &&plan)
 {
@@ -114,10 +116,8 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
 
     {
         UniqueFileDescriptor stdout_r, stdout_w;
-        if (!UniqueFileDescriptor::CreatePipe(stdout_r, stdout_w)) {
-            fprintf(stderr, "pipe() failed: %s\n", strerror(errno));
-            return -1;
-        }
+        if (!UniqueFileDescriptor::CreatePipe(stdout_r, stdout_w))
+            throw MakeErrno("pipe() failed");
 
         o->SetOutput(std::move(stdout_r));
         p.SetStdout(std::move(stdout_w));
@@ -133,16 +133,13 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
             o->syslog.reset(SyslogClient::Create(node_name.c_str(), ident, 1,
                                                  job.syslog_server.c_str()));
         } catch (const std::runtime_error &e) {
-            fprintf(stderr, "syslog_open(%s) failed: %s\n",
-                    job.syslog_server.c_str(), e.what());
-            return -1;
+            std::rethrow_if_nested(FormatRuntimeError("syslog_open(%s) failed",
+                                                      job.syslog_server.c_str()));
         }
 
         UniqueFileDescriptor stderr_r, stderr_w;
-        if (!UniqueFileDescriptor::CreatePipe(stderr_r, stderr_w)) {
-            fprintf(stderr, "pipe() failed: %s\n", strerror(errno));
-            return -1;
-        }
+        if (!UniqueFileDescriptor::CreatePipe(stderr_r, stderr_w))
+            throw MakeErrno("pipe() failed");
 
         o->SetSyslog(std::move(stderr_r));
         p.SetStderr(std::move(stderr_w));
@@ -163,18 +160,14 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
 
     o->pid = SpawnChildProcess(std::move(p), SpawnConfig(), CgroupState());
 
-    if (o->pid < 0) {
-        fprintf(stderr, "fork() failed: %s\n", strerror(-o->pid));
-        return -1;
-    }
+    if (o->pid < 0)
+        throw MakeErrno(-o->pid, "fork() failed");
 
     daemon_log(2, "job %s (plan '%s') running as pid %d\n",
                job.id.c_str(), job.plan_name.c_str(), o->pid);
 
     instance.child_process_registry.Add(o->pid, job.id.c_str(), o.get());
     operators.push_back(*o.release());
-
-    return 0;
 }
 
 void

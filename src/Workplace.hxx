@@ -72,8 +72,11 @@ public:
     gcc_pure
     std::string GetFullPlanNames() const;
 
-    int Start(EventLoop &event_loop, const Job &job,
-              std::shared_ptr<Plan> &&plan);
+    /**
+     * Throws std::runtime_error on error.
+     */
+    void Start(EventLoop &event_loop, const Job &job,
+               std::shared_ptr<Plan> &&plan);
 
     void OnExit(Operator *o);
 };

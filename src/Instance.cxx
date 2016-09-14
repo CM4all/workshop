@@ -4,6 +4,7 @@
 
 #include "Instance.hxx"
 #include "Job.hxx"
+#include "util/PrintException.hxx"
 
 #include <daemon/log.h>
 
@@ -60,8 +61,11 @@ Instance::StartJob(Job &&job)
         return false;
     }
 
-    ret = workplace.Start(event_loop, job, std::move(plan));
-    if (ret != 0) {
+    try {
+        workplace.Start(event_loop, job, std::move(plan));
+    } catch (const std::runtime_error &e) {
+        PrintException(e);
+
         queue.SetJobDone(job, -1);
     }
 
