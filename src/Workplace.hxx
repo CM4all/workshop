@@ -13,13 +13,11 @@
 
 #include <memory>
 #include <string>
-#include <list>
 
 #include <assert.h>
 
 struct Plan;
 struct Job;
-struct Operator;
 class Instance;
 
 class Workplace {

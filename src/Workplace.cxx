@@ -6,7 +6,6 @@
 
 #include "Workplace.hxx"
 #include "Instance.hxx"
-#include "Operator.hxx"
 #include "debug.h"
 #include "SyslogClient.hxx"
 #include "Plan.hxx"
