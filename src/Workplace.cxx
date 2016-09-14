@@ -12,6 +12,7 @@
 #include "Job.hxx"
 #include "pg/Array.hxx"
 #include "spawn/Prepared.hxx"
+#include "spawn/Interface.hxx"
 #include "system/Error.hxx"
 #include "util/RuntimeError.hxx"
 
@@ -154,9 +155,9 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
 
     /* fork */
 
-    o->pid = instance.spawn_service.SpawnChildProcess(job.id.c_str(),
-                                                      std::move(p),
-                                                      o.get());
+    o->pid = spawn_service.SpawnChildProcess(job.id.c_str(),
+                                             std::move(p),
+                                             o.get());
 
     if (o->pid < 0)
         throw MakeErrno(-o->pid, "fork() failed");

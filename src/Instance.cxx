@@ -23,7 +23,7 @@ Instance::Instance(const char *library_path,
      library(library_path),
      queue(event_loop, node_name, conninfo, schema,
            [this](Job &&job){ OnJob(std::move(job)); }),
-     workplace(*this, node_name, concurrency)
+     workplace(*this, spawn_service, node_name, concurrency)
 {
     sigterm_event.Add();
     sigint_event.Add();

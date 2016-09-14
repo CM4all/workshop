@@ -19,9 +19,11 @@
 struct Plan;
 struct Job;
 class Instance;
+class SpawnService;
 
 class Workplace {
     Instance &instance;
+    SpawnService &spawn_service;
 
     const std::string node_name;
 
@@ -33,9 +35,10 @@ class Workplace {
     const unsigned max_operators;
 
 public:
-    Workplace(Instance &_instance, const char *_node_name,
+    Workplace(Instance &_instance, SpawnService &_spawn_service,
+              const char *_node_name,
               unsigned _max_operators)
-        :instance(_instance),
+        :instance(_instance), spawn_service(_spawn_service),
          node_name(_node_name),
          max_operators(_max_operators) {
         assert(max_operators > 0);
