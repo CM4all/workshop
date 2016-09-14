@@ -11,6 +11,10 @@
 #include "Plan.hxx"
 #include "Job.hxx"
 #include "pg/Array.hxx"
+#include "spawn/Direct.hxx"
+#include "spawn/Prepared.hxx"
+#include "spawn/Config.hxx"
+#include "spawn/CgroupState.hxx"
 
 #include <inline/compiler.h>
 #include <daemon/log.h>
@@ -88,17 +92,36 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
 
     std::unique_ptr<Operator> o(new Operator(event_loop, *this, job, plan));
 
-    /* create stdout/stderr pipes */
+    PreparedChildProcess p;
 
-    UniqueFileDescriptor stdout_r, stdout_w;
-    if (!UniqueFileDescriptor::CreatePipe(stdout_r, stdout_w)) {
-        fprintf(stderr, "pipe() failed: %s\n", strerror(errno));
-        return -1;
+    if (!debug_mode) {
+        p.uid_gid.uid = plan->uid;
+        p.uid_gid.gid = plan->gid;
+
+        std::copy(plan->groups.begin(), plan->groups.end(),
+                  p.uid_gid.groups.begin());
+
+        p.regain_root = true;
     }
 
-    o->SetOutput(std::move(stdout_r));
+    if (!plan->chroot.empty())
+        p.chroot = plan->chroot.c_str();
 
-    UniqueFileDescriptor stderr_r, stderr_w;
+    p.priority = plan->priority;
+
+    /* create stdout/stderr pipes */
+
+    {
+        UniqueFileDescriptor stdout_r, stdout_w;
+        if (!UniqueFileDescriptor::CreatePipe(stdout_r, stdout_w)) {
+            fprintf(stderr, "pipe() failed: %s\n", strerror(errno));
+            return -1;
+        }
+
+        o->SetOutput(std::move(stdout_r));
+        p.SetStdout(std::move(stdout_w));
+    }
+
     if (!job.syslog_server.empty()) {
         char ident[256];
 
@@ -114,12 +137,14 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
             return -1;
         }
 
+        UniqueFileDescriptor stderr_r, stderr_w;
         if (!UniqueFileDescriptor::CreatePipe(stderr_r, stderr_w)) {
             fprintf(stderr, "pipe() failed: %s\n", strerror(errno));
             return -1;
         }
 
         o->SetSyslog(std::move(stderr_r));
+        p.SetStderr(std::move(stderr_w));
     }
 
     /* build command line */
@@ -130,84 +155,16 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
 
     o->Expand(args);
 
+    for (const auto &i : args)
+        p.args.push_back(i.c_str());
+
     /* fork */
 
-    o->pid = fork();
+    o->pid = SpawnChildProcess(std::move(p), SpawnConfig(), CgroupState());
+
     if (o->pid < 0) {
-        fprintf(stderr, "fork() failed: %s\n", strerror(errno));
+        fprintf(stderr, "fork() failed: %s\n", strerror(-o->pid));
         return -1;
-    }
-
-    if (o->pid == 0) {
-        /* in the operator process */
-
-        clearenv();
-
-        /* swap effective uid back to root */
-
-        if (!debug_mode) {
-            if (setreuid(0, 0) < 0) {
-                perror("setreuid() to root failed");
-                exit(1);
-            }
-        }
-
-        /* chroot */
-
-        if (!plan->chroot.empty() && chroot(plan->chroot.c_str()) < 0) {
-            fprintf(stderr, "chroot('%s') failed: %s\n",
-                    plan->chroot.c_str(), strerror(errno));
-            exit(1);
-        }
-
-        /* priority */
-
-        if (setpriority(PRIO_PROCESS, getpid(), plan->priority) < 0) {
-            fprintf(stderr, "setpriority() failed: %s\n", strerror(errno));
-            exit(1);
-        }
-
-        /* UID / GID */
-
-        if (!debug_mode) {
-            if (setgroups(plan->groups.size(), &plan->groups[0]) < 0) {
-                fprintf(stderr, "setgroups() failed: %s\n", strerror(errno));
-                exit(1);
-            }
-
-            if (setregid(plan->gid, plan->gid) < 0) {
-                fprintf(stderr, "setregid() failed: %s\n", strerror(errno));
-                exit(1);
-            }
-
-            if (setreuid(plan->uid, plan->uid) < 0) {
-                fprintf(stderr, "setreuid() failed: %s\n", strerror(errno));
-                exit(1);
-            }
-        }
-
-        /* connect pipes */
-
-        stdout_w.Duplicate(STDOUT_FILENO);
-        if (!job.syslog_server.empty())
-            stderr_w.Duplicate(STDERR_FILENO);
-
-        /* session */
-
-        setsid();
-
-        /* execute plan */
-
-        std::vector<const char *> argv;
-        argv.reserve(args.size() + 1);
-        for (const auto &a : args)
-            argv.push_back(a.c_str());
-
-        argv.push_back(nullptr);
-
-        execv(argv[0], const_cast<char *const*>(&argv[0]));
-        fprintf(stderr, "execv() failed: %s\n", strerror(errno));
-        exit(1);
     }
 
     daemon_log(2, "job %s (plan '%s') running as pid %d\n",
