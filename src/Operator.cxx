@@ -5,6 +5,7 @@
  */
 
 #include "Operator.hxx"
+#include "Expand.hxx"
 #include "Workplace.hxx"
 #include "Plan.hxx"
 #include "Job.hxx"
@@ -127,33 +128,6 @@ Operator::SetSyslog(UniqueFileDescriptor &&fd)
     stderr_event.Add();
 }
 
-typedef std::map<std::string, std::string> StringMap;
-
-static void
-expand_vars(std::string &p, const StringMap &vars)
-{
-    const std::string src = std::move(p);
-    p.clear();
-
-    std::string::size_type start = 0, pos;
-    while ((pos = src.find("${", start)) != src.npos) {
-        std::string::size_type end = src.find('}', start + 2);
-        if (end == src.npos)
-            break;
-
-        p.append(src.begin() + start, src.begin() + pos);
-
-        const std::string key(src.begin() + start + 2, src.begin() + end);
-        auto i = vars.find(key);
-        if (i != vars.end())
-            p.append(i->second);
-
-        start = end + 1;
-    }
-
-    p.append(src.begin() + start, src.end());
-}
-
 void
 Operator::Expand(std::list<std::string> &args) const
 {
@@ -166,7 +140,7 @@ Operator::Expand(std::list<std::string> &args) const
     vars.emplace("PLAN", job.plan_name);
 
     for (auto &i : args)
-        expand_vars(i, vars);
+        ::Expand(i, vars);
 }
 
 void

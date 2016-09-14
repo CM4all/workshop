@@ -17,6 +17,7 @@ cm4all_workshop_SOURCES = \
 	src/Library.cxx src/Library.hxx \
 	src/PlanLoader.cxx src/PlanLibrary.cxx src/PlanUpdate.cxx \
 	src/Plan.hxx \
+	src/Expand.cxx src/Expand.hxx \
 	src/Operator.cxx src/Operator.hxx \
 	src/Workplace.cxx src/Workplace.hxx
 cm4all_workshop_CPPFLAGS = $(AM_CPPFLAGS) \
