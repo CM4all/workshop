@@ -9,9 +9,9 @@
 #define WORKSHOP_COMMAND_LINE_HXX
 
 struct Config {
-    const char *node_name;
-    unsigned concurrency;
-    const char *database;
+    const char *node_name = nullptr;
+    unsigned concurrency = 2;
+    const char *database = nullptr;
 };
 
 /** read configuration options from the command line */

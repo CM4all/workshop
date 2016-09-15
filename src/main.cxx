@@ -34,17 +34,6 @@ bool debug_mode = false;
 #endif
 
 static void
-config_get(Config *config, int argc, char **argv)
-{
-    memset(config, 0, sizeof(*config));
-    config->concurrency = 2;
-
-    /*config_read_file(config, "/etc/cm4all/workshop/workshop.conf");*/
-
-    parse_cmdline(config, argc, argv);
-}
-
-static void
 setup_signal_handlers()
 {
     struct sigaction sa;
@@ -94,7 +83,7 @@ int main(int argc, char **argv) {
 
     /* configuration */
 
-    config_get(&config, argc, argv);
+    parse_cmdline(&config, argc, argv);
 
     /* set up */
 
