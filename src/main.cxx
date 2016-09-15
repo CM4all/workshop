@@ -61,9 +61,6 @@ Run(const Config &config)
 
     daemon_log(1, "cm4all-workshop v" VERSION "\n");
 
-    daemon_log(4, "using libevent %s method '%s' for polling\n",
-               event_get_version(), event_get_method());
-
     /* main loop */
 
     instance.UpdateLibraryAndFilter();
