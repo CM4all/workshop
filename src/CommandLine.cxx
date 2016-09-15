@@ -149,7 +149,6 @@ parse_cmdline(Config &config, int argc, char **argv)
                 arg_error(argv[0], "cannot specify a user in debug mode");
 
             daemon_user_by_name(&config.user, optarg, nullptr);
-            config.user.real_uid_root = 1;
             if (!daemon_user_defined(&config.user))
                 arg_error(argv[0], "refusing to run as root");
             break;
