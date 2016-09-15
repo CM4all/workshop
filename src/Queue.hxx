@@ -60,6 +60,10 @@ public:
         return node_name.c_str();
     }
 
+    void Connect() {
+        db.Connect();
+    }
+
     void Close();
 
     void OnTimer();

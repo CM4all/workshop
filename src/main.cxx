@@ -50,13 +50,15 @@ Run(const Config &config)
 {
     SetupProcess();
 
-    if (daemon_user_set(&config.user) < 0)
-        exit(2);
+    setup_signal_handlers();
 
     Instance instance("/etc/cm4all/workshop/plans",
                       config, "");
 
-    setup_signal_handlers();
+    if (daemon_user_set(&config.user) < 0)
+        exit(2);
+
+    instance.Start();
 
     daemon_log(1, "cm4all-workshop v" VERSION "\n");
 

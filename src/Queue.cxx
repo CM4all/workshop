@@ -29,7 +29,6 @@ Queue::Queue(EventLoop &event_loop,
      db(conninfo, schema, *this),
      timer_event(event_loop, BIND_THIS_METHOD(OnTimer)),
      callback(_callback) {
-    db.Connect();
 }
 
 Queue::~Queue()

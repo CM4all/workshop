@@ -37,6 +37,10 @@ public:
              const Config &config,
              const char *schema);
 
+    void Start() {
+        queue.Connect();
+    }
+
     void UpdateFilter();
     void UpdateLibraryAndFilter();
 
