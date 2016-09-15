@@ -50,10 +50,6 @@ static void usage(void) {
          " --database CONNINFO\n"
 #endif
          " -d CONNINFO    set the PostgreSQL connect string\n"
-#ifdef __GLIBC__
-         " --logger program\n"
-#endif
-         " -l program     specifies a logger program (executed by /bin/sh)\n"
          " -D             don't detach (daemonize)\n"
 #ifdef __GLIBC__
          " --pidfile file\n"
@@ -63,10 +59,6 @@ static void usage(void) {
          " --user name\n"
 #endif
          " -u name        switch to another user id\n"
-#ifdef __GLIBC__
-         " --logger-user name\n"
-#endif
-         " -U name        execute the logger program with this user id\n"
          "\n"
          );
 }
@@ -107,25 +99,22 @@ parse_cmdline(Config &config, int argc, char **argv)
         {"name", 1, 0, 'N'},
         {"concurrency", 1, 0, 'c'},
         {"database", 1, 0, 'd'},
-        {"logger", 1, 0, 'l'},
         {"pidfile", 1, 0, 'P'},
         {"user", 1, 0, 'u'},
-        {"logger-user", 1, 0, 'U'},
         {0,0,0,0}
     };
 #endif
 
     config.database = getenv("WORKSHOP_DATABASE");
-    daemon_config.logger = getenv("WORKSHOP_LOGGER");
 
     while (1) {
 #ifdef __GLIBC__
         int option_index = 0;
 
-        ret = getopt_long(argc, argv, "hVvqN:c:d:DP:l:u:U:",
+        ret = getopt_long(argc, argv, "hVvqN:c:d:DP:u:",
                           long_options, &option_index);
 #else
-        ret = getopt(argc, argv, "hVvqN:c:d:DP:l:u:U:");
+        ret = getopt(argc, argv, "hVvqN:c:d:DP:u:");
 #endif
         if (ret == -1)
             break;
@@ -169,10 +158,6 @@ parse_cmdline(Config &config, int argc, char **argv)
             daemon_config.pidfile = optarg;
             break;
 
-        case 'l':
-            daemon_config.logger = optarg;
-            break;
-
         case 'u':
             if (debug_mode)
                 arg_error(argv[0], "cannot specify a user in debug mode");
@@ -181,13 +166,6 @@ parse_cmdline(Config &config, int argc, char **argv)
             daemon_config.user.real_uid_root = 1;
             if (!daemon_user_defined(&daemon_config.user))
                 arg_error(argv[0], "refusing to run as root");
-            break;
-
-        case 'U':
-            if (debug_mode)
-                arg_error(argv[0], "cannot specify a user in debug mode");
-
-            daemon_user_by_name(&daemon_config.logger_user, optarg, nullptr);
             break;
 
         case '?':
