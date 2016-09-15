@@ -11,7 +11,6 @@
 
 #include <inline/compiler.h>
 #include <daemon/log.h>
-#include <daemon/daemonize.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,6 +20,11 @@
 #include <errno.h>
 #include <pwd.h>
 #include <unistd.h>
+
+Config::Config()
+{
+    memset(&user, 0, sizeof(user));
+}
 
 static void usage(void) {
     puts("usage: cm4all-workshop [options]\n\n"
@@ -149,9 +153,9 @@ parse_cmdline(Config &config, int argc, char **argv)
             if (debug_mode)
                 arg_error(argv[0], "cannot specify a user in debug mode");
 
-            daemon_user_by_name(&daemon_config.user, optarg, nullptr);
-            daemon_config.user.real_uid_root = 1;
-            if (!daemon_user_defined(&daemon_config.user))
+            daemon_user_by_name(&config.user, optarg, nullptr);
+            config.user.real_uid_root = 1;
+            if (!daemon_user_defined(&config.user))
                 arg_error(argv[0], "refusing to run as root");
             break;
 
@@ -176,6 +180,6 @@ parse_cmdline(Config &config, int argc, char **argv)
     if (config.database == nullptr)
         arg_error(argv[0], "no database specified");
 
-    if (!debug_mode && !daemon_user_defined(&daemon_config.user))
+    if (!debug_mode && !daemon_user_defined(&config.user))
         arg_error(argv[0], "no user name specified (-u)");
 }

@@ -16,7 +16,6 @@
 
 #include <inline/compiler.h>
 #include <daemon/log.h>
-#include <daemon/daemonize.h>
 
 #include <stdexcept>
 
@@ -48,14 +47,14 @@ setup_signal_handlers()
 static void
 Run(const Config &config)
 {
+    if (daemon_user_set(&config.user) < 0)
+        exit(2);
+
     Instance instance("/etc/cm4all/workshop/plans",
                       config.node_name, config.database, "",
                       config.concurrency);
 
     setup_signal_handlers();
-
-    if (daemonize() < 0)
-        exit(2);
 
     daemon_log(1, "cm4all-workshop v" VERSION "\n");
 
@@ -86,9 +85,6 @@ int main(int argc, char **argv) {
     parse_cmdline(config, argc, argv);
 
     /* set up */
-
-    if (daemonize_prepare() < 0)
-        exit(2);
 
     try {
         Run(config);
