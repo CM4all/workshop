@@ -94,7 +94,9 @@ static void arg_error(const char *argv0, const char *fmt, ...) {
 }
 
 /** read configuration options from the command line */
-void parse_cmdline(struct config *config, int argc, char **argv) {
+void
+parse_cmdline(Config *config, int argc, char **argv)
+{
     int ret;
 #ifdef __GLIBC__
     static const struct option long_options[] = {

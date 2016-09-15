@@ -33,7 +33,9 @@
 bool debug_mode = false;
 #endif
 
-static void config_get(struct config *config, int argc, char **argv) {
+static void
+config_get(Config *config, int argc, char **argv)
+{
     memset(config, 0, sizeof(*config));
     config->concurrency = 2;
 
@@ -55,7 +57,7 @@ setup_signal_handlers()
 }
 
 static void
-Run(struct config &config)
+Run(const Config &config)
 {
     Instance instance("/etc/cm4all/workshop/plans",
                       config.node_name, config.database, "",
@@ -83,7 +85,7 @@ Run(struct config &config)
 }
 
 int main(int argc, char **argv) {
-    struct config config;
+    Config config;
 
 #ifndef NDEBUG
     if (geteuid() != 0)
