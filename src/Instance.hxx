@@ -11,7 +11,6 @@
 #include "Queue.hxx"
 #include "Workplace.hxx"
 #include "spawn/Registry.hxx"
-#include "spawn/Config.hxx"
 #include "spawn/Local.hxx"
 #include "spawn/ExitListener.hxx"
 
@@ -28,7 +27,6 @@ public:
 
     ChildProcessRegistry child_process_registry;
 
-    const SpawnConfig spawn_config;
     LocalSpawnService spawn_service;
 
     Library library;

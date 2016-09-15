@@ -5,6 +5,8 @@
 #ifndef WORKSHOP_CONFIG_HXX
 #define WORKSHOP_CONFIG_HXX
 
+#include "spawn/Config.hxx"
+
 #include <daemon/user.h>
 
 struct Config {
@@ -13,6 +15,8 @@ struct Config {
     const char *node_name = nullptr;
     unsigned concurrency = 2;
     const char *database = nullptr;
+
+    SpawnConfig spawn;
 
     Config();
 };
