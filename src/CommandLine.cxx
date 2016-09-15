@@ -145,10 +145,6 @@ parse_cmdline(Config &config, int argc, char **argv)
             config.database = optarg;
             break;
 
-        case 'D':
-            daemon_config.detach = 0;
-            break;
-
         case 'u':
             if (debug_mode)
                 arg_error(argv[0], "cannot specify a user in debug mode");
