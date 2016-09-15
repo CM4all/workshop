@@ -4,6 +4,7 @@ cm4all-workshop (2.0) unstable; urgency=low
   * fix file descriptor leaks
   * suport syslog over IPv6
   * import the beng-proxy child process spawner
+  * require systemd
 
  --
 

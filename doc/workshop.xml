@@ -74,7 +74,7 @@ GRANT UPDATE, SELECT ON jobs_id_seq TO workshop_client;</programlisting>
       </listitem>
 
       <listitem>
-        <programlisting>invoke-rc.d cm4all-workshop start</programlisting>
+        <programlisting>systemctl start cm4all-workshop</programlisting>
       </listitem>
     </orderedlist>
 
