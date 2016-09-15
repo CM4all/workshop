@@ -54,8 +54,7 @@ Run(const Config &config)
         exit(2);
 
     Instance instance("/etc/cm4all/workshop/plans",
-                      config.node_name, config.database, "",
-                      config.concurrency);
+                      config, "");
 
     setup_signal_handlers();
 

@@ -3,6 +3,7 @@
  */
 
 #include "Instance.hxx"
+#include "Config.hxx"
 #include "Job.hxx"
 #include "util/PrintException.hxx"
 
@@ -11,9 +12,8 @@
 #include <signal.h>
 
 Instance::Instance(const char *library_path,
-                   const char *node_name,
-                   const char *conninfo, const char *schema,
-                   unsigned concurrency)
+                   const Config &config,
+                   const char *schema)
     :sigterm_event(event_loop, SIGTERM, BIND_THIS_METHOD(OnExit)),
      sigint_event(event_loop, SIGINT, BIND_THIS_METHOD(OnExit)),
      sigquit_event(event_loop, SIGQUIT, BIND_THIS_METHOD(OnExit)),
@@ -21,9 +21,9 @@ Instance::Instance(const char *library_path,
      child_process_registry(event_loop),
      spawn_service(spawn_config, child_process_registry),
      library(library_path),
-     queue(event_loop, node_name, conninfo, schema,
+     queue(event_loop, config.node_name, config.database, schema,
            [this](Job &&job){ OnJob(std::move(job)); }),
-     workplace(spawn_service, *this, node_name, concurrency)
+     workplace(spawn_service, *this, config.node_name, config.concurrency)
 {
     sigterm_event.Add();
     sigint_event.Add();

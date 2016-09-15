@@ -15,7 +15,7 @@
 #include "spawn/Local.hxx"
 #include "spawn/ExitListener.hxx"
 
-class SpawnService;
+struct Config;
 
 class Instance final : ExitListener {
 public:
@@ -36,9 +36,8 @@ public:
     Workplace workplace;
 
     Instance(const char *library_path,
-             const char *node_name,
-             const char *conninfo, const char *schema,
-             unsigned concurrency);
+             const Config &config,
+             const char *schema);
 
     void UpdateFilter();
     void UpdateLibraryAndFilter();
