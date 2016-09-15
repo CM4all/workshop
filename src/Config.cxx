@@ -9,4 +9,7 @@
 Config::Config()
 {
     memset(&user, 0, sizeof(user));
+
+    spawn.default_uid_gid.uid = 65534;
+    spawn.default_uid_gid.gid = 65534;
 }
