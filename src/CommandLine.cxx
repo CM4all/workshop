@@ -52,10 +52,6 @@ static void usage(void) {
          " -d CONNINFO    set the PostgreSQL connect string\n"
          " -D             don't detach (daemonize)\n"
 #ifdef __GLIBC__
-         " --pidfile file\n"
-#endif
-         " -P file        create a pid file\n"
-#ifdef __GLIBC__
          " --user name\n"
 #endif
          " -u name        switch to another user id\n"
@@ -99,7 +95,6 @@ parse_cmdline(Config &config, int argc, char **argv)
         {"name", 1, 0, 'N'},
         {"concurrency", 1, 0, 'c'},
         {"database", 1, 0, 'd'},
-        {"pidfile", 1, 0, 'P'},
         {"user", 1, 0, 'u'},
         {0,0,0,0}
     };
@@ -111,10 +106,10 @@ parse_cmdline(Config &config, int argc, char **argv)
 #ifdef __GLIBC__
         int option_index = 0;
 
-        ret = getopt_long(argc, argv, "hVvqN:c:d:DP:u:",
+        ret = getopt_long(argc, argv, "hVvqN:c:d:Du:",
                           long_options, &option_index);
 #else
-        ret = getopt(argc, argv, "hVvqN:c:d:DP:u:");
+        ret = getopt(argc, argv, "hVvqN:c:d:Du:");
 #endif
         if (ret == -1)
             break;
@@ -152,10 +147,6 @@ parse_cmdline(Config &config, int argc, char **argv)
 
         case 'D':
             daemon_config.detach = 0;
-            break;
-
-        case 'P':
-            daemon_config.pidfile = optarg;
             break;
 
         case 'u':

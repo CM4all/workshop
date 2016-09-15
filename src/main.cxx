@@ -96,7 +96,5 @@ int main(int argc, char **argv) {
         daemon_log(2, "%s\n", e.what());
     }
 
-    daemonize_cleanup();
-
     daemon_log(4, "exiting\n");
 }
