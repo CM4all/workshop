@@ -12,6 +12,7 @@
 #include "Job.hxx"
 #include "Workplace.hxx"
 #include "event/Loop.hxx"
+#include "system/SetupProcess.hxx"
 #include "version.h"
 
 #include <inline/compiler.h>
@@ -47,6 +48,8 @@ setup_signal_handlers()
 static void
 Run(const Config &config)
 {
+    SetupProcess();
+
     if (daemon_user_set(&config.user) < 0)
         exit(2);
 
