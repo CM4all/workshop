@@ -6,7 +6,6 @@ bin_PROGRAMS = cm4all-workshop
 cm4all_workshop_SOURCES = \
 	src/main.cxx \
 	src/debug.h \
-	src/version.h \
 	src/CommandLine.cxx src/CommandLine.hxx \
 	src/AllocatorPtr.cxx src/AllocatorPtr.hxx \
 	src/SyslogClient.cxx src/SyslogClient.hxx \

@@ -13,7 +13,6 @@
 #include "Workplace.hxx"
 #include "event/Loop.hxx"
 #include "system/SetupProcess.hxx"
-#include "version.h"
 
 #include <inline/compiler.h>
 #include <daemon/log.h>

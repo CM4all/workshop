@@ -7,7 +7,6 @@
 
 #include "CommandLine.hxx"
 #include "debug.h"
-#include "version.h"
 
 #include <inline/compiler.h>
 #include <daemon/log.h>
