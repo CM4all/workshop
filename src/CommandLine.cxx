@@ -212,8 +212,3 @@ void parse_cmdline(struct config *config, int argc, char **argv) {
     if (!debug_mode && !daemon_user_defined(&daemon_config.user))
         arg_error(argv[0], "no user name specified (-u)");
 }
-
-void
-config_dispose(gcc_unused struct config *config)
-{
-}

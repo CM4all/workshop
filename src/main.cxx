@@ -107,7 +107,5 @@ int main(int argc, char **argv) {
 
     daemonize_cleanup();
 
-    config_dispose(&config);
-
     daemon_log(4, "exiting\n");
 }
