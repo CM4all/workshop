@@ -94,7 +94,9 @@ int main(int argc, char **argv) {
         Run(config);
     } catch (const std::exception &e) {
         daemon_log(2, "%s\n", e.what());
+        return EXIT_FAILURE;
     }
 
     daemon_log(4, "exiting\n");
+    return EXIT_SUCCESS;
 }
