@@ -6,6 +6,7 @@
  */
 
 #include "CommandLine.hxx"
+#include "Config.hxx"
 #include "debug.h"
 
 #include <inline/compiler.h>
@@ -19,11 +20,6 @@
 #include <errno.h>
 #include <pwd.h>
 #include <unistd.h>
-
-Config::Config()
-{
-    memset(&user, 0, sizeof(user));
-}
 
 static void usage(void) {
     puts("usage: cm4all-workshop [options]\n\n"

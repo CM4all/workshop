@@ -5,8 +5,9 @@
  */
 
 #include "debug.h"
-#include "CommandLine.hxx"
 #include "Instance.hxx"
+#include "CommandLine.hxx"
+#include "Config.hxx"
 #include "Library.hxx"
 #include "Queue.hxx"
 #include "Job.hxx"

@@ -8,17 +8,7 @@
 #ifndef WORKSHOP_COMMAND_LINE_HXX
 #define WORKSHOP_COMMAND_LINE_HXX
 
-#include <daemon/user.h>
-
-struct Config {
-    struct daemon_user user;
-
-    const char *node_name = nullptr;
-    unsigned concurrency = 2;
-    const char *database = nullptr;
-
-    Config();
-};
+struct Config;
 
 /** read configuration options from the command line */
 void
