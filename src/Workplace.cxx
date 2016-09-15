@@ -99,8 +99,6 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
 
         std::copy(plan->groups.begin(), plan->groups.end(),
                   p.uid_gid.groups.begin());
-
-        p.regain_root = true;
     }
 
     if (!plan->chroot.empty())

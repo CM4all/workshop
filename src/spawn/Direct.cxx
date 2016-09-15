@@ -40,11 +40,6 @@ static void
 Exec(const char *path, const PreparedChildProcess &p,
      const SpawnConfig &config, const CgroupState &cgroup_state)
 {
-    if (p.regain_root && setreuid(0, 0) < 0) {
-        perror("setreuid() to root failed");
-        _exit(EXIT_FAILURE);
-    }
-
     p.cgroup.Apply(cgroup_state);
     p.refence.Apply();
     p.ns.Setup(config);

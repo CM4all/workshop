@@ -48,8 +48,6 @@ struct PreparedChildProcess {
      */
     const char *chroot = nullptr;
 
-    bool regain_root = false;
-
     bool no_new_privs = false;
 
     /**
