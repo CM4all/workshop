@@ -76,8 +76,6 @@ public:
         ScheduleTimer(EventDuration<0, 10000>::value);
     }
 
-    bool Reconnect();
-
     /**
      * Checks everything asynchronously: if the connection has failed,
      * schedule a reconnect.  If there are notifies, schedule a queue run.

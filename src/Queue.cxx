@@ -55,19 +55,6 @@ Queue::OnTimer()
     Run();
 }
 
-/**
- * Reconnect to the database (unconditionally).
- *
- * @return true on success, false if a connection could not be
- * established
- */
-bool
-Queue::Reconnect()
-{
-    db.Reconnect();
-    return true;
-}
-
 int
 Queue::GetNextScheduled(int *span_r)
 {
