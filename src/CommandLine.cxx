@@ -95,7 +95,7 @@ static void arg_error(const char *argv0, const char *fmt, ...) {
 
 /** read configuration options from the command line */
 void
-parse_cmdline(Config *config, int argc, char **argv)
+parse_cmdline(Config &config, int argc, char **argv)
 {
     int ret;
 #ifdef __GLIBC__
@@ -115,7 +115,7 @@ parse_cmdline(Config *config, int argc, char **argv)
     };
 #endif
 
-    config->database = getenv("WORKSHOP_DATABASE");
+    config.database = getenv("WORKSHOP_DATABASE");
     daemon_config.logger = getenv("WORKSHOP_LOGGER");
 
     while (1) {
@@ -148,17 +148,17 @@ parse_cmdline(Config *config, int argc, char **argv)
             break;
 
         case 'N':
-            config->node_name = optarg;
+            config.node_name = optarg;
             break;
 
         case 'c':
-            config->concurrency = (unsigned)strtoul(optarg, nullptr, 10);
-            if (config->concurrency == 0)
+            config.concurrency = (unsigned)strtoul(optarg, nullptr, 10);
+            if (config.concurrency == 0)
                 arg_error(argv[0], "invalid concurrency specification");
             break;
 
         case 'd':
-            config->database = optarg;
+            config.database = optarg;
             break;
 
         case 'D':
@@ -205,10 +205,10 @@ parse_cmdline(Config *config, int argc, char **argv)
 
     /* check completeness */
 
-    if (config->node_name == nullptr)
+    if (config.node_name == nullptr)
         arg_error(argv[0], "no node name specified");
 
-    if (config->database == nullptr)
+    if (config.database == nullptr)
         arg_error(argv[0], "no database specified");
 
     if (!debug_mode && !daemon_user_defined(&daemon_config.user))

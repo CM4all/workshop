@@ -16,6 +16,6 @@ struct Config {
 
 /** read configuration options from the command line */
 void
-parse_cmdline(Config *config, int argc, char **argv);
+parse_cmdline(Config &config, int argc, char **argv);
 
 #endif

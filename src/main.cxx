@@ -83,7 +83,7 @@ int main(int argc, char **argv) {
 
     /* configuration */
 
-    parse_cmdline(&config, argc, argv);
+    parse_cmdline(config, argc, argv);
 
     /* set up */
 
