@@ -13,6 +13,8 @@
 #include "spawn/Registry.hxx"
 #include "spawn/ExitListener.hxx"
 
+#include <functional>
+
 struct Config;
 class SpawnServerClient;
 
@@ -35,7 +37,8 @@ public:
 
     Instance(const char *library_path,
              const Config &config,
-             const char *schema);
+             const char *schema,
+             std::function<void()> &&in_spawner);
 
     ~Instance();
 

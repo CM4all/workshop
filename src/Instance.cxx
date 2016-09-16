@@ -15,14 +15,16 @@
 
 Instance::Instance(const char *library_path,
                    const Config &config,
-                   const char *schema)
+                   const char *schema,
+                   std::function<void()> &&in_spawner)
     :sigterm_event(event_loop, SIGTERM, BIND_THIS_METHOD(OnExit)),
      sigint_event(event_loop, SIGINT, BIND_THIS_METHOD(OnExit)),
      sigquit_event(event_loop, SIGQUIT, BIND_THIS_METHOD(OnExit)),
      sighup_event(event_loop, SIGHUP, BIND_THIS_METHOD(OnReload)),
      child_process_registry(event_loop),
      spawn_service(StartSpawnServer(config.spawn, child_process_registry,
-                                    [this](){
+                                    [this, &in_spawner](){
+                                        in_spawner();
                                         event_loop.Reinit();
                                         event_loop.~EventLoop();
                                     })),

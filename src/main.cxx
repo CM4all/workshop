@@ -48,14 +48,21 @@ setup_signal_handlers()
 }
 
 static void
-Run(const Config &config)
+Run(int argc, char **argv, const Config &config)
 {
     SetupProcess();
 
     setup_signal_handlers();
 
     Instance instance("/etc/cm4all/workshop/plans",
-                      config, "");
+                      config, "",
+                      [argc, argv](){
+                          /* rename the process */
+                          size_t name_size = strlen(argv[0]);
+                          for (int i = 0; i < argc; ++i)
+                              memset(argv[i], 0, strlen(argv[i]));
+                          strncpy(argv[0], "spawn", name_size);
+                      });
 
     if (daemon_user_set(&config.user) < 0)
         exit(2);
@@ -93,7 +100,7 @@ int main(int argc, char **argv) {
     /* set up */
 
     try {
-        Run(config);
+        Run(argc, argv, config);
     } catch (const std::exception &e) {
         daemon_log(2, "%s\n", e.what());
         return EXIT_FAILURE;
