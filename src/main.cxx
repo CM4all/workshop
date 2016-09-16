@@ -18,6 +18,8 @@
 #include <inline/compiler.h>
 #include <daemon/log.h>
 
+#include <systemd/sd-daemon.h>
+
 #include <stdexcept>
 
 #include <assert.h>
@@ -62,9 +64,12 @@ Run(const Config &config)
 
     daemon_log(1, "cm4all-workshop v" VERSION "\n");
 
-    /* main loop */
-
     instance.UpdateLibraryAndFilter();
+
+    /* tell systemd we're ready */
+    sd_notify(0, "READY=1");
+
+    /* main loop */
 
     instance.event_loop.Dispatch();
 
