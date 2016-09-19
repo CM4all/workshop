@@ -29,7 +29,7 @@ disable_plan(Library &library, PlanEntry &entry,
     library.ScheduleNamesUpdate();
 }
 
-static int
+static bool
 check_plan_mtime(Library &library, const char *name, PlanEntry &entry,
                  std::chrono::steady_clock::time_point now)
 {
@@ -46,14 +46,14 @@ check_plan_mtime(Library &library, const char *name, PlanEntry &entry,
 
         entry.Clear();
 
-        return errno;
+        return false;
     }
 
     if (!S_ISREG(st.st_mode)) {
         entry.Clear();
 
         disable_plan(library, entry, now, std::chrono::seconds(60));
-        return ENOENT;
+        return false;
     }
 
     if (st.st_mtime != entry.mtime) {
@@ -65,12 +65,12 @@ check_plan_mtime(Library &library, const char *name, PlanEntry &entry,
 
     if (entry.IsDisabled(now))
         /* this plan is temporarily disabled due to previous errors */
-        return ENOENT;
+        return false;
 
-    return 0;
+    return true;
 }
 
-static int
+static bool
 validate_plan(Library &library, PlanEntry &entry,
               std::chrono::steady_clock::time_point now)
 {
@@ -95,12 +95,12 @@ validate_plan(Library &library, PlanEntry &entry,
             entry.deinstalled = true;
         else
             disable_plan(library, entry, now, std::chrono::seconds(60));
-        return ENOENT;
+        return false;
     }
 
     entry.deinstalled = false;
 
-    return 0;
+    return true;
 }
 
 static bool
@@ -133,10 +133,7 @@ void
 Library::UpdatePlan(const char *name, PlanEntry &entry,
                     std::chrono::steady_clock::time_point now)
 {
-    int ret;
-
-    ret = check_plan_mtime(*this, name, entry, now);
-    if (ret != 0)
+    if (!check_plan_mtime(*this, name, entry, now))
         return;
 
     if (entry.plan == nullptr && !load_plan_entry(*this, name, entry, now))
