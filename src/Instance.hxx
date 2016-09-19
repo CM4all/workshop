@@ -7,7 +7,7 @@
 
 #include "event/Loop.hxx"
 #include "event/SignalEvent.hxx"
-#include "Library.hxx"
+#include "MultiLibrary.hxx"
 #include "Queue.hxx"
 #include "Workplace.hxx"
 #include "spawn/Registry.hxx"
@@ -31,12 +31,11 @@ public:
 
     std::unique_ptr<SpawnServerClient> spawn_service;
 
-    Library library;
+    MultiLibrary library;
     Queue queue;
     Workplace workplace;
 
-    Instance(boost::filesystem::path &&library_path,
-             const Config &config,
+    Instance(const Config &config,
              const char *schema,
              std::function<void()> &&in_spawner);
 

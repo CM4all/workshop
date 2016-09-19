@@ -20,6 +20,7 @@ cm4all_workshop_SOURCES = \
 	src/PlanLoader.cxx src/PlanLoader.hxx \
 	src/PlanLibrary.cxx src/PlanUpdate.cxx \
 	src/Plan.hxx \
+	src/MultiLibrary.cxx src/MultiLibrary.hxx \
 	src/Expand.cxx src/Expand.hxx \
 	src/Operator.cxx src/Operator.hxx \
 	src/Workplace.cxx src/Workplace.hxx

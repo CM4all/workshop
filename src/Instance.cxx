@@ -17,8 +17,7 @@
 
 #include <signal.h>
 
-Instance::Instance(boost::filesystem::path &&library_path,
-                   const Config &config,
+Instance::Instance(const Config &config,
                    const char *schema,
                    std::function<void()> &&in_spawner)
     :sigterm_event(event_loop, SIGTERM, BIND_THIS_METHOD(OnExit)),
@@ -32,7 +31,6 @@ Instance::Instance(boost::filesystem::path &&library_path,
                                         event_loop.Reinit();
                                         event_loop.~EventLoop();
                                     })),
-     library(std::move(library_path)),
      queue(event_loop, config.node_name, config.database, schema,
            [this](Job &&job){ OnJob(std::move(job)); }),
      workplace(*spawn_service, *this, config.node_name, config.concurrency)

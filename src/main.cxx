@@ -54,8 +54,7 @@ Run(int argc, char **argv, const Config &config)
 
     setup_signal_handlers();
 
-    Instance instance("/etc/cm4all/workshop/plans",
-                      config, "",
+    Instance instance(config, "",
                       [argc, argv](){
                           /* rename the process */
                           size_t name_size = strlen(argv[0]);
@@ -63,6 +62,7 @@ Run(int argc, char **argv, const Config &config)
                               memset(argv[i], 0, strlen(argv[i]));
                           strncpy(argv[0], "spawn", name_size);
                       });
+    instance.library.InsertPath("/etc/cm4all/workshop/plans");
 
     if (daemon_user_set(&config.user) < 0)
         exit(2);
