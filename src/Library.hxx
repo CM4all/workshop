@@ -84,7 +84,8 @@ private:
             .first->second;
     }
 
-    int UpdatePlan(const char *name, PlanEntry &entry);
+    int UpdatePlan(const char *name, PlanEntry &entry,
+                   std::chrono::steady_clock::time_point now);
     int UpdatePlans();
 
     void UpdatePlanNames();

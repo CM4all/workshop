@@ -40,6 +40,8 @@ static int is_valid_plan_name(const char *name) {
 int
 Library::UpdatePlans()
 {
+    const auto now = std::chrono::steady_clock::now();
+
     struct dirent *ent;
 
     /* read list of plans from file system, update our list */
@@ -58,7 +60,7 @@ Library::UpdatePlans()
             continue;
 
         PlanEntry &entry = MakePlanEntry(ent->d_name);
-        UpdatePlan(ent->d_name, entry);
+        UpdatePlan(ent->d_name, entry, now);
         entry.generation = generation;
     }
 
@@ -127,7 +129,9 @@ Library::Get(const char *name)
 
     PlanEntry &entry = i->second;
 
-    int ret = UpdatePlan(name, entry);
+    const auto now = std::chrono::steady_clock::now();
+
+    int ret = UpdatePlan(name, entry, now);
     if (ret != 0)
         return nullptr;
 
