@@ -25,7 +25,7 @@ disable_plan(Library &library, PlanEntry &entry,
              std::chrono::steady_clock::duration duration)
 {
     entry.Disable(std::chrono::steady_clock::now(), duration);
-    library.next_names_update = std::chrono::steady_clock::time_point::min();
+    library.ScheduleNamesUpdate();
 }
 
 static int
@@ -36,7 +36,7 @@ check_plan_mtime(Library &library, const char *name, PlanEntry &entry)
     struct stat st;
 
     snprintf(path, sizeof(path), "%s/%s",
-             library.path.c_str(), name);
+             library.GetPath().c_str(), name);
     ret = stat(path, &st);
     if (ret < 0) {
         if (ret != ENOENT)
@@ -118,7 +118,7 @@ load_plan_entry(Library &library, const char *name, PlanEntry &entry)
     daemon_log(6, "loading plan '%s'\n", name);
 
     snprintf(path, sizeof(path), "%s/%s",
-             library.path.c_str(), name);
+             library.GetPath().c_str(), name);
 
     try {
         entry.plan.reset(new Plan(LoadPlanFile(path)));
@@ -130,7 +130,7 @@ load_plan_entry(Library &library, const char *name, PlanEntry &entry)
         return false;
     }
 
-    library.next_names_update = std::chrono::steady_clock::time_point::min();
+    library.ScheduleNamesUpdate();
 
     return true;
 }

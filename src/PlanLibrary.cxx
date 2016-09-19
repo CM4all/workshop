@@ -72,7 +72,7 @@ Library::UpdatePlans()
             daemon_log(3, "removed plan '%s'\n", i->first.c_str());
 
             i = plans.erase(i);
-            next_names_update = std::chrono::steady_clock::time_point::min();
+            ScheduleNamesUpdate();
         } else
             ++i;
     }

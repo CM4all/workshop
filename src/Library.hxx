@@ -37,7 +37,6 @@ struct PlanEntry {
 };
 
 class Library {
-public:
     const boost::filesystem::path path;
 
     std::map<std::string, PlanEntry> plans;
@@ -53,10 +52,19 @@ public:
 
     time_t mtime = 0;
 
+public:
     explicit Library(boost::filesystem::path &&_path)
         :path(std::move(_path)) {}
 
     Library(const Library &other) = delete;
+
+    const boost::filesystem::path &GetPath() const {
+        return path;
+    }
+
+    void ScheduleNamesUpdate() {
+        next_names_update = std::chrono::steady_clock::time_point::min();
+    }
 
     bool Update();
 
