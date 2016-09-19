@@ -129,7 +129,7 @@ load_plan_entry(Library &library, const char *name, PlanEntry &entry,
     return true;
 }
 
-int
+void
 Library::UpdatePlan(const char *name, PlanEntry &entry,
                     std::chrono::steady_clock::time_point now)
 {
@@ -137,14 +137,10 @@ Library::UpdatePlan(const char *name, PlanEntry &entry,
 
     ret = check_plan_mtime(*this, name, entry, now);
     if (ret != 0)
-        return ret;
+        return;
 
     if (entry.plan == nullptr && !load_plan_entry(*this, name, entry, now))
-        return ret;
+        return;
 
-    ret = validate_plan(*this, entry, now);
-    if (ret != 0)
-        return ret;
-
-    return 0;
+    validate_plan(*this, entry, now);
 }
