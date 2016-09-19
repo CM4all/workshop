@@ -32,16 +32,15 @@ static int
 check_plan_mtime(Library &library, const char *name, PlanEntry &entry)
 {
     int ret;
-    char path[1024];
     struct stat st;
 
-    snprintf(path, sizeof(path), "%s/%s",
-             library.GetPath().c_str(), name);
-    ret = stat(path, &st);
+    const auto path = library.GetPath() / name;
+
+    ret = stat(path.c_str(), &st);
     if (ret < 0) {
         if (ret != ENOENT)
             fprintf(stderr, "failed to stat '%s': %s\n",
-                    path, strerror(errno));
+                    path.c_str(), strerror(errno));
 
         entry.mtime = 0;
 
@@ -110,15 +109,12 @@ validate_plan(Library &library, PlanEntry &entry)
 static bool
 load_plan_entry(Library &library, const char *name, PlanEntry &entry)
 {
-    char path[1024];
-
     assert(entry.plan == nullptr);
     assert(entry.mtime != 0);
 
     daemon_log(6, "loading plan '%s'\n", name);
 
-    snprintf(path, sizeof(path), "%s/%s",
-             library.GetPath().c_str(), name);
+    const auto path = library.GetPath() / name;
 
     try {
         entry.plan.reset(new Plan(LoadPlanFile(path)));
