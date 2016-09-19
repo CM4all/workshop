@@ -65,13 +65,9 @@ check_plan_mtime(Library &library, const char *name, PlanEntry &entry,
         entry.mtime = st.st_mtime;
     }
 
-    if (entry.disabled_until > std::chrono::steady_clock::time_point::min()) {
-        if (entry.IsDisabled(now))
-            /* this plan is temporarily disabled due to previous errors */
-            return ENOENT;
-
-        entry.disabled_until = std::chrono::steady_clock::time_point::min();
-    }
+    if (entry.IsDisabled(now))
+        /* this plan is temporarily disabled due to previous errors */
+        return ENOENT;
 
     return 0;
 }
