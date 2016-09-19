@@ -26,6 +26,11 @@ struct PlanEntry {
         std::chrono::steady_clock::time_point::min();
     unsigned generation = 0;
 
+    void Clear() {
+        plan.reset();
+        mtime = 0;
+    }
+
     bool IsDisabled(std::chrono::steady_clock::time_point now) const {
         return now < disabled_until;
     }

@@ -50,9 +50,7 @@ check_plan_mtime(Library &library, const char *name, PlanEntry &entry,
     }
 
     if (!S_ISREG(st.st_mode)) {
-        entry.plan.reset();
-
-        entry.mtime = 0;
+        entry.Clear();
 
         disable_plan(library, entry, now, std::chrono::seconds(60));
         return ENOENT;
