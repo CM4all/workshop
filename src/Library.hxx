@@ -26,10 +26,6 @@ struct PlanEntry {
         std::chrono::steady_clock::time_point::min();
     unsigned generation = 0;
 
-    PlanEntry(const char *) {}
-
-    PlanEntry(PlanEntry &&other) = default;
-
     bool IsDisabled(std::chrono::steady_clock::time_point now) const {
         return now < disabled_until;
     }
@@ -74,7 +70,9 @@ public:
 
 private:
     PlanEntry &MakePlanEntry(const char *name) {
-        return plans.emplace(name, name)
+        return plans.emplace(std::piecewise_construct,
+                             std::forward_as_tuple(name),
+                             std::forward_as_tuple())
             .first->second;
     }
 
