@@ -5,6 +5,7 @@
 #include "Instance.hxx"
 #include "Config.hxx"
 #include "Job.hxx"
+#include "Plan.hxx"
 #include "spawn/Client.hxx"
 #include "spawn/Glue.hxx"
 #include "util/PrintException.hxx"

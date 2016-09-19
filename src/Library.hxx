@@ -5,8 +5,6 @@
 #ifndef WORKSHOP_LIBRARY_HXX
 #define WORKSHOP_LIBRARY_HXX
 
-#include "Plan.hxx"
-
 #include <inline/compiler.h>
 
 #include <chrono>

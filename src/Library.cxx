@@ -9,14 +9,6 @@
 #include "Plan.hxx"
 #include "pg/Array.hxx"
 
-#include <assert.h>
-#include <sys/stat.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <errno.h>
-#include <string.h>
-#include <time.h>
-
 void
 Library::UpdatePlanNames()
 {
