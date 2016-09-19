@@ -7,6 +7,8 @@
 
 #include <inline/compiler.h>
 
+#include <boost/filesystem.hpp>
+
 #include <chrono>
 #include <memory>
 #include <string>
@@ -36,7 +38,7 @@ struct PlanEntry {
 
 class Library {
 public:
-    const std::string path;
+    const boost::filesystem::path path;
 
     std::map<std::string, PlanEntry> plans;
 
@@ -51,8 +53,8 @@ public:
 
     time_t mtime = 0;
 
-    Library(const char *_path)
-        :path(_path) {}
+    explicit Library(boost::filesystem::path &&_path)
+        :path(std::move(_path)) {}
 
     Library(const Library &other) = delete;
 

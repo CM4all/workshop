@@ -14,7 +14,7 @@
 
 #include <signal.h>
 
-Instance::Instance(const char *library_path,
+Instance::Instance(boost::filesystem::path &&library_path,
                    const Config &config,
                    const char *schema,
                    std::function<void()> &&in_spawner)
@@ -29,7 +29,7 @@ Instance::Instance(const char *library_path,
                                         event_loop.Reinit();
                                         event_loop.~EventLoop();
                                     })),
-     library(library_path),
+     library(std::move(library_path)),
      queue(event_loop, config.node_name, config.database, schema,
            [this](Job &&job){ OnJob(std::move(job)); }),
      workplace(*spawn_service, *this, config.node_name, config.concurrency)

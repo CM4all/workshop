@@ -35,7 +35,7 @@ public:
     Queue queue;
     Workplace workplace;
 
-    Instance(const char *library_path,
+    Instance(boost::filesystem::path &&library_path,
              const Config &config,
              const char *schema,
              std::function<void()> &&in_spawner);
