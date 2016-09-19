@@ -132,10 +132,8 @@ LoadPlanFile(TextFile &file)
 }
 
 Plan
-LoadPlanFile(const char *path)
+LoadPlanFile(const boost::filesystem::path &path)
 {
-    assert(path != nullptr);
-
-    TextFile file(path);
+    TextFile file(path.c_str());
     return LoadPlanFile(file);
 }
