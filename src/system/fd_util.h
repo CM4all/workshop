@@ -37,17 +37,6 @@
 #define FD_UTIL_H
 
 #include <stdbool.h>
-#include <stddef.h>
-
-#ifndef WIN32
-#if !defined(_GNU_SOURCE) && (defined(HAVE_PIPE2) || defined(HAVE_ACCEPT4))
-#define _GNU_SOURCE
-#endif
-
-#include <sys/types.h>
-#endif
-
-struct sockaddr;
 
 #ifdef __cplusplus
 extern "C" {
@@ -55,91 +44,6 @@ extern "C" {
 
 int
 fd_set_cloexec(int fd, bool enable);
-
-/**
- * Wrapper for dup(), which sets the CLOEXEC flag on the new
- * descriptor.
- */
-int
-dup_cloexec(int oldfd);
-
-/**
- * Wrapper for open(), which sets the CLOEXEC flag (atomically if
- * supported by the OS).
- */
-int
-open_cloexec(const char *path_fs, int flags, int mode);
-
-/**
- * Wrapper for pipe(), which sets the CLOEXEC flag (atomically if
- * supported by the OS).
- */
-int
-pipe_cloexec(int fd[2]);
-
-/**
- * Wrapper for pipe(), which sets the CLOEXEC flag (atomically if
- * supported by the OS).
- *
- * On systems that supports it (everybody except for Windows), it also
- * sets the NONBLOCK flag.
- */
-int
-pipe_cloexec_nonblock(int fd[2]);
-
-#ifndef WIN32
-
-/**
- * Wrapper for socketpair(), which sets the CLOEXEC flag (atomically
- * if supported by the OS).
- */
-int
-socketpair_cloexec(int domain, int type, int protocol, int sv[2]);
-
-/**
- * Wrapper for socketpair(), which sets the flags CLOEXEC and NONBLOCK
- * (atomically if supported by the OS).
- */
-int
-socketpair_cloexec_nonblock(int domain, int type, int protocol, int sv[2]);
-
-#endif
-
-/**
- * Wrapper for socket(), which sets the CLOEXEC and the NONBLOCK flag
- * (atomically if supported by the OS).
- */
-int
-socket_cloexec_nonblock(int domain, int type, int protocol);
-
-/**
- * Wrapper for accept(), which sets the CLOEXEC and the NONBLOCK flags
- * (atomically if supported by the OS).
- */
-int
-accept_cloexec_nonblock(int fd, struct sockaddr *address,
-			size_t *address_length_r);
-
-
-#ifndef WIN32
-
-struct msghdr;
-
-/**
- * Wrapper for recvmsg(), which sets the CLOEXEC flag (atomically if
- * supported by the OS).
- */
-ssize_t
-recvmsg_cloexec(int sockfd, struct msghdr *msg, int flags);
-
-#endif
-
-/**
- * Wrapper for inotify_init(), which sets the CLOEXEC flag (atomically
- * if supported by the OS).
- */
-int
-inotify_init_cloexec(void);
 
 #ifdef __cplusplus
 }
