@@ -132,7 +132,7 @@ Library::Get(const char *name)
     const auto now = std::chrono::steady_clock::now();
 
     int ret = UpdatePlan(name, entry, now);
-    if (ret != 0)
+    if (ret != 0 || entry.IsDisabled(now))
         return nullptr;
 
     return entry.plan;
