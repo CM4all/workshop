@@ -2,6 +2,7 @@ AC_PREREQ(2.60)
 AC_INIT(CM4all Workshop, 2.0, mk@cm4all.com, cm4all-snowball)
 AC_COPYRIGHT(Copyright 2006-2016 Content Management AG)
 AC_CONFIG_SRCDIR(src/main.cxx)
+AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR(build)
 AM_INIT_AUTOMAKE([foreign 1.11 subdir-objects silent-rules])
 AM_SILENT_RULES
@@ -15,6 +16,10 @@ AC_PROG_CXX
 AC_PROG_RANLIB
 
 dnl Checks for libraries.
+
+AX_BOOST_BASE([1.54], [], AC_MSG_ERROR([Boost not found]))
+AX_BOOST_SYSTEM([1.54], [], AC_MSG_ERROR([boost::system not found]))
+AX_BOOST_FILESYSTEM([1.54], [], AC_MSG_ERROR([boost::filesystem not found]))
 
 PKG_CHECK_MODULES([LIBEVENT], [libevent >= 2.0.19],,
 	[AC_MSG_ERROR([libevent not found])])

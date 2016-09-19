@@ -1,6 +1,8 @@
+ACLOCAL_AMFLAGS = -I m4
 AUTOMAKE_OPTIONS = foreign 1.11 subdir-objects
 
-AM_CPPFLAGS += -I$(srcdir)/src
+AM_CPPFLAGS += -I$(srcdir)/src \
+	$(BOOST_CPPFLAGS)
 
 bin_PROGRAMS = cm4all-workshop
 cm4all_workshop_SOURCES = \
@@ -34,6 +36,8 @@ cm4all_workshop_LDADD = $(AM_LDADD) \
 	$(LIBCM4ALL_SOCKET_LIBS) \
 	$(LIBSYSTEMD_LIBS) \
 	$(LIBEVENT_LIBS) \
+	$(BOOST_FILESYSTEM_LIB) \
+	$(BOOST_SYSTEM_LIB) \
 	$(LIBPQ_LIBS)
 
 noinst_LIBRARIES = libutil.a libio.a libevent.a libpg.a libspawn.a libsystem.a
