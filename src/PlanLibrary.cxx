@@ -6,6 +6,7 @@
 
 #include "Library.hxx"
 #include "Plan.hxx"
+#include "util/CharUtil.hxx"
 
 #include <daemon/log.h>
 
@@ -20,9 +21,7 @@
 #include <time.h>
 
 static int is_valid_plan_name_char(char ch) {
-    return (ch >= 'a' && ch <= 'z') ||
-        (ch >= 'A' && ch <= 'Z') ||
-        (ch >= '0' && ch <= '9') ||
+    return IsAlphaNumericASCII(ch) ||
         ch == '_' || ch == '-';
 }
 
