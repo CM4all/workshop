@@ -123,7 +123,6 @@ libspawn_a_CPPFLAGS = $(AM_CPPFLAGS) \
 libsystem_a_SOURCES = \
 	src/system/Error.hxx \
 	src/system/SetupProcess.cxx src/system/SetupProcess.hxx \
-	src/system/fd_util.c src/system/fd_util.h \
 	src/system/bind_mount.c src/system/bind_mount.h \
 	src/system/pivot_root.h \
 	src/system/sigutil.h
