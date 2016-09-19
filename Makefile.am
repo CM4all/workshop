@@ -15,7 +15,8 @@ cm4all_workshop_SOURCES = \
 	src/PGQueue.cxx src/PGQueue.hxx \
 	src/Job.cxx src/Job.hxx \
 	src/Library.cxx src/Library.hxx \
-	src/PlanLoader.cxx src/PlanLibrary.cxx src/PlanUpdate.cxx \
+	src/PlanLoader.cxx src/PlanLoader.hxx \
+	src/PlanLibrary.cxx src/PlanUpdate.cxx \
 	src/Plan.hxx \
 	src/Expand.cxx src/Expand.hxx \
 	src/Operator.cxx src/Operator.hxx \

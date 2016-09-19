@@ -1,9 +1,8 @@
 /*
- * Parses plan configuration files.
- *
  * author: Max Kellermann <mk@cm4all.com>
  */
 
+#include "PlanLoader.hxx"
 #include "Plan.hxx"
 #include "system/Error.hxx"
 #include "io/TextFile.hxx"
@@ -36,8 +35,8 @@ get_user_groups(const char *user, gid_t gid)
                               std::next(groups.begin(), result));
 }
 
-inline void
-Plan::ParseLine(Tokenizer &tokenizer)
+static void
+ParseLine(Plan &plan, Tokenizer &tokenizer)
 {
     if (tokenizer.IsEnd() || tokenizer.CurrentChar() == '#')
         return;
@@ -50,14 +49,14 @@ Plan::ParseLine(Tokenizer &tokenizer)
         throw std::runtime_error("value missing after keyword");
 
     if (strcmp(key, "exec") == 0) {
-        if (!args.empty())
+        if (!plan.args.empty())
             throw std::runtime_error("'exec' already specified");
 
         if (*value == 0)
             throw std::runtime_error("empty executable");
 
         while (value != nullptr) {
-            args.push_back(value);
+            plan.args.push_back(value);
             value = tokenizer.NextParam();
         }
 
@@ -68,7 +67,7 @@ Plan::ParseLine(Tokenizer &tokenizer)
         throw std::runtime_error("too many arguments");
 
     if (strcmp(key, "timeout") == 0) {
-        timeout = value;
+        plan.timeout = value;
     } else if (strcmp(key, "chroot") == 0) {
         int ret;
         struct stat st;
@@ -80,7 +79,7 @@ Plan::ParseLine(Tokenizer &tokenizer)
         if (!S_ISDIR(st.st_mode))
             throw FormatRuntimeError("not a directory: %s", value);
 
-        chroot = value;
+        plan.chroot = value;
     } else if (strcmp(key, "user") == 0) {
         struct passwd *pw;
 
@@ -94,26 +93,28 @@ Plan::ParseLine(Tokenizer &tokenizer)
         if (pw->pw_gid == 0)
             throw std::runtime_error("group 'root' is forbidden");
 
-        uid = pw->pw_uid;
-        gid = pw->pw_gid;
+        plan.uid = pw->pw_uid;
+        plan.gid = pw->pw_gid;
 
-        groups = get_user_groups(value, gid);
+        plan.groups = get_user_groups(value, plan.gid);
     } else if (strcmp(key, "nice") == 0) {
-        priority = atoi(value);
+        plan.priority = atoi(value);
     } else if (strcmp(key, "concurrency") == 0) {
-        concurrency = (unsigned)strtoul(value, nullptr, 0);
+        plan.concurrency = (unsigned)strtoul(value, nullptr, 0);
     } else
         throw FormatRuntimeError("unknown option '%s'", key);
 }
 
-inline void
-Plan::LoadFile(TextFile &file)
+static Plan
+LoadPlanFile(TextFile &file)
 {
+    Plan plan;
+
     char *line;
     while ((line = file.ReadLine()) != nullptr) {
         try {
             Tokenizer tokenizer(line);
-            ParseLine(tokenizer);
+            ParseLine(plan, tokenizer);
         } catch (const std::runtime_error &e) {
             std::throw_with_nested(FormatRuntimeError("%s line %u",
                                                       file.GetPath(),
@@ -121,18 +122,20 @@ Plan::LoadFile(TextFile &file)
         }
     }
 
-    if (args.empty())
+    if (plan.args.empty())
         throw FormatRuntimeError("no 'exec' in %s", file.GetPath());
 
-    if (timeout.empty())
-        timeout = "10 minutes";
+    if (plan.timeout.empty())
+        plan.timeout = "10 minutes";
+
+    return plan;
 }
 
-void
-Plan::LoadFile(const char *path)
+Plan
+LoadPlanFile(const char *path)
 {
     assert(path != nullptr);
 
     TextFile file(path);
-    LoadFile(file);
+    return LoadPlanFile(file);
 }

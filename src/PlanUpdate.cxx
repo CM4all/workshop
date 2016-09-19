@@ -7,6 +7,7 @@
 
 #include "Library.hxx"
 #include "Plan.hxx"
+#include "PlanLoader.hxx"
 #include "util/PrintException.hxx"
 
 #include <daemon/log.h>
@@ -119,10 +120,8 @@ load_plan_entry(Library &library, const char *name, PlanEntry &entry)
     snprintf(path, sizeof(path), "%s/%s",
              library.path.c_str(), name);
 
-    Plan plan;
-
     try {
-        plan.LoadFile(path);
+        entry.plan.reset(new Plan(LoadPlanFile(path)));
     } catch (const std::runtime_error &e) {
         daemon_log(2, "failed to load plan '%s': %s\n",
                    name, e.what());
@@ -130,8 +129,6 @@ load_plan_entry(Library &library, const char *name, PlanEntry &entry)
         disable_plan(library, entry, std::chrono::seconds(600));
         return false;
     }
-
-    entry.plan.reset(new Plan(std::move(plan)));
 
     library.next_names_update = std::chrono::steady_clock::time_point::min();
 
