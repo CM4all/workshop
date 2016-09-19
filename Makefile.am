@@ -62,7 +62,8 @@ libutil_a_CPPFLAGS = $(AM_CPPFLAGS) \
 libio_a_SOURCES = \
 	src/io/FileDescriptor.cxx src/io/FileDescriptor.hxx \
 	src/io/UniqueFileDescriptor.hxx \
-	src/io/TextFile.cxx src/io/TextFile.hxx
+	src/io/LineParser.cxx src/io/LineParser.hxx \
+	src/io/ConfigParser.cxx src/io/ConfigParser.hxx
 libio_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBCM4ALL_INLINE_CFLAGS)
 

@@ -5,7 +5,8 @@
 #include "PlanLoader.hxx"
 #include "Plan.hxx"
 #include "system/Error.hxx"
-#include "io/TextFile.hxx"
+#include "io/LineParser.hxx"
+#include "io/ConfigParser.hxx"
 #include "util/Tokenizer.hxx"
 #include "util/RuntimeError.hxx"
 
@@ -19,6 +20,19 @@
 #include <string.h>
 #include <pwd.h>
 #include <grp.h>
+
+class PlanLoader final : public ConfigParser {
+    Plan plan;
+
+public:
+    Plan &&Release() {
+        return std::move(plan);
+    }
+
+    /* virtual methods from class ConfigParser */
+    void ParseLine(LineParser &line) final;
+    void Finish() override;
+};
 
 gcc_pure
 static std::vector<gid_t>
@@ -35,40 +49,28 @@ get_user_groups(const char *user, gid_t gid)
                               std::next(groups.begin(), result));
 }
 
-static void
-ParseLine(Plan &plan, Tokenizer &tokenizer)
+void
+PlanLoader::ParseLine(LineParser &line)
 {
-    if (tokenizer.IsEnd() || tokenizer.CurrentChar() == '#')
-        return;
-
-    const char *key = tokenizer.NextWord();
-    assert(key != nullptr);
-
-    const char *value = tokenizer.NextParam();
-    if (value == nullptr)
-        throw std::runtime_error("value missing after keyword");
+    const char *key = line.ExpectWord();
 
     if (strcmp(key, "exec") == 0) {
         if (!plan.args.empty())
             throw std::runtime_error("'exec' already specified");
 
-        if (*value == 0)
+        const char *value = line.NextRelaxedValue();
+        if (value == nullptr || *value == 0)
             throw std::runtime_error("empty executable");
 
-        while (value != nullptr) {
+        do {
             plan.args.push_back(value);
-            value = tokenizer.NextParam();
-        }
-
-        return;
-    }
-
-    if (!tokenizer.IsEnd())
-        throw std::runtime_error("too many arguments");
-
-    if (strcmp(key, "timeout") == 0) {
-        plan.timeout = value;
+            value = line.NextRelaxedValue();
+        } while (value != nullptr);
+    } else if (strcmp(key, "timeout") == 0) {
+        plan.timeout = line.ExpectValueAndEnd();
     } else if (strcmp(key, "chroot") == 0) {
+        const char *value = line.ExpectValueAndEnd();
+
         int ret;
         struct stat st;
 
@@ -81,6 +83,8 @@ ParseLine(Plan &plan, Tokenizer &tokenizer)
 
         plan.chroot = value;
     } else if (strcmp(key, "user") == 0) {
+        const char *value = line.ExpectValueAndEnd();
+
         struct passwd *pw;
 
         pw = getpwnam(value);
@@ -98,42 +102,29 @@ ParseLine(Plan &plan, Tokenizer &tokenizer)
 
         plan.groups = get_user_groups(value, plan.gid);
     } else if (strcmp(key, "nice") == 0) {
-        plan.priority = atoi(value);
+        plan.priority = atoi(line.ExpectValueAndEnd());
     } else if (strcmp(key, "concurrency") == 0) {
-        plan.concurrency = (unsigned)strtoul(value, nullptr, 0);
+        plan.concurrency = line.NextPositiveInteger();
+        line.ExpectEnd();
     } else
         throw FormatRuntimeError("unknown option '%s'", key);
 }
 
-static Plan
-LoadPlanFile(TextFile &file)
+void
+PlanLoader::Finish()
 {
-    Plan plan;
-
-    char *line;
-    while ((line = file.ReadLine()) != nullptr) {
-        try {
-            Tokenizer tokenizer(line);
-            ParseLine(plan, tokenizer);
-        } catch (const std::runtime_error &e) {
-            std::throw_with_nested(FormatRuntimeError("%s line %u",
-                                                      file.GetPath(),
-                                                      file.GetLineNumber()));
-        }
-    }
-
     if (plan.args.empty())
-        throw FormatRuntimeError("no 'exec' in %s", file.GetPath());
+        throw std::runtime_error("no 'exec'");
 
     if (plan.timeout.empty())
         plan.timeout = "10 minutes";
-
-    return plan;
 }
 
 Plan
 LoadPlanFile(const boost::filesystem::path &path)
 {
-    TextFile file(path.c_str());
-    return LoadPlanFile(file);
+    PlanLoader loader;
+    CommentConfigParser comment_parser(loader);
+    ParseConfigFile(path, comment_parser);
+    return loader.Release();
 }
