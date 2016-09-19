@@ -44,7 +44,7 @@ check_plan_mtime(Library &library, const char *name, PlanEntry &entry,
             fprintf(stderr, "failed to stat '%s': %s\n",
                     path.c_str(), strerror(errno));
 
-        entry.mtime = 0;
+        entry.Clear();
 
         return errno;
     }
