@@ -12,6 +12,8 @@
 
 #include <inline/compiler.h>
 
+#include <array>
+
 #include <assert.h>
 #include <sys/stat.h>
 #include <stdlib.h>
@@ -20,36 +22,18 @@
 #include <grp.h>
 
 gcc_pure
-static bool
-user_in_group(const struct group *group, const char *user)
-{
-    char **mem = group->gr_mem;
-
-    while (*mem != nullptr) {
-        if (strcmp(*mem, user) == 0)
-            return true;
-        ++mem;
-    }
-
-    return false;
-}
-
 static std::vector<gid_t>
-get_user_groups(const char *user)
+get_user_groups(const char *user, gid_t gid)
 {
-    std::vector<gid_t> groups;
+    std::array<gid_t, 64> groups;
+    int ngroups = groups.size();
+    int result = getgrouplist(user, gid,
+                              &groups.front(), &ngroups);
+    if (result < 0)
+        throw std::runtime_error("getgrouplist() failed");
 
-    setgrent();
-
-    const struct group *group;
-    while ((group = getgrent()) != nullptr) {
-        if (group->gr_gid > 0 && user_in_group(group, user))
-            groups.push_back(group->gr_gid);
-    }
-
-    endgrent();
-
-    return groups;
+    return std::vector<gid_t>(groups.begin(),
+                              std::next(groups.begin(), result));
 }
 
 inline void
@@ -113,7 +97,7 @@ Plan::ParseLine(Tokenizer &tokenizer)
         uid = pw->pw_uid;
         gid = pw->pw_gid;
 
-        groups = get_user_groups(value);
+        groups = get_user_groups(value, gid);
     } else if (strcmp(key, "nice") == 0) {
         priority = atoi(value);
     } else if (strcmp(key, "concurrency") == 0) {
