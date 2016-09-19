@@ -95,8 +95,6 @@ Instance::OnJob(Job &&job)
         return;
     }
 
-    library.Update();
-
     if (!StartJob(std::move(job)) || workplace.IsFull())
         queue.Disable();
 
