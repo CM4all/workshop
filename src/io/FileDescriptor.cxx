@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Max Kellermann <max@duempel.org>
+ * Copyright (C) 2012-2016 Max Kellermann <max@duempel.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -123,6 +123,34 @@ FileDescriptor::SetBlocking()
 
 	int flags = fcntl(fd, F_GETFL);
 	fcntl(fd, F_SETFL, flags & ~O_NONBLOCK);
+}
+
+void
+FileDescriptor::EnableCloseOnExec()
+{
+	assert(IsDefined());
+
+	const int old_flags = fcntl(fd, F_GETFD, 0);
+	fcntl(fd, F_SETFD, old_flags | FD_CLOEXEC);
+}
+
+void
+FileDescriptor::DisableCloseOnExec()
+{
+	assert(IsDefined());
+
+	const int old_flags = fcntl(fd, F_GETFD, 0);
+	fcntl(fd, F_SETFD, old_flags & ~FD_CLOEXEC);
+}
+
+bool
+FileDescriptor::CheckDuplicate(int new_fd)
+{
+	if (fd == new_fd) {
+		DisableCloseOnExec();
+		return true;
+	} else
+		return Duplicate(new_fd);
 }
 
 #endif

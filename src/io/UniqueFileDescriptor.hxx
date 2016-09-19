@@ -71,6 +71,7 @@ public:
 
 	using FileDescriptor::IsDefined;
 	using FileDescriptor::Get;
+	using FileDescriptor::Steal;
 
 protected:
 	void Set(int _fd) {
@@ -79,8 +80,6 @@ protected:
 
 		FileDescriptor::Set(_fd);
 	}
-
-	using FileDescriptor::Steal;
 
 public:
 	using FileDescriptor::Open;
@@ -95,7 +94,10 @@ public:
 
 	using FileDescriptor::SetNonBlocking;
 	using FileDescriptor::SetBlocking;
+	using FileDescriptor::EnableCloseOnExec;
+	using FileDescriptor::DisableCloseOnExec;
 	using FileDescriptor::Duplicate;
+	using FileDescriptor::CheckDuplicate;
 
 	static bool CreatePipe(FileDescriptor &r, FileDescriptor &w);
 #endif

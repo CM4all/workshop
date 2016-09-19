@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 Max Kellermann <max@duempel.org>
+ * Copyright (C) 2012-2016 Max Kellermann <max@duempel.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -62,6 +62,10 @@ public:
 		return fd == other.fd;
 	}
 
+	constexpr bool operator!=(FileDescriptor other) const {
+		return fd != other.fd;
+	}
+
 	constexpr bool IsDefined() const {
 		return fd >= 0;
 	}
@@ -113,11 +117,31 @@ public:
 	void SetBlocking();
 
 	/**
+	 * Auto-close this file descriptor when a new program is
+	 * executed.
+	 */
+	void EnableCloseOnExec();
+
+	/**
+	 * Do not auto-close this file descriptor when a new program
+	 * is executed.
+	 */
+	void DisableCloseOnExec();
+
+	/**
 	 * Duplicate the file descriptor onto the given file descriptor.
 	 */
 	bool Duplicate(int new_fd) const {
 		return ::dup2(Get(), new_fd) == 0;
 	}
+
+	/**
+	 * Similar to Duplicate(), but if destination and source file
+	 * descriptor are equal, clear the close-on-exec flag.  Use
+	 * this method to inject file descriptors into a new child
+	 * process, to be used by a newly executed program.
+	 */
+	bool CheckDuplicate(int new_fd);
 #endif
 
 #ifdef HAVE_EVENTFD
@@ -133,7 +157,7 @@ public:
 #endif
 
 	/**
-	 * Close the file descriptor.  It is legal to call it on an
+	 * Close the file descriptor.  It should not be called on an
 	 * "undefined" object.  After this call, IsDefined() is guaranteed
 	 * to return false, and this object may be reused.
 	 */
