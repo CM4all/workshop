@@ -227,6 +227,7 @@ LineParser::ExpectWordAndSymbol(char symbol,
         throw Error(error2);
 
     *p++ = 0;
+    p = StripLeft(p);
 
     return result;
 }
