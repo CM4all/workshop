@@ -93,6 +93,25 @@ private:
             .first->second;
     }
 
+    void DisablePlan(PlanEntry &entry,
+                     std::chrono::steady_clock::time_point now,
+                     std::chrono::steady_clock::duration duration);
+
+    /**
+     * @return true if the plan file was modified
+     */
+    bool CheckPlanModified(const char *name, PlanEntry &entry,
+                           std::chrono::steady_clock::time_point now);
+
+    /**
+     * Check whether the plan is available.
+     */
+    bool ValidatePlan(PlanEntry &entry,
+                      std::chrono::steady_clock::time_point now);
+
+    bool LoadPlan(const char *name, PlanEntry &entry,
+                  std::chrono::steady_clock::time_point now);
+
     void UpdatePlan(const char *name, PlanEntry &entry,
                     std::chrono::steady_clock::time_point now);
     int UpdatePlans();

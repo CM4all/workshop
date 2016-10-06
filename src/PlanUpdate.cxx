@@ -20,29 +20,29 @@
 #include <string.h>
 #include <sys/stat.h>
 
-static void
-disable_plan(Library &library, PlanEntry &entry,
-             std::chrono::steady_clock::time_point now,
-             std::chrono::steady_clock::duration duration)
+void
+Library::DisablePlan(PlanEntry &entry,
+                     std::chrono::steady_clock::time_point now,
+                     std::chrono::steady_clock::duration duration)
 {
     entry.Disable(now, duration);
-    library.ScheduleNamesUpdate();
+    ScheduleNamesUpdate();
 }
 
-static bool
-check_plan_mtime(Library &library, const char *name, PlanEntry &entry,
-                 std::chrono::steady_clock::time_point now)
+bool
+Library::CheckPlanModified(const char *name, PlanEntry &entry,
+                           std::chrono::steady_clock::time_point now)
 {
     int ret;
     struct stat st;
 
-    const auto path = library.GetPath() / name;
+    const auto plan_path = GetPath() / name;
 
-    ret = stat(path.c_str(), &st);
+    ret = stat(plan_path.c_str(), &st);
     if (ret < 0) {
         if (ret != ENOENT)
             fprintf(stderr, "failed to stat '%s': %s\n",
-                    path.c_str(), strerror(errno));
+                    plan_path.c_str(), strerror(errno));
 
         entry.Clear();
 
@@ -52,7 +52,7 @@ check_plan_mtime(Library &library, const char *name, PlanEntry &entry,
     if (!S_ISREG(st.st_mode)) {
         entry.Clear();
 
-        disable_plan(library, entry, now, std::chrono::seconds(60));
+        DisablePlan(entry, now, std::chrono::seconds(60));
         return false;
     }
 
@@ -70,9 +70,9 @@ check_plan_mtime(Library &library, const char *name, PlanEntry &entry,
     return true;
 }
 
-static bool
-validate_plan(Library &library, PlanEntry &entry,
-              std::chrono::steady_clock::time_point now)
+bool
+Library::ValidatePlan(PlanEntry &entry,
+                      std::chrono::steady_clock::time_point now)
 {
     const auto &plan = entry.plan;
     int ret;
@@ -94,7 +94,7 @@ validate_plan(Library &library, PlanEntry &entry,
         if (errno == ENOENT)
             entry.deinstalled = true;
         else
-            disable_plan(library, entry, now, std::chrono::seconds(60));
+            DisablePlan(entry, now, std::chrono::seconds(60));
         return false;
     }
 
@@ -103,28 +103,28 @@ validate_plan(Library &library, PlanEntry &entry,
     return true;
 }
 
-static bool
-load_plan_entry(Library &library, const char *name, PlanEntry &entry,
-                std::chrono::steady_clock::time_point now)
+bool
+Library::LoadPlan(const char *name, PlanEntry &entry,
+                  std::chrono::steady_clock::time_point now)
 {
     assert(entry.plan == nullptr);
     assert(entry.mtime != 0);
 
     daemon_log(6, "loading plan '%s'\n", name);
 
-    const auto path = library.GetPath() / name;
+    const auto plan_path = GetPath() / name;
 
     try {
-        entry.plan.reset(new Plan(LoadPlanFile(path)));
+        entry.plan.reset(new Plan(LoadPlanFile(plan_path)));
     } catch (const std::runtime_error &e) {
         daemon_log(2, "failed to load plan '%s': %s\n",
                    name, e.what());
         PrintException(e);
-        disable_plan(library, entry, now, std::chrono::seconds(600));
+        DisablePlan(entry, now, std::chrono::seconds(600));
         return false;
     }
 
-    library.ScheduleNamesUpdate();
+    ScheduleNamesUpdate();
 
     return true;
 }
@@ -133,11 +133,11 @@ void
 Library::UpdatePlan(const char *name, PlanEntry &entry,
                     std::chrono::steady_clock::time_point now)
 {
-    if (!check_plan_mtime(*this, name, entry, now))
+    if (!CheckPlanModified(name, entry, now))
         return;
 
-    if (entry.plan == nullptr && !load_plan_entry(*this, name, entry, now))
+    if (entry.plan == nullptr && !LoadPlan(name, entry, now))
         return;
 
-    validate_plan(*this, entry, now);
+    ValidatePlan(entry, now);
 }
