@@ -8,6 +8,7 @@
 #include "spawn/ExitListener.hxx"
 #include "event/SocketEvent.hxx"
 #include "io/UniqueFileDescriptor.hxx"
+#include "util/StaticArray.hxx"
 #include "Job.hxx"
 
 #include <boost/intrusive/list.hpp>
@@ -33,14 +34,12 @@ struct Operator final
 
     UniqueFileDescriptor stdout_fd;
     SocketEvent stdout_event;
-    char stdout_buffer[64];
-    size_t stdout_length = 0;
+    StaticArray<char, 64> stdout_buffer;
     unsigned progress = 0;
 
     UniqueFileDescriptor stderr_fd;
     SocketEvent stderr_event;
-    char stderr_buffer[512];
-    size_t stderr_length = 0;
+    StaticArray<char, 64> stderr_buffer;
     std::unique_ptr<SyslogClient> syslog;
 
     Operator(EventLoop &event_loop, Workplace &_workplace, const Job &_job,

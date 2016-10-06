@@ -55,17 +55,17 @@ Operator::OnOutputReady(short)
         char ch = buffer[i];
 
         if (ch >= '0' && ch <= '9' &&
-            stdout_length < sizeof(stdout_buffer) - 1) {
-            stdout_buffer[stdout_length++] = ch;
+            stdout_buffer.size() < stdout_buffer.capacity() - 1) {
+            stdout_buffer.push_back(ch);
         } else {
-            if (stdout_length > 0) {
-                stdout_buffer[stdout_length] = 0;
-                p = (unsigned)strtoul(stdout_buffer, nullptr, 10);
+            if (!stdout_buffer.empty()) {
+                stdout_buffer.push_back('\0');
+                p = (unsigned)strtoul(stdout_buffer.begin(), nullptr, 10);
                 if (p <= 100)
                     new_progress = p;
             }
 
-            stdout_length = 0;
+            stdout_buffer.clear();
         }
     }
 
@@ -104,15 +104,15 @@ Operator::OnErrorReady(short)
         char ch = buffer[i];
 
         if (ch == '\r' || ch == '\n') {
-            if (stderr_length > 0) {
-                stderr_buffer[stderr_length] = 0;
-                syslog->Log(6, stderr_buffer);
+            if (!stderr_buffer.empty()) {
+                stderr_buffer.push_back('\0');
+                syslog->Log(6, stderr_buffer.begin());
             }
 
-            stderr_length = 0;
+            stderr_buffer.clear();
         } else if (ch > 0 && (ch & ~0x7f) == 0 &&
-                   stderr_length < sizeof(stderr_buffer) - 1) {
-            stderr_buffer[stderr_length++] = ch;
+                   stderr_buffer.size() < stderr_buffer.capacity() - 1) {
+            stderr_buffer.push_back(ch);
         }
     }
 }
