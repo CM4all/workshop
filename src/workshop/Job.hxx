@@ -35,7 +35,7 @@
 
 #include <chrono>
 #include <string>
-#include <list>
+#include <forward_list>
 
 class WorkshopQueue;
 
@@ -44,9 +44,9 @@ struct WorkshopJob {
 
     std::string id, plan_name, syslog_server;
 
-    std::list<std::string> args;
+    std::forward_list<std::string> args;
 
-    std::list<std::string> env;
+    std::forward_list<std::string> env;
 
     explicit WorkshopJob(WorkshopQueue &_queue):queue(_queue) {}
 
