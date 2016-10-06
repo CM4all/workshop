@@ -57,7 +57,7 @@ check_plan_mtime(Library &library, const char *name, PlanEntry &entry,
     }
 
     if (st.st_mtime != entry.mtime) {
-        entry.disabled_until = std::chrono::steady_clock::time_point::min();
+        entry.Enable();
         entry.plan.reset();
 
         entry.mtime = st.st_mtime;

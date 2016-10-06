@@ -39,6 +39,10 @@ struct PlanEntry {
                  std::chrono::steady_clock::duration duration) {
         disabled_until = now + duration;
     }
+
+    void Enable() {
+        disabled_until = std::chrono::steady_clock::time_point::min();
+    }
 };
 
 class Library {
