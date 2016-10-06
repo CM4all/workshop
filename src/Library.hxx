@@ -60,9 +60,6 @@ class Library {
 
     std::string names;
 
-    std::chrono::steady_clock::time_point next_names_update =
-        std::chrono::steady_clock::time_point::min();
-
     time_t mtime = 0;
 
 public:
@@ -76,7 +73,7 @@ public:
     }
 
     void ScheduleNamesUpdate() {
-        next_names_update = std::chrono::steady_clock::time_point::min();
+        names.clear();
     }
 
     bool Update();
