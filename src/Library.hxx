@@ -115,7 +115,11 @@ private:
 
     void UpdatePlan(const char *name, PlanEntry &entry,
                     std::chrono::steady_clock::time_point now);
-    int UpdatePlans();
+
+    /**
+     * @return true on success, false on error
+     */
+    bool UpdatePlans();
 
     void UpdatePlanNames();
 };

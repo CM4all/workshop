@@ -42,7 +42,7 @@ is_valid_plan_name(const char *name)
     return true;
 }
 
-int
+bool
 Library::UpdatePlans()
 {
     const auto now = std::chrono::steady_clock::now();
@@ -55,7 +55,7 @@ Library::UpdatePlans()
     if (dir == nullptr) {
         fprintf(stderr, "failed to opendir '%s': %s\n",
                 path.c_str(), strerror(errno));
-        return -1;
+        return false;
     }
 
     ++generation;
@@ -84,7 +84,7 @@ Library::UpdatePlans()
             ++i;
     }
 
-    return 0;
+    return true;
 }
 
 bool
@@ -113,8 +113,7 @@ Library::Update()
 
     /* do it */
 
-    ret = UpdatePlans();
-    if (ret != 0)
+    if (!UpdatePlans())
         return false;
 
     /* update mtime */
