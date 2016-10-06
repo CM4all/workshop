@@ -20,21 +20,26 @@
 #include <dirent.h>
 #include <time.h>
 
-static int is_valid_plan_name_char(char ch) {
+static constexpr bool
+is_valid_plan_name_char(char ch)
+{
     return IsAlphaNumericASCII(ch) ||
         ch == '_' || ch == '-';
 }
 
-static int is_valid_plan_name(const char *name) {
+gcc_pure
+static bool
+is_valid_plan_name(const char *name)
+{
     assert(name != nullptr);
 
     do {
         if (!is_valid_plan_name_char(*name))
-            return 0;
+            return false;
         ++name;
     } while (*name != 0);
 
-    return 1;
+    return true;
 }
 
 int
