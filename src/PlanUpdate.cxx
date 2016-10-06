@@ -79,18 +79,16 @@ Library::ValidatePlan(PlanEntry &entry,
     struct stat st;
 
     assert(plan);
-    assert(!plan->args.empty());
-    assert(!plan->args.front().empty());
 
     /* check if the executable exists; it would not if the Debian
        package has been deinstalled, but the plan's config file is
        still there */
 
-    ret = stat(plan->args.front().c_str(), &st);
+    ret = stat(plan->GetExecutablePath().c_str(), &st);
     if (ret < 0) {
         if (errno != ENOENT || !entry.deinstalled)
             fprintf(stderr, "failed to stat '%s': %s\n",
-                    plan->args.front().c_str(), strerror(errno));
+                    plan->GetExecutablePath().c_str(), strerror(errno));
         if (errno == ENOENT)
             entry.deinstalled = true;
         else

@@ -46,6 +46,12 @@ struct Plan {
 
     Plan &operator=(Plan &&other) = default;
     Plan &operator=(const Plan &other) = delete;
+
+    const std::string &GetExecutablePath() const {
+        assert(!args.empty());
+
+        return args.front();
+    }
 };
 
 #endif
