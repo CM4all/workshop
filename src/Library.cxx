@@ -27,7 +27,7 @@ Library::UpdatePlanNames()
         const std::string &name = i.first;
         const PlanEntry &entry = i.second;
 
-        if (!entry.IsDisabled(now))
+        if (entry.IsAvailable(now))
             plan_names.push_back(name);
     }
 

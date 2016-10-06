@@ -35,6 +35,10 @@ struct PlanEntry {
         return now < disabled_until;
     }
 
+    bool IsAvailable(std::chrono::steady_clock::time_point now) const {
+        return !deinstalled && !IsDisabled(now);
+    }
+
     void Disable(std::chrono::steady_clock::time_point now,
                  std::chrono::steady_clock::duration duration) {
         disabled_until = now + duration;
