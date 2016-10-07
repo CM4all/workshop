@@ -58,7 +58,8 @@ Library::UpdatePlans()
         return false;
     }
 
-    ++generation;
+    auto old_plans = std::move(plans);
+    plans.clear();
 
     bool modified = false;
 
@@ -66,27 +67,40 @@ Library::UpdatePlans()
         if (!is_valid_plan_name(ent->d_name))
             continue;
 
-        PlanEntry &entry = MakePlanEntry(ent->d_name);
-        if (UpdatePlan(ent->d_name, entry, now))
-            modified = true;
+        std::string name(ent->d_name);
 
-        entry.generation = generation;
+        auto old_i = old_plans.find(name);
+        decltype(old_i) i;
+
+        if (old_i != old_plans.end()) {
+            i = plans.emplace(std::piecewise_construct,
+                              std::forward_as_tuple(std::move(name)),
+                              std::forward_as_tuple(std::move(old_i->second)))
+                .first;
+            old_plans.erase(old_i);
+        } else {
+            i = plans.emplace(std::piecewise_construct,
+                              std::forward_as_tuple(std::move(name)),
+                              std::forward_as_tuple())
+                .first;
+            ScheduleNamesUpdate();
+            modified = true;
+        }
+
+        if (UpdatePlan(ent->d_name, i->second, now))
+            modified = true;
     }
 
     closedir(dir);
 
     /* remove all plans */
 
-    for (auto i = plans.begin(), end = plans.end(); i != end;) {
-        PlanEntry &entry = i->second;
-        if (entry.generation != generation) {
-            daemon_log(3, "removed plan '%s'\n", i->first.c_str());
+    for (const auto &i : old_plans)
+        daemon_log(3, "removed plan '%s'\n", i.first.c_str());
 
-            i = plans.erase(i);
-            ScheduleNamesUpdate();
-            modified = true;
-        } else
-            ++i;
+    if (!old_plans.empty()) {
+        ScheduleNamesUpdate();
+        modified = true;
     }
 
     return modified;

@@ -24,7 +24,6 @@ struct PlanEntry {
     time_t mtime = 0;
     std::chrono::steady_clock::time_point disabled_until =
         std::chrono::steady_clock::time_point::min();
-    unsigned generation = 0;
 
     void Clear() {
         plan.reset();
@@ -56,7 +55,6 @@ class Library {
 
     std::chrono::steady_clock::time_point next_plans_check =
         std::chrono::steady_clock::time_point::min();
-    unsigned generation = 0;
 
     std::string names;
 
