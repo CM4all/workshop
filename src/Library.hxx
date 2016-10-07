@@ -76,7 +76,12 @@ public:
         names.clear();
     }
 
-    bool Update();
+    /**
+     * @param force if true, then update the list even if the plan
+     * directory time stamp hasn't changed and the #next_plans_check
+     * time stamp hasn't been reached yet
+     */
+    bool Update(bool force);
 
     gcc_pure
     const char *GetPlanNames() {

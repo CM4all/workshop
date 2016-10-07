@@ -88,7 +88,7 @@ Library::UpdatePlans()
 }
 
 bool
-Library::Update()
+Library::Update(bool force)
 {
     int ret;
     struct stat st;
@@ -108,7 +108,7 @@ Library::Update()
     }
 
     const auto now = std::chrono::steady_clock::now();
-    if (st.st_mtime == mtime && now < next_plans_check)
+    if (!force && st.st_mtime == mtime && now < next_plans_check)
         return true;
 
     /* do it */

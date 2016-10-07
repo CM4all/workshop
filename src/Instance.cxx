@@ -53,9 +53,9 @@ Instance::UpdateFilter()
 }
 
 void
-Instance::UpdateLibraryAndFilter()
+Instance::UpdateLibraryAndFilter(bool force)
 {
-    library.Update();
+    library.Update(force);
     UpdateFilter();
 }
 
@@ -129,7 +129,7 @@ void
 Instance::OnReload(int)
 {
     daemon_log(4, "reloading\n");
-    UpdateLibraryAndFilter();
+    UpdateLibraryAndFilter(true);
     queue.Reschedule();
 }
 
@@ -142,7 +142,7 @@ Instance::OnChildProcessExit(int)
         return;
     }
 
-    UpdateLibraryAndFilter();
+    UpdateLibraryAndFilter(false);
 
     if (!workplace.IsFull())
         queue.Enable();

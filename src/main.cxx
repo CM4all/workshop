@@ -71,7 +71,7 @@ Run(int argc, char **argv, const Config &config)
 
     daemon_log(1, "cm4all-workshop v" VERSION "\n");
 
-    instance.UpdateLibraryAndFilter();
+    instance.UpdateLibraryAndFilter(true);
 
     /* tell systemd we're ready */
     sd_notify(0, "READY=1");

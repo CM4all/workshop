@@ -47,7 +47,7 @@ public:
     }
 
     void UpdateFilter();
-    void UpdateLibraryAndFilter();
+    void UpdateLibraryAndFilter(bool force);
 
 private:
     bool StartJob(Job &&job);
