@@ -60,12 +60,16 @@ Library::UpdatePlans()
 
     ++generation;
 
+    bool modified = false;
+
     while ((ent = readdir(dir)) != nullptr) {
         if (!is_valid_plan_name(ent->d_name))
             continue;
 
         PlanEntry &entry = MakePlanEntry(ent->d_name);
-        UpdatePlan(ent->d_name, entry, now);
+        if (UpdatePlan(ent->d_name, entry, now))
+            modified = true;
+
         entry.generation = generation;
     }
 
@@ -80,11 +84,12 @@ Library::UpdatePlans()
 
             i = plans.erase(i);
             ScheduleNamesUpdate();
+            modified = true;
         } else
             ++i;
     }
 
-    return true;
+    return modified;
 }
 
 bool
@@ -109,19 +114,18 @@ Library::Update(bool force)
 
     const auto now = std::chrono::steady_clock::now();
     if (!force && st.st_mtime == mtime && now < next_plans_check)
-        return true;
+        return false;
 
     /* do it */
 
-    if (!UpdatePlans())
-        return false;
+    bool modified = UpdatePlans();
 
     /* update mtime */
 
     mtime = st.st_mtime;
     next_plans_check = now + std::chrono::seconds(60);
 
-    return true;
+    return modified;
 }
 
 std::shared_ptr<Plan>

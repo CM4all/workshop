@@ -80,6 +80,9 @@ public:
      * @param force if true, then update the list even if the plan
      * directory time stamp hasn't changed and the #next_plans_check
      * time stamp hasn't been reached yet
+     *
+     * @return true if the library was modified (at least one plan has
+     * been added, modified or deleted)
      */
     bool Update(bool force);
 
@@ -118,11 +121,14 @@ private:
     bool LoadPlan(const char *name, PlanEntry &entry,
                   std::chrono::steady_clock::time_point now);
 
-    void UpdatePlan(const char *name, PlanEntry &entry,
+    /**
+     * @return whether the plan was modified
+     */
+    bool UpdatePlan(const char *name, PlanEntry &entry,
                     std::chrono::steady_clock::time_point now);
 
     /**
-     * @return true on success, false on error
+     * @return whether the plan was modified
      */
     bool UpdatePlans();
 

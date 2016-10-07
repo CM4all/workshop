@@ -127,15 +127,17 @@ Library::LoadPlan(const char *name, PlanEntry &entry,
     return true;
 }
 
-void
+bool
 Library::UpdatePlan(const char *name, PlanEntry &entry,
                     std::chrono::steady_clock::time_point now)
 {
+    const bool was_available = entry.IsAvailable(now);
+
     if (!CheckPlanModified(name, entry, now))
-        return;
+        return entry.IsAvailable(now) != was_available;
 
     if (entry.plan == nullptr && !LoadPlan(name, entry, now))
-        return;
+        return false;
 
-    ValidatePlan(entry, now);
+    return ValidatePlan(entry, now) != was_available;
 }
