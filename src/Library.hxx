@@ -18,37 +18,37 @@
 
 struct Plan;
 
-struct PlanEntry {
-    std::shared_ptr<Plan> plan;
-    bool deinstalled = false;
-    time_t mtime = 0;
-    std::chrono::steady_clock::time_point disabled_until =
-        std::chrono::steady_clock::time_point::min();
-
-    void Clear() {
-        plan.reset();
-        mtime = 0;
-    }
-
-    bool IsDisabled(std::chrono::steady_clock::time_point now) const {
-        return now < disabled_until;
-    }
-
-    bool IsAvailable(std::chrono::steady_clock::time_point now) const {
-        return !deinstalled && !IsDisabled(now);
-    }
-
-    void Disable(std::chrono::steady_clock::time_point now,
-                 std::chrono::steady_clock::duration duration) {
-        disabled_until = now + duration;
-    }
-
-    void Enable() {
-        disabled_until = std::chrono::steady_clock::time_point::min();
-    }
-};
-
 class Library {
+    struct PlanEntry {
+        std::shared_ptr<Plan> plan;
+        bool deinstalled = false;
+        time_t mtime = 0;
+        std::chrono::steady_clock::time_point disabled_until =
+            std::chrono::steady_clock::time_point::min();
+
+        void Clear() {
+            plan.reset();
+            mtime = 0;
+        }
+
+        bool IsDisabled(std::chrono::steady_clock::time_point now) const {
+            return now < disabled_until;
+        }
+
+        bool IsAvailable(std::chrono::steady_clock::time_point now) const {
+            return !deinstalled && !IsDisabled(now);
+        }
+
+        void Disable(std::chrono::steady_clock::time_point now,
+                     std::chrono::steady_clock::duration duration) {
+            disabled_until = now + duration;
+        }
+
+        void Enable() {
+            disabled_until = std::chrono::steady_clock::time_point::min();
+        }
+    };
+
     const boost::filesystem::path path;
 
     std::map<std::string, PlanEntry> plans;
