@@ -27,6 +27,7 @@ Queue::Queue(EventLoop &event_loop,
              Callback _callback)
     :node_name(_node_name),
      db(conninfo, schema, *this),
+     check_notify_event(event_loop, BIND_THIS_METHOD(CheckNotify)),
      timer_event(event_loop, BIND_THIS_METHOD(OnTimer)),
      callback(_callback) {
 }
@@ -46,6 +47,7 @@ Queue::Close()
     db.Disconnect();
 
     timer_event.Cancel();
+    check_notify_event.Cancel();
 }
 
 void
@@ -288,11 +290,11 @@ Queue::Run()
     if (disabled)
         return;
 
+    ScheduleCheckNotify();
+
     running = true;
     Run2();
     running = false;
-
-    CheckNotify();
 }
 
 void
@@ -316,11 +318,9 @@ Queue::SetJobProgress(const Job &job, unsigned progress, const char *timeout)
 
     daemon_log(5, "job %s progress=%u\n", job.id.c_str(), progress);
 
-    int ret = pg_set_job_progress(db, job.id.c_str(), progress, timeout);
+    ScheduleCheckNotify();
 
-    CheckNotify();
-
-    return ret;
+    return pg_set_job_progress(db, job.id.c_str(), progress, timeout);
 }
 
 bool
@@ -333,7 +333,7 @@ Queue::RollbackJob(const Job &job)
     pg_rollback_job(db, job.id.c_str());
     pg_notify(db);
 
-    CheckNotify();
+    ScheduleCheckNotify();
 
     return true;
 }
@@ -347,7 +347,7 @@ Queue::SetJobDone(const Job &job, int status)
 
     pg_set_job_done(db, job.id.c_str(), status);
 
-    CheckNotify();
+    ScheduleCheckNotify();
     return true;
 }
 
@@ -374,6 +374,7 @@ Queue::OnDisconnect()
     daemon_log(4, "disconnected from database\n");
 
     timer_event.Cancel();
+    check_notify_event.Cancel();
 }
 
 void

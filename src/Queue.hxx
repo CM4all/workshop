@@ -7,6 +7,7 @@
 #ifndef WORKSHOP_QUEUE_HXX
 #define WORKSHOP_QUEUE_HXX
 
+#include "event/DeferEvent.hxx"
 #include "event/TimerEvent.hxx"
 #include "event/Duration.hxx"
 #include "pg/AsyncConnection.hxx"
@@ -32,6 +33,12 @@ class Queue final : private AsyncPgConnectionHandler {
     /** if set to true, the current queue run should be interrupted,
         to be started again */
     bool interrupt = false;
+
+    /**
+     * Used to move CheckNotify() calls out of the current stack
+     * frame.
+     */
+    DeferEvent check_notify_event;
 
     /**
      * Timer event which runs the queue.
@@ -120,6 +127,10 @@ private:
      */
     void CheckNotify() {
         db.CheckNotify();
+    }
+
+    void ScheduleCheckNotify() {
+        check_notify_event.Schedule();
     }
 
     int GetNextScheduled(int *span_r);
