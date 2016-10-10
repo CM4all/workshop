@@ -127,7 +127,7 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
             o->syslog.reset(SyslogClient::Create(node_name.c_str(), ident, 1,
                                                  job.syslog_server.c_str()));
         } catch (const std::runtime_error &e) {
-            std::rethrow_if_nested(FormatRuntimeError("syslog_open(%s) failed",
+            std::throw_with_nested(FormatRuntimeError("syslog_open(%s) failed",
                                                       job.syslog_server.c_str()));
         }
 
