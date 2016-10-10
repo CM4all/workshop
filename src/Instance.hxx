@@ -6,6 +6,7 @@
 #define WORKSHOP_INSTANCE_HXX
 
 #include "event/Loop.hxx"
+#include "event/ShutdownListener.hxx"
 #include "event/SignalEvent.hxx"
 #include "MultiLibrary.hxx"
 #include "Queue.hxx"
@@ -24,7 +25,7 @@ public:
 
     bool should_exit = false;
 
-    SignalEvent sigterm_event, sigint_event, sigquit_event;
+    ShutdownListener shutdown_listener;
     SignalEvent sighup_event;
 
     ChildProcessRegistry child_process_registry;
@@ -51,7 +52,7 @@ public:
 private:
     bool StartJob(Job &&job);
     void OnJob(Job &&job);
-    void OnExit(int);
+    void OnExit();
     void OnReload(int);
 
     /* virtual methods from ExitListener */

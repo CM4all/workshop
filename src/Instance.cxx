@@ -20,9 +20,7 @@
 Instance::Instance(const Config &config,
                    const char *schema,
                    std::function<void()> &&in_spawner)
-    :sigterm_event(event_loop, SIGTERM, BIND_THIS_METHOD(OnExit)),
-     sigint_event(event_loop, SIGINT, BIND_THIS_METHOD(OnExit)),
-     sigquit_event(event_loop, SIGQUIT, BIND_THIS_METHOD(OnExit)),
+    :shutdown_listener(event_loop, BIND_THIS_METHOD(OnExit)),
      sighup_event(event_loop, SIGHUP, BIND_THIS_METHOD(OnReload)),
      child_process_registry(event_loop),
      spawn_service(StartSpawnServer(config.spawn, child_process_registry,
@@ -35,9 +33,7 @@ Instance::Instance(const Config &config,
            [this](Job &&job){ OnJob(std::move(job)); }),
      workplace(*spawn_service, *this, config.node_name, config.concurrency)
 {
-    sigterm_event.Add();
-    sigint_event.Add();
-    sigquit_event.Add();
+    shutdown_listener.Enable();
     sighup_event.Add();
 }
 
@@ -109,16 +105,14 @@ Instance::OnJob(Job &&job)
 }
 
 void
-Instance::OnExit(int)
+Instance::OnExit()
 {
     if (should_exit)
         return;
 
     should_exit = true;
 
-    sigterm_event.Delete();
-    sigint_event.Delete();
-    sigquit_event.Delete();
+    shutdown_listener.Disable();
     sighup_event.Delete();
     child_process_registry.SetVolatile();
 
