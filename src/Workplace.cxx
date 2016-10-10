@@ -156,9 +156,6 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
                                              std::move(p),
                                              o.get());
 
-    if (o->pid < 0)
-        throw MakeErrno(-o->pid, "fork() failed");
-
     daemon_log(2, "job %s (plan '%s') running as pid %d\n",
                job.id.c_str(), job.plan_name.c_str(), o->pid);
 
