@@ -79,7 +79,7 @@ public:
     bool Update(bool force);
 
     template<typename F>
-    void VisitPlans(std::chrono::steady_clock::time_point now, F &&f) {
+    void VisitPlans(std::chrono::steady_clock::time_point now, F &&f) const {
         for (const auto &i : plans) {
             const std::string &name = i.first;
             const PlanEntry &entry = i.second;
