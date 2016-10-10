@@ -18,25 +18,12 @@
 #include <inline/compiler.h>
 #include <daemon/log.h>
 
-#include <algorithm>
 #include <string>
 #include <map>
 #include <set>
 #include <list>
-#include <vector>
 
 #include <assert.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <errno.h>
-#include <string.h>
-#include <sys/wait.h>
-#include <poll.h>
-#include <grp.h>
-#include <sys/time.h>
-#include <sys/resource.h>
 
 std::string
 Workplace::GetRunningPlanNames() const
