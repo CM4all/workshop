@@ -13,7 +13,7 @@
 
 #include <daemon/log.h>
 
-#include <forward_list>
+#include <set>
 
 #include <signal.h>
 
@@ -44,10 +44,10 @@ Instance::~Instance()
 void
 Instance::UpdateFilter()
 {
-    std::forward_list<std::string> available_plans;
+    std::set<std::string> available_plans;
     library.VisitPlans(std::chrono::steady_clock::now(),
                        [&available_plans](const std::string &name, const Plan &){
-                           available_plans.emplace_front(name);
+                           available_plans.emplace(name);
                        });
 
     queue.SetFilter(pg_encode_array(available_plans),

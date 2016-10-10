@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <string>
 #include <map>
+#include <set>
 #include <list>
 #include <vector>
 
@@ -37,20 +38,12 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 
-template<class C, typename V>
-static bool
-contains(const C &container, const V &value)
-{
-    return std::find(container.begin(), container.end(), value) != container.end();
-}
-
 std::string
 Workplace::GetRunningPlanNames() const
 {
-    std::list<std::string> list;
+    std::set<std::string> list;
     for (const auto &o : operators)
-        if (!contains(list, o.job.plan_name))
-            list.push_back(o.job.plan_name);
+        list.emplace(o.job.plan_name);
 
     return pg_encode_array(list);
 }
@@ -59,7 +52,7 @@ std::string
 Workplace::GetFullPlanNames() const
 {
     std::map<std::string, unsigned> counters;
-    std::list<std::string> list;
+    std::set<std::string> list;
     for (const auto &o : operators) {
         const Plan &plan = *o.plan;
         if (plan.concurrency == 0)
@@ -72,10 +65,10 @@ Workplace::GetFullPlanNames() const
 
         ++n;
 
-        assert(n <= plan.concurrency || contains(list, plan_name));
+        assert(n <= plan.concurrency || list.find(plan_name) != list.end());
 
         if (n == plan.concurrency)
-            list.push_back(plan_name);
+            list.emplace(plan_name);
     }
 
     return pg_encode_array(list);
