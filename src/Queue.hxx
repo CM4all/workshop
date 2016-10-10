@@ -20,7 +20,7 @@
 struct Job;
 class EventLoop;
 
-class Queue : private AsyncPgConnectionHandler {
+class Queue final : private AsyncPgConnectionHandler {
     typedef std::function<void(Job &&job)> Callback;
 
     const std::string node_name;
