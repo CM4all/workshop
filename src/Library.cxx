@@ -9,12 +9,9 @@
 #include "Plan.hxx"
 #include "pg/Array.hxx"
 
-void
-Library::UpdatePlanNames()
+std::string
+Library::GetPlanNames() const
 {
-    if (!names.empty())
-        return;
-
     /* collect new list */
 
     const auto now = std::chrono::steady_clock::now();
@@ -29,5 +26,5 @@ Library::UpdatePlanNames()
             plan_names.push_back(name);
     }
 
-    names = pg_encode_array(plan_names);
+    return pg_encode_array(plan_names);
 }

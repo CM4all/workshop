@@ -97,7 +97,7 @@ public:
     /**
      * Configure a "plan" filter.
      */
-    void SetFilter(const char *plans_include, std::string &&plans_exclude,
+    void SetFilter(std::string &&plans_include, std::string &&plans_exclude,
                    std::string &&plans_lowprio);
 
     void RunResult(const PgResult &result);

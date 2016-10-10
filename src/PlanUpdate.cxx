@@ -26,7 +26,6 @@ Library::DisablePlan(PlanEntry &entry,
                      std::chrono::steady_clock::duration duration)
 {
     entry.Disable(now, duration);
-    ScheduleNamesUpdate();
 }
 
 bool
@@ -121,8 +120,6 @@ Library::LoadPlan(const char *name, PlanEntry &entry,
         DisablePlan(entry, now, std::chrono::seconds(600));
         return false;
     }
-
-    ScheduleNamesUpdate();
 
     return true;
 }

@@ -83,7 +83,6 @@ Library::UpdatePlans()
                               std::forward_as_tuple(std::move(name)),
                               std::forward_as_tuple())
                 .first;
-            ScheduleNamesUpdate();
             modified = true;
         }
 
@@ -99,7 +98,6 @@ Library::UpdatePlans()
         daemon_log(3, "removed plan '%s'\n", i.first.c_str());
 
     if (!old_plans.empty()) {
-        ScheduleNamesUpdate();
         modified = true;
     }
 

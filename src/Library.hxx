@@ -56,8 +56,6 @@ class Library {
     std::chrono::steady_clock::time_point next_plans_check =
         std::chrono::steady_clock::time_point::min();
 
-    std::string names;
-
     time_t mtime = 0;
 
 public:
@@ -68,10 +66,6 @@ public:
 
     const boost::filesystem::path &GetPath() const {
         return path;
-    }
-
-    void ScheduleNamesUpdate() {
-        names.clear();
     }
 
     /**
@@ -85,10 +79,7 @@ public:
     bool Update(bool force);
 
     gcc_pure
-    const char *GetPlanNames() {
-        UpdatePlanNames();
-        return names.c_str();
-    }
+    std::string GetPlanNames() const;
 
     std::shared_ptr<Plan> Get(const char *name);
 
@@ -129,8 +120,6 @@ private:
      * @return whether the plan was modified
      */
     bool UpdatePlans();
-
-    void UpdatePlanNames();
 };
 
 #endif

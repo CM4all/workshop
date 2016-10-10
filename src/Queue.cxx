@@ -140,18 +140,6 @@ get_and_claim_job(Job &job, const char *node_name,
  * @return false if the string was not modified.
  */
 static bool
-copy_string(std::string &dest, const char *src)
-{
-    assert(src != nullptr);
-
-    if (dest.compare(src) == 0)
-        return false;
-
-    dest = src;
-    return true;
-}
-
-static bool
 copy_string(std::string &dest, std::string &&src)
 {
     if (dest.compare(src) == 0)
@@ -162,10 +150,10 @@ copy_string(std::string &dest, std::string &&src)
 }
 
 void
-Queue::SetFilter(const char *_plans_include, std::string &&_plans_exclude,
+Queue::SetFilter(std::string &&_plans_include, std::string &&_plans_exclude,
                  std::string &&_plans_lowprio)
 {
-    bool r1 = copy_string(plans_include, _plans_include);
+    bool r1 = copy_string(plans_include, std::move(_plans_include));
     bool r2 = copy_string(plans_exclude, std::move(_plans_exclude));
     plans_lowprio = std::move(_plans_lowprio);
 
