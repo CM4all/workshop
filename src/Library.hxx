@@ -78,8 +78,16 @@ public:
      */
     bool Update(bool force);
 
-    gcc_pure
-    std::string GetPlanNames(std::chrono::steady_clock::time_point now) const;
+    template<typename F>
+    void VisitPlans(std::chrono::steady_clock::time_point now, F &&f) {
+        for (const auto &i : plans) {
+            const std::string &name = i.first;
+            const PlanEntry &entry = i.second;
+
+            if (entry.IsAvailable(now))
+                f(name, *entry.plan);
+        }
+    }
 
     std::shared_ptr<Plan> Get(const char *name);
 

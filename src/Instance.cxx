@@ -8,9 +8,12 @@
 #include "Plan.hxx"
 #include "spawn/Client.hxx"
 #include "spawn/Glue.hxx"
+#include "pg/Array.hxx"
 #include "util/PrintException.hxx"
 
 #include <daemon/log.h>
+
+#include <forward_list>
 
 #include <signal.h>
 
@@ -47,7 +50,13 @@ Instance::~Instance()
 void
 Instance::UpdateFilter()
 {
-    queue.SetFilter(library.GetPlanNames(std::chrono::steady_clock::now()),
+    std::forward_list<std::string> available_plans;
+    library.VisitPlans(std::chrono::steady_clock::now(),
+                       [&available_plans](const std::string &name, const Plan &){
+                           available_plans.emplace_front(name);
+                       });
+
+    queue.SetFilter(pg_encode_array(available_plans),
                     workplace.GetFullPlanNames(),
                     workplace.GetRunningPlanNames());
 }
