@@ -9,6 +9,8 @@
 #include "Plan.hxx"
 #include "pg/Array.hxx"
 
+#include <forward_list>
+
 std::string
 Library::GetPlanNames() const
 {
@@ -16,14 +18,14 @@ Library::GetPlanNames() const
 
     const auto now = std::chrono::steady_clock::now();
 
-    std::list<std::string> plan_names;
+    std::forward_list<std::string> plan_names;
 
     for (const auto &i : plans) {
         const std::string &name = i.first;
         const PlanEntry &entry = i.second;
 
         if (entry.IsAvailable(now))
-            plan_names.push_back(name);
+            plan_names.emplace_front(name);
     }
 
     return pg_encode_array(plan_names);
