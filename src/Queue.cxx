@@ -161,7 +161,7 @@ Queue::SetFilter(std::string &&_plans_include, std::string &&_plans_exclude,
         if (running)
             interrupt = true;
         else if (db.IsReady())
-            Run();
+            Reschedule();
     }
 }
 
