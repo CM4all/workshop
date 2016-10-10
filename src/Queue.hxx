@@ -66,6 +66,41 @@ public:
 
     void Close();
 
+    /**
+     * Configure a "plan" filter.
+     */
+    void SetFilter(std::string &&plans_include, std::string &&plans_exclude,
+                   std::string &&plans_lowprio);
+
+    /**
+     * Disable the queue, e.g. when the node is busy.
+     */
+    void Disable() {
+        disabled = true;
+    }
+
+    /**
+     * Enable the queue after it has been disabled with Disable().
+     */
+    void Enable();
+
+    int SetJobProgress(const Job &job, unsigned progress, const char *timeout);
+
+    /**
+     * Disassociate from the job, act as if this node had never
+     * claimed it.  It will notify the other workshop nodes.
+     *
+     * @return true on success
+     */
+    bool RollbackJob(const Job &job);
+
+    bool SetJobDone(const Job &job, int status);
+
+private:
+    void RunResult(const PgResult &result);
+    void Run2();
+    void Run();
+
     void OnTimer();
 
     void ScheduleTimer(const struct timeval &tv) {
@@ -94,41 +129,6 @@ public:
 
     int GetNextScheduled(int *span_r);
 
-    /**
-     * Configure a "plan" filter.
-     */
-    void SetFilter(std::string &&plans_include, std::string &&plans_exclude,
-                   std::string &&plans_lowprio);
-
-    void RunResult(const PgResult &result);
-    void Run2();
-    void Run();
-
-    /**
-     * Disable the queue, e.g. when the node is busy.
-     */
-    void Disable() {
-        disabled = true;
-    }
-
-    /**
-     * Enable the queue after it has been disabled with Disable().
-     */
-    void Enable();
-
-    int SetJobProgress(const Job &job, unsigned progress, const char *timeout);
-
-    /**
-     * Disassociate from the job, act as if this node had never
-     * claimed it.  It will notify the other workshop nodes.
-     *
-     * @return true on success
-     */
-    bool RollbackJob(const Job &job);
-
-    bool SetJobDone(const Job &job, int status);
-
-private:
     /* virtual methods from AsyncPgConnectionHandler */
     void OnConnect() override;
     void OnDisconnect() override;
