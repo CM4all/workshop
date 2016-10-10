@@ -12,12 +12,8 @@
 #include <forward_list>
 
 std::string
-Library::GetPlanNames() const
+Library::GetPlanNames(std::chrono::steady_clock::time_point now) const
 {
-    /* collect new list */
-
-    const auto now = std::chrono::steady_clock::now();
-
     std::forward_list<std::string> plan_names;
 
     for (const auto &i : plans) {

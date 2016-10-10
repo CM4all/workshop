@@ -79,7 +79,7 @@ public:
     bool Update(bool force);
 
     gcc_pure
-    std::string GetPlanNames() const;
+    std::string GetPlanNames(std::chrono::steady_clock::time_point now) const;
 
     std::shared_ptr<Plan> Get(const char *name);
 

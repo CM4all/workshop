@@ -47,7 +47,7 @@ Instance::~Instance()
 void
 Instance::UpdateFilter()
 {
-    queue.SetFilter(library.GetPlanNames(),
+    queue.SetFilter(library.GetPlanNames(std::chrono::steady_clock::now()),
                     workplace.GetFullPlanNames(),
                     workplace.GetRunningPlanNames());
 }
