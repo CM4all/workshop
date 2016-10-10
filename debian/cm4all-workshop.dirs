@@ -1,3 +1,4 @@
 etc/cm4all/workshop/plans
+usr/share/cm4all/workshop/plans
 var/run/cm4all
 var/log/cm4all/workshop

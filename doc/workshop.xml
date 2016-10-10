@@ -186,7 +186,7 @@ GRANT UPDATE, SELECT ON jobs_id_seq TO workshop_client;</programlisting>
       <title>Plans entwickeln</title>
 
       <para>
-        In <filename>/etc/cm4all/workshop/plans/</filename> legt man
+        In <filename>/usr/share/cm4all/workshop/plans/</filename> legt man
         die Konfigurationsdatei mit dem Namen des Plan an.  Beispiel:
       </para>
 

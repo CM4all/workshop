@@ -63,6 +63,7 @@ Run(int argc, char **argv, const Config &config)
                           strncpy(argv[0], "spawn", name_size);
                       });
     instance.library.InsertPath("/etc/cm4all/workshop/plans");
+    instance.library.InsertPath("/usr/share/cm4all/workshop/plans");
 
     if (daemon_user_set(&config.user) < 0)
         exit(2);
