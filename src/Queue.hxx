@@ -23,7 +23,7 @@ class EventLoop;
 class Queue : private AsyncPgConnectionHandler {
     typedef std::function<void(Job &&job)> Callback;
 
-    std::string node_name;
+    const std::string node_name;
 
     AsyncPgConnection db;
 
