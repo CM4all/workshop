@@ -48,12 +48,7 @@ public:
     Queue(EventLoop &event_loop,
           const char *_node_name, const char *conninfo, const char *schema,
           Callback _callback);
-
-    Queue(const Queue &other) = delete;
-
     ~Queue();
-
-    Queue &operator=(const Queue &other) = delete;
 
     gcc_pure
     const char *GetNodeName() const {
