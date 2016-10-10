@@ -131,7 +131,6 @@ Instance::OnReload(int)
 {
     daemon_log(4, "reloading\n");
     UpdateLibraryAndFilter(true);
-    queue.Reschedule();
 }
 
 void
