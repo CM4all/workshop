@@ -1,4 +1,4 @@
-cm4all-workshop (2.0) unstable; urgency=low
+cm4all-workshop (2.0.1) unstable; urgency=low
 
   * use monotonic clock instead of real-time clock
   * fix file descriptor leaks
@@ -8,7 +8,7 @@ cm4all-workshop (2.0) unstable; urgency=low
   * require systemd
   * systemd: set Type=notify
 
- --
+ -- Max Kellermann <mk@cm4all.com>  Mon, 10 Oct 2016 17:31:41 -0000
 
 cm4all-workshop (1.0.12) unstable; urgency=low
 
