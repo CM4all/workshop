@@ -1,5 +1,5 @@
 AC_PREREQ(2.60)
-AC_INIT(CM4all Workshop, 2.0.1, mk@cm4all.com, cm4all-snowball)
+AC_INIT(CM4all Workshop, 2.0.2, mk@cm4all.com, cm4all-snowball)
 AC_COPYRIGHT(Copyright 2006-2016 Content Management AG)
 AC_CONFIG_SRCDIR(src/main.cxx)
 AC_CONFIG_MACRO_DIR([m4])
