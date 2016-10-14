@@ -41,7 +41,15 @@ cm4all_workshop_LDADD = $(AM_LDADD) \
 	$(BOOST_SYSTEM_LIB) \
 	$(LIBPQ_LIBS)
 
-noinst_LIBRARIES = libutil.a libio.a libevent.a libpg.a libspawn.a libsystem.a
+noinst_LIBRARIES = libtime.a libutil.a libio.a libevent.a libpg.a libspawn.a libsystem.a
+
+libtime_a_SOURCES = \
+	src/time/ISO8601.cxx src/time/ISO8601.hxx \
+	src/time/Convert.cxx src/time/Convert.hxx \
+	src/time/Math.cxx src/time/Math.hxx \
+	src/time/Calendar.hxx
+libtime_a_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(LIBCM4ALL_INLINE_CFLAGS)
 
 libutil_a_SOURCES = \
 	src/util/BindMethod.hxx \
@@ -50,6 +58,7 @@ libutil_a_SOURCES = \
 	src/util/DeleteDisposer.hxx \
 	src/util/djbhash.c src/util/djbhash.h \
 	src/util/PrintException.cxx src/util/PrintException.hxx \
+	src/util/RangeBitSet.hxx \
 	src/util/RuntimeError.hxx \
 	src/util/TrivialArray.hxx \
 	src/util/StaticArray.hxx \
@@ -134,9 +143,13 @@ libsystem_a_SOURCES = \
 # Unit tests
 #
 
-TESTS = t/test-pg_decode_array t/test-pg_encode_array
+TESTS = \
+	t/test-pg_decode_array t/test-pg_encode_array \
+	t/TestCronSchedule
 
-check_PROGRAMS = t/test-pg_decode_array t/test-pg_encode_array
+check_PROGRAMS = \
+	t/test-pg_decode_array t/test-pg_encode_array \
+	t/TestCronSchedule
 
 t_test_pg_decode_array_SOURCES = t/test-pg_decode_array.cxx
 t_test_pg_decode_array_CPPFLAGS = $(AM_CPPFLAGS) \
@@ -153,6 +166,14 @@ t_test_pg_encode_array_CPPFLAGS = $(AM_CPPFLAGS) \
 t_test_pg_encode_array_LDADD = $(AM_LDADD) \
 	libpg.a \
 	$(LIBPQ_LIBS)
+
+t_TestCronSchedule_SOURCES = \
+	src/cron/Schedule.cxx src/cron/Schedule.hxx \
+	t/TestCronSchedule.cxx
+t_TestCronSchedule_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(LIBCM4ALL_INLINE_CFLAGS)
+t_TestCronSchedule_LDADD = $(AM_LDADD) \
+	libtime.a libutil.a
 
 #
 # documentation
