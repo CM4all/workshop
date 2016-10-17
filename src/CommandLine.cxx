@@ -18,7 +18,6 @@
 #include <getopt.h>
 #include <string.h>
 #include <errno.h>
-#include <pwd.h>
 #include <unistd.h>
 
 static void usage(void) {
