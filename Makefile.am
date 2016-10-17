@@ -4,7 +4,8 @@ AUTOMAKE_OPTIONS = foreign 1.11 subdir-objects
 AM_CPPFLAGS += -I$(srcdir)/src \
 	$(BOOST_CPPFLAGS)
 
-bin_PROGRAMS = cm4all-workshop
+bin_PROGRAMS = cm4all-workshop cm4all-cron
+
 cm4all_workshop_SOURCES = \
 	src/main.cxx \
 	src/debug.h \
@@ -35,6 +36,29 @@ cm4all_workshop_LDADD = $(AM_LDADD) \
 	libpg.a libspawn.a libevent.a libio.a libsystem.a libutil.a \
 	$(LIBCM4ALL_DAEMON_LIBS) \
 	$(LIBCM4ALL_SOCKET_LIBS) \
+	$(LIBSYSTEMD_LIBS) \
+	$(LIBEVENT_LIBS) \
+	$(BOOST_FILESYSTEM_LIB) \
+	$(BOOST_SYSTEM_LIB) \
+	$(LIBPQ_LIBS)
+
+cm4all_cron_SOURCES = \
+	src/debug.h \
+	src/cron/Main.cxx \
+	src/cron/Config.cxx src/cron/Config.hxx \
+	src/cron/CommandLine.cxx src/cron/CommandLine.hxx \
+	src/cron/Schedule.cxx src/cron/Schedule.hxx \
+	src/cron/Instance.cxx src/cron/Instance.hxx \
+	src/AllocatorPtr.cxx src/AllocatorPtr.hxx
+cm4all_cron_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(LIBCM4ALL_INLINE_CFLAGS) \
+	$(LIBCM4ALL_DAEMON_CFLAGS) \
+	$(LIBSYSTEMD_CFLAGS) \
+	$(LIBEVENT_CFLAGS) \
+	$(LIBPQ_CPPFLAGS)
+cm4all_cron_LDADD = $(AM_LDADD) \
+	libpg.a libspawn.a libevent.a libio.a libsystem.a libtime.a libutil.a \
+	$(LIBCM4ALL_DAEMON_LIBS) \
 	$(LIBSYSTEMD_LIBS) \
 	$(LIBEVENT_LIBS) \
 	$(BOOST_FILESYSTEM_LIB) \
