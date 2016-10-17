@@ -8,28 +8,18 @@
 #include "Instance.hxx"
 #include "CommandLine.hxx"
 #include "Config.hxx"
-#include "Library.hxx"
-#include "Queue.hxx"
-#include "Job.hxx"
-#include "Workplace.hxx"
-#include "event/Loop.hxx"
 #include "system/SetupProcess.hxx"
 
-#include <inline/compiler.h>
 #include <daemon/log.h>
 
 #include <systemd/sd-daemon.h>
 
 #include <stdexcept>
 
-#include <assert.h>
-#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
 #include <signal.h>
-#include <grp.h>
 
 #ifndef NDEBUG
 bool debug_mode = false;
