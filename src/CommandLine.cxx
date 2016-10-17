@@ -77,7 +77,7 @@ static void arg_error(const char *argv0, const char *fmt, ...) {
 
     fprintf(stderr, "Try '%s --help' for more information.\n",
             argv0);
-    exit(1);
+    exit(EXIT_FAILURE);
 }
 
 /** read configuration options from the command line */
@@ -116,11 +116,11 @@ parse_cmdline(Config &config, int argc, char **argv)
         switch (ret) {
         case 'h':
             usage();
-            exit(0);
+            exit(EXIT_SUCCESS);
 
         case 'V':
             printf("cm4all-workshop v%s\n", VERSION);
-            exit(0);
+            exit(EXIT_SUCCESS);
 
         case 'v':
             ++daemon_log_config.verbose;
@@ -157,7 +157,7 @@ parse_cmdline(Config &config, int argc, char **argv)
             arg_error(argv[0], nullptr);
 
         default:
-            exit(1);
+            exit(EXIT_FAILURE);
         }
     }
 
