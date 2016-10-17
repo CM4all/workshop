@@ -46,10 +46,6 @@ static void usage(void) {
 #endif
          " -c NUM         set the maximum number of concurrent operators (default: 2)\n"
 #ifdef __GLIBC__
-         " --database CONNINFO\n"
-#endif
-         " -d CONNINFO    set the PostgreSQL connect string\n"
-#ifdef __GLIBC__
          " --user name\n"
 #endif
          " -u name        switch to another user id\n"
@@ -92,13 +88,14 @@ parse_cmdline(Config &config, int argc, char **argv)
         {"quiet", 0, 0, 'q'},
         {"name", 1, 0, 'N'},
         {"concurrency", 1, 0, 'c'},
-        {"database", 1, 0, 'd'},
         {"user", 1, 0, 'u'},
         {0,0,0,0}
     };
 #endif
 
     config.database = getenv("WORKSHOP_DATABASE");
+    if (config.database == nullptr || *config.database == 0)
+        arg_error(argv[0], "no WORKSHOP_DATABASE environment variable");
 
     while (1) {
 #ifdef __GLIBC__
@@ -139,10 +136,6 @@ parse_cmdline(Config &config, int argc, char **argv)
                 arg_error(argv[0], "invalid concurrency specification");
             break;
 
-        case 'd':
-            config.database = optarg;
-            break;
-
         case 'u':
             if (debug_mode)
                 arg_error(argv[0], "cannot specify a user in debug mode");
@@ -169,9 +162,6 @@ parse_cmdline(Config &config, int argc, char **argv)
 
     if (config.node_name == nullptr)
         arg_error(argv[0], "no node name specified");
-
-    if (config.database == nullptr)
-        arg_error(argv[0], "no database specified");
 
     if (!debug_mode && !daemon_user_defined(&config.user))
         arg_error(argv[0], "no user name specified (-u)");
