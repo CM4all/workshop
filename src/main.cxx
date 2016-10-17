@@ -19,30 +19,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <signal.h>
 
 #ifndef NDEBUG
 bool debug_mode = false;
 #endif
 
 static void
-setup_signal_handlers()
-{
-    struct sigaction sa;
-    memset(&sa, 0, sizeof(sa));
-    sa.sa_handler = SIG_IGN;
-    sa.sa_flags = SA_RESTART;
-    sigaction(SIGALRM, &sa, nullptr);
-    sigaction(SIGUSR1, &sa, nullptr);
-    sigaction(SIGUSR2, &sa, nullptr);
-}
-
-static void
 Run(int argc, char **argv, const Config &config)
 {
     SetupProcess();
-
-    setup_signal_handlers();
 
     Instance instance(config, "",
                       [argc, argv](){
