@@ -49,7 +49,6 @@ static void usage(void) {
          " --database CONNINFO\n"
 #endif
          " -d CONNINFO    set the PostgreSQL connect string\n"
-         " -D             don't detach (daemonize)\n"
 #ifdef __GLIBC__
          " --user name\n"
 #endif
