@@ -8,6 +8,7 @@
 #define CRON_QUEUE_HXX
 
 #include "event/DeferEvent.hxx"
+#include "event/TimerEvent.hxx"
 #include "pg/AsyncConnection.hxx"
 
 #include <inline/compiler.h>
@@ -27,6 +28,8 @@ class CronQueue final : private AsyncPgConnectionHandler {
      * frame.
      */
     DeferEvent check_notify_event;
+
+    TimerEvent scheduler_timer;
 
 public:
     CronQueue(EventLoop &event_loop, const char *_node_name,
@@ -60,6 +63,9 @@ private:
     void ScheduleCheckNotify() {
         check_notify_event.Schedule();
     }
+
+    void RunScheduler();
+    void ScheduleScheduler(bool immediately);
 
     /* virtual methods from AsyncPgConnectionHandler */
     void OnConnect() override;

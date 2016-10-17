@@ -49,6 +49,7 @@ cm4all_cron_SOURCES = \
 	src/cron/CommandLine.cxx src/cron/CommandLine.hxx \
 	src/cron/Schedule.cxx src/cron/Schedule.hxx \
 	src/cron/Queue.cxx src/cron/Queue.hxx \
+	src/cron/CalculateNextRun.cxx src/cron/CalculateNextRun.hxx \
 	src/cron/Instance.cxx src/cron/Instance.hxx \
 	src/AllocatorPtr.cxx src/AllocatorPtr.hxx
 cm4all_cron_CPPFLAGS = $(AM_CPPFLAGS) \
