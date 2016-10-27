@@ -5,6 +5,7 @@
 #ifndef CRON_INSTANCE_HXX
 #define CRON_INSTANCE_HXX
 
+#include "Queue.hxx"
 #include "event/Loop.hxx"
 #include "event/ShutdownListener.hxx"
 #include "event/SignalEvent.hxx"
@@ -29,6 +30,8 @@ public:
 
     std::unique_ptr<SpawnServerClient> spawn_service;
 
+    CronQueue queue;
+
     CronInstance(const CronConfig &config,
                  const char *schema,
                  std::function<void()> &&in_spawner);
@@ -36,7 +39,7 @@ public:
     ~CronInstance();
 
     void Start() {
-        // TODO: db.Connect()
+        queue.Connect();
     }
 
 private:

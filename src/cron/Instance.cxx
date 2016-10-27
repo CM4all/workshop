@@ -4,16 +4,10 @@
 
 #include "Instance.hxx"
 #include "Config.hxx"
-#include "Job.hxx"
-#include "Plan.hxx"
 #include "spawn/Client.hxx"
 #include "spawn/Glue.hxx"
-#include "pg/Array.hxx"
-#include "util/PrintException.hxx"
 
 #include <daemon/log.h>
-
-#include <set>
 
 #include <signal.h>
 
@@ -28,12 +22,11 @@ CronInstance::CronInstance(const CronConfig &config,
                                         in_spawner();
                                         event_loop.Reinit();
                                         event_loop.~EventLoop();
-                                    }))
+                                    })),
+     queue(event_loop, config.node_name, config.database, schema)
 {
     shutdown_listener.Enable();
     sighup_event.Add();
-
-    (void)schema; // TODO
 }
 
 CronInstance::~CronInstance()
@@ -53,6 +46,8 @@ CronInstance::OnExit()
     child_process_registry.SetVolatile();
 
     spawn_service->Shutdown();
+
+    queue.Close();
 }
 
 void
