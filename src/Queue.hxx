@@ -49,7 +49,7 @@ class Queue final : private AsyncPgConnectionHandler {
     std::chrono::steady_clock::time_point next_expire_check =
         std::chrono::steady_clock::time_point::min();
 
-    Callback callback;
+    const Callback callback;
 
 public:
     Queue(EventLoop &event_loop,
