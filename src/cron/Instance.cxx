@@ -4,6 +4,7 @@
 
 #include "Instance.hxx"
 #include "Config.hxx"
+#include "Job.hxx"
 #include "spawn/Client.hxx"
 #include "spawn/Glue.hxx"
 
@@ -23,7 +24,8 @@ CronInstance::CronInstance(const CronConfig &config,
                                         event_loop.Reinit();
                                         event_loop.~EventLoop();
                                     })),
-     queue(event_loop, config.node_name, config.database, schema)
+     queue(event_loop, config.node_name, config.database, schema,
+           [this](CronJob &&job){ OnJob(std::move(job)); })
 {
     shutdown_listener.Enable();
     sighup_event.Add();
@@ -31,6 +33,18 @@ CronInstance::CronInstance(const CronConfig &config,
 
 CronInstance::~CronInstance()
 {
+}
+
+void
+CronInstance::OnJob(CronJob &&job)
+{
+    printf("OnJob '%s'\n", job.id.c_str());
+
+    if (!queue.Claim(job))
+        return;
+
+    // TODO: execute
+    queue.Finish(job);
 }
 
 void

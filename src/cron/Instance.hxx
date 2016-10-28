@@ -43,6 +43,8 @@ public:
     }
 
 private:
+    void OnJob(CronJob &&job);
+
     void OnExit();
     void OnReload(int);
 };

@@ -15,13 +15,17 @@
 
 #include <string>
 
-struct Job;
+struct CronJob;
 class EventLoop;
 
 class CronQueue final : private AsyncPgConnectionHandler {
+    typedef std::function<void(CronJob &&job)> Callback;
+
     const std::string node_name;
 
     AsyncPgConnection db;
+
+    const Callback callback;
 
     /**
      * Used to move CheckNotify() calls out of the current stack
@@ -29,11 +33,12 @@ class CronQueue final : private AsyncPgConnectionHandler {
      */
     DeferEvent check_notify_event;
 
-    TimerEvent scheduler_timer;
+    TimerEvent scheduler_timer, claim_timer;
 
 public:
     CronQueue(EventLoop &event_loop, const char *_node_name,
-              const char *conninfo, const char *schema);
+              const char *conninfo, const char *schema,
+              Callback _callback);
     ~CronQueue();
 
     gcc_pure
@@ -46,6 +51,9 @@ public:
     }
 
     void Close();
+
+    bool Claim(const CronJob &job);
+    void Finish(const CronJob &job);
 
 private:
     /**
@@ -66,6 +74,14 @@ private:
 
     void RunScheduler();
     void ScheduleScheduler(bool immediately);
+
+    void RunClaim();
+    void ScheduleClaim(bool immediately);
+
+    /**
+     * @return false if no pending job was found
+     */
+    bool CheckPending();
 
     /* virtual methods from AsyncPgConnectionHandler */
     void OnConnect() override;
