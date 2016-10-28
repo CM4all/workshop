@@ -72,6 +72,8 @@ private:
         check_notify_event.Schedule();
     }
 
+    void ReleaseStale();
+
     void RunScheduler();
     void ScheduleScheduler(bool immediately);
 

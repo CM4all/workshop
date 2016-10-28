@@ -41,6 +41,25 @@ CronQueue::Close()
 }
 
 void
+CronQueue::ReleaseStale()
+{
+    const auto result =
+        db.ExecuteParams("UPDATE cronjobs "
+                         "SET node_name=NULL, node_timeout=NULL, next_run=NULL "
+                         "WHERE node_name=$1",
+                         node_name.c_str());
+    if (!result.IsCommandSuccessful()) {
+        fprintf(stderr, "UPDATE/stale on cronjobs failed: %s\n",
+                result.GetErrorMessage());
+        return;
+    }
+
+    unsigned n = result.GetAffectedRows();
+    if (n > 0)
+        daemon_log(3, "Released %u stale cronjobs\n", n);
+}
+
+void
 CronQueue::RunScheduler()
 {
     daemon_log(4, "scheduler\n");
@@ -179,6 +198,8 @@ CronQueue::OnConnect()
         daemon_log(1, "LISTEN failed: %s\n", result.GetErrorMessage());
         return;
     }
+
+    ReleaseStale();
 
     ScheduleScheduler(true);
     ScheduleClaim(true);
