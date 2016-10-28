@@ -144,7 +144,7 @@ CronQueue::Finish(const CronJob &job)
 {
     const auto r =
         db.ExecuteParams("UPDATE cronjobs "
-                         "SET node_name=NULL, node_timeout=NULL "
+                         "SET node_name=NULL, node_timeout=NULL, last_run=NOW() "
                          "WHERE id=$1 AND node_name=$2",
                          job.id.c_str(),
                          node_name.c_str());
