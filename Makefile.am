@@ -52,6 +52,7 @@ cm4all_cron_SOURCES = \
 	src/cron/Job.hxx \
 	src/cron/CalculateNextRun.cxx src/cron/CalculateNextRun.hxx \
 	src/cron/Instance.cxx src/cron/Instance.hxx \
+	src/ExpandableStringList.hxx \
 	src/AllocatorPtr.cxx src/AllocatorPtr.hxx
 cm4all_cron_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBCM4ALL_INLINE_CFLAGS) \
@@ -68,7 +69,15 @@ cm4all_cron_LDADD = $(AM_LDADD) \
 	$(BOOST_SYSTEM_LIB) \
 	$(LIBPQ_LIBS)
 
-noinst_LIBRARIES = libtime.a libutil.a libio.a libevent.a libpg.a libspawn.a libsystem.a
+noinst_LIBRARIES = \
+	libutil.a \
+	libtime.a \
+	libsystem.a \
+	libevent.a \
+	libio.a \
+	libtranslation.a \
+	libpg.a \
+	libspawn.a
 
 libtime_a_SOURCES = \
 	src/time/ISO8601.cxx src/time/ISO8601.hxx \
@@ -88,6 +97,7 @@ libutil_a_SOURCES = \
 	src/util/RangeBitSet.hxx \
 	src/util/RuntimeError.hxx \
 	src/util/TrivialArray.hxx \
+	src/util/ShallowCopy.hxx \
 	src/util/StaticArray.hxx \
 	src/util/StringUtil.cxx src/util/StringUtil.hxx \
 	src/util/StringView.cxx src/util/StringView.hxx \
@@ -118,6 +128,17 @@ libevent_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBCM4ALL_INLINE_CFLAGS) \
 	$(LIBEVENT_CFLAGS)
 
+libtranslation_a_SOURCES = \
+	src/translation/Features.hxx \
+	src/translation/PReader.cxx src/translation/PReader.hxx \
+	src/translation/Parser.cxx src/translation/Parser.hxx \
+	src/translation/Handler.hxx \
+	src/translation/Request.hxx \
+	src/translation/Response.cxx src/translation/Response.hxx
+libtranslation_a_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(LIBCM4ALL_BENG_PROXY_CFLAGS) \
+	$(LIBCM4ALL_INLINE_CFLAGS)
+
 libpg_a_SOURCES = \
 	src/pg/Array.cxx src/pg/Array.hxx \
 	src/pg/BinaryValue.hxx \
@@ -136,6 +157,7 @@ libspawn_a_SOURCES = \
 	src/spawn/Builder.hxx \
 	src/spawn/CgroupOptions.cxx src/spawn/CgroupOptions.hxx \
 	src/spawn/CgroupState.hxx \
+	src/spawn/ChildOptions.hxx \
 	src/spawn/Client.cxx src/spawn/Client.hxx \
 	src/spawn/Config.hxx \
 	src/spawn/Direct.cxx src/spawn/Direct.hxx \
