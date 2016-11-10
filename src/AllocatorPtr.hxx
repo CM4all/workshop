@@ -5,6 +5,8 @@
 #ifndef WORKSHOP_ALLOCATOR_PTR_HXX
 #define WORKSHOP_ALLOCATOR_PTR_HXX
 
+#include "util/ConstBuffer.hxx"
+
 #include <forward_list>
 #include <functional>
 #include <new>
@@ -84,6 +86,13 @@ public:
         auto p = allocator.Allocate(size);
         memcpy(p, data, size);
         return p;
+    }
+
+    ConstBuffer<void> Dup(ConstBuffer<void> src);
+
+    template<typename T>
+    ConstBuffer<T> Dup(ConstBuffer<T> src) {
+        return ConstBuffer<T>::FromVoid(Dup(src.ToVoid()));
     }
 
     StringView Dup(StringView src);

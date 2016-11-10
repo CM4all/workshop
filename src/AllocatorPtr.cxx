@@ -7,6 +7,18 @@
 
 #include <algorithm>
 
+ConstBuffer<void>
+AllocatorPtr::Dup(ConstBuffer<void> src)
+{
+    if (src.IsNull())
+        return nullptr;
+
+    if (src.IsEmpty())
+        return {"", 0};
+
+    return {Dup(src.data, src.size), src.size};
+}
+
 StringView
 AllocatorPtr::Dup(StringView src)
 {
