@@ -106,9 +106,11 @@ libutil_a_SOURCES = \
 	src/util/TrivialArray.hxx \
 	src/util/ShallowCopy.hxx \
 	src/util/StaticArray.hxx \
+	src/util/StaticFifoBuffer.hxx \
 	src/util/StringUtil.cxx src/util/StringUtil.hxx \
 	src/util/StringView.cxx src/util/StringView.hxx \
 	src/util/Tokenizer.cxx src/util/Tokenizer.hxx \
+	src/util/WritableBuffer.hxx \
 	src/util/ScopeExit.hxx
 libutil_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBCM4ALL_INLINE_CFLAGS)
@@ -136,6 +138,8 @@ libevent_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBEVENT_CFLAGS)
 
 libtranslation_a_SOURCES = \
+	src/translation/CronClient.cxx src/translation/CronClient.hxx \
+	src/translation/CronGlue.cxx src/translation/CronGlue.hxx \
 	src/translation/Features.hxx \
 	src/translation/PReader.cxx src/translation/PReader.hxx \
 	src/translation/Parser.cxx src/translation/Parser.hxx \
