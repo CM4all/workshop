@@ -63,7 +63,11 @@ cm4all_cron_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBEVENT_CFLAGS) \
 	$(LIBPQ_CPPFLAGS)
 cm4all_cron_LDADD = $(AM_LDADD) \
-	libpg.a libspawn.a libevent.a libio.a libsystem.a libtime.a libutil.a \
+	libpg.a libspawn.a \
+	libnet.a \
+	libevent.a \
+	libio.a \
+	libsystem.a libtime.a libutil.a \
 	$(LIBCM4ALL_DAEMON_LIBS) \
 	$(LIBSYSTEMD_LIBS) \
 	$(LIBEVENT_LIBS) \
@@ -75,6 +79,7 @@ noinst_LIBRARIES = \
 	libutil.a \
 	libtime.a \
 	libsystem.a \
+	libnet.a \
 	libevent.a \
 	libio.a \
 	libtranslation.a \
@@ -189,6 +194,13 @@ libsystem_a_SOURCES = \
 	src/system/bind_mount.c src/system/bind_mount.h \
 	src/system/pivot_root.h \
 	src/system/sigutil.h
+
+libnet_a_SOURCES = \
+	src/net/SocketAddress.cxx src/net/SocketAddress.hxx \
+	src/net/AllocatedSocketAddress.cxx src/net/AllocatedSocketAddress.hxx \
+	src/net/Features.hxx
+libnet_a_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(LIBCM4ALL_INLINE_CFLAGS)
 
 #
 # Unit tests
