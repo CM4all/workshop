@@ -30,21 +30,33 @@ class TranslateParser {
     AllocatorPtr alloc;
 
     struct FromRequest {
+#if TRANSLATION_ENABLE_RADDRESS
         const char *uri;
+#endif
 
+#if TRANSLATION_ENABLE_HTTP
         bool want_full_uri;
+#endif
 
         bool want;
 
+#if TRANSLATION_ENABLE_RADDRESS
         bool content_type_lookup;
+#endif
 
         explicit FromRequest(const TranslateRequest &r)
-            :uri(r.uri),
+            :
+#if TRANSLATION_ENABLE_RADDRESS
+            uri(r.uri),
+#endif
 #if TRANSLATION_ENABLE_HTTP
              want_full_uri(!r.want_full_uri.IsNull()),
 #endif
-             want(!r.want.IsEmpty()),
-             content_type_lookup(!r.content_type_lookup.IsNull()) {}
+             want(!r.want.IsEmpty())
+#if TRANSLATION_ENABLE_RADDRESS
+            , content_type_lookup(!r.content_type_lookup.IsNull())
+#endif
+        {}
     } from_request;
 
     /**
