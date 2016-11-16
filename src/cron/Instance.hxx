@@ -6,18 +6,20 @@
 #define CRON_INSTANCE_HXX
 
 #include "Queue.hxx"
+#include "Workplace.hxx"
 #include "event/Loop.hxx"
 #include "event/ShutdownListener.hxx"
 #include "event/SignalEvent.hxx"
 #include "Workplace.hxx"
 #include "spawn/Registry.hxx"
+#include "spawn/ExitListener.hxx"
 
 #include <functional>
 
 struct CronConfig;
 class SpawnServerClient;
 
-class CronInstance final {
+class CronInstance final : ExitListener {
 public:
     EventLoop event_loop;
 
@@ -31,6 +33,7 @@ public:
     std::unique_ptr<SpawnServerClient> spawn_service;
 
     CronQueue queue;
+    CronWorkplace workplace;
 
     CronInstance(const CronConfig &config,
                  const char *schema,
@@ -47,6 +50,9 @@ private:
 
     void OnExit();
     void OnReload(int);
+
+    /* virtual methods from ExitListener */
+    void OnChildProcessExit(int status) override;
 };
 
 #endif

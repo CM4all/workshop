@@ -25,7 +25,8 @@ CronInstance::CronInstance(const CronConfig &config,
                                         event_loop.~EventLoop();
                                     })),
      queue(event_loop, config.node_name, config.database, schema,
-           [this](CronJob &&job){ OnJob(std::move(job)); })
+           [this](CronJob &&job){ OnJob(std::move(job)); }),
+     workplace(*spawn_service, queue, *this, 8)
 {
     shutdown_listener.Enable();
     sighup_event.Add();
@@ -43,8 +44,10 @@ CronInstance::OnJob(CronJob &&job)
     if (!queue.Claim(job))
         return;
 
-    // TODO: execute
-    queue.Finish(job);
+    workplace.Start(std::move(job));
+
+    if (workplace.IsFull())
+        queue.Disable();
 }
 
 void
@@ -61,7 +64,10 @@ CronInstance::OnExit()
 
     spawn_service->Shutdown();
 
-    queue.Close();
+    if (workplace.IsEmpty())
+        queue.Close();
+    else
+        daemon_log(1, "waiting for operators to finish\n");
 }
 
 void
@@ -69,4 +75,17 @@ CronInstance::OnReload(int)
 {
     daemon_log(4, "reloading\n");
     // TODO
+}
+
+void
+CronInstance::OnChildProcessExit(int)
+{
+    if (should_exit) {
+        if (workplace.IsEmpty())
+            queue.Close();
+        return;
+    }
+
+    if (!workplace.IsFull())
+        queue.Enable();
 }

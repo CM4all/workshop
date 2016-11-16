@@ -50,6 +50,8 @@ cm4all_cron_SOURCES = \
 	src/cron/Schedule.cxx src/cron/Schedule.hxx \
 	src/cron/Queue.cxx src/cron/Queue.hxx \
 	src/cron/Job.hxx \
+	src/cron/Workplace.cxx src/cron/Workplace.hxx \
+	src/cron/Operator.cxx src/cron/Operator.hxx \
 	src/cron/CalculateNextRun.cxx src/cron/CalculateNextRun.hxx \
 	src/cron/Instance.cxx src/cron/Instance.hxx \
 	src/ExpandableStringList.hxx \
