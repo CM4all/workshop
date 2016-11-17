@@ -180,9 +180,9 @@ CronQueue::CheckPending()
     for (const auto &row : result) {
         CronJob job;
         job.id = row.GetValue(0);
-        job.account_id = row.GetValue(0);
-        job.command = row.GetValue(0);
-        job.translate_param = row.GetValue(0);
+        job.account_id = row.GetValue(1);
+        job.command = row.GetValue(2);
+        job.translate_param = row.GetValue(3);
 
         callback(std::move(job));
     }
