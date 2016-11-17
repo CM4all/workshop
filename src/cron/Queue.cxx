@@ -41,6 +41,19 @@ CronQueue::Close()
 }
 
 void
+CronQueue::Enable()
+{
+    if (!disabled)
+        return;
+
+    disabled = false;
+    if (!db.IsReady())
+        return;
+
+    ScheduleClaim(false);
+}
+
+void
 CronQueue::ReleaseStale()
 {
     const auto result =
@@ -163,6 +176,9 @@ CronQueue::Finish(const CronJob &job)
 bool
 CronQueue::CheckPending()
 {
+    if (disabled)
+        return false;
+
     const auto result =
         db.Execute("SELECT id, account_id, command, translate_param "
                    "FROM cronjobs WHERE enabled AND next_run<=NOW() "
@@ -185,6 +201,9 @@ CronQueue::CheckPending()
         job.translate_param = row.GetValue(3);
 
         callback(std::move(job));
+
+        if (disabled)
+            return false;
     }
 
     return true;

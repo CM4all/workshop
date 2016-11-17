@@ -35,6 +35,8 @@ class CronQueue final : private AsyncPgConnectionHandler {
 
     TimerEvent scheduler_timer, claim_timer;
 
+    bool disabled = false;
+
 public:
     CronQueue(EventLoop &event_loop, const char *_node_name,
               const char *conninfo, const char *schema,
@@ -51,6 +53,18 @@ public:
     }
 
     void Close();
+
+    /**
+     * Disable the queue, e.g. when the node is busy.
+     */
+    void Disable() {
+        disabled = true;
+    }
+
+    /**
+     * Enable the queue after it has been disabled with Disable().
+     */
+    void Enable();
 
     bool Claim(const CronJob &job);
     void Finish(const CronJob &job);
