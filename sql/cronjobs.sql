@@ -79,3 +79,11 @@ CREATE OR REPLACE RULE edit_cronjob AS ON UPDATE TO cronjobs
       NEW.schedule != OLD.schedule
     )
     DO SELECT pg_notify('cronjobs_modified', NULL);
+
+-- notify all nodes when a cronjob has been scheduled
+CREATE OR REPLACE RULE schedule_cronjob AS ON UPDATE TO cronjobs
+    WHERE NEW.enabled AND new.node_name IS NULL AND NEW.next_run IS NOT NULL AND (
+      OLD.next_run IS NULL OR
+      NEW.next_run != OLD.next_run
+    )
+    DO SELECT pg_notify('cronjobs_scheduled', NULL);
