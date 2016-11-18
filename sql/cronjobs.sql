@@ -69,4 +69,4 @@ CREATE INDEX cronjobs_release ON cronjobs(node_name, node_timeout)
 
 -- notify all nodes when a new cronjob is added
 CREATE OR REPLACE RULE new_cronjob AS ON INSERT TO cronjobs
-    DO NOTIFY cronjobs_scheduled;
+    DO NOTIFY cronjobs_modified;

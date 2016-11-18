@@ -254,7 +254,13 @@ CronQueue::CheckPending()
 void
 CronQueue::OnConnect()
 {
-    const auto result = db.Execute("LISTEN cronjobs_scheduled");
+    auto result = db.Execute("LISTEN cronjobs_modified");
+    if (!result.IsCommandSuccessful()) {
+        daemon_log(1, "LISTEN failed: %s\n", result.GetErrorMessage());
+        return;
+    }
+
+    result = db.Execute("LISTEN cronjobs_scheduled");
     if (!result.IsCommandSuccessful()) {
         daemon_log(1, "LISTEN failed: %s\n", result.GetErrorMessage());
         return;
@@ -280,10 +286,10 @@ CronQueue::OnDisconnect()
 void
 CronQueue::OnNotify(const char *name)
 {
-    if (strcmp(name, "cronjobs_scheduled") == 0) {
+    if (strcmp(name, "cronjobs_modified") == 0)
         ScheduleScheduler(false);
+    else if (strcmp(name, "cronjobs_scheduled") == 0)
         ScheduleClaim();
-    }
 }
 
 void
