@@ -82,6 +82,8 @@ CronQueue::RunScheduler()
 
     if (!CalculateNextRun(db))
         ScheduleScheduler(false);
+
+    ScheduleCheckNotify();
 }
 
 void
@@ -155,6 +157,7 @@ CronQueue::RunClaim()
     CheckPending();
 
     ScheduleClaim();
+    ScheduleCheckNotify();
 }
 
 void
@@ -192,6 +195,8 @@ CronQueue::Claim(const CronJob &job)
 void
 CronQueue::Finish(const CronJob &job)
 {
+    ScheduleCheckNotify();
+
     const auto r =
         db.ExecuteParams("UPDATE cronjobs "
                          "SET node_name=NULL, node_timeout=NULL, last_run=NOW(), next_run=NULL "
@@ -259,6 +264,7 @@ CronQueue::OnConnect()
 
     ScheduleScheduler(true);
     ScheduleClaim();
+    ScheduleCheckNotify();
 }
 
 void
