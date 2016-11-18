@@ -80,6 +80,11 @@ CREATE OR REPLACE RULE edit_cronjob AS ON UPDATE TO cronjobs
     )
     DO SELECT pg_notify('cronjobs_modified', NULL);
 
+-- notify all nodes when a cronjob has finished, to run the scheduler
+CREATE OR REPLACE RULE finish_cronjob AS ON UPDATE TO cronjobs
+    WHERE NEW.enabled AND new.node_name IS NULL AND NEW.next_run IS NULL AND OLD.next_run IS NOT NULL
+    DO SELECT pg_notify('cronjobs_modified', NULL);
+
 -- notify all nodes when a cronjob has been scheduled
 CREATE OR REPLACE RULE schedule_cronjob AS ON UPDATE TO cronjobs
     WHERE NEW.enabled AND new.node_name IS NULL AND NEW.next_run IS NOT NULL AND (
