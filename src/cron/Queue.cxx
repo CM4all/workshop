@@ -7,8 +7,11 @@
 #include "Queue.hxx"
 #include "Job.hxx"
 #include "CalculateNextRun.hxx"
+#include "event/Duration.hxx"
 
 #include <daemon/log.h>
+
+#include <chrono>
 
 #include <string.h>
 #include <stdlib.h>
@@ -50,7 +53,7 @@ CronQueue::Enable()
     if (!db.IsReady())
         return;
 
-    ScheduleClaim(false);
+    ScheduleClaim();
 }
 
 void
@@ -99,31 +102,65 @@ CronQueue::ScheduleScheduler(bool immediately)
     scheduler_timer.Add(tv);
 }
 
-void
-CronQueue::RunClaim()
+static std::chrono::seconds
+FindEarliestPending(PgConnection &db)
 {
-    daemon_log(4, "claim\n");
+    const auto result =
+        db.Execute("SELECT EXTRACT(EPOCH FROM (MIN(next_run) - NOW())) FROM cronjobs "
+                   "WHERE enabled AND next_run IS NOT NULL AND node_name IS NULL");
+    if (!result.IsQuerySuccessful()) {
+        fprintf(stderr, "SELECT FROM cronjobs failed: %s\n",
+                result.GetErrorMessage());
+        return std::chrono::minutes(1);
+    }
 
-    if (CheckPending())
-        ScheduleClaim(false);
+    if (result.IsEmpty() || result.IsValueNull(0, 0))
+        /* no matching cronjob; disable the timer, and wait for the
+           next PostgreSQL notify */
+        return std::chrono::seconds::max();
+
+    const char *s = result.GetValue(0, 0);
+    char *endptr;
+    long long value = strtoull(s, &endptr, 10);
+    if (endptr == s)
+        return std::chrono::minutes(1);
+
+    return std::min<std::chrono::seconds>(std::chrono::seconds(value),
+                                          std::chrono::hours(24));
 }
 
 void
-CronQueue::ScheduleClaim(bool immediately)
+CronQueue::RunClaim()
 {
-    struct timeval tv;
-    if (immediately) {
-        tv.tv_sec = 0;
-        tv.tv_usec = 0;
-    } else {
+    if (disabled)
+        return;
+
+    daemon_log(4, "claim\n");
+
+    auto delta = FindEarliestPending(db);
+    if (delta == delta.max())
+        return;
+
+    if (delta > delta.zero()) {
         /* randomize the claim to reduce race conditions with
            other nodes */
         const long r = random();
-        tv.tv_sec = (r / 1000000) % 30;
+        struct timeval tv;
+        tv.tv_sec = delta.count() + (r / 1000000) % 30;
         tv.tv_usec = r % 1000000;
+        claim_timer.Add(tv);
+        return;
     }
 
-    claim_timer.Add(tv);
+    CheckPending();
+
+    ScheduleClaim();
+}
+
+void
+CronQueue::ScheduleClaim()
+{
+    claim_timer.Add(EventDuration<1>::value);
 }
 
 bool
@@ -221,7 +258,7 @@ CronQueue::OnConnect()
     ReleaseStale();
 
     ScheduleScheduler(true);
-    ScheduleClaim(true);
+    ScheduleClaim();
 }
 
 void
@@ -239,7 +276,7 @@ CronQueue::OnNotify(const char *name)
 {
     if (strcmp(name, "cronjobs_scheduled") == 0) {
         ScheduleScheduler(false);
-        CheckPending();
+        ScheduleClaim();
     }
 }
 

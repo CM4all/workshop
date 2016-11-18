@@ -92,7 +92,7 @@ private:
     void ScheduleScheduler(bool immediately);
 
     void RunClaim();
-    void ScheduleClaim(bool immediately);
+    void ScheduleClaim();
 
     /**
      * @return false if no pending job was found
