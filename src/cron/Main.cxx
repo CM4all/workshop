@@ -77,12 +77,12 @@ Run(int argc, char **argv, const CronConfig &config)
 }
 
 int main(int argc, char **argv) {
-    CronConfig config;
-
 #ifndef NDEBUG
     if (geteuid() != 0)
         debug_mode = true;
 #endif
+
+    CronConfig config;
 
     /* configuration */
 

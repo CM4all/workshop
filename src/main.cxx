@@ -62,12 +62,12 @@ Run(int argc, char **argv, const Config &config)
 }
 
 int main(int argc, char **argv) {
-    Config config;
-
 #ifndef NDEBUG
     if (geteuid() != 0)
         debug_mode = true;
 #endif
+
+    Config config;
 
     /* configuration */
 
