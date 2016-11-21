@@ -7,6 +7,9 @@
 #include "Workplace.hxx"
 #include "Queue.hxx"
 #include "Job.hxx"
+#include "AllocatorPtr.hxx"
+#include "translation/CronGlue.hxx"
+#include "translation/Response.hxx"
 #include "spawn/Prepared.hxx"
 #include "spawn/Interface.hxx"
 #include "system/Error.hxx"
@@ -31,7 +34,20 @@ CronWorkplace::Start(CronJob &&job)
     p.args.push_back("-c");
     p.args.push_back(job.command.c_str());
 
-    // TODO: query translation server
+    Allocator alloc;
+
+    try {
+        const auto response = TranslateCron(alloc, translation_socket,
+                                            job.account_id.c_str(),
+                                            job.translate_param.empty()
+                                            ? nullptr
+                                            : job.translate_param.c_str());
+        response.child_options.CopyTo(p);
+    } catch (...) {
+        GetQueue().Finish(job);
+        std::throw_with_nested(FormatRuntimeError("Failed to translate job '%s'",
+                                                  job.id.c_str()));
+    }
 
     /* create operator object */
 

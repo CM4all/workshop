@@ -64,6 +64,7 @@ cm4all_cron_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBPQ_CPPFLAGS)
 cm4all_cron_LDADD = $(AM_LDADD) \
 	libpg.a libspawn.a \
+	libtranslation.a \
 	libnet.a \
 	libevent.a \
 	libio.a \

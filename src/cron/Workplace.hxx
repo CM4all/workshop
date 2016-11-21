@@ -28,14 +28,17 @@ class CronWorkplace {
 
     OperatorList operators;
 
+    const char *const translation_socket;
     const unsigned max_operators;
 
 public:
     CronWorkplace(SpawnService &_spawn_service, CronQueue &_queue,
                   ExitListener &_exit_listener,
+                  const char *_translation_socket,
                   unsigned _max_operators)
         :spawn_service(_spawn_service), queue(_queue),
          exit_listener(_exit_listener),
+         translation_socket(_translation_socket),
          max_operators(_max_operators) {
         assert(max_operators > 0);
     }
