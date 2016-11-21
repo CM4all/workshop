@@ -10,6 +10,10 @@
 #include "system/bind_mount.h"
 #include "util/ScopeExit.hxx"
 
+#if TRANSLATION_ENABLE_EXPAND
+#include "pexpand.hxx"
+#endif
+
 #include <assert.h>
 #include <sched.h>
 #include <unistd.h>
@@ -34,7 +38,9 @@ NamespaceOptions::NamespaceOptions(AllocatorPtr alloc,
      mount_proc(src.mount_proc),
      pivot_root(alloc.CheckDup(src.pivot_root)),
      home(alloc.CheckDup(src.home)),
+#if TRANSLATION_ENABLE_EXPAND
      expand_home(alloc.CheckDup(src.expand_home)),
+#endif
      mount_home(alloc.CheckDup(src.mount_home)),
      mount_tmp_tmpfs(alloc.CheckDup(src.mount_tmp_tmpfs)),
      mount_tmpfs(alloc.CheckDup(src.mount_tmpfs)),
@@ -43,11 +49,24 @@ NamespaceOptions::NamespaceOptions(AllocatorPtr alloc,
 {
 }
 
+#if TRANSLATION_ENABLE_EXPAND
+
 bool
 NamespaceOptions::IsExpandable() const
 {
     return expand_home != nullptr || MountList::IsAnyExpandable(mounts);
 }
+
+void
+NamespaceOptions::Expand(struct pool &pool, const MatchInfo &match_info)
+{
+    if (expand_home != nullptr)
+        home = expand_string_unescaped(&pool, expand_home, match_info);
+
+    MountList::ExpandAll(pool, mounts, match_info);
+}
+
+#endif
 
 int
 NamespaceOptions::GetCloneFlags(const SpawnConfig &config, int flags) const

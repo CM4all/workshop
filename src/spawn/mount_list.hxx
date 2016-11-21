@@ -5,11 +5,12 @@
 #ifndef BENG_PROXY_MOUNT_LIST_HXX
 #define BENG_PROXY_MOUNT_LIST_HXX
 
+#include "translation/Features.hxx"
+
 #include <inline/compiler.h>
 
 class AllocatorPtr;
 class MatchInfo;
-class Error;
 
 struct MountList {
     MountList *next;
@@ -17,17 +18,27 @@ struct MountList {
     const char *source;
     const char *target;
 
+#if TRANSLATION_ENABLE_EXPAND
     bool expand_source;
+#endif
 
     bool writable;
 
     constexpr MountList(const char *_source, const char *_target,
                         bool _expand_source=false, bool _writable=false)
         :next(nullptr), source(_source), target(_target),
-         expand_source(_expand_source), writable(_writable) {}
+#if TRANSLATION_ENABLE_EXPAND
+         expand_source(_expand_source),
+#endif
+         writable(_writable) {
+#if !TRANSLATION_ENABLE_EXPAND
+        (void)_expand_source;
+#endif
+    }
 
     MountList(AllocatorPtr alloc, const MountList &src);
 
+#if TRANSLATION_ENABLE_EXPAND
     bool IsExpandable() const {
         return expand_source;
     }
@@ -40,6 +51,11 @@ struct MountList {
 
         return false;
     }
+
+    void Expand(struct pool &pool, const MatchInfo &match_info);
+    static void ExpandAll(struct pool &pool, MountList *m,
+                          const MatchInfo &match_info);
+#endif
 
     void Apply() const;
 

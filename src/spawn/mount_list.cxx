@@ -6,17 +6,24 @@
 #include "system/bind_mount.h"
 #include "AllocatorPtr.hxx"
 
+#if TRANSLATION_ENABLE_EXPAND
+#include "pexpand.hxx"
+#endif
+
 #include <sys/mount.h>
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
+#include <errno.h>
 
 inline
 MountList::MountList(AllocatorPtr alloc, const MountList &src)
     :next(nullptr),
      source(alloc.Dup(src.source)),
      target(alloc.Dup(src.target)),
+#if TRANSLATION_ENABLE_EXPAND
      expand_source(src.expand_source),
+#endif
      writable(src.writable) {}
 
 MountList *
@@ -32,6 +39,28 @@ MountList::CloneAll(AllocatorPtr alloc, const MountList *src)
 
     return head;
 }
+
+#if TRANSLATION_ENABLE_EXPAND
+
+void
+MountList::Expand(struct pool &pool, const MatchInfo &match_info)
+{
+    if (expand_source) {
+        expand_source = false;
+
+        source = expand_string_unescaped(&pool, source, match_info);
+    }
+}
+
+void
+MountList::ExpandAll(struct pool &pool, MountList *m,
+                     const MatchInfo &match_info)
+{
+    for (; m != nullptr; m = m->next)
+        m->Expand(pool, match_info);
+}
+
+#endif
 
 inline void
 MountList::Apply() const
