@@ -26,7 +26,8 @@ CronInstance::CronInstance(const CronConfig &config,
                                     })),
      queue(event_loop, config.node_name, config.database, schema,
            [this](CronJob &&job){ OnJob(std::move(job)); }),
-     workplace(*spawn_service, queue, *this, 8)
+     workplace(*spawn_service, queue, *this,
+               config.concurrency)
 {
     shutdown_listener.Enable();
     sighup_event.Add();
