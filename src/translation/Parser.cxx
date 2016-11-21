@@ -173,8 +173,6 @@ parse_address_string(AllocatorPtr alloc, AddressList *list,
 
 #endif
 
-#if TRANSLATION_ENABLE_WIDGET
-
 static bool
 valid_view_name_char(char ch)
 {
@@ -193,6 +191,8 @@ valid_view_name(const char *name)
 
     return true;
 }
+
+#if TRANSLATION_ENABLE_WIDGET
 
 void
 TranslateParser::FinishView()
@@ -979,6 +979,7 @@ TranslateParser::HandleRegularPacket(enum beng_translation_command command,
     case TRANSLATE_SUFFIX:
     case TRANSLATE_LISTENER_TAG:
     case TRANSLATE_LOGIN:
+    case TRANSLATE_CRON:
     case TRANSLATE_PASSWORD:
     case TRANSLATE_SERVICE:
         throw std::runtime_error("misplaced translate request packet");
@@ -3016,7 +3017,6 @@ TranslateParser::HandleRegularPacket(enum beng_translation_command command,
         child_options->no_new_privs = true;
         return;
 
-#if TRANSLATION_ENABLE_V12
     case TRANSLATE_CGROUP:
         if (child_options == nullptr ||
             child_options->cgroup.name != nullptr)
@@ -3053,6 +3053,7 @@ TranslateParser::HandleRegularPacket(enum beng_translation_command command,
 #endif
 
     case TRANSLATE_EXTERNAL_SESSION_KEEPALIVE: {
+#if TRANSLATION_ENABLE_SESSION
         const uint16_t *value = (const uint16_t *)(const void *)payload;
         if (payload_length != sizeof(*value) || *value == 0)
             throw std::runtime_error("malformed EXTERNAL_SESSION_KEEPALIVE packet");
@@ -3065,8 +3066,10 @@ TranslateParser::HandleRegularPacket(enum beng_translation_command command,
 
         response.external_session_keepalive = std::chrono::seconds(*value);
         return;
-    }
+#else
+        break;
 #endif
+    }
     }
 
     throw FormatRuntimeError("unknown translation packet: %u", command);
