@@ -11,8 +11,6 @@
 
 #include <boost/intrusive/list.hpp>
 
-#include <string>
-
 #include <assert.h>
 
 struct CronJob;
@@ -24,8 +22,6 @@ class CronWorkplace {
     SpawnService &spawn_service;
     CronQueue &queue;
     ExitListener &exit_listener;
-
-    const std::string node_name;
 
     typedef boost::intrusive::list<Operator,
                                    boost::intrusive::constant_time_size<true>> OperatorList;
@@ -56,11 +52,6 @@ public:
 
     CronQueue &GetQueue() {
         return queue;
-    }
-
-    gcc_pure
-    const char *GetNodeName() const {
-        return node_name.c_str();
     }
 
     bool IsEmpty() const {
