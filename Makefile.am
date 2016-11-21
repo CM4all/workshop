@@ -54,7 +54,7 @@ cm4all_cron_SOURCES = \
 	src/cron/Operator.cxx src/cron/Operator.hxx \
 	src/cron/CalculateNextRun.cxx src/cron/CalculateNextRun.hxx \
 	src/cron/Instance.cxx src/cron/Instance.hxx \
-	src/ExpandableStringList.hxx \
+	src/ExpandableStringList.cxx src/ExpandableStringList.hxx \
 	src/AllocatorPtr.cxx src/AllocatorPtr.hxx
 cm4all_cron_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBCM4ALL_INLINE_CFLAGS) \
@@ -159,7 +159,7 @@ libspawn_a_SOURCES = \
 	src/spawn/Builder.hxx \
 	src/spawn/CgroupOptions.cxx src/spawn/CgroupOptions.hxx \
 	src/spawn/CgroupState.hxx \
-	src/spawn/ChildOptions.hxx \
+	src/spawn/ChildOptions.cxx src/spawn/ChildOptions.hxx \
 	src/spawn/Client.cxx src/spawn/Client.hxx \
 	src/spawn/Config.hxx \
 	src/spawn/Direct.cxx src/spawn/Direct.hxx \
