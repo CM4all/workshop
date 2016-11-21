@@ -7,6 +7,7 @@
 #include "Job.hxx"
 #include "spawn/Client.hxx"
 #include "spawn/Glue.hxx"
+#include "util/PrintException.hxx"
 
 #include <daemon/log.h>
 
@@ -45,7 +46,11 @@ CronInstance::OnJob(CronJob &&job)
     if (!queue.Claim(job))
         return;
 
-    workplace.Start(std::move(job));
+    try {
+        workplace.Start(std::move(job));
+    } catch (const std::runtime_error &e) {
+        PrintException(e);
+    }
 
     if (workplace.IsFull())
         queue.Disable();
