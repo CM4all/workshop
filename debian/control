@@ -26,7 +26,7 @@ Description: Distributed job scheduler
  a network can read the queue at the same time.
 
 Package: cm4all-workshop-database
-Architecture: any
+Architecture: all
 Depends: ${misc:Depends}
 Description: Distributed job scheduler database package
  Database package providing initial SQL statement used by cm4all-workshop.
