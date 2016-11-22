@@ -14,9 +14,10 @@ struct CronConfig {
 
     const char *node_name = nullptr;
     unsigned concurrency = 8;
-    const char *database = nullptr;
 
-    const char *translation_socket = "@translation";
+    std::string database;
+
+    std::string translation_socket;
 
     SpawnConfig spawn;
 
@@ -24,5 +25,12 @@ struct CronConfig {
 
     void Check();
 };
+
+/**
+ * Load and parse the specified configuration file.  Throws an
+ * exception on error.
+ */
+void
+LoadConfigFile(CronConfig &config, const char *path);
 
 #endif

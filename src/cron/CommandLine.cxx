@@ -85,22 +85,19 @@ CronParseCommandLine(CronConfig &config, int argc, char **argv)
         {"verbose", 0, 0, 'v'},
         {"quiet", 0, 0, 'q'},
         {"name", 1, 0, 'N'},
-        {"concurrency", 1, 0, 'c'},
         {"user", 1, 0, 'u'},
         {0,0,0,0}
     };
 #endif
 
-    config.database = getenv("CRON_DATABASE");
-
     while (1) {
 #ifdef __GLIBC__
         int option_index = 0;
 
-        ret = getopt_long(argc, argv, "hVvqN:c:u:",
+        ret = getopt_long(argc, argv, "hVvqN:u:",
                           long_options, &option_index);
 #else
-        ret = getopt(argc, argv, "hVvqN:c:u:");
+        ret = getopt(argc, argv, "hVvqN:u:");
 #endif
         if (ret == -1)
             break;
@@ -124,12 +121,6 @@ CronParseCommandLine(CronConfig &config, int argc, char **argv)
 
         case 'N':
             config.node_name = optarg;
-            break;
-
-        case 'c':
-            config.concurrency = (unsigned)strtoul(optarg, nullptr, 10);
-            if (config.concurrency == 0)
-                arg_error(argv[0], "invalid concurrency specification");
             break;
 
         case 'u':

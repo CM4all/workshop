@@ -110,6 +110,7 @@ libutil_a_SOURCES = \
 	src/util/StaticFifoBuffer.hxx \
 	src/util/StringUtil.cxx src/util/StringUtil.hxx \
 	src/util/StringView.cxx src/util/StringView.hxx \
+	src/util/StringParser.cxx src/util/StringParser.hxx \
 	src/util/Tokenizer.cxx src/util/Tokenizer.hxx \
 	src/util/WritableBuffer.hxx \
 	src/util/ScopeExit.hxx

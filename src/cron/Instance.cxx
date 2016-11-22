@@ -25,10 +25,10 @@ CronInstance::CronInstance(const CronConfig &config,
                                         event_loop.Reinit();
                                         event_loop.~EventLoop();
                                     })),
-     queue(event_loop, config.node_name, config.database, schema,
+     queue(event_loop, config.node_name, config.database.c_str(), schema,
            [this](CronJob &&job){ OnJob(std::move(job)); }),
      workplace(*spawn_service, queue, *this,
-               config.translation_socket,
+               config.translation_socket.c_str(),
                config.concurrency)
 {
     shutdown_listener.Enable();

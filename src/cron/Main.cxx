@@ -90,6 +90,7 @@ try {
     /* configuration */
 
     CronParseCommandLine(config, argc, argv);
+    LoadConfigFile(config, "/etc/cm4all/cron/cron.conf");
     config.Check();
 
     /* set up */
