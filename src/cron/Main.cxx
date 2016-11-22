@@ -9,6 +9,7 @@
 #include "CommandLine.hxx"
 #include "Config.hxx"
 #include "system/SetupProcess.hxx"
+#include "util/PrintException.hxx"
 
 #include <inline/compiler.h>
 #include <daemon/log.h>
@@ -97,6 +98,6 @@ try {
     daemon_log(4, "exiting\n");
     return EXIT_SUCCESS;
 } catch (const std::exception &e) {
-    daemon_log(2, "%s\n", e.what());
+    PrintException(e);
     return EXIT_FAILURE;
 }
