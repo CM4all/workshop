@@ -99,10 +99,10 @@ CronParseCommandLine(CronConfig &config, int argc, char **argv)
 #ifdef __GLIBC__
         int option_index = 0;
 
-        ret = getopt_long(argc, argv, "hVvqN:c:d:Du:",
+        ret = getopt_long(argc, argv, "hVvqN:c:u:",
                           long_options, &option_index);
 #else
-        ret = getopt(argc, argv, "hVvqN:c:d:Du:");
+        ret = getopt(argc, argv, "hVvqN:c:u:");
 #endif
         if (ret == -1)
             break;
