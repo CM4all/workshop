@@ -12,7 +12,7 @@
 struct CronConfig {
     struct daemon_user user;
 
-    const char *node_name = nullptr;
+    std::string node_name;
     unsigned concurrency = 8;
 
     std::string database;

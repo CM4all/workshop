@@ -4,11 +4,13 @@
 
 #include "Config.hxx"
 #include "debug.h"
+#include "system/Error.hxx"
 #include "io/LineParser.hxx"
 #include "io/ConfigParser.hxx"
 #include "util/StringParser.hxx"
 
 #include <string.h>
+#include <unistd.h>
 
 CronConfig::CronConfig()
 {
@@ -28,8 +30,13 @@ CronConfig::Check()
     if (!debug_mode && !daemon_user_defined(&user))
         throw std::runtime_error("no user name specified (-u)");
 
-    if (node_name == nullptr)
-        throw std::runtime_error("no node name specified");
+    if (node_name.empty()) {
+        char name[256];
+        if (gethostname(name, sizeof(name)) < 0)
+            throw MakeErrno("gethostname() failed");
+
+        node_name = name;
+    }
 
     if (database.empty())
         throw std::runtime_error("Missing 'database' setting");
