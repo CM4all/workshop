@@ -76,7 +76,9 @@ Run(int argc, char **argv, const CronConfig &config)
     daemon_log(5, "cleaning up\n");
 }
 
-int main(int argc, char **argv) {
+int
+main(int argc, char **argv)
+try {
 #ifndef NDEBUG
     if (geteuid() != 0)
         debug_mode = true;
@@ -90,13 +92,11 @@ int main(int argc, char **argv) {
 
     /* set up */
 
-    try {
-        Run(argc, argv, config);
-    } catch (const std::exception &e) {
-        daemon_log(2, "%s\n", e.what());
-        return EXIT_FAILURE;
-    }
+    Run(argc, argv, config);
 
     daemon_log(4, "exiting\n");
     return EXIT_SUCCESS;
+} catch (const std::exception &e) {
+    daemon_log(2, "%s\n", e.what());
+    return EXIT_FAILURE;
 }
