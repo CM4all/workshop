@@ -90,6 +90,7 @@ try {
     /* configuration */
 
     CronParseCommandLine(config, argc, argv);
+    config.Check();
 
     /* set up */
 

@@ -21,6 +21,8 @@ struct CronConfig {
     SpawnConfig spawn;
 
     CronConfig();
+
+    void Check();
 };
 
 #endif
