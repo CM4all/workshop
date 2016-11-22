@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=notify
-ExecStart=/usr/sbin/cm4all-cron
+ExecStart=/usr/sbin/cm4all-cron --user=cm4all-cron
 KillMode=process
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=on-failure
