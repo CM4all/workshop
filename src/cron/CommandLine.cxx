@@ -40,10 +40,6 @@ static void usage(void) {
 #endif
          " -N NAME        set the node name\n"
 #ifdef __GLIBC__
-         " --concurrency NUM\n"
-#endif
-         " -c NUM         set the maximum number of concurrent operators (default: 2)\n"
-#ifdef __GLIBC__
          " --user name\n"
 #endif
          " -u name        switch to another user id\n"
