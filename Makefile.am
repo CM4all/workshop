@@ -248,13 +248,12 @@ t_TestCronSchedule_LDADD = $(AM_LDADD) \
 # documentation
 #
 
-MOSTLYCLEANFILES = doc/workshop.html
+clean-local:
+	rm -rf doc/_build
+
+doc/_build/html/.buildinfo: doc/*.rst
+	$(MAKE) -C doc html
 
 if DOCUMENTATION
-doc/workshop.html: doc/workshop.xml
-	xsltproc -o $@ /usr/share/sgml/docbook/stylesheet/xsl/nwalsh/xhtml/docbook.xsl $<
-
-all-local: doc/workshop.html
-
-doc_DATA = doc/workshop.html
+all-local: doc/_build/html/.buildinfo
 endif

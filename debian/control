@@ -12,7 +12,7 @@ Build-Depends: debhelper (>= 9), dh-systemd,
  libcm4all-inline-dev (>= 0.3.2), libcm4all-daemon-dev (>= 0.4.2),
  libcm4all-socket-dev (>= 0.3.5),
  libcm4all-beng-proxy-dev (>= 12),
- xsltproc, docbook-xsl
+ python3-sphinx
 Standards-Version: 3.9.3
 Vcs-git: git@dev.intern.cm-ag:max/workshop.git
 
