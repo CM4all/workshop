@@ -36,10 +36,6 @@ static void usage(void) {
 #endif
          " -q             be quiet\n"
 #ifdef __GLIBC__
-         " --name NAME\n"
-#endif
-         " -N NAME        set the node name\n"
-#ifdef __GLIBC__
          " --user name\n"
 #endif
          " -u name        switch to another user id\n"
@@ -80,7 +76,6 @@ CronParseCommandLine(CronConfig &config, int argc, char **argv)
         {"version", 0, 0, 'V'},
         {"verbose", 0, 0, 'v'},
         {"quiet", 0, 0, 'q'},
-        {"name", 1, 0, 'N'},
         {"user", 1, 0, 'u'},
         {0,0,0,0}
     };
@@ -90,10 +85,10 @@ CronParseCommandLine(CronConfig &config, int argc, char **argv)
 #ifdef __GLIBC__
         int option_index = 0;
 
-        ret = getopt_long(argc, argv, "hVvqN:u:",
+        ret = getopt_long(argc, argv, "hVvqu:",
                           long_options, &option_index);
 #else
-        ret = getopt(argc, argv, "hVvqN:u:");
+        ret = getopt(argc, argv, "hVvqu:");
 #endif
         if (ret == -1)
             break;
@@ -113,10 +108,6 @@ CronParseCommandLine(CronConfig &config, int argc, char **argv)
 
         case 'q':
             daemon_log_config.verbose = 0;
-            break;
-
-        case 'N':
-            config.node_name = optarg;
             break;
 
         case 'u':

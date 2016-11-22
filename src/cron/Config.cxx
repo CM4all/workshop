@@ -66,6 +66,8 @@ CronConfigParser::ParseLine2(LineParser &line)
         config.database = line.ExpectValueAndEnd();
     } else if (strcmp(word, "translation_server") == 0) {
         config.translation_socket = line.ExpectValueAndEnd();
+    } else if (strcmp(word, "node_name") == 0) {
+        config.node_name = line.ExpectValueAndEnd();
     } else if (strcmp(word, "concurrency") == 0) {
         config.concurrency = ParsePositiveLong(line.ExpectValueAndEnd(),
                                                256);
