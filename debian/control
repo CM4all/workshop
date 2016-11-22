@@ -44,3 +44,12 @@ Description: Documentation for cm4all-workshop
  a network can read the queue at the same time.
  .
  This package provides documentation.
+
+Package: cm4all-cron
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}, adduser,
+ systemd-sysv
+Description: Distributed cron job scheduler
+ cm4all-cron is a daemon which reads cron jobs from a database queue
+ (PostgreSQL) and executes them.  Multiple instances distributed over
+ a network can read the queue at the same time.
