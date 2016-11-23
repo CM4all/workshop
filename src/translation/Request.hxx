@@ -107,6 +107,8 @@ struct TranslateRequest {
 
     const char *user;
 
+    bool cron;
+
     void Clear() {
         listener_tag = nullptr;
 #if TRANSLATION_ENABLE_HTTP
@@ -148,6 +150,7 @@ struct TranslateRequest {
         probe_suffix = nullptr;
         read_file = nullptr;
         user = nullptr;
+        cron = false;
     }
 
     /**
