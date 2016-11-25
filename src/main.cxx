@@ -72,6 +72,7 @@ int main(int argc, char **argv) {
     /* configuration */
 
     parse_cmdline(config, argc, argv);
+    config.Check();
 
     /* set up */
 

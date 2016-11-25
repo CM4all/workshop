@@ -93,8 +93,6 @@ parse_cmdline(Config &config, int argc, char **argv)
 #endif
 
     config.database = getenv("WORKSHOP_DATABASE");
-    if (config.database == nullptr || *config.database == 0)
-        arg_error(argv[0], "no WORKSHOP_DATABASE environment variable");
 
     while (1) {
 #ifdef __GLIBC__
@@ -156,12 +154,4 @@ parse_cmdline(Config &config, int argc, char **argv)
 
     if (optind < argc)
         arg_error(argv[0], "unrecognized argument: %s", argv[optind]);
-
-    /* check completeness */
-
-    if (config.node_name == nullptr)
-        arg_error(argv[0], "no node name specified");
-
-    if (!debug_mode && !daemon_user_defined(&config.user))
-        arg_error(argv[0], "no user name specified (-u)");
 }

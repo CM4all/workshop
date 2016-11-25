@@ -19,6 +19,8 @@ struct Config {
     SpawnConfig spawn;
 
     Config();
+
+    void Check();
 };
 
 #endif
