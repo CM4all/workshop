@@ -25,9 +25,9 @@ Config::Check()
     if (!debug_mode && !daemon_user_defined(&user))
         throw std::runtime_error("no user name specified (-u)");
 
-    if (node_name == nullptr)
+    if (node_name.empty())
         throw std::runtime_error("no node name specified");
 
-    if (database == nullptr || *database == 0)
+    if (database.empty())
         throw std::runtime_error("no WORKSHOP_DATABASE environment variable");
 }

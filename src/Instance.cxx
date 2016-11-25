@@ -29,9 +29,12 @@ Instance::Instance(const Config &config,
                                         event_loop.Reinit();
                                         event_loop.~EventLoop();
                                     })),
-     queue(event_loop, config.node_name, config.database, schema,
+     queue(event_loop, config.node_name.c_str(), config.database.c_str(),
+           schema,
            [this](Job &&job){ OnJob(std::move(job)); }),
-     workplace(*spawn_service, *this, config.node_name, config.concurrency)
+     workplace(*spawn_service, *this,
+               config.node_name.c_str(),
+               config.concurrency)
 {
     shutdown_listener.Enable();
     sighup_event.Add();

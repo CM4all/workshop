@@ -9,12 +9,14 @@
 
 #include <daemon/user.h>
 
+#include <string>
+
 struct Config {
     struct daemon_user user;
 
-    const char *node_name = nullptr;
+    std::string node_name;
     unsigned concurrency = 2;
-    const char *database = nullptr;
+    std::string database;
 
     SpawnConfig spawn;
 
