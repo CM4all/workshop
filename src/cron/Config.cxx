@@ -22,6 +22,9 @@ CronConfig::CronConfig()
         spawn.default_uid_gid.uid = 65534;
         spawn.default_uid_gid.gid = 65534;
     }
+
+    // TODO: disable this kludge
+    spawn.allow_any_uid_gid = true;
 }
 
 void
