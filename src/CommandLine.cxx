@@ -76,7 +76,7 @@ static void arg_error(const char *argv0, const char *fmt, ...) {
 
 /** read configuration options from the command line */
 void
-parse_cmdline(Config &config, int argc, char **argv)
+ParseCommandLine(Config &config, int argc, char **argv)
 {
     int ret;
 #ifdef __GLIBC__
