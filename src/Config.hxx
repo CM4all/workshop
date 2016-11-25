@@ -25,4 +25,11 @@ struct Config {
     void Check();
 };
 
+/**
+ * Load and parse the specified configuration file.  Throws an
+ * exception on error.
+ */
+void
+LoadConfigFile(Config &config, const char *path);
+
 #endif

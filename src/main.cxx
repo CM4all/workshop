@@ -75,6 +75,7 @@ try {
     /* configuration */
 
     ParseCommandLine(config, argc, argv);
+    LoadConfigFile(config, "/etc/cm4all/workshop/workshop.conf");
     config.Check();
 
     /* set up */
