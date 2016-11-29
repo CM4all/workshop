@@ -4,16 +4,10 @@
 
 #include "Instance.hxx"
 #include "Config.hxx"
-#include "Job.hxx"
-#include "Plan.hxx"
 #include "spawn/Client.hxx"
 #include "spawn/Glue.hxx"
-#include "pg/Array.hxx"
-#include "util/PrintException.hxx"
 
 #include <daemon/log.h>
-
-#include <set>
 
 #include <signal.h>
 
@@ -27,16 +21,12 @@ Instance::Instance(const Config &config,
                                         in_spawner();
                                         event_loop.Reinit();
                                         event_loop.~EventLoop();
-                                    })),
-     queue(event_loop, config.node_name.c_str(), config.database.c_str(),
-           config.database_schema.c_str(),
-           [this](Job &&job){ OnJob(std::move(job)); }),
-     workplace(*spawn_service, *this,
-               config.node_name.c_str(),
-               config.concurrency)
+                                    }))
 {
     shutdown_listener.Enable();
     sighup_event.Add();
+
+    partitions.emplace_front(*this, config, BIND_THIS_METHOD(OnPartitionIdle));
 }
 
 Instance::~Instance()
@@ -46,63 +36,14 @@ Instance::~Instance()
 void
 Instance::UpdateFilter()
 {
-    std::set<std::string> available_plans;
-    library.VisitPlans(std::chrono::steady_clock::now(),
-                       [&available_plans](const std::string &name, const Plan &){
-                           available_plans.emplace(name);
-                       });
-
-    queue.SetFilter(pg_encode_array(available_plans),
-                    workplace.GetFullPlanNames(),
-                    workplace.GetRunningPlanNames());
+    for (auto &i : partitions)
+        i.UpdateFilter();
 }
 
 void
 Instance::UpdateLibraryAndFilter(bool force)
 {
     library.Update(force);
-    UpdateFilter();
-}
-
-bool
-Instance::StartJob(Job &&job)
-{
-    auto plan = library.Get(job.plan_name.c_str());
-    if (!plan) {
-        fprintf(stderr, "library_get('%s') failed\n", job.plan_name.c_str());
-        queue.RollbackJob(job);
-        return false;
-    }
-
-    int ret = job.SetProgress(0, plan->timeout.c_str());
-    if (ret < 0) {
-        queue.RollbackJob(job);
-        return false;
-    }
-
-    try {
-        workplace.Start(event_loop, job, std::move(plan));
-    } catch (const std::runtime_error &e) {
-        PrintException(e);
-
-        queue.SetJobDone(job, -1);
-    }
-
-    return true;
-}
-
-void
-Instance::OnJob(Job &&job)
-{
-    if (workplace.IsFull()) {
-        queue.RollbackJob(job);
-        queue.Disable();
-        return;
-    }
-
-    if (!StartJob(std::move(job)) || workplace.IsFull())
-        queue.Disable();
-
     UpdateFilter();
 }
 
@@ -118,13 +59,14 @@ Instance::OnExit()
     sighup_event.Delete();
     child_process_registry.SetVolatile();
 
-    queue.Disable();
-
     spawn_service->Shutdown();
 
-    if (workplace.IsEmpty())
-        queue.Close();
-    else
+    for (auto &i : partitions)
+        i.BeginShutdown();
+
+    RemoveIdlePartitions();
+
+    if (!partitions.empty())
         daemon_log(1, "waiting for operators to finish\n");
 }
 
@@ -136,17 +78,16 @@ Instance::OnReload(int)
 }
 
 void
-Instance::OnChildProcessExit(int)
+Instance::OnPartitionIdle()
 {
-    if (should_exit) {
-        if (workplace.IsEmpty())
-            queue.Close();
-        return;
-    }
-
-    UpdateLibraryAndFilter(false);
-
-    if (!workplace.IsFull())
-        queue.Enable();
+    if (should_exit)
+        RemoveIdlePartitions();
 }
 
+void
+Instance::RemoveIdlePartitions()
+{
+    partitions.remove_if([](const Partition &partition){
+            return partition.IsIdle();
+        });
+}

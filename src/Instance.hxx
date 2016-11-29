@@ -5,21 +5,20 @@
 #ifndef WORKSHOP_INSTANCE_HXX
 #define WORKSHOP_INSTANCE_HXX
 
+#include "Partition.hxx"
 #include "event/Loop.hxx"
 #include "event/ShutdownListener.hxx"
 #include "event/SignalEvent.hxx"
 #include "MultiLibrary.hxx"
-#include "Queue.hxx"
-#include "Workplace.hxx"
 #include "spawn/Registry.hxx"
-#include "spawn/ExitListener.hxx"
 
 #include <functional>
+#include <forward_list>
 
 struct Config;
 class SpawnServerClient;
 
-class Instance final : ExitListener {
+class Instance final {
     EventLoop event_loop;
 
     bool should_exit = false;
@@ -32,8 +31,8 @@ class Instance final : ExitListener {
     std::unique_ptr<SpawnServerClient> spawn_service;
 
     MultiLibrary library;
-    Queue queue;
-    Workplace workplace;
+
+    std::forward_list<Partition> partitions;
 
 public:
     Instance(const Config &config,
@@ -41,12 +40,25 @@ public:
 
     ~Instance();
 
+    EventLoop &GetEventLoop() {
+        return event_loop;
+    }
+
+    SpawnServerClient &GetSpawnService() {
+        return *spawn_service;
+    }
+
+    MultiLibrary &GetLibrary() {
+        return library;
+    }
+
     void InsertLibraryPath(const char *path) {
         library.InsertPath(path);
     }
 
     void Start() {
-        queue.Connect();
+        for (auto &i : partitions)
+            i.Start();
     }
 
     void Dispatch() {
@@ -57,13 +69,11 @@ public:
     void UpdateLibraryAndFilter(bool force);
 
 private:
-    bool StartJob(Job &&job);
-    void OnJob(Job &&job);
     void OnExit();
     void OnReload(int);
 
-    /* virtual methods from ExitListener */
-    void OnChildProcessExit(int status) override;
+    void OnPartitionIdle();
+    void RemoveIdlePartitions();
 };
 
 #endif

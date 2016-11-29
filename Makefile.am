@@ -14,6 +14,7 @@ cm4all_workshop_SOURCES = \
 	src/AllocatorPtr.cxx src/AllocatorPtr.hxx \
 	src/SyslogClient.cxx src/SyslogClient.hxx \
 	src/Instance.cxx src/Instance.hxx \
+	src/Partition.cxx src/Partition.hxx \
 	src/Queue.cxx src/Queue.hxx \
 	src/PGQueue.cxx src/PGQueue.hxx \
 	src/Job.cxx src/Job.hxx \
