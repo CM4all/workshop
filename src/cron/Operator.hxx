@@ -12,6 +12,7 @@
 
 struct PreparedChildProcess;
 class ChildProcessRegistry;
+class CronQueue;
 class CronWorkplace;
 
 /**
@@ -21,13 +22,14 @@ class Operator final
     : public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>,
       ExitListener {
 
+    CronQueue &queue;
     CronWorkplace &workplace;
     const CronJob job;
 
     int pid = -1;
 
 public:
-    Operator(CronWorkplace &_workplace, CronJob &&_job);
+    Operator(CronQueue &_queue, CronWorkplace &_workplace, CronJob &&_job);
 
     Operator(const Operator &other) = delete;
     Operator &operator=(const Operator &other) = delete;

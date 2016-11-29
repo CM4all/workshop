@@ -20,7 +20,6 @@ class ExitListener;
 
 class CronWorkplace {
     SpawnService &spawn_service;
-    CronQueue &queue;
     ExitListener &exit_listener;
 
     typedef boost::intrusive::list<Operator,
@@ -32,11 +31,11 @@ class CronWorkplace {
     const unsigned max_operators;
 
 public:
-    CronWorkplace(SpawnService &_spawn_service, CronQueue &_queue,
+    CronWorkplace(SpawnService &_spawn_service,
                   ExitListener &_exit_listener,
                   const char *_translation_socket,
                   unsigned _max_operators)
-        :spawn_service(_spawn_service), queue(_queue),
+        :spawn_service(_spawn_service),
          exit_listener(_exit_listener),
          translation_socket(_translation_socket),
          max_operators(_max_operators) {
@@ -53,10 +52,6 @@ public:
         return spawn_service;
     }
 
-    CronQueue &GetQueue() {
-        return queue;
-    }
-
     bool IsEmpty() const {
         return operators.empty();
     }
@@ -68,7 +63,7 @@ public:
     /**
      * Throws std::runtime_error on error.
      */
-    void Start(CronJob &&job);
+    void Start(CronQueue &queue, CronJob &&job);
 
     void OnExit(Operator *o);
 };

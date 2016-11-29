@@ -25,7 +25,7 @@
 #include <assert.h>
 
 void
-CronWorkplace::Start(CronJob &&job)
+CronWorkplace::Start(CronQueue &queue, CronJob &&job)
 {
     /* prepare the child process */
 
@@ -44,14 +44,14 @@ CronWorkplace::Start(CronJob &&job)
                                             : job.translate_param.c_str());
         response.child_options.CopyTo(p);
     } catch (...) {
-        GetQueue().Finish(job);
+        queue.Finish(job);
         std::throw_with_nested(FormatRuntimeError("Failed to translate job '%s'",
                                                   job.id.c_str()));
     }
 
     /* create operator object */
 
-    auto o = std::make_unique<Operator>(*this, std::move(job));
+    auto o = std::make_unique<Operator>(queue, *this, std::move(job));
     o->Spawn(std::move(p));
 
     operators.push_back(*o.release());

@@ -12,8 +12,9 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-Operator::Operator(CronWorkplace &_workplace, CronJob &&_job)
-    :workplace(_workplace), job(std::move(_job))
+Operator::Operator(CronQueue &_queue, CronWorkplace &_workplace,
+                   CronJob &&_job)
+    :queue(_queue), workplace(_workplace), job(std::move(_job))
 {
 }
 
@@ -25,7 +26,7 @@ try {
 
     daemon_log(2, "job %s running as pid %d\n", job.id.c_str(), pid);
 } catch (...) {
-    workplace.GetQueue().Finish(job);
+    queue.Finish(job);
     throw;
 }
 
@@ -48,6 +49,6 @@ Operator::OnChildProcessExit(int status)
                    job.id.c_str(), pid,
                    exit_status);
 
-    workplace.GetQueue().Finish(job);
+    queue.Finish(job);
     workplace.OnExit(this);
 }
