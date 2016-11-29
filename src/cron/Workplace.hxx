@@ -22,7 +22,7 @@ class CronWorkplace {
     SpawnService &spawn_service;
     ExitListener &exit_listener;
 
-    typedef boost::intrusive::list<Operator,
+    typedef boost::intrusive::list<CronOperator,
                                    boost::intrusive::constant_time_size<true>> OperatorList;
 
     OperatorList operators;
@@ -63,7 +63,7 @@ public:
     void Start(CronQueue &queue, const char *translation_socket,
                CronJob &&job);
 
-    void OnExit(Operator *o);
+    void OnExit(CronOperator *o);
 };
 
 #endif

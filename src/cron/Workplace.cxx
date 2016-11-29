@@ -52,14 +52,14 @@ CronWorkplace::Start(CronQueue &queue, const char *translation_socket,
 
     /* create operator object */
 
-    auto o = std::make_unique<Operator>(queue, *this, std::move(job));
+    auto o = std::make_unique<CronOperator>(queue, *this, std::move(job));
     o->Spawn(std::move(p));
 
     operators.push_back(*o.release());
 }
 
 void
-CronWorkplace::OnExit(Operator *o)
+CronWorkplace::OnExit(CronOperator *o)
 {
     operators.erase(operators.iterator_to(*o));
     delete o;

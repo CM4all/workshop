@@ -18,7 +18,7 @@ class CronWorkplace;
 /**
  * A #CronJob being executed.
  */
-class Operator final
+class CronOperator final
     : public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>,
       ExitListener {
 
@@ -29,10 +29,10 @@ class Operator final
     int pid = -1;
 
 public:
-    Operator(CronQueue &_queue, CronWorkplace &_workplace, CronJob &&_job);
+    CronOperator(CronQueue &_queue, CronWorkplace &_workplace, CronJob &&_job);
 
-    Operator(const Operator &other) = delete;
-    Operator &operator=(const Operator &other) = delete;
+    CronOperator(const CronOperator &other) = delete;
+    CronOperator &operator=(const CronOperator &other) = delete;
 
     void Spawn(PreparedChildProcess &&p);
 

@@ -12,14 +12,14 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-Operator::Operator(CronQueue &_queue, CronWorkplace &_workplace,
-                   CronJob &&_job)
+CronOperator::CronOperator(CronQueue &_queue, CronWorkplace &_workplace,
+                           CronJob &&_job)
     :queue(_queue), workplace(_workplace), job(std::move(_job))
 {
 }
 
 void
-Operator::Spawn(PreparedChildProcess &&p)
+CronOperator::Spawn(PreparedChildProcess &&p)
 try {
     pid = workplace.GetSpawnService().SpawnChildProcess(job.id.c_str(),
                                                         std::move(p), this);
@@ -31,7 +31,7 @@ try {
 }
 
 void
-Operator::OnChildProcessExit(int status)
+CronOperator::OnChildProcessExit(int status)
 {
     int exit_status = WEXITSTATUS(status);
 
