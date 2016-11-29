@@ -38,8 +38,8 @@ Run(int argc, char **argv, const Config &config)
                               memset(argv[i], 0, strlen(argv[i]));
                           strncpy(argv[0], "spawn", name_size);
                       });
-    instance.library.InsertPath("/etc/cm4all/workshop/plans");
-    instance.library.InsertPath("/usr/share/cm4all/workshop/plans");
+    instance.InsertLibraryPath("/etc/cm4all/workshop/plans");
+    instance.InsertLibraryPath("/usr/share/cm4all/workshop/plans");
 
     if (daemon_user_set(&config.user) < 0)
         exit(2);
@@ -55,7 +55,7 @@ Run(int argc, char **argv, const Config &config)
 
     /* main loop */
 
-    instance.event_loop.Dispatch();
+    instance.Dispatch();
 
     /* cleanup */
 

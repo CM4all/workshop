@@ -20,7 +20,6 @@ struct Config;
 class SpawnServerClient;
 
 class Instance final : ExitListener {
-public:
     EventLoop event_loop;
 
     bool should_exit = false;
@@ -36,13 +35,22 @@ public:
     Queue queue;
     Workplace workplace;
 
+public:
     Instance(const Config &config,
              std::function<void()> &&in_spawner);
 
     ~Instance();
 
+    void InsertLibraryPath(const char *path) {
+        library.InsertPath(path);
+    }
+
     void Start() {
         queue.Connect();
+    }
+
+    void Dispatch() {
+        event_loop.Dispatch();
     }
 
     void UpdateFilter();
