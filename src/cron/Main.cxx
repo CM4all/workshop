@@ -70,7 +70,7 @@ Run(int argc, char **argv, const CronConfig &config)
 
     /* main loop */
 
-    instance.event_loop.Dispatch();
+    instance.Dispatch();
 
     /* cleanup */
 

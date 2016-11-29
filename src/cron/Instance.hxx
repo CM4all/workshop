@@ -20,7 +20,6 @@ struct CronConfig;
 class SpawnServerClient;
 
 class CronInstance final : ExitListener {
-public:
     EventLoop event_loop;
 
     bool should_exit = false;
@@ -35,6 +34,7 @@ public:
     CronQueue queue;
     CronWorkplace workplace;
 
+public:
     CronInstance(const CronConfig &config,
                  const char *schema,
                  std::function<void()> &&in_spawner);
@@ -43,6 +43,10 @@ public:
 
     void Start() {
         queue.Connect();
+    }
+
+    void Dispatch() {
+        event_loop.Dispatch();
     }
 
 private:
