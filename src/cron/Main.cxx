@@ -49,7 +49,7 @@ Run(int argc, char **argv, const CronConfig &config)
 
     setup_signal_handlers();
 
-    CronInstance instance(config, "",
+    CronInstance instance(config,
                           [argc, argv](){
                               /* rename the process */
                               size_t name_size = strlen(argv[0]);

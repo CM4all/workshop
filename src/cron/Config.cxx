@@ -15,6 +15,16 @@
 #include <pwd.h>
 #include <grp.h>
 
+void
+CronConfig::Partition::Check() const
+{
+    if (database.empty())
+        throw std::runtime_error("Missing 'database' setting");
+
+    if (translation_socket.empty())
+        throw std::runtime_error("Missing 'translation_server' setting");
+}
+
 CronConfig::CronConfig()
 {
     memset(&user, 0, sizeof(user));
@@ -41,11 +51,11 @@ CronConfig::Check()
         node_name = name;
     }
 
-    if (database.empty())
-        throw std::runtime_error("Missing 'database' setting");
+    if (partitions.empty())
+        throw std::runtime_error("No 'cron' section");
 
-    if (translation_socket.empty())
-        throw std::runtime_error("Missing 'translation_server' setting");
+    for (const auto &i : partitions)
+        i.Check();
 }
 
 class SpawnConfigParser final : public ConfigParser {
@@ -105,6 +115,19 @@ SpawnConfigParser::ParseLine(LineParser &line)
 class CronConfigParser final : public NestedConfigParser {
     CronConfig &config;
 
+    class Partition final : public ConfigParser {
+        CronConfig &parent;
+        CronConfig::Partition config;
+
+    public:
+        explicit Partition(CronConfig &_parent):parent(_parent) {}
+
+    protected:
+        /* virtual methods from class ConfigParser */
+        void ParseLine(LineParser &line) override;
+        void Finish() override;
+    };
+
 public:
     explicit CronConfigParser(CronConfig &_config)
         :config(_config) {}
@@ -115,7 +138,7 @@ protected:
 };
 
 void
-CronConfigParser::ParseLine2(LineParser &line)
+CronConfigParser::Partition::ParseLine(LineParser &line)
 {
     const char *word = line.ExpectWord();
 
@@ -123,6 +146,27 @@ CronConfigParser::ParseLine2(LineParser &line)
         config.database = line.ExpectValueAndEnd();
     } else if (strcmp(word, "translation_server") == 0) {
         config.translation_socket = line.ExpectValueAndEnd();
+    } else
+        throw LineParser::Error("Unknown option");
+}
+
+void
+CronConfigParser::Partition::Finish()
+{
+    config.Check();
+    parent.partitions.emplace_front(std::move(config));
+
+    ConfigParser::Finish();
+}
+
+void
+CronConfigParser::ParseLine2(LineParser &line)
+{
+    const char *word = line.ExpectWord();
+
+    if (strcmp(word, "cron") == 0) {
+        line.ExpectSymbolAndEol('{');
+        SetChild(std::make_unique<Partition>(config));
     } else if (strcmp(word, "node_name") == 0) {
         config.node_name = line.ExpectValueAndEnd();
     } else if (strcmp(word, "concurrency") == 0) {

@@ -9,17 +9,25 @@
 
 #include <daemon/user.h>
 
+#include <forward_list>
+
 struct CronConfig {
     struct daemon_user user;
 
     std::string node_name;
     unsigned concurrency = 8;
 
-    std::string database;
-
-    std::string translation_socket;
-
     SpawnConfig spawn;
+
+    struct Partition {
+        std::string database;
+
+        std::string translation_socket;
+
+        void Check() const;
+    };
+
+    std::forward_list<Partition> partitions;
 
     CronConfig();
 

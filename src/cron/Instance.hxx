@@ -5,12 +5,11 @@
 #ifndef CRON_INSTANCE_HXX
 #define CRON_INSTANCE_HXX
 
-#include "Queue.hxx"
+#include "Partition.hxx"
 #include "Workplace.hxx"
 #include "event/Loop.hxx"
 #include "event/ShutdownListener.hxx"
 #include "event/SignalEvent.hxx"
-#include "Workplace.hxx"
 #include "spawn/Registry.hxx"
 #include "spawn/ExitListener.hxx"
 
@@ -31,20 +30,32 @@ class CronInstance final : ExitListener {
 
     std::unique_ptr<SpawnServerClient> spawn_service;
 
-    const char *const translation_socket;
-
-    CronQueue queue;
     CronWorkplace workplace;
+
+    std::forward_list<CronPartition> partitions;
 
 public:
     CronInstance(const CronConfig &config,
-                 const char *schema,
                  std::function<void()> &&in_spawner);
 
     ~CronInstance();
 
+    EventLoop &GetEventLoop() {
+        return event_loop;
+    }
+
+    CronWorkplace &GetWorkplace() {
+        return workplace;
+    }
+
     void Start() {
-        queue.Connect();
+        for (auto &i : partitions)
+            i.Start();
+    }
+
+    void DisableAllQueues() {
+        for (auto &i : partitions)
+            i.Disable();
     }
 
     void Dispatch() {
@@ -52,8 +63,6 @@ public:
     }
 
 private:
-    void OnJob(CronJob &&job);
-
     void OnExit();
     void OnReload(int);
 

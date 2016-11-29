@@ -4,17 +4,14 @@
 
 #include "Instance.hxx"
 #include "Config.hxx"
-#include "Job.hxx"
 #include "spawn/Client.hxx"
 #include "spawn/Glue.hxx"
-#include "util/PrintException.hxx"
 
 #include <daemon/log.h>
 
 #include <signal.h>
 
 CronInstance::CronInstance(const CronConfig &config,
-                           const char *schema,
                            std::function<void()> &&in_spawner)
     :shutdown_listener(event_loop, BIND_THIS_METHOD(OnExit)),
      sighup_event(event_loop, SIGHUP, BIND_THIS_METHOD(OnReload)),
@@ -25,37 +22,18 @@ CronInstance::CronInstance(const CronConfig &config,
                                         event_loop.Reinit();
                                         event_loop.~EventLoop();
                                     })),
-     translation_socket(config.translation_socket.c_str()),
-     queue(event_loop, config.node_name.c_str(), config.database.c_str(),
-           schema,
-           [this](CronJob &&job){ OnJob(std::move(job)); }),
      workplace(*spawn_service, *this,
                config.concurrency)
 {
     shutdown_listener.Enable();
     sighup_event.Add();
+
+    for (const auto &i : config.partitions)
+        partitions.emplace_front(*this, config, i);
 }
 
 CronInstance::~CronInstance()
 {
-}
-
-void
-CronInstance::OnJob(CronJob &&job)
-{
-    printf("OnJob '%s'\n", job.id.c_str());
-
-    if (!queue.Claim(job))
-        return;
-
-    try {
-        workplace.Start(queue, translation_socket, std::move(job));
-    } catch (const std::runtime_error &e) {
-        PrintException(e);
-    }
-
-    if (workplace.IsFull())
-        queue.Disable();
 }
 
 void
@@ -72,9 +50,10 @@ CronInstance::OnExit()
 
     spawn_service->Shutdown();
 
-    if (workplace.IsEmpty())
-        queue.Close();
-    else
+    if (workplace.IsEmpty()) {
+        for (auto &i : partitions)
+            i.Close();
+    } else
         daemon_log(1, "waiting for operators to finish\n");
 }
 
@@ -89,11 +68,16 @@ void
 CronInstance::OnChildProcessExit(int)
 {
     if (should_exit) {
-        if (workplace.IsEmpty())
-            queue.Close();
+        if (workplace.IsEmpty()) {
+            for (auto &i : partitions)
+                i.Close();
+        }
+
         return;
     }
 
-    if (!workplace.IsFull())
-        queue.Enable();
+    if (!workplace.IsFull()) {
+        for (auto &i : partitions)
+            i.Enable();
+    }
 }

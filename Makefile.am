@@ -54,6 +54,7 @@ cm4all_cron_SOURCES = \
 	src/cron/Operator.cxx src/cron/Operator.hxx \
 	src/cron/CalculateNextRun.cxx src/cron/CalculateNextRun.hxx \
 	src/cron/Instance.cxx src/cron/Instance.hxx \
+	src/cron/Partition.cxx src/cron/Partition.hxx \
 	src/ExpandableStringList.cxx src/ExpandableStringList.hxx \
 	src/AllocatorPtr.cxx src/AllocatorPtr.hxx
 cm4all_cron_CPPFLAGS = $(AM_CPPFLAGS) \
