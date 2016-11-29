@@ -25,11 +25,11 @@ CronInstance::CronInstance(const CronConfig &config,
                                         event_loop.Reinit();
                                         event_loop.~EventLoop();
                                     })),
+     translation_socket(config.translation_socket.c_str()),
      queue(event_loop, config.node_name.c_str(), config.database.c_str(),
            schema,
            [this](CronJob &&job){ OnJob(std::move(job)); }),
      workplace(*spawn_service, *this,
-               config.translation_socket.c_str(),
                config.concurrency)
 {
     shutdown_listener.Enable();
@@ -49,7 +49,7 @@ CronInstance::OnJob(CronJob &&job)
         return;
 
     try {
-        workplace.Start(queue, std::move(job));
+        workplace.Start(queue, translation_socket, std::move(job));
     } catch (const std::runtime_error &e) {
         PrintException(e);
     }

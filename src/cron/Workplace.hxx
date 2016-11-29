@@ -27,17 +27,14 @@ class CronWorkplace {
 
     OperatorList operators;
 
-    const char *const translation_socket;
     const unsigned max_operators;
 
 public:
     CronWorkplace(SpawnService &_spawn_service,
                   ExitListener &_exit_listener,
-                  const char *_translation_socket,
                   unsigned _max_operators)
         :spawn_service(_spawn_service),
          exit_listener(_exit_listener),
-         translation_socket(_translation_socket),
          max_operators(_max_operators) {
         assert(max_operators > 0);
     }
@@ -63,7 +60,8 @@ public:
     /**
      * Throws std::runtime_error on error.
      */
-    void Start(CronQueue &queue, CronJob &&job);
+    void Start(CronQueue &queue, const char *translation_socket,
+               CronJob &&job);
 
     void OnExit(Operator *o);
 };

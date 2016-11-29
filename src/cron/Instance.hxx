@@ -31,6 +31,8 @@ class CronInstance final : ExitListener {
 
     std::unique_ptr<SpawnServerClient> spawn_service;
 
+    const char *const translation_socket;
+
     CronQueue queue;
     CronWorkplace workplace;
 

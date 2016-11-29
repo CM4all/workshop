@@ -25,7 +25,8 @@
 #include <assert.h>
 
 void
-CronWorkplace::Start(CronQueue &queue, CronJob &&job)
+CronWorkplace::Start(CronQueue &queue, const char *translation_socket,
+                     CronJob &&job)
 {
     /* prepare the child process */
 
