@@ -20,7 +20,7 @@ struct CronConfig {
     SpawnConfig spawn;
 
     struct Partition {
-        std::string database;
+        std::string database, database_schema;
 
         std::string translation_socket;
 

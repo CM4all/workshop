@@ -144,6 +144,8 @@ CronConfigParser::Partition::ParseLine(LineParser &line)
 
     if (strcmp(word, "database") == 0) {
         config.database = line.ExpectValueAndEnd();
+    } else if (strcmp(word, "database_schema") == 0) {
+        config.database_schema = line.ExpectValueAndEnd();
     } else if (strcmp(word, "translation_server") == 0) {
         config.translation_socket = line.ExpectValueAndEnd();
     } else
