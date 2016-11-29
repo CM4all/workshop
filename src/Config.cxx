@@ -57,6 +57,8 @@ WorkshopConfigParser::ParseLine2(LineParser &line)
 
     if (strcmp(word, "database") == 0) {
         config.database = line.ExpectValueAndEnd();
+    } else if (strcmp(word, "database_schema") == 0) {
+        config.database_schema = line.ExpectValueAndEnd();
     } else if (strcmp(word, "node_name") == 0) {
         config.node_name = line.ExpectValueAndEnd();
     } else if (strcmp(word, "concurrency") == 0) {

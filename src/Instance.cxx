@@ -18,7 +18,6 @@
 #include <signal.h>
 
 Instance::Instance(const Config &config,
-                   const char *schema,
                    std::function<void()> &&in_spawner)
     :shutdown_listener(event_loop, BIND_THIS_METHOD(OnExit)),
      sighup_event(event_loop, SIGHUP, BIND_THIS_METHOD(OnReload)),
@@ -30,7 +29,7 @@ Instance::Instance(const Config &config,
                                         event_loop.~EventLoop();
                                     })),
      queue(event_loop, config.node_name.c_str(), config.database.c_str(),
-           schema,
+           config.database_schema.c_str(),
            [this](Job &&job){ OnJob(std::move(job)); }),
      workplace(*spawn_service, *this,
                config.node_name.c_str(),

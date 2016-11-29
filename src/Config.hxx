@@ -16,7 +16,7 @@ struct Config {
 
     std::string node_name;
     unsigned concurrency = 2;
-    std::string database;
+    std::string database, database_schema;
 
     SpawnConfig spawn;
 

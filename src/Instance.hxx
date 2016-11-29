@@ -37,7 +37,6 @@ public:
     Workplace workplace;
 
     Instance(const Config &config,
-             const char *schema,
              std::function<void()> &&in_spawner);
 
     ~Instance();

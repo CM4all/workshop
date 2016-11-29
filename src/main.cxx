@@ -30,7 +30,7 @@ Run(int argc, char **argv, const Config &config)
 {
     SetupProcess();
 
-    Instance instance(config, "",
+    Instance instance(config,
                       [argc, argv](){
                           /* rename the process */
                           size_t name_size = strlen(argv[0]);
