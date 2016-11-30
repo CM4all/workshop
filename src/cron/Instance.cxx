@@ -21,15 +21,14 @@ CronInstance::CronInstance(const CronConfig &config,
                                         in_spawner();
                                         event_loop.Reinit();
                                         event_loop.~EventLoop();
-                                    })),
-     workplace(*spawn_service, *this,
-               config.concurrency)
+                                    }))
 {
     shutdown_listener.Enable();
     sighup_event.Add();
 
     for (const auto &i : config.partitions)
-        partitions.emplace_front(*this, config, i);
+        partitions.emplace_front(*this, *spawn_service, config, i,
+                                 BIND_THIS_METHOD(OnPartitionIdle));
 }
 
 CronInstance::~CronInstance()
@@ -53,9 +52,9 @@ CronInstance::OnExit()
     for (auto &i : partitions)
         i.BeginShutdown();
 
-    if (workplace.IsEmpty()) {
-        partitions.clear();
-    } else
+    RemoveIdlePartitions();
+
+    if (!partitions.empty())
         daemon_log(1, "waiting for operators to finish\n");
 }
 
@@ -67,18 +66,16 @@ CronInstance::OnReload(int)
 }
 
 void
-CronInstance::OnChildProcessExit(int)
+CronInstance::OnPartitionIdle()
 {
-    if (should_exit) {
-        if (workplace.IsEmpty()) {
-            partitions.clear();
-        }
+    if (should_exit)
+        RemoveIdlePartitions();
+}
 
-        return;
-    }
-
-    if (!workplace.IsFull()) {
-        for (auto &i : partitions)
-            i.Enable();
-    }
+void
+CronInstance::RemoveIdlePartitions()
+{
+    partitions.remove_if([](const CronPartition &partition){
+            return partition.IsIdle();
+        });
 }

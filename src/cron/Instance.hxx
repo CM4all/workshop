@@ -6,19 +6,17 @@
 #define CRON_INSTANCE_HXX
 
 #include "Partition.hxx"
-#include "Workplace.hxx"
 #include "event/Loop.hxx"
 #include "event/ShutdownListener.hxx"
 #include "event/SignalEvent.hxx"
 #include "spawn/Registry.hxx"
-#include "spawn/ExitListener.hxx"
 
 #include <functional>
 
 struct CronConfig;
 class SpawnServerClient;
 
-class CronInstance final : ExitListener {
+class CronInstance final {
     EventLoop event_loop;
 
     bool should_exit = false;
@@ -29,8 +27,6 @@ class CronInstance final : ExitListener {
     ChildProcessRegistry child_process_registry;
 
     std::unique_ptr<SpawnServerClient> spawn_service;
-
-    CronWorkplace workplace;
 
     std::forward_list<CronPartition> partitions;
 
@@ -44,18 +40,9 @@ public:
         return event_loop;
     }
 
-    CronWorkplace &GetWorkplace() {
-        return workplace;
-    }
-
     void Start() {
         for (auto &i : partitions)
             i.Start();
-    }
-
-    void DisableAllQueues() {
-        for (auto &i : partitions)
-            i.Disable();
     }
 
     void Dispatch() {
@@ -66,8 +53,8 @@ private:
     void OnExit();
     void OnReload(int);
 
-    /* virtual methods from ExitListener */
-    void OnChildProcessExit(int status) override;
+    void OnPartitionIdle();
+    void RemoveIdlePartitions();
 };
 
 #endif

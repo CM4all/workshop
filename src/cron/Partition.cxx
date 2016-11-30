@@ -8,13 +8,18 @@
 #include "util/PrintException.hxx"
 
 CronPartition::CronPartition(CronInstance &_instance,
+                             SpawnService &_spawn_service,
                              const CronConfig &root_config,
-                             const CronConfig::Partition &config)
+                             const CronConfig::Partition &config,
+                             BoundMethod<void()> _empty_callback)
     :instance(_instance),
      translation_socket(config.translation_socket.c_str()),
      queue(instance.GetEventLoop(), root_config.node_name.c_str(),
            config.database.c_str(), config.database_schema.c_str(),
-           [this](CronJob &&job){ OnJob(std::move(job)); })
+           [this](CronJob &&job){ OnJob(std::move(job)); }),
+     workplace(_spawn_service, *this,
+               root_config.concurrency),
+     empty_callback(_empty_callback)
 {
 }
 
@@ -26,8 +31,6 @@ CronPartition::OnJob(CronJob &&job)
     if (!queue.Claim(job))
         return;
 
-    auto &workplace = instance.GetWorkplace();
-
     try {
         workplace.Start(queue, translation_socket,
                         std::move(job));
@@ -36,5 +39,15 @@ CronPartition::OnJob(CronJob &&job)
     }
 
     if (workplace.IsFull())
-        instance.DisableAllQueues();
+        queue.Disable();
+}
+
+void
+CronPartition::OnChildProcessExit(int)
+{
+    if (!workplace.IsFull())
+        queue.Enable();
+
+    if (workplace.IsEmpty())
+        empty_callback();
 }
