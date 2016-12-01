@@ -11,7 +11,7 @@ CronPartition::CronPartition(CronInstance &_instance,
                              SpawnService &_spawn_service,
                              const CronConfig &root_config,
                              const CronConfig::Partition &config,
-                             BoundMethod<void()> _empty_callback)
+                             BoundMethod<void()> _idle_callback)
     :instance(_instance),
      translation_socket(config.translation_socket.c_str()),
      queue(instance.GetEventLoop(), root_config.node_name.c_str(),
@@ -19,7 +19,7 @@ CronPartition::CronPartition(CronInstance &_instance,
            [this](CronJob &&job){ OnJob(std::move(job)); }),
      workplace(_spawn_service, *this,
                root_config.concurrency),
-     empty_callback(_empty_callback)
+     idle_callback(_idle_callback)
 {
 }
 
@@ -48,6 +48,6 @@ CronPartition::OnChildProcessExit(int)
     if (!workplace.IsFull())
         queue.Enable();
 
-    if (workplace.IsEmpty())
-        empty_callback();
+    if (IsIdle())
+        idle_callback();
 }

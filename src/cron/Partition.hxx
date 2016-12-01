@@ -23,14 +23,14 @@ class CronPartition final : ExitListener {
 
     CronWorkplace workplace;
 
-    BoundMethod<void()> empty_callback;
+    BoundMethod<void()> idle_callback;
 
 public:
     CronPartition(CronInstance &instance,
                   SpawnService &_spawn_service,
                   const CronConfig &root_config,
                   const CronConfig::Partition &config,
-                  BoundMethod<void()> _empty_callback);
+                  BoundMethod<void()> _idle_callback);
 
     bool IsIdle() const {
         return workplace.IsEmpty();
