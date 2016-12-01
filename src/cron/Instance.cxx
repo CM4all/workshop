@@ -50,6 +50,9 @@ CronInstance::OnExit()
 
     spawn_service->Shutdown();
 
+    for (auto &i : partitions)
+        i.BeginShutdown();
+
     if (workplace.IsEmpty()) {
         for (auto &i : partitions)
             i.Close();

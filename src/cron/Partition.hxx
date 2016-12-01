@@ -38,6 +38,10 @@ public:
         queue.Close();
     }
 
+    void BeginShutdown() {
+        queue.Disable();
+    }
+
 private:
     void OnJob(CronJob &&job);
 };
