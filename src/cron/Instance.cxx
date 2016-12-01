@@ -54,8 +54,7 @@ CronInstance::OnExit()
         i.BeginShutdown();
 
     if (workplace.IsEmpty()) {
-        for (auto &i : partitions)
-            i.Close();
+        partitions.clear();
     } else
         daemon_log(1, "waiting for operators to finish\n");
 }
@@ -72,8 +71,7 @@ CronInstance::OnChildProcessExit(int)
 {
     if (should_exit) {
         if (workplace.IsEmpty()) {
-            for (auto &i : partitions)
-                i.Close();
+            partitions.clear();
         }
 
         return;
