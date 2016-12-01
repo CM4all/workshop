@@ -28,12 +28,16 @@ void
 CronWorkplace::Start(CronQueue &queue, const char *translation_socket,
                      CronJob &&job)
 {
+    /* need a copy because the std::move(job) below may invalidate the
+       c_str() pointer */
+    const auto command = job.command;
+
     /* prepare the child process */
 
     PreparedChildProcess p;
     p.args.push_back("/bin/sh");
     p.args.push_back("-c");
-    p.args.push_back(job.command.c_str());
+    p.args.push_back(command.c_str());
 
     Allocator alloc;
 
