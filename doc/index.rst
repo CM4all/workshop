@@ -34,7 +34,7 @@ The following settings are recognized:
 
 * :envvar:`node_name`: This node's name, for example the
   fully-qualified host name.  Must be unique in the cluster.  By
-  default, :samp:`hostname -f` is used.
+  default, the hostname is used.
 * :envvar:`concurrency`: How many jobs shall this node concurrently?
   Rule of thumb: number of CPUs, not much more.
 * :envvar:`database`: the PostgreSQL connect string (`PostgreSQL

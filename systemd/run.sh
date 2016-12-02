@@ -8,11 +8,6 @@ OPTIONS=""
 
 test -f /etc/default/cm4all-workshop && source /etc/default/cm4all-workshop
 
-if test -z "$NODE_NAME"; then
-    echo "No node name configured in /etc/default/cm4all-workshop" >&2
-    exit 1
-fi
-
 export WORKSHOP_DATABASE=$DATABASE
 
 exec /usr/sbin/cm4all-workshop \

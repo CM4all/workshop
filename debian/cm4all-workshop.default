@@ -1,6 +1,4 @@
 # -*- shell-script -*-
 
-NODE_NAME=`hostname -f`
-
 # Other options
 #OPTIONS="-v"
