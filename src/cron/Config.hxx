@@ -11,6 +11,14 @@
 
 #include <forward_list>
 
+struct CronPartitionConfig {
+    std::string database, database_schema;
+
+    std::string translation_socket;
+
+    void Check() const;
+};
+
 struct CronConfig {
     struct daemon_user user;
 
@@ -19,15 +27,7 @@ struct CronConfig {
 
     SpawnConfig spawn;
 
-    struct Partition {
-        std::string database, database_schema;
-
-        std::string translation_socket;
-
-        void Check() const;
-    };
-
-    std::forward_list<Partition> partitions;
+    std::forward_list<CronPartitionConfig> partitions;
 
     CronConfig();
 

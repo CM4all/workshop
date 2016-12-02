@@ -4,12 +4,13 @@
 
 #include "Partition.hxx"
 #include "Job.hxx"
+#include "Config.hxx"
 #include "util/PrintException.hxx"
 
 CronPartition::CronPartition(EventLoop &event_loop,
                              SpawnService &_spawn_service,
                              const CronConfig &root_config,
-                             const CronConfig::Partition &config,
+                             const CronPartitionConfig &config,
                              BoundMethod<void()> _idle_callback)
     :translation_socket(config.translation_socket.c_str()),
      queue(event_loop, root_config.node_name.c_str(),

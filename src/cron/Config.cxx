@@ -16,7 +16,7 @@
 #include <grp.h>
 
 void
-CronConfig::Partition::Check() const
+CronPartitionConfig::Check() const
 {
     if (database.empty())
         throw std::runtime_error("Missing 'database' setting");
@@ -117,7 +117,7 @@ class CronConfigParser final : public NestedConfigParser {
 
     class Partition final : public ConfigParser {
         CronConfig &parent;
-        CronConfig::Partition config;
+        CronPartitionConfig config;
 
     public:
         explicit Partition(CronConfig &_parent):parent(_parent) {}

@@ -7,10 +7,11 @@
 
 #include "Queue.hxx"
 #include "Workplace.hxx"
-#include "Config.hxx"
 #include "spawn/ExitListener.hxx"
 #include "util/BindMethod.hxx"
 
+struct CronConfig;
+struct CronPartitionConfig;
 class EventLoop;
 class SpawnService;
 
@@ -27,7 +28,7 @@ public:
     CronPartition(EventLoop &event_loop,
                   SpawnService &_spawn_service,
                   const CronConfig &root_config,
-                  const CronConfig::Partition &config,
+                  const CronPartitionConfig &config,
                   BoundMethod<void()> _idle_callback);
 
     bool IsIdle() const {

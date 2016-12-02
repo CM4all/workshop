@@ -12,6 +12,7 @@
 #include "spawn/Registry.hxx"
 
 #include <functional>
+#include <forward_list>
 
 struct CronConfig;
 class SpawnServerClient;
