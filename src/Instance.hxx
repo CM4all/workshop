@@ -5,11 +5,11 @@
 #ifndef WORKSHOP_INSTANCE_HXX
 #define WORKSHOP_INSTANCE_HXX
 
-#include "Partition.hxx"
+#include "workshop/Partition.hxx"
+#include "workshop/MultiLibrary.hxx"
 #include "event/Loop.hxx"
 #include "event/ShutdownListener.hxx"
 #include "event/SignalEvent.hxx"
-#include "MultiLibrary.hxx"
 #include "spawn/Registry.hxx"
 
 #include <functional>

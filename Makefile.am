@@ -13,19 +13,19 @@ cm4all_workshop_SOURCES = \
 	src/CommandLine.cxx src/CommandLine.hxx \
 	src/AllocatorPtr.cxx src/AllocatorPtr.hxx \
 	src/SyslogClient.cxx src/SyslogClient.hxx \
-	src/Instance.cxx src/Instance.hxx \
-	src/Partition.cxx src/Partition.hxx \
-	src/Queue.cxx src/Queue.hxx \
-	src/PGQueue.cxx src/PGQueue.hxx \
-	src/Job.cxx src/Job.hxx \
-	src/Library.cxx src/Library.hxx \
-	src/PlanLoader.cxx src/PlanLoader.hxx \
-	src/PlanLibrary.cxx src/PlanUpdate.cxx \
-	src/Plan.hxx \
-	src/MultiLibrary.cxx src/MultiLibrary.hxx \
 	src/Expand.cxx src/Expand.hxx \
-	src/Operator.cxx src/Operator.hxx \
-	src/Workplace.cxx src/Workplace.hxx
+	src/Instance.cxx src/Instance.hxx \
+	src/workshop/Partition.cxx src/workshop/Partition.hxx \
+	src/workshop/Queue.cxx src/workshop/Queue.hxx \
+	src/workshop/PGQueue.cxx src/workshop/PGQueue.hxx \
+	src/workshop/Job.cxx src/workshop/workshop/Job.hxx \
+	src/workshop/Library.cxx src/workshop/Library.hxx \
+	src/workshop/PlanLoader.cxx src/workshop/PlanLoader.hxx \
+	src/workshop/PlanLibrary.cxx src/workshop/PlanUpdate.cxx \
+	src/workshop/Plan.hxx \
+	src/workshop/MultiLibrary.cxx src/workshop/MultiLibrary.hxx \
+	src/workshop/Operator.cxx src/workshop/Operator.hxx \
+	src/workshop/Workplace.cxx src/workshop/Workplace.hxx
 cm4all_workshop_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBCM4ALL_INLINE_CFLAGS) \
 	$(LIBCM4ALL_DAEMON_CFLAGS) \
