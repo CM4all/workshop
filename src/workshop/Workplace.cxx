@@ -69,7 +69,7 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 
     /* create operator object */
 
-    std::unique_ptr<WorkshopOperator> o(new WorkshopOperator(event_loop, *this, job, plan));
+    auto o = std::make_unique<WorkshopOperator>(event_loop, *this, job, plan);
 
     PreparedChildProcess p;
 
