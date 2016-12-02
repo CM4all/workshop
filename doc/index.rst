@@ -21,27 +21,41 @@ Installation & Configuration
 #. The PostgreSQL user which manages jobs can be configured like this:
    :samp:`GRANT INSERT, SELECT, DELETE ON jobs TO workshop_client;`
    and :samp:`GRANT UPDATE, SELECT ON jobs_id_seq TO workshop_client`
-#. Edit :file:`/etc/default/cm4all-workshop` and set the variable
-   :envvar:`DATABASE` (`PostgreSQL documentation
+#. Edit :file:`/etc/cm4all/workshop/workshop.conf` and set the variable
+   :envvar:`database` (`PostgreSQL documentation
    <https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING>`_)
 #. :samp:`systemctl start cm4all-workshop`
+
+Settings in :file:`/etc/cm4all/workshop/workshop.conf`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The file :file:`/etc/cm4all/workshop/workshop.conf` configures Workshop.
+The following settings are recognized:
+
+* :envvar:`node_name`: This node's name, for example the
+  fully-qualified host name.  Must be unique in the cluster.  By
+  default, :samp:`hostname -f` is used.
+* :envvar:`concurrency`: How many jobs shall this node concurrently?
+  Rule of thumb: number of CPUs, not much more.
+* :envvar:`database`: the PostgreSQL connect string (`PostgreSQL
+  documentation
+  <https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING>`_)
+
+The default configuration file includes :file:`local.conf` and
+:file:`conf.d/*.conf`, and you should probably better edit these files
+instead of editing the main :file:`workshop.conf`.
 
 Settings in :file:`/etc/default/cm4all-workshop`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The file :file:`/etc/default/cm4all-workshop` configures Workshop.
-The following settings are recognized:
+Additionally, the file :file:`/etc/default/cm4all-workshop` configures
+how the Workshop daemon is launched.  The following settings are
+recognized:
 
-* :envvar:`NODE_NAME`: This node's name, for example the
-  fully-qualified host name.  Must be unique in the cluster.  By
-  default, :samp:`hostname -f` is used.
-* :envvar:`CONCURRENCY`: How many jobs shall this node concurrently?
-  Rule of thumb: number of CPUs, not much more.
-* :envvar:`DATABASE`: the PostgreSQL connect string (`PostgreSQL
-  documentation
-  <https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING>`_)
 * :envvar:`OPTIONS`: Other options to be passed to the daemon, for
   example :option:`--verbose`.
+
+This file is Workshop 1.0 legacy, and should not be used anymore.
 
 Concept
 -------
