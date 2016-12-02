@@ -15,8 +15,6 @@ class CronInstance;
 class SpawnService;
 
 class CronPartition final : ExitListener {
-    CronInstance &instance;
-
     const char *const translation_socket;
 
     CronQueue queue;

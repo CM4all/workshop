@@ -7,13 +7,12 @@
 #include "Job.hxx"
 #include "util/PrintException.hxx"
 
-CronPartition::CronPartition(CronInstance &_instance,
+CronPartition::CronPartition(CronInstance &instance,
                              SpawnService &_spawn_service,
                              const CronConfig &root_config,
                              const CronConfig::Partition &config,
                              BoundMethod<void()> _idle_callback)
-    :instance(_instance),
-     translation_socket(config.translation_socket.c_str()),
+    :translation_socket(config.translation_socket.c_str()),
      queue(instance.GetEventLoop(), root_config.node_name.c_str(),
            config.database.c_str(), config.database_schema.c_str(),
            [this](CronJob &&job){ OnJob(std::move(job)); }),
