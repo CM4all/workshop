@@ -8,11 +8,6 @@ OPTIONS=""
 
 test -f /etc/default/cm4all-workshop && source /etc/default/cm4all-workshop
 
-if test -n "$USER" -a "$USER" != "root"; then
-    # for compatibility with older .default files
-    WORKSHOP_USER=$USER
-fi
-
 if test -z "$NODE_NAME"; then
     echo "No node name configured in /etc/default/cm4all-workshop" >&2
     exit 1
