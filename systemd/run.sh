@@ -18,11 +18,6 @@ if test -z "$NODE_NAME"; then
     exit 1
 fi
 
-if test -z "$DATABASE"; then
-    echo "No database configured in /etc/default/cm4all-workshop" >&2
-    exit 1
-fi
-
 if test -z "$WORKSHOP_USER"; then
     echo "No user configured in /etc/default/cm4all-workshop" >&2
     exit 1
