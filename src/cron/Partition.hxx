@@ -10,7 +10,7 @@
 #include "spawn/ExitListener.hxx"
 #include "util/BindMethod.hxx"
 
-struct CronConfig;
+struct Config;
 struct CronPartitionConfig;
 class EventLoop;
 class SpawnService;
@@ -27,7 +27,7 @@ class CronPartition final : ExitListener {
 public:
     CronPartition(EventLoop &event_loop,
                   SpawnService &_spawn_service,
-                  const CronConfig &root_config,
+                  const Config &root_config,
                   const CronPartitionConfig &config,
                   BoundMethod<void()> _idle_callback);
 

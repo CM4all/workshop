@@ -8,12 +8,18 @@ Workshop is a daemon which executes jobs from a queue stored in a
 PostgreSQL database.  Multiple instances can run in parallel on
 different hosts.
 
+The jobs can either be one-time executions according to a
+preconfigured plan (Workshop classic) or periodic executions managed
+by hosted users ("cron").
+
 
 Installation & Configuration
 ----------------------------
 
+Workshop (classic):
+
 #. Create a PostgreSQL database for the queue.
-#. :samp:`apt-get install cm4all-workshop`
+#. :samp:`apt-get install cm4all-workshop cm4all-workshop-database`
 #. Execute :file:`/usr/share/cm4all/workshop/sql/jobs.sql` in the
    PostgreSQL database to create the `jobs` table.
 #. Grant the required permissions to the Workshop daemon: :samp:`GRANT
@@ -22,6 +28,22 @@ Installation & Configuration
    :samp:`GRANT INSERT, SELECT, DELETE ON jobs TO workshop_client;`
    and :samp:`GRANT UPDATE, SELECT ON jobs_id_seq TO workshop_client`
 #. Edit :file:`/etc/cm4all/workshop/workshop.conf` and set the variable
+   :envvar:`database` (`PostgreSQL documentation
+   <https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING>`_)
+#. :samp:`systemctl start cm4all-workshop`
+
+Cron:
+
+#. Create a PostgreSQL database for the queue.
+#. :samp:`apt-get install cm4all-workshop`
+#. Execute :file:`/usr/share/cm4all/workshop/sql/cronjobs.sql` in the
+   PostgreSQL database to create the `cronjobs` table.
+#. Grant the required permissions to the Workshop daemon: :samp:`GRANT
+   SELECT, UPDATE ON cronjobs TO "cm4all-workshop";`
+#. The PostgreSQL user which manages jobs can be configured like this:
+   :samp:`GRANT INSERT, SELECT, DELETE ON cronjobs TO cron_client;` and
+   :samp:`GRANT UPDATE, SELECT ON cronjobs_id_seq TO cron_client`
+#. Edit :file:`/etc/cm4all/cron/workshop.conf` and set the variable
    :envvar:`database` (`PostgreSQL documentation
    <https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING>`_)
 #. :samp:`systemctl start cm4all-workshop`
@@ -45,7 +67,14 @@ The following settings are recognized:
   * :envvar:`allow_group`: allow child processes to impersonate the
     given group
 * :envvar:`workshop`: opens a block (with curly braces), which
-  configures a Workshop database:
+  configures a Workshop classic database:
+
+  * :envvar:`database`: the PostgreSQL connect string (`PostgreSQL
+    documentation
+    <https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING>`_)
+  * :envvar:`database_schema`: the PostgreSQL schema name (optional)
+* :envvar:`cron`: opens a block (with curly braces), which
+  configures a cron database:
 
   * :envvar:`database`: the PostgreSQL connect string (`PostgreSQL
     documentation
@@ -110,6 +139,9 @@ Every job refers to a *plan*, which must be installed on the node.
 The plan describes how to execute the job.  If a plan is not
 installed, the node will ignore jobs referring to that plan.
 
+Every cron job contains a schedule in classic `cron` syntax and a
+command line to be executed by the shell (:file:`/bin/sh`).
+
 
 Using Workshop
 --------------
@@ -166,6 +198,16 @@ A job consists of a row in the PostgreSQL table.  Example::
 During job execution, the columns `node_name` and `progress` are set.
 Upon completion, the columns `time_done` and `status` contain
 interesting data.
+
+Using Cron
+----------
+
+A cron job consists of a row in the PostgreSQL table.  Example::
+
+  INSERT INTO cronjobs(account_id, schedule, command)
+  VALUES('foo', '*/15 * * * *', 'echo Hello World');
+
+During job execution, the column `node_name` is set.
 
 Reference
 ---------
@@ -253,6 +295,41 @@ The client is allowed to execute the following operations:
 * Delete jobs which have been completed, i.e.  :samp:`time_done
   IS NOT NULL`.
 
+Cron Schedule
+^^^^^^^^^^^^^
+
+The :envvar:`schedule` column follows the classic `cron` schedule
+syntax (see :manpage:`crontab(5)`), though the special `@` strings are
+not yet implemented.
+
+The `cronjobs` table
+^^^^^^^^^^^^^^^^
+
+* :envvar:`id`: The primary key.
+* :envvar:`account_id`: The user account which owns this job.  This
+  gets passed to the translation server to determine the process
+  parameters.
+* :envvar:`schedule`: A :manpage:`crontab(5)`-like schedule.
+* :envvar:`command`: A command to be executed by :file:`/bin/sh`.
+* :envvar:`translate_param`: An opaque parameter to be passed to the
+  translation server.
+* :envvar:`enabled`: The cron job is never run when not enabled.
+* :envvar:`overlapping`: If false, then there is only ever one running
+  process at a time.
+* :envvar:`notification`: An email address which gets notified after
+  each completion.
+* :envvar:`last_run`: Time stamp of the most recent run (internal, do
+  not use).
+* :envvar:`next_run`: Time stamp of the next run (internal, do
+  not use).
+* :envvar:`node_name`: Name of the node which is currently executing
+  this job, or :samp:`NULL`.
+* :envvar:`node_timeout`: When this time stamp has passed, then the
+  executing node is assumed to be dead, and the record can be released
+  and reassigned to another node.
+* :envvar:`description`: Human readable description.  Not used by
+  Cron.
+
 Security
 --------
 
@@ -270,3 +347,22 @@ should run with the least privileges possible to reduce the potential
 damage from a successful attack.
 
 The plan author is responsible for the security of his plan.
+
+Cron
+^^^^
+
+This service executes programs based on data stored in a database.
+That concept is potentially dangerous when the database has been
+compromised.
+
+This software is designed so that untrusted clients can add new cron
+jobs with arbitrary commands.  It is very hard to make that secure.
+The process spawner incorporated here gives you many tools to secure
+the child processes, controlled by the translation server.  The
+`beng-proxy` documentation gives more details about which security
+features are available.
+
+However, these security features are only effective if the Linux
+kernel is secure.  One single kernel security vulnerability can easily
+compromise a Cron server remotely.  It is important to always run the
+latest stable kernel with all known bugs fixed.

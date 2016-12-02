@@ -6,6 +6,7 @@
 #define _WORKSHOP_CONFIG_HXX
 
 #include "workshop/Config.hxx"
+#include "cron/Config.hxx"
 #include "spawn/Config.hxx"
 
 #include <daemon/user.h>
@@ -22,6 +23,7 @@ struct Config {
     SpawnConfig spawn;
 
     std::forward_list<WorkshopPartitionConfig> partitions;
+    std::forward_list<CronPartitionConfig> cron_partitions;
 
     Config();
 

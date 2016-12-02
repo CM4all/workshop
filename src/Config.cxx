@@ -40,10 +40,13 @@ Config::Check()
         node_name = name;
     }
 
-    if (partitions.empty())
-        throw std::runtime_error("No 'workshop' section");
+    if (partitions.empty() && cron_partitions.empty())
+        throw std::runtime_error("No 'workshop' or 'cron' section");
 
     for (const auto &i : partitions)
+        i.Check();
+
+    for (const auto &i : cron_partitions)
         i.Check();
 }
 
@@ -117,6 +120,19 @@ class WorkshopConfigParser final : public NestedConfigParser {
         void Finish() override;
     };
 
+    class CronPartition final : public ConfigParser {
+        Config &parent;
+        CronPartitionConfig config;
+
+    public:
+        explicit CronPartition(Config &_parent):parent(_parent) {}
+
+    protected:
+        /* virtual methods from class ConfigParser */
+        void ParseLine(LineParser &line) override;
+        void Finish() override;
+    };
+
 public:
     explicit WorkshopConfigParser(Config &_config)
         :config(_config) {}
@@ -149,6 +165,30 @@ WorkshopConfigParser::Partition::Finish()
 }
 
 void
+WorkshopConfigParser::CronPartition::ParseLine(LineParser &line)
+{
+    const char *word = line.ExpectWord();
+
+    if (strcmp(word, "database") == 0) {
+        config.database = line.ExpectValueAndEnd();
+    } else if (strcmp(word, "database_schema") == 0) {
+        config.database_schema = line.ExpectValueAndEnd();
+    } else if (strcmp(word, "translation_server") == 0) {
+        config.translation_socket = line.ExpectValueAndEnd();
+    } else
+        throw LineParser::Error("Unknown option");
+}
+
+void
+WorkshopConfigParser::CronPartition::Finish()
+{
+    config.Check();
+    parent.cron_partitions.emplace_front(std::move(config));
+
+    ConfigParser::Finish();
+}
+
+void
 WorkshopConfigParser::ParseLine2(LineParser &line)
 {
     const char *word = line.ExpectWord();
@@ -156,6 +196,9 @@ WorkshopConfigParser::ParseLine2(LineParser &line)
     if (strcmp(word, "workshop") == 0) {
         line.ExpectSymbolAndEol('{');
         SetChild(std::make_unique<Partition>(config));
+    } else if (strcmp(word, "cron") == 0) {
+        line.ExpectSymbolAndEol('{');
+        SetChild(std::make_unique<CronPartition>(config));
     } else if (strcmp(word, "node_name") == 0) {
         config.node_name = line.ExpectValueAndEnd();
     } else if (strcmp(word, "concurrency") == 0) {

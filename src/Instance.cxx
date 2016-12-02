@@ -34,6 +34,10 @@ Instance::Instance(const Config &config,
         partitions.emplace_front(*this, *library, *spawn_service,
                                  config, i,
                                  BIND_THIS_METHOD(OnPartitionIdle));
+
+    for (const auto &i : config.cron_partitions)
+        cron_partitions.emplace_front(event_loop, *spawn_service, config, i,
+                                      BIND_THIS_METHOD(OnPartitionIdle));
 }
 
 Instance::~Instance()
@@ -80,6 +84,9 @@ Instance::OnExit()
     for (auto &i : partitions)
         i.BeginShutdown();
 
+    for (auto &i : cron_partitions)
+        i.BeginShutdown();
+
     RemoveIdlePartitions();
 
     if (!partitions.empty())
@@ -106,6 +113,10 @@ void
 Instance::RemoveIdlePartitions()
 {
     partitions.remove_if([](const WorkshopPartition &partition){
+            return partition.IsIdle();
+        });
+
+    cron_partitions.remove_if([](const CronPartition &partition){
             return partition.IsIdle();
         });
 }

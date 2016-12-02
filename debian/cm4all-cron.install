@@ -1,2 +1,0 @@
-cm4all-cron usr/sbin
-debian/cron.conf etc/cm4all/cron

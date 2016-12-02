@@ -6,6 +6,8 @@
 #define WORKSHOP_INSTANCE_HXX
 
 #include "workshop/Partition.hxx"
+#include "workshop/MultiLibrary.hxx"
+#include "cron/Partition.hxx"
 #include "event/Loop.hxx"
 #include "event/ShutdownListener.hxx"
 #include "event/SignalEvent.hxx"
@@ -34,6 +36,8 @@ class Instance final {
 
     std::forward_list<WorkshopPartition> partitions;
 
+    std::forward_list<CronPartition> cron_partitions;
+
 public:
     Instance(const Config &config,
              std::function<void()> &&in_spawner);
@@ -48,6 +52,8 @@ public:
 
     void Start() {
         for (auto &i : partitions)
+            i.Start();
+        for (auto &i : cron_partitions)
             i.Start();
     }
 

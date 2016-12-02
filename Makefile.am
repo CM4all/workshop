@@ -4,7 +4,7 @@ AUTOMAKE_OPTIONS = foreign 1.11 subdir-objects
 AM_CPPFLAGS += -I$(srcdir)/src \
 	$(BOOST_CPPFLAGS)
 
-bin_PROGRAMS = cm4all-workshop cm4all-cron
+bin_PROGRAMS = cm4all-workshop
 
 cm4all_workshop_SOURCES = \
 	src/main.cxx \
@@ -12,9 +12,18 @@ cm4all_workshop_SOURCES = \
 	src/Config.cxx src/Config.hxx \
 	src/CommandLine.cxx src/CommandLine.hxx \
 	src/AllocatorPtr.cxx src/AllocatorPtr.hxx \
+	src/ExpandableStringList.cxx src/ExpandableStringList.hxx \
 	src/SyslogClient.cxx src/SyslogClient.hxx \
 	src/Expand.cxx src/Expand.hxx \
 	src/Instance.cxx src/Instance.hxx \
+	src/cron/Config.cxx src/cron/Config.hxx \
+	src/cron/Schedule.cxx src/cron/Schedule.hxx \
+	src/cron/Queue.cxx src/cron/Queue.hxx \
+	src/cron/Job.hxx \
+	src/cron/Workplace.cxx src/cron/Workplace.hxx \
+	src/cron/Operator.cxx src/cron/Operator.hxx \
+	src/cron/CalculateNextRun.cxx src/cron/CalculateNextRun.hxx \
+	src/cron/Partition.cxx src/cron/Partition.hxx \
 	src/workshop/Config.cxx src/workshop/Config.hxx \
 	src/workshop/Partition.cxx src/workshop/Partition.hxx \
 	src/workshop/Queue.cxx src/workshop/Queue.hxx \
@@ -35,37 +44,6 @@ cm4all_workshop_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBEVENT_CFLAGS) \
 	$(LIBPQ_CPPFLAGS)
 cm4all_workshop_LDADD = $(AM_LDADD) \
-	libpg.a libspawn.a libevent.a libio.a libsystem.a libutil.a \
-	$(LIBCM4ALL_DAEMON_LIBS) \
-	$(LIBCM4ALL_SOCKET_LIBS) \
-	$(LIBSYSTEMD_LIBS) \
-	$(LIBEVENT_LIBS) \
-	$(BOOST_FILESYSTEM_LIB) \
-	$(BOOST_SYSTEM_LIB) \
-	$(LIBPQ_LIBS)
-
-cm4all_cron_SOURCES = \
-	src/debug.h \
-	src/cron/Main.cxx \
-	src/cron/Config.cxx src/cron/Config.hxx \
-	src/cron/CommandLine.cxx src/cron/CommandLine.hxx \
-	src/cron/Schedule.cxx src/cron/Schedule.hxx \
-	src/cron/Queue.cxx src/cron/Queue.hxx \
-	src/cron/Job.hxx \
-	src/cron/Workplace.cxx src/cron/Workplace.hxx \
-	src/cron/Operator.cxx src/cron/Operator.hxx \
-	src/cron/CalculateNextRun.cxx src/cron/CalculateNextRun.hxx \
-	src/cron/Instance.cxx src/cron/Instance.hxx \
-	src/cron/Partition.cxx src/cron/Partition.hxx \
-	src/ExpandableStringList.cxx src/ExpandableStringList.hxx \
-	src/AllocatorPtr.cxx src/AllocatorPtr.hxx
-cm4all_cron_CPPFLAGS = $(AM_CPPFLAGS) \
-	$(LIBCM4ALL_INLINE_CFLAGS) \
-	$(LIBCM4ALL_DAEMON_CFLAGS) \
-	$(LIBSYSTEMD_CFLAGS) \
-	$(LIBEVENT_CFLAGS) \
-	$(LIBPQ_CPPFLAGS)
-cm4all_cron_LDADD = $(AM_LDADD) \
 	libpg.a libspawn.a \
 	libtranslation.a \
 	libnet.a \
@@ -73,6 +51,7 @@ cm4all_cron_LDADD = $(AM_LDADD) \
 	libio.a \
 	libsystem.a libtime.a libutil.a \
 	$(LIBCM4ALL_DAEMON_LIBS) \
+	$(LIBCM4ALL_SOCKET_LIBS) \
 	$(LIBSYSTEMD_LIBS) \
 	$(LIBEVENT_LIBS) \
 	$(BOOST_FILESYSTEM_LIB) \

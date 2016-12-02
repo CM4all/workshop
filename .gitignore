@@ -7,7 +7,6 @@
 
 doc/*.html
 /cm4all-workshop
-/cm4all-cron
 
 *.cache
 build
