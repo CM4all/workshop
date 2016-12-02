@@ -44,10 +44,6 @@ public:
         return event_loop;
     }
 
-    SpawnServerClient &GetSpawnService() {
-        return *spawn_service;
-    }
-
     MultiLibrary &GetLibrary() {
         return library;
     }

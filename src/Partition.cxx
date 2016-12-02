@@ -7,19 +7,19 @@
 #include "Config.hxx"
 #include "Job.hxx"
 #include "Plan.hxx"
-#include "spawn/Client.hxx"
 #include "pg/Array.hxx"
 #include "util/PrintException.hxx"
 
 #include <set>
 
-Partition::Partition(Instance &_instance, const Config &config,
+Partition::Partition(Instance &_instance, SpawnService &_spawn_service,
+                     const Config &config,
                      BoundMethod<void()> _idle_callback)
     :instance(_instance),
      queue(instance.GetEventLoop(), config.node_name.c_str(),
            config.database.c_str(), config.database_schema.c_str(),
            [this](Job &&job){ OnJob(std::move(job)); }),
-     workplace(instance.GetSpawnService(), *this,
+     workplace(_spawn_service, *this,
                config.node_name.c_str(),
                config.concurrency),
      idle_callback(_idle_callback)

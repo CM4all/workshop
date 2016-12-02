@@ -22,7 +22,8 @@ class Partition final : ExitListener {
     BoundMethod<void()> idle_callback;
 
 public:
-    Partition(Instance &instance, const Config &config,
+    Partition(Instance &instance, SpawnService &_spawn_service,
+              const Config &config,
               BoundMethod<void()> _idle_callback);
 
     bool IsIdle() const {
