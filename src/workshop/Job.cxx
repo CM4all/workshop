@@ -8,13 +8,13 @@
 #include <assert.h>
 
 int
-Job::SetProgress(unsigned progress, const char *timeout)
+WorkshopJob::SetProgress(unsigned progress, const char *timeout)
 {
     return queue.SetJobProgress(*this, progress, timeout);
 }
 
 bool
-Job::SetDone(int status)
+WorkshopJob::SetDone(int status)
 {
     return queue.SetJobDone(*this, status);
 }

@@ -32,7 +32,7 @@ class Instance final {
 
     MultiLibrary library;
 
-    std::forward_list<Partition> partitions;
+    std::forward_list<WorkshopPartition> partitions;
 
 public:
     Instance(const Config &config,

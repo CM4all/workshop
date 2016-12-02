@@ -13,19 +13,19 @@
 
 class Instance;
 
-class Partition final : ExitListener {
+class WorkshopPartition final : ExitListener {
     Instance &instance;
 
-    Queue queue;
-    Workplace workplace;
+    WorkshopQueue queue;
+    WorkshopWorkplace workplace;
 
     BoundMethod<void()> idle_callback;
 
 public:
-    Partition(Instance &instance, SpawnService &_spawn_service,
-              const Config &root_config,
-              const Config::Partition &config,
-              BoundMethod<void()> _idle_callback);
+    WorkshopPartition(Instance &instance, SpawnService &_spawn_service,
+                      const Config &root_config,
+                      const Config::Partition &config,
+                      BoundMethod<void()> _idle_callback);
 
     bool IsIdle() const {
         return workplace.IsEmpty();
@@ -47,8 +47,8 @@ public:
     void UpdateLibraryAndFilter(bool force);
 
 private:
-    bool StartJob(Job &&job);
-    void OnJob(Job &&job);
+    bool StartJob(WorkshopJob &&job);
+    void OnJob(WorkshopJob &&job);
 
     /* virtual methods from ExitListener */
     void OnChildProcessExit(int status) override;

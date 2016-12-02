@@ -8,18 +8,18 @@
 #include <string>
 #include <list>
 
-class Queue;
+class WorkshopQueue;
 
-struct Job {
-    Queue &queue;
+struct WorkshopJob {
+    WorkshopQueue &queue;
 
     std::string id, plan_name, syslog_server;
 
     std::list<std::string> args;
 
-    Job(Queue &_queue):queue(_queue) {}
+    explicit WorkshopJob(WorkshopQueue &_queue):queue(_queue) {}
 
-    Job(Queue &_queue, const char *_id, const char *_plan_name)
+    WorkshopJob(WorkshopQueue &_queue, const char *_id, const char *_plan_name)
         :queue(_queue), id(_id), plan_name(_plan_name) {
     }
 

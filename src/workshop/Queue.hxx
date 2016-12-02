@@ -18,11 +18,11 @@
 #include <string>
 #include <chrono>
 
-struct Job;
+struct WorkshopJob;
 class EventLoop;
 
-class Queue final : private AsyncPgConnectionHandler {
-    typedef std::function<void(Job &&job)> Callback;
+class WorkshopQueue final : private AsyncPgConnectionHandler {
+    typedef std::function<void(WorkshopJob &&job)> Callback;
 
     const std::string node_name;
 
@@ -52,10 +52,11 @@ class Queue final : private AsyncPgConnectionHandler {
     const Callback callback;
 
 public:
-    Queue(EventLoop &event_loop,
-          const char *_node_name, const char *conninfo, const char *schema,
-          Callback _callback);
-    ~Queue();
+    WorkshopQueue(EventLoop &event_loop,
+                  const char *_node_name,
+                  const char *conninfo, const char *schema,
+                  Callback _callback);
+    ~WorkshopQueue();
 
     gcc_pure
     const char *GetNodeName() const {
@@ -86,7 +87,8 @@ public:
      */
     void Enable();
 
-    int SetJobProgress(const Job &job, unsigned progress, const char *timeout);
+    int SetJobProgress(const WorkshopJob &job, unsigned progress,
+                       const char *timeout);
 
     /**
      * Disassociate from the job, act as if this node had never
@@ -94,9 +96,9 @@ public:
      *
      * @return true on success
      */
-    bool RollbackJob(const Job &job);
+    bool RollbackJob(const WorkshopJob &job);
 
-    bool SetJobDone(const Job &job, int status);
+    bool SetJobDone(const WorkshopJob &job, int status);
 
 private:
     void RunResult(const PgResult &result);

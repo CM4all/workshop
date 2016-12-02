@@ -89,7 +89,7 @@ Instance::OnPartitionIdle()
 void
 Instance::RemoveIdlePartitions()
 {
-    partitions.remove_if([](const Partition &partition){
+    partitions.remove_if([](const WorkshopPartition &partition){
             return partition.IsIdle();
         });
 }

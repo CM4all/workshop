@@ -26,7 +26,7 @@
 #include <assert.h>
 
 std::string
-Workplace::GetRunningPlanNames() const
+WorkshopWorkplace::GetRunningPlanNames() const
 {
     std::set<std::string> list;
     for (const auto &o : operators)
@@ -36,7 +36,7 @@ Workplace::GetRunningPlanNames() const
 }
 
 std::string
-Workplace::GetFullPlanNames() const
+WorkshopWorkplace::GetFullPlanNames() const
 {
     std::map<std::string, unsigned> counters;
     std::set<std::string> list;
@@ -62,14 +62,14 @@ Workplace::GetFullPlanNames() const
 }
 
 void
-Workplace::Start(EventLoop &event_loop, const Job &job,
-                 std::shared_ptr<Plan> &&plan)
+WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
+                         std::shared_ptr<Plan> &&plan)
 {
     assert(!plan->args.empty());
 
     /* create operator object */
 
-    std::unique_ptr<Operator> o(new Operator(event_loop, *this, job, plan));
+    std::unique_ptr<WorkshopOperator> o(new WorkshopOperator(event_loop, *this, job, plan));
 
     PreparedChildProcess p;
 
@@ -143,7 +143,7 @@ Workplace::Start(EventLoop &event_loop, const Job &job,
 }
 
 void
-Workplace::OnExit(Operator *o)
+WorkshopWorkplace::OnExit(WorkshopOperator *o)
 {
     operators.erase(operators.iterator_to(*o));
     delete o;

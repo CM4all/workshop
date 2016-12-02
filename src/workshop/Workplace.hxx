@@ -17,17 +17,17 @@
 #include <assert.h>
 
 struct Plan;
-struct Job;
+struct WorkshopJob;
 class SpawnService;
 class ExitListener;
 
-class Workplace {
+class WorkshopWorkplace {
     SpawnService &spawn_service;
     ExitListener &exit_listener;
 
     const std::string node_name;
 
-    typedef boost::intrusive::list<Operator,
+    typedef boost::intrusive::list<WorkshopOperator,
                                    boost::intrusive::constant_time_size<true>> OperatorList;
 
     OperatorList operators;
@@ -35,18 +35,19 @@ class Workplace {
     const unsigned max_operators;
 
 public:
-    Workplace(SpawnService &_spawn_service, ExitListener &_exit_listener,
-              const char *_node_name,
-              unsigned _max_operators)
+    WorkshopWorkplace(SpawnService &_spawn_service,
+                      ExitListener &_exit_listener,
+                      const char *_node_name,
+                      unsigned _max_operators)
         :spawn_service(_spawn_service), exit_listener(_exit_listener),
          node_name(_node_name),
          max_operators(_max_operators) {
         assert(max_operators > 0);
     }
 
-    Workplace(const Workplace &other) = delete;
+    WorkshopWorkplace(const WorkshopWorkplace &other) = delete;
 
-    ~Workplace() {
+    ~WorkshopWorkplace() {
         assert(operators.empty());
     }
 
@@ -76,10 +77,10 @@ public:
     /**
      * Throws std::runtime_error on error.
      */
-    void Start(EventLoop &event_loop, const Job &job,
+    void Start(EventLoop &event_loop, const WorkshopJob &job,
                std::shared_ptr<Plan> &&plan);
 
-    void OnExit(Operator *o);
+    void OnExit(WorkshopOperator *o);
 };
 
 #endif

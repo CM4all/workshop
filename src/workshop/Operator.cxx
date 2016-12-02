@@ -20,15 +20,17 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-Operator::Operator(EventLoop &event_loop, Workplace &_workplace, const Job &_job,
-                   const std::shared_ptr<Plan> &_plan)
+WorkshopOperator::WorkshopOperator(EventLoop &event_loop,
+                                   WorkshopWorkplace &_workplace,
+                                   const WorkshopJob &_job,
+                                   const std::shared_ptr<Plan> &_plan)
     :workplace(_workplace), job(_job), plan(_plan),
      stdout_event(event_loop, BIND_THIS_METHOD(OnOutputReady)),
      stderr_event(event_loop, BIND_THIS_METHOD(OnErrorReady))
 {
 }
 
-Operator::~Operator()
+WorkshopOperator::~WorkshopOperator()
 {
     if (stdout_fd.IsDefined())
         stdout_event.Delete();
@@ -38,7 +40,7 @@ Operator::~Operator()
 }
 
 void
-Operator::OnOutputReady(short)
+WorkshopOperator::OnOutputReady(short)
 {
     char buffer[512];
     ssize_t nbytes, i;
@@ -76,7 +78,7 @@ Operator::OnOutputReady(short)
 }
 
 void
-Operator::SetOutput(UniqueFileDescriptor &&fd)
+WorkshopOperator::SetOutput(UniqueFileDescriptor &&fd)
 {
     assert(fd.IsDefined());
     assert(!stdout_fd.IsDefined());
@@ -88,7 +90,7 @@ Operator::SetOutput(UniqueFileDescriptor &&fd)
 }
 
 void
-Operator::OnErrorReady(short)
+WorkshopOperator::OnErrorReady(short)
 {
     assert(syslog != nullptr);
 
@@ -118,7 +120,7 @@ Operator::OnErrorReady(short)
 }
 
 void
-Operator::SetSyslog(UniqueFileDescriptor &&fd)
+WorkshopOperator::SetSyslog(UniqueFileDescriptor &&fd)
 {
     assert(fd.IsDefined());
     assert(!stderr_fd.IsDefined());
@@ -129,7 +131,7 @@ Operator::SetSyslog(UniqueFileDescriptor &&fd)
 }
 
 void
-Operator::Expand(std::list<std::string> &args) const
+WorkshopOperator::Expand(std::list<std::string> &args) const
 {
     assert(!args.empty());
 
@@ -144,7 +146,7 @@ Operator::Expand(std::list<std::string> &args) const
 }
 
 void
-Operator::OnChildProcessExit(int status)
+WorkshopOperator::OnChildProcessExit(int status)
 {
     int exit_status = WEXITSTATUS(status);
 

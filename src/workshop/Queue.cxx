@@ -22,9 +22,10 @@
 #include <string.h>
 #include <time.h>
 
-Queue::Queue(EventLoop &event_loop,
-             const char *_node_name, const char *conninfo, const char *schema,
-             Callback _callback)
+WorkshopQueue::WorkshopQueue(EventLoop &event_loop,
+                             const char *_node_name,
+                             const char *conninfo, const char *schema,
+                             Callback _callback)
     :node_name(_node_name),
      db(conninfo, schema, *this),
      check_notify_event(event_loop, BIND_THIS_METHOD(CheckNotify)),
@@ -32,7 +33,7 @@ Queue::Queue(EventLoop &event_loop,
      callback(_callback) {
 }
 
-Queue::~Queue()
+WorkshopQueue::~WorkshopQueue()
 {
     assert(!running);
 
@@ -40,7 +41,7 @@ Queue::~Queue()
 }
 
 void
-Queue::Close()
+WorkshopQueue::Close()
 {
     assert(!running);
 
@@ -51,13 +52,13 @@ Queue::Close()
 }
 
 void
-Queue::OnTimer()
+WorkshopQueue::OnTimer()
 {
     Run();
 }
 
 int
-Queue::GetNextScheduled(int *span_r)
+WorkshopQueue::GetNextScheduled(int *span_r)
 {
     int ret;
     long span;
@@ -88,7 +89,7 @@ Queue::GetNextScheduled(int *span_r)
 }
 
 static bool
-get_job(Job &job, const PgResult &result, unsigned row)
+get_job(WorkshopJob &job, const PgResult &result, unsigned row)
 {
     assert(row < result.GetRowCount());
 
@@ -112,7 +113,7 @@ get_job(Job &job, const PgResult &result, unsigned row)
 }
 
 static int
-get_and_claim_job(Job &job, const char *node_name,
+get_and_claim_job(WorkshopJob &job, const char *node_name,
                   PgConnection &db,
                   const PgResult &result, unsigned row,
                   const char *timeout) {
@@ -152,8 +153,9 @@ copy_string(std::string &dest, std::string &&src)
 }
 
 void
-Queue::SetFilter(std::string &&_plans_include, std::string &&_plans_exclude,
-                 std::string &&_plans_lowprio)
+WorkshopQueue::SetFilter(std::string &&_plans_include,
+                         std::string &&_plans_exclude,
+                         std::string &&_plans_lowprio)
 {
     bool r1 = copy_string(plans_include, std::move(_plans_include));
     bool r2 = copy_string(plans_exclude, std::move(_plans_exclude));
@@ -168,11 +170,11 @@ Queue::SetFilter(std::string &&_plans_include, std::string &&_plans_exclude,
 }
 
 void
-Queue::RunResult(const PgResult &result)
+WorkshopQueue::RunResult(const PgResult &result)
 {
     for (unsigned row = 0, end = result.GetRowCount();
          row != end && !disabled && !interrupt; ++row) {
-        Job job(*this);
+        WorkshopJob job(*this);
         int ret = get_and_claim_job(job, GetNodeName(),
                                     db, result, row, "5 minutes");
         if (ret > 0)
@@ -183,7 +185,7 @@ Queue::RunResult(const PgResult &result)
 }
 
 void
-Queue::Run2()
+WorkshopQueue::Run2()
 {
     int ret;
     bool full = false;
@@ -283,7 +285,7 @@ Queue::Run2()
 }
 
 void
-Queue::Run()
+WorkshopQueue::Run()
 {
     assert(!running);
 
@@ -298,7 +300,7 @@ Queue::Run()
 }
 
 void
-Queue::Enable()
+WorkshopQueue::Enable()
 {
     assert(!running);
 
@@ -312,7 +314,8 @@ Queue::Enable()
 }
 
 int
-Queue::SetJobProgress(const Job &job, unsigned progress, const char *timeout)
+WorkshopQueue::SetJobProgress(const WorkshopJob &job, unsigned progress,
+                              const char *timeout)
 {
     assert(&job.queue == this);
 
@@ -324,7 +327,7 @@ Queue::SetJobProgress(const Job &job, unsigned progress, const char *timeout)
 }
 
 bool
-Queue::RollbackJob(const Job &job)
+WorkshopQueue::RollbackJob(const WorkshopJob &job)
 {
     assert(&job.queue == this);
 
@@ -339,7 +342,7 @@ Queue::RollbackJob(const Job &job)
 }
 
 bool
-Queue::SetJobDone(const Job &job, int status)
+WorkshopQueue::SetJobDone(const WorkshopJob &job, int status)
 {
     assert(&job.queue == this);
 
@@ -352,7 +355,7 @@ Queue::SetJobDone(const Job &job, int status)
 }
 
 void
-Queue::OnConnect()
+WorkshopQueue::OnConnect()
 {
     int ret = pg_release_jobs(db, node_name.c_str());
     if (ret > 0) {
@@ -369,7 +372,7 @@ Queue::OnConnect()
 }
 
 void
-Queue::OnDisconnect()
+WorkshopQueue::OnDisconnect()
 {
     daemon_log(4, "disconnected from database\n");
 
@@ -378,14 +381,14 @@ Queue::OnDisconnect()
 }
 
 void
-Queue::OnNotify(const char *name)
+WorkshopQueue::OnNotify(const char *name)
 {
     if (strcmp(name, "new_job") == 0)
         Reschedule();
 }
 
 void
-Queue::OnError(const char *prefix, const char *error)
+WorkshopQueue::OnError(const char *prefix, const char *error)
 {
     daemon_log(2, "%s: %s\n", prefix, error);
 }

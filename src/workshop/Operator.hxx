@@ -18,17 +18,16 @@
 #include <list>
 
 struct Plan;
-class Workplace;
+class WorkshopWorkplace;
 class SyslogClient;
-struct Job;
 
 /** an operator is a job being executed */
-struct Operator final
+struct WorkshopOperator final
     : public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>,
       public ExitListener {
 
-    Workplace &workplace;
-    Job job;
+    WorkshopWorkplace &workplace;
+    WorkshopJob job;
     std::shared_ptr<Plan> plan;
     pid_t pid;
 
@@ -42,14 +41,15 @@ struct Operator final
     StaticArray<char, 64> stderr_buffer;
     std::unique_ptr<SyslogClient> syslog;
 
-    Operator(EventLoop &event_loop, Workplace &_workplace, const Job &_job,
-             const std::shared_ptr<Plan> &_plan);
+    WorkshopOperator(EventLoop &event_loop,
+                     WorkshopWorkplace &_workplace, const WorkshopJob &_job,
+                     const std::shared_ptr<Plan> &_plan);
 
-    Operator(const Operator &other) = delete;
+    WorkshopOperator(const WorkshopOperator &other) = delete;
 
-    ~Operator();
+    ~WorkshopOperator();
 
-    Operator &operator=(const Operator &other) = delete;
+    WorkshopOperator &operator=(const WorkshopOperator &other) = delete;
 
     void SetOutput(UniqueFileDescriptor &&fd);
     void SetSyslog(UniqueFileDescriptor &&fd);

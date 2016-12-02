@@ -12,14 +12,15 @@
 
 #include <set>
 
-Partition::Partition(Instance &_instance, SpawnService &_spawn_service,
-                     const Config &root_config,
-                     const Config::Partition &config,
-                     BoundMethod<void()> _idle_callback)
+WorkshopPartition::WorkshopPartition(Instance &_instance,
+                                     SpawnService &_spawn_service,
+                                     const Config &root_config,
+                                     const Config::Partition &config,
+                                     BoundMethod<void()> _idle_callback)
     :instance(_instance),
      queue(instance.GetEventLoop(), root_config.node_name.c_str(),
            config.database.c_str(), config.database_schema.c_str(),
-           [this](Job &&job){ OnJob(std::move(job)); }),
+           [this](WorkshopJob &&job){ OnJob(std::move(job)); }),
      workplace(_spawn_service, *this,
                root_config.node_name.c_str(),
                root_config.concurrency),
@@ -28,7 +29,7 @@ Partition::Partition(Instance &_instance, SpawnService &_spawn_service,
 }
 
 void
-Partition::UpdateFilter()
+WorkshopPartition::UpdateFilter()
 {
     auto &library = instance.GetLibrary();
 
@@ -44,13 +45,13 @@ Partition::UpdateFilter()
 }
 
 void
-Partition::UpdateLibraryAndFilter(bool force)
+WorkshopPartition::UpdateLibraryAndFilter(bool force)
 {
     instance.UpdateLibraryAndFilter(force);
 }
 
 bool
-Partition::StartJob(Job &&job)
+WorkshopPartition::StartJob(WorkshopJob &&job)
 {
     auto &library = instance.GetLibrary();
     auto plan = library.Get(job.plan_name.c_str());
@@ -78,7 +79,7 @@ Partition::StartJob(Job &&job)
 }
 
 void
-Partition::OnJob(Job &&job)
+WorkshopPartition::OnJob(WorkshopJob &&job)
 {
     if (workplace.IsFull()) {
         queue.RollbackJob(job);
@@ -93,7 +94,7 @@ Partition::OnJob(Job &&job)
 }
 
 void
-Partition::OnChildProcessExit(int)
+WorkshopPartition::OnChildProcessExit(int)
 {
     UpdateLibraryAndFilter(false);
 
