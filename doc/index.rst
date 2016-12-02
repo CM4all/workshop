@@ -37,10 +37,13 @@ The following settings are recognized:
   default, the hostname is used.
 * :envvar:`concurrency`: How many jobs shall this node concurrently?
   Rule of thumb: number of CPUs, not much more.
-* :envvar:`database`: the PostgreSQL connect string (`PostgreSQL
-  documentation
-  <https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING>`_)
-* :envvar:`database_schema`: the PostgreSQL schema name (optional)
+* :envvar:`workshop`: opens a block (with curly braces), which
+  configures a Workshop database:
+
+  * :envvar:`database`: the PostgreSQL connect string (`PostgreSQL
+    documentation
+    <https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING>`_)
+  * :envvar:`database_schema`: the PostgreSQL schema name (optional)
 
 The default configuration file includes :file:`local.conf` and
 :file:`conf.d/*.conf`, and you should probably better edit these files

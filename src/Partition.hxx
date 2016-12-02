@@ -5,12 +5,12 @@
 #ifndef WORKSHOP_PARTITION_HXX
 #define WORKSHOP_PARTITION_HXX
 
+#include "Config.hxx"
 #include "Queue.hxx"
 #include "Workplace.hxx"
 #include "spawn/ExitListener.hxx"
 #include "util/BindMethod.hxx"
 
-struct Config;
 class Instance;
 
 class Partition final : ExitListener {
@@ -23,7 +23,8 @@ class Partition final : ExitListener {
 
 public:
     Partition(Instance &instance, SpawnService &_spawn_service,
-              const Config &config,
+              const Config &root_config,
+              const Config::Partition &config,
               BoundMethod<void()> _idle_callback);
 
     bool IsIdle() const {

@@ -26,8 +26,9 @@ Instance::Instance(const Config &config,
     shutdown_listener.Enable();
     sighup_event.Add();
 
-    partitions.emplace_front(*this, *spawn_service, config,
-                             BIND_THIS_METHOD(OnPartitionIdle));
+    for (const auto &i : config.partitions)
+        partitions.emplace_front(*this, *spawn_service, config, i,
+                                 BIND_THIS_METHOD(OnPartitionIdle));
 }
 
 Instance::~Instance()

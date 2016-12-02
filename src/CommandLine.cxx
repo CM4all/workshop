@@ -92,10 +92,6 @@ ParseCommandLine(Config &config, int argc, char **argv)
     };
 #endif
 
-    const char *database = getenv("WORKSHOP_DATABASE");
-    if (database != nullptr)
-        config.database = database;
-
     while (1) {
 #ifdef __GLIBC__
         int option_index = 0;

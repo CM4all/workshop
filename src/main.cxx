@@ -76,6 +76,14 @@ try {
 
     ParseCommandLine(config, argc, argv);
     LoadConfigFile(config, "/etc/cm4all/workshop/workshop.conf");
+
+    if (config.partitions.empty()) {
+        /* compatibility with Workshop 1.0 */
+        const char *database = getenv("WORKSHOP_DATABASE");
+        if (database != nullptr && *database != 0)
+            config.partitions.emplace_front(database);
+    }
+
     config.Check();
 
     /* set up */

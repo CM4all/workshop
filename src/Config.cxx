@@ -11,6 +11,13 @@
 
 #include <string.h>
 
+void
+Config::Partition::Check() const
+{
+    if (database.empty())
+        throw std::runtime_error("Missing 'database' setting");
+}
+
 Config::Config()
 {
     memset(&user, 0, sizeof(user));
@@ -40,12 +47,28 @@ Config::Check()
         node_name = name;
     }
 
-    if (database.empty())
-        throw std::runtime_error("no WORKSHOP_DATABASE environment variable");
+    if (partitions.empty())
+        throw std::runtime_error("No 'workshop' section");
+
+    for (const auto &i : partitions)
+        i.Check();
 }
 
 class WorkshopConfigParser final : public NestedConfigParser {
     Config &config;
+
+    class Partition final : public ConfigParser {
+        Config &parent;
+        Config::Partition config;
+
+    public:
+        explicit Partition(Config &_parent):parent(_parent) {}
+
+    protected:
+        /* virtual methods from class ConfigParser */
+        void ParseLine(LineParser &line) override;
+        void Finish() override;
+    };
 
 public:
     explicit WorkshopConfigParser(Config &_config)
@@ -57,7 +80,7 @@ protected:
 };
 
 void
-WorkshopConfigParser::ParseLine2(LineParser &line)
+WorkshopConfigParser::Partition::ParseLine(LineParser &line)
 {
     const char *word = line.ExpectWord();
 
@@ -65,6 +88,27 @@ WorkshopConfigParser::ParseLine2(LineParser &line)
         config.database = line.ExpectValueAndEnd();
     } else if (strcmp(word, "database_schema") == 0) {
         config.database_schema = line.ExpectValueAndEnd();
+    } else
+        throw LineParser::Error("Unknown option");
+}
+
+void
+WorkshopConfigParser::Partition::Finish()
+{
+    config.Check();
+    parent.partitions.emplace_front(std::move(config));
+
+    ConfigParser::Finish();
+}
+
+void
+WorkshopConfigParser::ParseLine2(LineParser &line)
+{
+    const char *word = line.ExpectWord();
+
+    if (strcmp(word, "workshop") == 0) {
+        line.ExpectSymbolAndEol('{');
+        SetChild(std::make_unique<Partition>(config));
     } else if (strcmp(word, "node_name") == 0) {
         config.node_name = line.ExpectValueAndEnd();
     } else if (strcmp(word, "concurrency") == 0) {

@@ -13,15 +13,16 @@
 #include <set>
 
 Partition::Partition(Instance &_instance, SpawnService &_spawn_service,
-                     const Config &config,
+                     const Config &root_config,
+                     const Config::Partition &config,
                      BoundMethod<void()> _idle_callback)
     :instance(_instance),
-     queue(instance.GetEventLoop(), config.node_name.c_str(),
+     queue(instance.GetEventLoop(), root_config.node_name.c_str(),
            config.database.c_str(), config.database_schema.c_str(),
            [this](Job &&job){ OnJob(std::move(job)); }),
      workplace(_spawn_service, *this,
-               config.node_name.c_str(),
-               config.concurrency),
+               root_config.node_name.c_str(),
+               root_config.concurrency),
      idle_callback(_idle_callback)
 {
 }

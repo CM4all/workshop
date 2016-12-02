@@ -10,15 +10,26 @@
 #include <daemon/user.h>
 
 #include <string>
+#include <forward_list>
 
 struct Config {
     struct daemon_user user;
 
     std::string node_name;
     unsigned concurrency = 2;
-    std::string database, database_schema;
 
     SpawnConfig spawn;
+
+    struct Partition {
+        std::string database, database_schema;
+
+        Partition() = default;
+        explicit Partition(const char *_database):database(_database) {}
+
+        void Check() const;
+    };
+
+    std::forward_list<Partition> partitions;
 
     Config();
 

@@ -1,6 +1,7 @@
 cm4all-workshop (2.0.3) unstable; urgency=low
 
   * workshop: load configuration from /etc/cm4all/workshop/workshop.conf
+  * workshop: support multiple databases ("partitions")
   * cron: fix job execution use-after-free bug
   * cron: support multiple databases ("partitions")
   * support PostgreSQL schemas
