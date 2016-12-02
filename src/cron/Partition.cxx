@@ -3,17 +3,16 @@
  */
 
 #include "Partition.hxx"
-#include "Instance.hxx"
 #include "Job.hxx"
 #include "util/PrintException.hxx"
 
-CronPartition::CronPartition(CronInstance &instance,
+CronPartition::CronPartition(EventLoop &event_loop,
                              SpawnService &_spawn_service,
                              const CronConfig &root_config,
                              const CronConfig::Partition &config,
                              BoundMethod<void()> _idle_callback)
     :translation_socket(config.translation_socket.c_str()),
-     queue(instance.GetEventLoop(), root_config.node_name.c_str(),
+     queue(event_loop, root_config.node_name.c_str(),
            config.database.c_str(), config.database_schema.c_str(),
            [this](CronJob &&job){ OnJob(std::move(job)); }),
      workplace(_spawn_service, *this,

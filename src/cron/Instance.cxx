@@ -27,7 +27,7 @@ CronInstance::CronInstance(const CronConfig &config,
     sighup_event.Add();
 
     for (const auto &i : config.partitions)
-        partitions.emplace_front(*this, *spawn_service, config, i,
+        partitions.emplace_front(event_loop, *spawn_service, config, i,
                                  BIND_THIS_METHOD(OnPartitionIdle));
 }
 

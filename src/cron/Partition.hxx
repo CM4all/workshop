@@ -11,7 +11,7 @@
 #include "spawn/ExitListener.hxx"
 #include "util/BindMethod.hxx"
 
-class CronInstance;
+class EventLoop;
 class SpawnService;
 
 class CronPartition final : ExitListener {
@@ -24,7 +24,7 @@ class CronPartition final : ExitListener {
     BoundMethod<void()> idle_callback;
 
 public:
-    CronPartition(CronInstance &instance,
+    CronPartition(EventLoop &event_loop,
                   SpawnService &_spawn_service,
                   const CronConfig &root_config,
                   const CronConfig::Partition &config,
