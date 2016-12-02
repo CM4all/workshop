@@ -12,9 +12,11 @@
 #include "util/BindMethod.hxx"
 
 class Instance;
+class MultiLibrary;
 
 class WorkshopPartition final : ExitListener {
     Instance &instance;
+    MultiLibrary &library;
 
     WorkshopQueue queue;
     WorkshopWorkplace workplace;
@@ -22,7 +24,9 @@ class WorkshopPartition final : ExitListener {
     BoundMethod<void()> idle_callback;
 
 public:
-    WorkshopPartition(Instance &instance, SpawnService &_spawn_service,
+    WorkshopPartition(Instance &instance,
+                      MultiLibrary &_library,
+                      SpawnService &_spawn_service,
                       const Config &root_config,
                       const Config::Partition &config,
                       BoundMethod<void()> _idle_callback);

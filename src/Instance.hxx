@@ -44,10 +44,6 @@ public:
         return event_loop;
     }
 
-    MultiLibrary &GetLibrary() {
-        return library;
-    }
-
     void InsertLibraryPath(const char *path) {
         library.InsertPath(path);
     }

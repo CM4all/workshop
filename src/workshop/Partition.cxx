@@ -13,11 +13,12 @@
 #include <set>
 
 WorkshopPartition::WorkshopPartition(Instance &_instance,
+                                     MultiLibrary &_library,
                                      SpawnService &_spawn_service,
                                      const Config &root_config,
                                      const Config::Partition &config,
                                      BoundMethod<void()> _idle_callback)
-    :instance(_instance),
+    :instance(_instance), library(_library),
      queue(instance.GetEventLoop(), root_config.node_name.c_str(),
            config.database.c_str(), config.database_schema.c_str(),
            [this](WorkshopJob &&job){ OnJob(std::move(job)); }),
@@ -31,8 +32,6 @@ WorkshopPartition::WorkshopPartition(Instance &_instance,
 void
 WorkshopPartition::UpdateFilter()
 {
-    auto &library = instance.GetLibrary();
-
     std::set<std::string> available_plans;
     library.VisitPlans(std::chrono::steady_clock::now(),
                        [&available_plans](const std::string &name, const Plan &){
@@ -53,7 +52,6 @@ WorkshopPartition::UpdateLibraryAndFilter(bool force)
 bool
 WorkshopPartition::StartJob(WorkshopJob &&job)
 {
-    auto &library = instance.GetLibrary();
     auto plan = library.Get(job.plan_name.c_str());
     if (!plan) {
         fprintf(stderr, "library_get('%s') failed\n", job.plan_name.c_str());
