@@ -13,11 +13,6 @@ if test -z "$NODE_NAME"; then
     exit 1
 fi
 
-if test -z "$WORKSHOP_USER"; then
-    echo "No user configured in /etc/default/cm4all-workshop" >&2
-    exit 1
-fi
-
 export WORKSHOP_DATABASE=$DATABASE
 
 exec /usr/sbin/cm4all-workshop \

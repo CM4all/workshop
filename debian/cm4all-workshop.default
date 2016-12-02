@@ -2,8 +2,5 @@
 
 NODE_NAME=`hostname -f`
 
-# Which user should workshop run as?
-#WORKSHOP_USER=cm4all-workshop
-
 # Other options
 #OPTIONS="-v"
