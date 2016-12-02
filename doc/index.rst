@@ -40,6 +40,7 @@ The following settings are recognized:
 * :envvar:`database`: the PostgreSQL connect string (`PostgreSQL
   documentation
   <https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING>`_)
+* :envvar:`database_schema`: the PostgreSQL schema name (optional)
 
 The default configuration file includes :file:`local.conf` and
 :file:`conf.d/*.conf`, and you should probably better edit these files
