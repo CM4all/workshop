@@ -2,8 +2,8 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#ifndef WORKSHOP_OPERATOR_HXX
-#define WORKSHOP_OPERATOR_HXX
+#ifndef CRON_OPERATOR_HXX
+#define CRON_OPERATOR_HXX
 
 #include "spawn/ExitListener.hxx"
 #include "Job.hxx"
