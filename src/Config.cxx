@@ -8,8 +8,11 @@
 #include "io/LineParser.hxx"
 #include "io/ConfigParser.hxx"
 #include "util/StringParser.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <string.h>
+#include <pwd.h>
+#include <grp.h>
 
 Config::Config()
 {
@@ -21,9 +24,6 @@ Config::Config()
         spawn.default_uid_gid.uid = 65534;
         spawn.default_uid_gid.gid = 65534;
     }
-
-    // TODO: disable this kludge
-    spawn.allow_any_uid_gid = true;
 }
 
 void
@@ -45,6 +45,60 @@ Config::Check()
 
     for (const auto &i : partitions)
         i.Check();
+}
+
+class SpawnConfigParser final : public ConfigParser {
+    SpawnConfig &config;
+
+public:
+    explicit SpawnConfigParser(SpawnConfig &_config):config(_config) {}
+
+protected:
+    /* virtual methods from class ConfigParser */
+    void ParseLine(LineParser &line) override;
+};
+
+static uid_t
+ParseUser(const char *name)
+{
+    char *endptr;
+    unsigned long i = strtoul(name, &endptr, 10);
+    if (endptr > name && *endptr == 0)
+        return i;
+
+    const auto *pw = getpwnam(name);
+    if (pw == nullptr)
+        throw FormatRuntimeError("No such user: %s", name);
+
+    return pw->pw_uid;
+}
+
+static uid_t
+ParseGroup(const char *name)
+{
+    char *endptr;
+    unsigned long i = strtoul(name, &endptr, 10);
+    if (endptr > name && *endptr == 0)
+        return i;
+
+    const auto *gr = getgrnam(name);
+    if (gr == nullptr)
+        throw FormatRuntimeError("No such group: %s", name);
+
+    return gr->gr_gid;
+}
+
+void
+SpawnConfigParser::ParseLine(LineParser &line)
+{
+    const char *word = line.ExpectWord();
+
+    if (strcmp(word, "allow_user") == 0) {
+        config.allowed_uids.insert(ParseUser(line.ExpectValueAndEnd()));
+    } else if (strcmp(word, "allow_group") == 0) {
+        config.allowed_gids.insert(ParseGroup(line.ExpectValueAndEnd()));
+    } else
+        throw LineParser::Error("Unknown option");
 }
 
 class WorkshopConfigParser final : public NestedConfigParser {
@@ -107,6 +161,9 @@ WorkshopConfigParser::ParseLine2(LineParser &line)
     } else if (strcmp(word, "concurrency") == 0) {
         config.concurrency = ParsePositiveLong(line.ExpectValueAndEnd(),
                                                256);
+    } else if (strcmp(word, "spawn") == 0) {
+        line.ExpectSymbolAndEol('{');
+        SetChild(std::make_unique<SpawnConfigParser>(config.spawn));
     } else
         throw LineParser::Error("Unknown option");
 }
