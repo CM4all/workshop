@@ -37,6 +37,13 @@ The following settings are recognized:
   default, the hostname is used.
 * :envvar:`concurrency`: How many jobs shall this node concurrently?
   Rule of thumb: number of CPUs, not much more.
+* :envvar:`spawn`: opens a block (with curly braces), which
+  configures the process spawner:
+
+  * :envvar:`allow_user`: allow child processes to impersonate the
+    given user
+  * :envvar:`allow_group`: allow child processes to impersonate the
+    given group
 * :envvar:`workshop`: opens a block (with curly braces), which
   configures a Workshop database:
 
