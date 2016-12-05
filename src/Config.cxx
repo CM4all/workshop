@@ -11,13 +11,6 @@
 
 #include <string.h>
 
-void
-Config::Partition::Check() const
-{
-    if (database.empty())
-        throw std::runtime_error("Missing 'database' setting");
-}
-
 Config::Config()
 {
     memset(&user, 0, sizeof(user));
@@ -59,7 +52,7 @@ class WorkshopConfigParser final : public NestedConfigParser {
 
     class Partition final : public ConfigParser {
         Config &parent;
-        Config::Partition config;
+        WorkshopPartitionConfig config;
 
     public:
         explicit Partition(Config &_parent):parent(_parent) {}

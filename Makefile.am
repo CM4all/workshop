@@ -15,6 +15,7 @@ cm4all_workshop_SOURCES = \
 	src/SyslogClient.cxx src/SyslogClient.hxx \
 	src/Expand.cxx src/Expand.hxx \
 	src/Instance.cxx src/Instance.hxx \
+	src/workshop/Config.cxx src/workshop/Config.hxx \
 	src/workshop/Partition.cxx src/workshop/Partition.hxx \
 	src/workshop/Queue.cxx src/workshop/Queue.hxx \
 	src/workshop/PGQueue.cxx src/workshop/PGQueue.hxx \

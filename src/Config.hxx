@@ -2,9 +2,10 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#ifndef WORKSHOP_CONFIG_HXX
-#define WORKSHOP_CONFIG_HXX
+#ifndef _WORKSHOP_CONFIG_HXX
+#define _WORKSHOP_CONFIG_HXX
 
+#include "workshop/Config.hxx"
 #include "spawn/Config.hxx"
 
 #include <daemon/user.h>
@@ -20,16 +21,7 @@ struct Config {
 
     SpawnConfig spawn;
 
-    struct Partition {
-        std::string database, database_schema;
-
-        Partition() = default;
-        explicit Partition(const char *_database):database(_database) {}
-
-        void Check() const;
-    };
-
-    std::forward_list<Partition> partitions;
+    std::forward_list<WorkshopPartitionConfig> partitions;
 
     Config();
 

@@ -5,12 +5,13 @@
 #ifndef WORKSHOP_PARTITION_HXX
 #define WORKSHOP_PARTITION_HXX
 
-#include "Config.hxx"
 #include "Queue.hxx"
 #include "Workplace.hxx"
 #include "spawn/ExitListener.hxx"
 #include "util/BindMethod.hxx"
 
+struct Config;
+struct WorkshopPartitionConfig;
 class Instance;
 class MultiLibrary;
 
@@ -28,7 +29,7 @@ public:
                       MultiLibrary &_library,
                       SpawnService &_spawn_service,
                       const Config &root_config,
-                      const Config::Partition &config,
+                      const WorkshopPartitionConfig &config,
                       BoundMethod<void()> _idle_callback);
 
     bool IsIdle() const {

@@ -4,9 +4,9 @@
 
 #include "Partition.hxx"
 #include "Instance.hxx"
-#include "Config.hxx"
 #include "Job.hxx"
 #include "Plan.hxx"
+#include "../Config.hxx"
 #include "pg/Array.hxx"
 #include "util/PrintException.hxx"
 
@@ -16,7 +16,7 @@ WorkshopPartition::WorkshopPartition(Instance &_instance,
                                      MultiLibrary &_library,
                                      SpawnService &_spawn_service,
                                      const Config &root_config,
-                                     const Config::Partition &config,
+                                     const WorkshopPartitionConfig &config,
                                      BoundMethod<void()> _idle_callback)
     :instance(_instance), library(_library),
      queue(instance.GetEventLoop(), root_config.node_name.c_str(),
