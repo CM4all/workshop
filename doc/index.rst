@@ -61,6 +61,28 @@ recognized:
 
 This file is Workshop 1.0 legacy, and should not be used anymore.
 
+Migrating from Workhop 1.0.x
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In Workshop 1.0.x, all configuration options were in the shell-style
+file :file:`/etc/default/cm4all-workshop`.  That format lacks
+flexibility and complexity needed for new features in version 2.
+Therefore, version 2 introduced the structured configuration file
+:file:`/etc/cm4all/workshop/workshop.conf`.
+
+Loggers can no longer be configured, because Workshop now relies on
+systemd and its Journal.
+
+Move :envvar:`CONCURRENCY` to :file:`workshop.conf` as
+:envvar:`concurrency` (lower case).
+
+Move :envvar:`DATABASE` to :file:`workshop.conf` as :envvar:`database`
+in a :envvar:`workshop` section, e.g.::
+
+  workshop {
+    database "dbname=workshop"
+  }
+
 Concept
 -------
 
