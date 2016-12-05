@@ -7,7 +7,7 @@ cm4all-workshop (2.0.3) unstable; urgency=low
   * cron: merge with Workshop
   * support PostgreSQL schemas
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Mon, 05 Dec 2016 10:12:31 -0000
 
 cm4all-workshop (2.0.2) unstable; urgency=low
 
