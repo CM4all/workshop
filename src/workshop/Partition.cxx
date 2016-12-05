@@ -4,6 +4,8 @@
 
 #include "Partition.hxx"
 #include "Instance.hxx"
+#include "MultiLibrary.hxx"
+#include "Config.hxx"
 #include "Job.hxx"
 #include "Plan.hxx"
 #include "../Config.hxx"

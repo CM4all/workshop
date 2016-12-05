@@ -6,7 +6,6 @@
 #define WORKSHOP_INSTANCE_HXX
 
 #include "workshop/Partition.hxx"
-#include "workshop/MultiLibrary.hxx"
 #include "event/Loop.hxx"
 #include "event/ShutdownListener.hxx"
 #include "event/SignalEvent.hxx"
@@ -17,6 +16,7 @@
 
 struct Config;
 class SpawnServerClient;
+class MultiLibrary;
 
 class Instance final {
     EventLoop event_loop;
@@ -30,7 +30,7 @@ class Instance final {
 
     std::unique_ptr<SpawnServerClient> spawn_service;
 
-    MultiLibrary library;
+    std::unique_ptr<MultiLibrary> library;
 
     std::forward_list<WorkshopPartition> partitions;
 
@@ -44,9 +44,7 @@ public:
         return event_loop;
     }
 
-    void InsertLibraryPath(const char *path) {
-        library.InsertPath(path);
-    }
+    void InsertLibraryPath(const char *path);
 
     void Start() {
         for (auto &i : partitions)

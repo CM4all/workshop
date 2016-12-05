@@ -4,6 +4,7 @@
 
 #include "Instance.hxx"
 #include "Config.hxx"
+#include "workshop/MultiLibrary.hxx"
 #include "spawn/Client.hxx"
 #include "spawn/Glue.hxx"
 
@@ -26,14 +27,24 @@ Instance::Instance(const Config &config,
     shutdown_listener.Enable();
     sighup_event.Add();
 
+    if (!config.partitions.empty())
+        library.reset(new MultiLibrary());
+
     for (const auto &i : config.partitions)
-        partitions.emplace_front(*this, library, *spawn_service,
+        partitions.emplace_front(*this, *library, *spawn_service,
                                  config, i,
                                  BIND_THIS_METHOD(OnPartitionIdle));
 }
 
 Instance::~Instance()
 {
+}
+
+void
+Instance::InsertLibraryPath(const char *path)
+{
+    if (library)
+        library->InsertPath(path);
 }
 
 void
@@ -46,7 +57,9 @@ Instance::UpdateFilter()
 void
 Instance::UpdateLibraryAndFilter(bool force)
 {
-    library.Update(force);
+    assert(library);
+
+    library->Update(force);
     UpdateFilter();
 }
 
@@ -77,7 +90,9 @@ void
 Instance::OnReload(int)
 {
     daemon_log(4, "reloading\n");
-    UpdateLibraryAndFilter(true);
+
+    if (library)
+        UpdateLibraryAndFilter(true);
 }
 
 void
