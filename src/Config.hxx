@@ -9,13 +9,11 @@
 #include "cron/Config.hxx"
 #include "spawn/Config.hxx"
 
-#include <daemon/user.h>
-
 #include <string>
 #include <forward_list>
 
 struct Config {
-    struct daemon_user user;
+    UidGid user;
 
     std::string node_name;
     unsigned concurrency = 2;
@@ -24,8 +22,6 @@ struct Config {
 
     std::forward_list<WorkshopPartitionConfig> partitions;
     std::forward_list<CronPartitionConfig> cron_partitions;
-
-    Config();
 
     void Check();
 };

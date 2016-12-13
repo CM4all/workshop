@@ -41,8 +41,7 @@ Run(int argc, char **argv, const Config &config)
     instance.InsertLibraryPath("/etc/cm4all/workshop/plans");
     instance.InsertLibraryPath("/usr/share/cm4all/workshop/plans");
 
-    if (daemon_user_set(&config.user) < 0)
-        exit(2);
+    config.user.Apply();
 
     instance.Start();
 

@@ -14,15 +14,10 @@
 #include <pwd.h>
 #include <grp.h>
 
-Config::Config()
-{
-    memset(&user, 0, sizeof(user));
-}
-
 void
 Config::Check()
 {
-    if (!debug_mode && !daemon_user_defined(&user))
+    if (!debug_mode && user.IsEmpty())
         throw std::runtime_error("no user name specified (-u)");
 
     if (node_name.empty()) {

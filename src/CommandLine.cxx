@@ -135,10 +135,8 @@ ParseCommandLine(Config &config, int argc, char **argv)
             if (debug_mode)
                 arg_error(argv[0], "cannot specify a user in debug mode");
 
-            if (daemon_user_by_name(&config.user, optarg, nullptr) < 0)
-                arg_error(argv[0], "No such user: %s", optarg);
-
-            if (!daemon_user_defined(&config.user))
+            config.user.Lookup(optarg);
+            if (!config.user.IsComplete())
                 arg_error(argv[0], "refusing to run as root");
             break;
 
