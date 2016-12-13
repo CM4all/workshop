@@ -69,6 +69,12 @@ public:
     bool Claim(const CronJob &job);
     void Finish(const CronJob &job);
 
+    /**
+     * Insert a row into the "cronresults" table, describing the
+     * #CronJob execution result.
+     */
+    void InsertResult(const CronJob &job, int exit_status);
+
 private:
     /**
      * Checks everything asynchronously: if the connection has failed,

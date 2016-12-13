@@ -50,5 +50,6 @@ CronOperator::OnChildProcessExit(int status)
                    exit_status);
 
     queue.Finish(job);
+    queue.InsertResult(job, exit_status);
     workplace.OnExit(this);
 }
