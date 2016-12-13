@@ -24,7 +24,8 @@ MountList::MountList(AllocatorPtr alloc, const MountList &src)
 #if TRANSLATION_ENABLE_EXPAND
      expand_source(src.expand_source),
 #endif
-     writable(src.writable) {}
+     writable(src.writable),
+     exec(src.exec) {}
 
 MountList *
 MountList::CloneAll(AllocatorPtr alloc, const MountList *src)
@@ -65,9 +66,11 @@ MountList::ExpandAll(struct pool &pool, MountList *m,
 inline void
 MountList::Apply() const
 {
-    int flags = MS_NOEXEC|MS_NOSUID|MS_NODEV;
+    int flags = MS_NOSUID|MS_NODEV;
     if (!writable)
         flags |= MS_RDONLY;
+    if (!exec)
+        flags |= MS_NOEXEC;
 
     bind_mount(source, target, flags);
 }
