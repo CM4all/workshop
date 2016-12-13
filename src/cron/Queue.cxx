@@ -108,7 +108,7 @@ static std::chrono::seconds
 FindEarliestPending(PgConnection &db)
 {
     const auto result =
-        db.Execute("SELECT EXTRACT(EPOCH FROM (MIN(next_run) - NOW())) FROM cronjobs "
+        db.Execute("SELECT EXTRACT(EPOCH FROM (MIN(next_run) - now())) FROM cronjobs "
                    "WHERE enabled AND next_run IS NOT NULL AND node_name IS NULL");
     if (!result.IsQuerySuccessful()) {
         fprintf(stderr, "SELECT FROM cronjobs failed: %s\n",
@@ -173,7 +173,7 @@ CronQueue::Claim(const CronJob &job)
 
     const auto r =
         db.ExecuteParams("UPDATE cronjobs "
-                         "SET node_name=$2, node_timeout=NOW()+$3::INTERVAL "
+                         "SET node_name=$2, node_timeout=now()+$3::INTERVAL "
                          "WHERE id=$1 AND enabled AND node_name IS NULL",
                          job.id.c_str(),
                          node_name.c_str(),
@@ -199,7 +199,7 @@ CronQueue::Finish(const CronJob &job)
 
     const auto r =
         db.ExecuteParams("UPDATE cronjobs "
-                         "SET node_name=NULL, node_timeout=NULL, last_run=NOW(), next_run=NULL "
+                         "SET node_name=NULL, node_timeout=NULL, last_run=now(), next_run=NULL "
                          "WHERE id=$1 AND node_name=$2",
                          job.id.c_str(),
                          node_name.c_str());
@@ -241,7 +241,7 @@ CronQueue::CheckPending()
 
     const auto result =
         db.Execute("SELECT id, account_id, command, translate_param "
-                   "FROM cronjobs WHERE enabled AND next_run<=NOW() "
+                   "FROM cronjobs WHERE enabled AND next_run<=now() "
                    "AND node_name IS NULL "
                    "LIMIT 1");
     if (!result.IsQuerySuccessful()) {

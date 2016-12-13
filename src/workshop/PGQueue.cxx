@@ -61,7 +61,7 @@ pg_expire_jobs(PgConnection &db, const char *except_node_name)
                          "SET node_name=NULL, node_timeout=NULL, progress=0 "
                          "WHERE time_done IS NULL AND exit_status IS NULL AND "
                          "node_name IS NOT NULL AND node_name <> $1 AND "
-                         "node_timeout IS NOT NULL AND NOW() > node_timeout",
+                         "node_timeout IS NOT NULL AND now() > node_timeout",
                          except_node_name);
     if (!result.IsCommandSuccessful()) {
         fprintf(stderr, "UPDATE/expire on jobs failed: %s\n",
@@ -79,7 +79,7 @@ pg_next_scheduled_job(PgConnection &db, const char *plans_include,
     assert(plans_include != nullptr && *plans_include == '{');
 
     const auto result =
-        db.ExecuteParams("SELECT EXTRACT(EPOCH FROM (MIN(scheduled_time) - NOW())) "
+        db.ExecuteParams("SELECT EXTRACT(EPOCH FROM (MIN(scheduled_time) - now())) "
                          "FROM jobs WHERE node_name IS NULL AND time_done IS NULL AND exit_status IS NULL "
                          "AND scheduled_time IS NOT NULL "
                          "AND plan_name = ANY ($1::TEXT[]) ",
@@ -116,7 +116,7 @@ pg_select_new_jobs(PgConnection &db,
                          "FROM jobs "
                          "WHERE node_name IS NULL "
                          "AND time_done IS NULL AND exit_status IS NULL "
-                         "AND (scheduled_time IS NULL OR NOW() >= scheduled_time) "
+                         "AND (scheduled_time IS NULL OR now() >= scheduled_time) "
                          "AND plan_name = ANY ($1::TEXT[]) "
                          "AND plan_name <> ALL ($2::TEXT[] || $3::TEXT[]) "
                          "ORDER BY priority, time_created "
@@ -135,7 +135,7 @@ pg_claim_job(PgConnection &db, const char *job_id, const char *node_name,
 {
     const auto result =
         db.ExecuteParams("UPDATE jobs "
-                         "SET node_name=$1, node_timeout=NOW()+$3::INTERVAL "
+                         "SET node_name=$1, node_timeout=now()+$3::INTERVAL "
                          "WHERE id=$2 AND node_name IS NULL",
                          node_name, job_id, timeout);
     if (!result.IsCommandSuccessful()) {
@@ -153,7 +153,7 @@ pg_set_job_progress(PgConnection &db, const char *job_id,
 {
     const auto result =
         db.ExecuteParams("UPDATE jobs "
-                         "SET progress=$2, node_timeout=NOW()+$3::INTERVAL "
+                         "SET progress=$2, node_timeout=now()+$3::INTERVAL "
                          "WHERE id=$1",
                          job_id, progress, timeout);
     if (!result.IsCommandSuccessful()) {
@@ -188,7 +188,7 @@ pg_set_job_done(PgConnection &db, const char *id, int status)
 {
     const auto result =
         db.ExecuteParams("UPDATE jobs "
-                         "SET time_done=NOW(), progress=100, exit_status=$2 "
+                         "SET time_done=now(), progress=100, exit_status=$2 "
                          "WHERE id=$1",
                          id, status);
     if (!result.IsCommandSuccessful()) {
