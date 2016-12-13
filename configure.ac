@@ -36,7 +36,7 @@ PKG_CHECK_MODULES([LIBCM4ALL_INLINE], [libcm4all-inline >= 0.3.2],,
 PKG_CHECK_MODULES([LIBCM4ALL_SOCKET], [libcm4all-socket >= 0.3.5],,
 	[AC_MSG_ERROR([libcm4all-socket not found])])
 
-PKG_CHECK_MODULES([LIBCM4ALL_BENG_PROXY], [libcm4all-beng-proxy >= 12],,
+PKG_CHECK_MODULES([LIBCM4ALL_BENG_PROXY], [libcm4all-beng-proxy >= 12.0.3],,
 	[AC_MSG_ERROR([libcm4all-beng-proxy not found])])
 
 AC_ARG_WITH(pg-config,
