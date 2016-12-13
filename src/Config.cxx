@@ -40,6 +40,14 @@ Config::Check()
         node_name = name;
     }
 
+    if (!spawn.allow_any_uid_gid && !debug_mode) {
+        if (spawn.allowed_uids.empty())
+            throw std::runtime_error("No 'allow_user' in 'spawn' section");
+
+        if (spawn.allowed_gids.empty())
+            throw std::runtime_error("No 'allow_group' in 'spawn' section");
+    }
+
     if (partitions.empty() && cron_partitions.empty())
         throw std::runtime_error("No 'workshop' or 'cron' section");
 
