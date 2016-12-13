@@ -80,7 +80,8 @@ public:
      * Insert a row into the "cronresults" table, describing the
      * #CronJob execution result.
      */
-    void InsertResult(const CronJob &job, int exit_status);
+    void InsertResult(const CronJob &job, const char *start_time,
+                      int exit_status);
 
 private:
     /**

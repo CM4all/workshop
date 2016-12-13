@@ -14,7 +14,8 @@
 
 CronOperator::CronOperator(CronQueue &_queue, CronWorkplace &_workplace,
                            CronJob &&_job)
-    :queue(_queue), workplace(_workplace), job(std::move(_job))
+    :queue(_queue), workplace(_workplace), job(std::move(_job)),
+     start_time(queue.GetNow())
 {
 }
 
@@ -50,6 +51,6 @@ CronOperator::OnChildProcessExit(int status)
                    exit_status);
 
     queue.Finish(job);
-    queue.InsertResult(job, exit_status);
+    queue.InsertResult(job, start_time.c_str(), exit_status);
     workplace.OnExit(this);
 }

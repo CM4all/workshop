@@ -20,6 +20,9 @@ CREATE TABLE cronresults (
     -- which node has executed this job?
     node_name varchar(256) NULL,
 
+    -- the time this job execution was started
+    start_time timestamp NOT NULL,
+
     -- the time this job execution was completed
     finish_time timestamp NOT NULL DEFAULT now(),
 

@@ -216,15 +216,17 @@ CronQueue::Finish(const CronJob &job)
 }
 
 void
-CronQueue::InsertResult(const CronJob &job, int exit_status)
+CronQueue::InsertResult(const CronJob &job, const char *start_time,
+                        int exit_status)
 {
     ScheduleCheckNotify();
 
     const auto r =
-        db.ExecuteParams("INSERT INTO cronresults(cronjob_id, node_name, exit_status) "
-                         "VALUES($1, $2, $3)",
+        db.ExecuteParams("INSERT INTO cronresults(cronjob_id, node_name, start_time, exit_status) "
+                         "VALUES($1, $2, $3, $4)",
                          job.id.c_str(),
                          node_name.c_str(),
+                         start_time,
                          exit_status);
     if (!r.IsCommandSuccessful()) {
         fprintf(stderr, "INSERT on cronresults failed: %s\n",

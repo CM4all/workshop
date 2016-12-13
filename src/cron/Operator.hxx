@@ -10,6 +10,8 @@
 
 #include <boost/intrusive/list.hpp>
 
+#include <string>
+
 struct PreparedChildProcess;
 class ChildProcessRegistry;
 class CronQueue;
@@ -25,6 +27,8 @@ class CronOperator final
     CronQueue &queue;
     CronWorkplace &workplace;
     const CronJob job;
+
+    const std::string start_time;
 
     int pid = -1;
 
