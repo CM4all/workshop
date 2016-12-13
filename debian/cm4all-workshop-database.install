@@ -1,1 +1,1 @@
-sql/jobs.sql sql/cronjobs.sql usr/share/cm4all/workshop/sql
+sql/*.sql usr/share/cm4all/workshop/sql
