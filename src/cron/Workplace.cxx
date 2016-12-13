@@ -56,7 +56,16 @@ CronWorkplace::Start(CronQueue &queue, const char *translation_socket,
 
     /* create operator object */
 
-    auto o = std::make_unique<CronOperator>(queue, *this, std::move(job));
+    std::unique_ptr<CronOperator> o;
+
+    try {
+        o = std::make_unique<CronOperator>(queue, *this, std::move(job));
+    } catch (...) {
+        queue.Finish(job);
+        std::throw_with_nested(FormatRuntimeError("Failed to initialize execution of job '%s'",
+                                                  job.id.c_str()));
+    }
+
     o->Spawn(std::move(p));
 
     operators.push_back(*o.release());
