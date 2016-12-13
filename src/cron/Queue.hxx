@@ -54,6 +54,13 @@ public:
 
     void Close();
 
+    gcc_pure
+    std::string GetNow() {
+        ScheduleCheckNotify();
+        const auto result = db.Execute("SELECT now()");
+        return result.GetOnlyStringChecked();
+    }
+
     /**
      * Disable the queue, e.g. when the node is busy.
      */
