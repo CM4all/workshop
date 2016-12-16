@@ -28,6 +28,8 @@ void
 CronWorkplace::Start(CronQueue &queue, const char *translation_socket,
                      CronJob &&job)
 {
+    auto start_time = queue.GetNow();
+
     /* need a copy because the std::move(job) below may invalidate the
        c_str() pointer */
     const auto command = job.command;
@@ -56,16 +58,7 @@ CronWorkplace::Start(CronQueue &queue, const char *translation_socket,
 
     /* create operator object */
 
-    std::unique_ptr<CronOperator> o;
-
-    try {
-        o = std::make_unique<CronOperator>(queue, *this, std::move(job));
-    } catch (...) {
-        queue.Finish(job);
-        std::throw_with_nested(FormatRuntimeError("Failed to initialize execution of job '%s'",
-                                                  job.id.c_str()));
-    }
-
+    auto o = std::make_unique<CronOperator>(queue, *this, std::move(job), std::move(start_time));
     o->Spawn(std::move(p));
 
     operators.push_back(*o.release());

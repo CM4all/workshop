@@ -13,9 +13,10 @@
 #include <sys/wait.h>
 
 CronOperator::CronOperator(CronQueue &_queue, CronWorkplace &_workplace,
-                           CronJob &&_job)
+                           CronJob &&_job,
+                           std::string &&_start_time) noexcept
     :queue(_queue), workplace(_workplace), job(std::move(_job)),
-     start_time(queue.GetNow())
+     start_time(std::move(_start_time))
 {
 }
 

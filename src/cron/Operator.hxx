@@ -33,7 +33,8 @@ class CronOperator final
     int pid = -1;
 
 public:
-    CronOperator(CronQueue &_queue, CronWorkplace &_workplace, CronJob &&_job);
+    CronOperator(CronQueue &_queue, CronWorkplace &_workplace, CronJob &&_job,
+                 std::string &&_start_time) noexcept;
 
     CronOperator(const CronOperator &other) = delete;
     CronOperator &operator=(const CronOperator &other) = delete;
