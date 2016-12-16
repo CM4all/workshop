@@ -43,6 +43,10 @@ public:
               Callback _callback);
     ~CronQueue();
 
+    EventLoop &GetEventLoop() {
+        return check_notify_event.GetEventLoop();
+    }
+
     gcc_pure
     const char *GetNodeName() const {
         return node_name.c_str();
