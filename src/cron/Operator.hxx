@@ -5,8 +5,9 @@
 #ifndef CRON_OPERATOR_HXX
 #define CRON_OPERATOR_HXX
 
-#include "spawn/ExitListener.hxx"
 #include "Job.hxx"
+#include "spawn/ExitListener.hxx"
+#include "event/TimerEvent.hxx"
 
 #include <boost/intrusive/list.hpp>
 
@@ -32,6 +33,8 @@ class CronOperator final
 
     int pid = -1;
 
+    TimerEvent timeout_event;
+
 public:
     CronOperator(CronQueue &_queue, CronWorkplace &_workplace, CronJob &&_job,
                  std::string &&_start_time) noexcept;
@@ -53,6 +56,9 @@ public:
 public:
     /* virtual methods from ExitListener */
     void OnChildProcessExit(int status) override;
+
+private:
+    void OnTimeout();
 };
 
 #endif

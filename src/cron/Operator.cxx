@@ -6,6 +6,7 @@
 #include "Workplace.hxx"
 #include "Queue.hxx"
 #include "spawn/Interface.hxx"
+#include "event/Duration.hxx"
 
 #include <daemon/log.h>
 
@@ -16,7 +17,8 @@ CronOperator::CronOperator(CronQueue &_queue, CronWorkplace &_workplace,
                            CronJob &&_job,
                            std::string &&_start_time) noexcept
     :queue(_queue), workplace(_workplace), job(std::move(_job)),
-     start_time(std::move(_start_time))
+     start_time(std::move(_start_time)),
+     timeout_event(queue.GetEventLoop(), BIND_THIS_METHOD(OnTimeout))
 {
 }
 
@@ -27,6 +29,9 @@ try {
                                                         std::move(p), this);
 
     daemon_log(2, "job %s running as pid %d\n", job.id.c_str(), pid);
+
+    /* kill after 5 minutes */
+    timeout_event.Add(EventDuration<300>::value);
 } catch (const std::exception &e) {
     queue.Finish(job);
     queue.InsertResult(job, start_time.c_str(), -1, e.what());
@@ -40,6 +45,7 @@ CronOperator::Cancel()
 
     queue.Finish(job);
     queue.InsertResult(job, start_time.c_str(), -1, "Canceled");
+    timeout_event.Cancel();
     workplace.OnExit(this);
 }
 
@@ -65,5 +71,14 @@ CronOperator::OnChildProcessExit(int status)
     queue.Finish(job);
     // TODO: capture log
     queue.InsertResult(job, start_time.c_str(), exit_status, nullptr);
+    timeout_event.Cancel();
     workplace.OnExit(this);
+}
+
+void
+CronOperator::OnTimeout()
+{
+    daemon_log(2, "Timeout on job %s, pid %d\n", job.id.c_str(), pid);
+
+    Cancel();
 }
