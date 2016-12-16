@@ -36,6 +36,11 @@ Config::Check()
             throw std::runtime_error("No 'allow_group' in 'spawn' section");
     }
 
+    if (debug_mode)
+        /* accept gid=0 (keep current gid) from translation server if
+           Workshop was started as unprivileged user */
+        spawn.allowed_gids.insert(0);
+
     if (partitions.empty() && cron_partitions.empty())
         throw std::runtime_error("No 'workshop' or 'cron' section");
 
