@@ -26,8 +26,9 @@ try {
                                                         std::move(p), this);
 
     daemon_log(2, "job %s running as pid %d\n", job.id.c_str(), pid);
-} catch (...) {
+} catch (const std::exception &e) {
     queue.Finish(job);
+    queue.InsertResult(job, start_time.c_str(), -1, e.what());
     throw;
 }
 
