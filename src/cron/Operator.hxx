@@ -41,6 +41,15 @@ public:
 
     void Spawn(PreparedChildProcess &&p);
 
+    /**
+     * Cancel job execution, e.g. by sending SIGTERM to the child
+     * process.  This also abandons the child process, i.e. after this
+     * method returns, cancellation can be considered complete, even
+     * if the child process continues to run (because it ignores the
+     * kill signal).
+     */
+    void Cancel();
+
 public:
     /* virtual methods from ExitListener */
     void OnChildProcessExit(int status) override;

@@ -34,6 +34,16 @@ try {
 }
 
 void
+CronOperator::Cancel()
+{
+    workplace.GetSpawnService().KillChildProcess(pid, SIGTERM);
+
+    queue.Finish(job);
+    queue.InsertResult(job, start_time.c_str(), -1, "Canceled");
+    workplace.OnExit(this);
+}
+
+void
 CronOperator::OnChildProcessExit(int status)
 {
     int exit_status = WEXITSTATUS(status);
