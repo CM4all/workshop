@@ -42,11 +42,13 @@ cm4all_workshop_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBCM4ALL_SOCKET_CFLAGS) \
 	$(LIBSYSTEMD_CFLAGS) \
 	$(LIBEVENT_CFLAGS) \
+	$(CURL_CFLAGS) \
 	$(LIBPQ_CPPFLAGS)
 cm4all_workshop_LDADD = $(AM_LDADD) \
 	libpg.a libspawn.a \
 	libtranslation.a \
 	libnet.a \
+	libcurl.a \
 	libevent.a \
 	libio.a \
 	libsystem.a libtime.a libutil.a \
@@ -54,6 +56,7 @@ cm4all_workshop_LDADD = $(AM_LDADD) \
 	$(LIBCM4ALL_SOCKET_LIBS) \
 	$(LIBSYSTEMD_LIBS) \
 	$(LIBEVENT_LIBS) \
+	$(CURL_LIBS) \
 	$(BOOST_FILESYSTEM_LIB) \
 	$(BOOST_SYSTEM_LIB) \
 	$(LIBPQ_LIBS)
@@ -65,6 +68,7 @@ noinst_LIBRARIES = \
 	libnet.a \
 	libevent.a \
 	libio.a \
+	libcurl.a \
 	libtranslation.a \
 	libpg.a \
 	libspawn.a
@@ -134,6 +138,16 @@ libtranslation_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBCM4ALL_BENG_PROXY_CFLAGS) \
 	$(LIBCM4ALL_INLINE_CFLAGS)
 
+libcurl_a_SOURCES = \
+	src/curl/Easy.hxx \
+	src/curl/Multi.hxx \
+	src/curl/Request.cxx src/curl/Request.hxx \
+	src/curl/Global.cxx src/curl/Global.hxx \
+	src/curl/Init.cxx src/curl/Init.hxx
+libcurl_a_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(LIBCM4ALL_INLINE_CFLAGS) \
+	$(CURL_CFLAGS)
+
 libpg_a_SOURCES = \
 	src/pg/Array.cxx src/pg/Array.hxx \
 	src/pg/BinaryValue.hxx \
@@ -189,6 +203,25 @@ libnet_a_SOURCES = \
 	src/net/Features.hxx
 libnet_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBCM4ALL_INLINE_CFLAGS)
+
+#
+# Debug programs
+#
+
+noinst_PROGRAMS = t/http
+
+t_http_SOURCES = \
+	t/http.cxx
+t_http_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(LIBCM4ALL_INLINE_CFLAGS) \
+	$(LIBEVENT_CFLAGS) \
+	$(CURL_CFLAGS)
+t_http_LDADD = $(AM_LDADD) \
+	libcurl.a \
+	libevent.a \
+	libutil.a \
+	$(LIBEVENT_LIBS) \
+	$(CURL_LIBS)
 
 #
 # Unit tests

@@ -12,12 +12,14 @@
 #include "event/ShutdownListener.hxx"
 #include "event/SignalEvent.hxx"
 #include "spawn/Registry.hxx"
+#include "curl/Init.hxx"
 
 #include <functional>
 #include <forward_list>
 
 struct Config;
 class SpawnServerClient;
+class CurlGlobal;
 class MultiLibrary;
 
 class Instance final {
@@ -31,6 +33,9 @@ class Instance final {
     ChildProcessRegistry child_process_registry;
 
     std::unique_ptr<SpawnServerClient> spawn_service;
+
+    ScopeCurlInit curl_init;
+    std::unique_ptr<CurlGlobal> curl;
 
     std::unique_ptr<MultiLibrary> library;
 
@@ -46,6 +51,10 @@ public:
 
     EventLoop &GetEventLoop() {
         return event_loop;
+    }
+
+    CurlGlobal &GetCurl() {
+        return *curl;
     }
 
     void InsertLibraryPath(const char *path);

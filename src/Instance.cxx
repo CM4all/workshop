@@ -7,6 +7,7 @@
 #include "workshop/MultiLibrary.hxx"
 #include "spawn/Client.hxx"
 #include "spawn/Glue.hxx"
+#include "curl/Global.hxx"
 
 #include <daemon/log.h>
 
@@ -22,7 +23,8 @@ Instance::Instance(const Config &config,
                                         in_spawner();
                                         event_loop.Reinit();
                                         event_loop.~EventLoop();
-                                    }))
+                                    })),
+     curl(new CurlGlobal(event_loop))
 {
     shutdown_listener.Enable();
     sighup_event.Add();
