@@ -50,8 +50,9 @@ CronWorkplace::Start(CronQueue &queue, const char *translation_socket,
                                             ? nullptr
                                             : job.translate_param.c_str());
         response.child_options.CopyTo(p);
-    } catch (...) {
+    } catch (const std::exception &e) {
         queue.Finish(job);
+        queue.InsertResult(job, start_time.c_str(), -1, e.what());
         std::throw_with_nested(FormatRuntimeError("Failed to translate job '%s'",
                                                   job.id.c_str()));
     }
