@@ -81,7 +81,8 @@ public:
      * #CronJob execution result.
      */
     void InsertResult(const CronJob &job, const char *start_time,
-                      int exit_status);
+                      int exit_status,
+                      const char *log);
 
 private:
     /**

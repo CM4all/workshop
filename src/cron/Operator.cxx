@@ -51,6 +51,7 @@ CronOperator::OnChildProcessExit(int status)
                    exit_status);
 
     queue.Finish(job);
-    queue.InsertResult(job, start_time.c_str(), exit_status);
+    // TODO: capture log
+    queue.InsertResult(job, start_time.c_str(), exit_status, nullptr);
     workplace.OnExit(this);
 }
