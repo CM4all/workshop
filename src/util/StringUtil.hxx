@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2014 Max Kellermann <max@duempel.org>
+ * Copyright (C) 2011-2015 Max Kellermann <max@duempel.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -47,6 +47,32 @@ static inline char *
 StripLeft(char *p)
 {
 	return const_cast<char *>(StripLeft(static_cast<const char *>(p)));
+}
+
+/**
+ * Skips whitespace at the beginning of the string, and returns the
+ * first non-whitespace character or the end pointer.
+ */
+gcc_pure
+const char *
+StripLeft(const char *p, const char *end);
+
+/**
+ * Determine the string's end as if it was stripped on the right side.
+ */
+gcc_pure
+const char *
+StripRight(const char *p, const char *end);
+
+/**
+ * Determine the string's end as if it was stripped on the right side.
+ */
+gcc_pure
+static inline char *
+StripRight(char *p, char *end)
+{
+	return const_cast<char *>(StripRight((const char *)p,
+					     (const char *)end));
 }
 
 /**

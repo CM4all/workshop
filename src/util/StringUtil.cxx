@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2014 Max Kellermann <max@duempel.org>
+ * Copyright (C) 2011-2015 Max Kellermann <max@duempel.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -37,7 +37,26 @@ StripLeft(const char *p)
 {
 	while (IsWhitespaceNotNull(*p))
 		++p;
+
 	return p;
+}
+
+const char *
+StripLeft(const char *p, const char *end)
+{
+	while (p < end && IsWhitespaceOrNull(*p))
+		++p;
+
+	return p;
+}
+
+const char *
+StripRight(const char *p, const char *end)
+{
+	while (end > p && IsWhitespaceOrNull(end[-1]))
+		--end;
+
+	return end;
 }
 
 void
