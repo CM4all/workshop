@@ -32,7 +32,13 @@
 
 #include <inline/compiler.h>
 
-gcc_pure
+/**
+ * Skips whitespace at the beginning of the string, and returns the
+ * first non-whitespace character.  If the string has no
+ * non-whitespace characters, then a pointer to the NULL terminator is
+ * returned.
+ */
+gcc_pure gcc_nonnull_all
 const char *
 StripLeft(const char *p);
 
@@ -43,6 +49,9 @@ StripLeft(char *p)
 	return const_cast<char *>(StripLeft(static_cast<const char *>(p)));
 }
 
+/**
+ * Strips trailing whitespace.
+ */
 void
 StripRight(char *p);
 
