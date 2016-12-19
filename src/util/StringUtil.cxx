@@ -35,25 +35,25 @@
 const char *
 StripLeft(const char *p)
 {
-    while (IsWhitespaceNotNull(*p))
-        ++p;
-    return p;
+	while (IsWhitespaceNotNull(*p))
+		++p;
+	return p;
 }
 
 void
 StripRight(char *p)
 {
-    size_t length = strlen(p);
-    while (length > 0 && IsWhitespaceNotNull(p[length - 1]))
-        --length;
+	size_t length = strlen(p);
+	while (length > 0 && IsWhitespaceNotNull(p[length - 1]))
+		--length;
 
-    p[length] = 0;
+	p[length] = 0;
 }
 
 char *
 Strip(char *p)
 {
-    p = StripLeft(p);
-    StripRight(p);
-    return p;
+	p = StripLeft(p);
+	StripRight(p);
+	return p;
 }
