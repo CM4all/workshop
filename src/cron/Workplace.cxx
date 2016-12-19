@@ -7,6 +7,7 @@
 #include "Workplace.hxx"
 #include "Queue.hxx"
 #include "Job.hxx"
+#include "SpawnOperator.hxx"
 #include "AllocatorPtr.hxx"
 #include "translation/CronGlue.hxx"
 #include "translation/Response.hxx"
@@ -59,7 +60,7 @@ CronWorkplace::Start(CronQueue &queue, const char *translation_socket,
 
     /* create operator object */
 
-    auto o = std::make_unique<CronOperator>(queue, *this, std::move(job), std::move(start_time));
+    auto o = std::make_unique<CronSpawnOperator>(queue, *this, std::move(job), std::move(start_time));
     o->Spawn(std::move(p));
 
     operators.push_back(*o.release());
