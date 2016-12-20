@@ -38,7 +38,8 @@ Instance::Instance(const Config &config,
                                  BIND_THIS_METHOD(OnPartitionIdle));
 
     for (const auto &i : config.cron_partitions)
-        cron_partitions.emplace_front(event_loop, *spawn_service, config, i,
+        cron_partitions.emplace_front(event_loop, *spawn_service, *curl,
+                                      config, i,
                                       BIND_THIS_METHOD(OnPartitionIdle));
 }
 

@@ -27,6 +27,7 @@ class CronPartition final : ExitListener {
 public:
     CronPartition(EventLoop &event_loop,
                   SpawnService &_spawn_service,
+                  CurlGlobal &_curl,
                   const Config &root_config,
                   const CronPartitionConfig &config,
                   BoundMethod<void()> _idle_callback);

@@ -15,11 +15,13 @@
 
 struct CronJob;
 class SpawnService;
+class CurlGlobal;
 class CronQueue;
 class ExitListener;
 
 class CronWorkplace {
     SpawnService &spawn_service;
+    CurlGlobal &curl;
     ExitListener &exit_listener;
 
     typedef boost::intrusive::list<CronOperator,
@@ -31,9 +33,11 @@ class CronWorkplace {
 
 public:
     CronWorkplace(SpawnService &_spawn_service,
+                  CurlGlobal &_curl,
                   ExitListener &_exit_listener,
                   unsigned _max_operators)
         :spawn_service(_spawn_service),
+         curl(_curl),
          exit_listener(_exit_listener),
          max_operators(_max_operators) {
         assert(max_operators > 0);

@@ -23,6 +23,7 @@ cm4all_workshop_SOURCES = \
 	src/cron/Workplace.cxx src/cron/Workplace.hxx \
 	src/cron/Operator.cxx src/cron/Operator.hxx \
 	src/cron/SpawnOperator.cxx src/cron/SpawnOperator.hxx \
+	src/cron/CurlOperator.cxx src/cron/CurlOperator.hxx \
 	src/cron/CalculateNextRun.cxx src/cron/CalculateNextRun.hxx \
 	src/cron/Partition.cxx src/cron/Partition.hxx \
 	src/workshop/Config.cxx src/workshop/Config.hxx \

@@ -8,6 +8,7 @@
 #include "Queue.hxx"
 #include "Job.hxx"
 #include "SpawnOperator.hxx"
+#include "CurlOperator.hxx"
 #include "AllocatorPtr.hxx"
 #include "translation/CronGlue.hxx"
 #include "translation/Response.hxx"
@@ -15,6 +16,7 @@
 #include "spawn/Interface.hxx"
 #include "system/Error.hxx"
 #include "util/RuntimeError.hxx"
+#include "util/StringCompare.hxx"
 
 #include <daemon/log.h>
 
@@ -24,6 +26,13 @@
 #include <list>
 
 #include <assert.h>
+
+static bool
+IsURL(const char *command)
+{
+    return StringStartsWith(command, "http://") ||
+        StringStartsWith(command, "https://");
+}
 
 static std::unique_ptr<CronOperator>
 MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
@@ -63,6 +72,18 @@ MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
     return o;
 }
 
+static std::unique_ptr<CronOperator>
+MakeCurlOperator(CronQueue &queue, CronWorkplace &workplace,
+                 CurlGlobal &curl_global,
+                 CronJob &&job, const char *url,
+                 std::string &&start_time)
+{
+    return std::make_unique<CronCurlOperator>(queue, workplace,
+                                              std::move(job),
+                                              std::move(start_time),
+                                              curl_global, url);
+}
+
 void
 CronWorkplace::Start(CronQueue &queue, const char *translation_socket,
                      CronJob &&job)
@@ -73,9 +94,13 @@ CronWorkplace::Start(CronQueue &queue, const char *translation_socket,
        c_str() pointer */
     const auto command = job.command;
 
-    auto o = MakeSpawnOperator(queue, *this, translation_socket,
-                               std::move(job), command.c_str(),
-                               std::move(start_time));
+    auto o = IsURL(command.c_str())
+        ? MakeCurlOperator(queue, *this, curl,
+                           std::move(job), command.c_str(),
+                           std::move(start_time))
+        : MakeSpawnOperator(queue, *this, translation_socket,
+                            std::move(job), command.c_str(),
+                            std::move(start_time));
 
     operators.push_back(*o.release());
 }
