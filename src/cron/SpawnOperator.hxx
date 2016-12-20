@@ -33,9 +33,6 @@ public:
 public:
     /* virtual methods from ExitListener */
     void OnChildProcessExit(int status) override;
-
-private:
-    void OnTimeout();
 };
 
 #endif
