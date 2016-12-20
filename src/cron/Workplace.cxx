@@ -25,22 +25,18 @@
 
 #include <assert.h>
 
-void
-CronWorkplace::Start(CronQueue &queue, const char *translation_socket,
-                     CronJob &&job)
+static std::unique_ptr<CronOperator>
+MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
+                  const char *translation_socket,
+                  CronJob &&job, const char *command,
+                  std::string &&start_time)
 {
-    auto start_time = queue.GetNow();
-
-    /* need a copy because the std::move(job) below may invalidate the
-       c_str() pointer */
-    const auto command = job.command;
-
     /* prepare the child process */
 
     PreparedChildProcess p;
     p.args.push_back("/bin/sh");
     p.args.push_back("-c");
-    p.args.push_back(command.c_str());
+    p.args.push_back(command);
 
     Allocator alloc;
 
@@ -60,8 +56,26 @@ CronWorkplace::Start(CronQueue &queue, const char *translation_socket,
 
     /* create operator object */
 
-    auto o = std::make_unique<CronSpawnOperator>(queue, *this, std::move(job), std::move(start_time));
+    auto o = std::make_unique<CronSpawnOperator>(queue, workplace,
+                                                 std::move(job),
+                                                 std::move(start_time));
     o->Spawn(std::move(p));
+    return o;
+}
+
+void
+CronWorkplace::Start(CronQueue &queue, const char *translation_socket,
+                     CronJob &&job)
+{
+    auto start_time = queue.GetNow();
+
+    /* need a copy because the std::move(job) below may invalidate the
+       c_str() pointer */
+    const auto command = job.command;
+
+    auto o = MakeSpawnOperator(queue, *this, translation_socket,
+                               std::move(job), command.c_str(),
+                               std::move(start_time));
 
     operators.push_back(*o.release());
 }
