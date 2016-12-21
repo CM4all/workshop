@@ -46,6 +46,7 @@ public:
 
     void BeginShutdown() {
         queue.Disable();
+        workplace.CancelAll();
     }
 
 private:

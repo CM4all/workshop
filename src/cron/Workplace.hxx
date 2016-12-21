@@ -68,6 +68,11 @@ public:
                CronJob &&job);
 
     void OnExit(CronOperator *o);
+
+    void CancelAll() {
+        while (!operators.empty())
+            operators.front().Cancel();
+    }
 };
 
 #endif
