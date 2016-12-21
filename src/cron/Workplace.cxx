@@ -69,7 +69,7 @@ MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
                                                  std::move(job),
                                                  std::move(start_time));
     o->Spawn(std::move(p));
-    return o;
+    return std::unique_ptr<CronOperator>(std::move(o));
 }
 
 static std::unique_ptr<CronOperator>
@@ -78,10 +78,11 @@ MakeCurlOperator(CronQueue &queue, CronWorkplace &workplace,
                  CronJob &&job, const char *url,
                  std::string &&start_time)
 {
-    return std::make_unique<CronCurlOperator>(queue, workplace,
-                                              std::move(job),
-                                              std::move(start_time),
-                                              curl_global, url);
+    auto o = std::make_unique<CronCurlOperator>(queue, workplace,
+                                                std::move(job),
+                                                std::move(start_time),
+                                                curl_global, url);
+    return std::unique_ptr<CronOperator>(std::move(o));
 }
 
 void
