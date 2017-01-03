@@ -142,6 +142,7 @@ libtranslation_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBCM4ALL_INLINE_CFLAGS)
 
 libcurl_a_SOURCES = \
+	src/curl/Version.cxx src/curl/Version.hxx \
 	src/curl/Easy.hxx \
 	src/curl/Multi.hxx \
 	src/curl/Request.cxx src/curl/Request.hxx \
