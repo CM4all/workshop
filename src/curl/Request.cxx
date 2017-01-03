@@ -30,6 +30,7 @@
 #include "Request.hxx"
 #include "Handler.hxx"
 #include "Global.hxx"
+#include "Version.hxx"
 #include "event/SocketEvent.hxx"
 #include "event/TimerEvent.hxx"
 #include "util/RuntimeError.hxx"
@@ -76,6 +77,20 @@ CurlRequest::FreeEasy()
 
 	global.Remove(*this);
 	easy = nullptr;
+}
+
+void
+CurlRequest::Resume()
+{
+	curl_easy_pause(easy.Get(), CURLPAUSE_CONT);
+
+	if (IsCurlOlderThan(0x072000))
+		/* libcurl older than 7.32.0 does not update
+		   its sockets after curl_easy_pause(); force
+		   libcurl to do it now */
+		global.ResumeSockets();
+
+	global.InvalidateSockets();
 }
 
 void
@@ -177,6 +192,8 @@ CurlRequest::DataReceived(const void *ptr, size_t received_size)
 	try {
 		handler.OnData({ptr, received_size});
 		return received_size;
+	} catch (Pause) {
+		return CURL_WRITEFUNC_PAUSE;
 	} catch (...) {
 		state = State::CLOSED;
 		handler.OnError(std::current_exception());

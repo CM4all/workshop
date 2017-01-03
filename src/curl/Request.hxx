@@ -71,6 +71,14 @@ public:
 	}
 
 	/**
+	 * CurlResponseHandler::OnData() shall throw this to pause the
+	 * stream.  Call Resume() to resume the transfer.
+	 */
+	struct Pause {};
+
+	void Resume();
+
+	/**
 	 * A HTTP request is finished.  Called by #CurlGlobal.
 	 */
 	void Done(CURLcode result);
