@@ -96,6 +96,40 @@ CurlRequest::Resume()
 	global.InvalidateSockets();
 }
 
+bool
+CurlRequest::FinishHeaders()
+{
+	if (state != State::HEADERS)
+		return true;
+
+	state = State::BODY;
+
+	long status = 0;
+	curl_easy_getinfo(easy.Get(), CURLINFO_RESPONSE_CODE, &status);
+
+	try {
+		handler.OnHeaders(status, std::move(headers));
+		return true;
+	} catch (...) {
+		state = State::CLOSED;
+		handler.OnError(std::current_exception());
+		return false;
+	}
+}
+
+void
+CurlRequest::FinishBody()
+{
+	if (!FinishHeaders())
+		return;
+
+	if (state != State::BODY)
+		return;
+
+	state = State::CLOSED;
+	handler.OnEnd();
+}
+
 void
 CurlRequest::Done(CURLcode result)
 {
@@ -115,25 +149,7 @@ CurlRequest::Done(CURLcode result)
 		return;
 	}
 
-	state = State::CLOSED;
-	handler.OnEnd();
-}
-
-inline void
-CurlRequest::HeadersFinished()
-{
-	assert(state == State::HEADERS);
-	state = State::BODY;
-
-	long status = 0;
-	curl_easy_getinfo(easy.Get(), CURLINFO_RESPONSE_CODE, &status);
-
-	try {
-		handler.OnHeaders(status, std::move(headers));
-	} catch (...) {
-		state = State::CLOSED;
-		handler.OnError(std::current_exception());
-	}
+	FinishBody();
 }
 
 inline void
@@ -151,10 +167,6 @@ CurlRequest::HeaderFunction(StringView s)
 
 	const char *header = s.data;
 	const char *end = StripRight(header, header + s.size);
-	if (end == header) {
-		HeadersFinished();
-		return;
-	}
 
 	const char *value = s.Find(':');
 	if (value == nullptr)
@@ -190,6 +202,9 @@ inline size_t
 CurlRequest::DataReceived(const void *ptr, size_t received_size)
 {
 	assert(received_size > 0);
+
+	if (!FinishHeaders())
+		return 0;
 
 	try {
 		handler.OnData({ptr, received_size});

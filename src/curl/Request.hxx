@@ -95,9 +95,11 @@ private:
 	 */
 	void FreeEasy();
 
+	bool FinishHeaders();
+	void FinishBody();
+
 	size_t DataReceived(const void *ptr, size_t size);
 
-	void HeadersFinished();
 	void HeaderFunction(StringView s);
 
 	/** called by curl when new data is available */
