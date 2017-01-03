@@ -116,7 +116,12 @@ CurlRequest::HeadersFinished()
 	long status = 0;
 	curl_easy_getinfo(easy.Get(), CURLINFO_RESPONSE_CODE, &status);
 
-	handler.OnHeaders(status, std::move(headers));
+	try {
+		handler.OnHeaders(status, std::move(headers));
+	} catch (...) {
+		state = State::CLOSED;
+		handler.OnError(std::current_exception());
+	}
 }
 
 inline void
@@ -169,8 +174,14 @@ CurlRequest::DataReceived(const void *ptr, size_t received_size)
 {
 	assert(received_size > 0);
 
-	handler.OnData({ptr, received_size});
-	return received_size;
+	try {
+		handler.OnData({ptr, received_size});
+		return received_size;
+	} catch (...) {
+		state = State::CLOSED;
+		handler.OnError(std::current_exception());
+		return 0;
+	}
 }
 
 size_t
