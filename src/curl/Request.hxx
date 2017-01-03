@@ -47,9 +47,13 @@ class CurlRequest {
 	/** the curl handle */
 	CurlEasy easy;
 
-	std::multimap<std::string, std::string> headers;
+	enum class State {
+		HEADERS,
+		BODY,
+		CLOSED,
+	} state = State::HEADERS;
 
-	bool headers_finished = false;
+	std::multimap<std::string, std::string> headers;
 
 	/** error message provided by libcurl */
 	char error_buffer[CURL_ERROR_SIZE];

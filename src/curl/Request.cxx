@@ -92,10 +92,12 @@ CurlRequest::Done(CURLcode result)
 			throw FormatRuntimeError("CURL failed: %s", msg);
 		}
 	} catch (...) {
+		state = State::CLOSED;
 		handler.OnError(std::current_exception());
 		return;
 	}
 
+	state = State::CLOSED;
 	handler.OnEnd();
 }
 
@@ -108,8 +110,8 @@ CurlRequest::HeaderReceived(const char *name, std::string &&value)
 inline void
 CurlRequest::HeadersFinished()
 {
-	assert(!headers_finished);
-	headers_finished = true;
+	assert(state == State::HEADERS);
+	state = State::BODY;
 
 	long status = 0;
 	curl_easy_getinfo(easy.Get(), CURLINFO_RESPONSE_CODE, &status);
@@ -120,7 +122,7 @@ CurlRequest::HeadersFinished()
 inline void
 CurlRequest::HeaderFunction(StringView s)
 {
-	if (headers_finished)
+	if (state > State::HEADERS)
 		return;
 
 	const char *header = s.data;
