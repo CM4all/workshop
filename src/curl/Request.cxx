@@ -142,6 +142,13 @@ CurlRequest::HeaderFunction(StringView s)
 	if (state > State::HEADERS)
 		return;
 
+	if (s.size > 5 && memcmp(s.data, "HTTP/", 5) == 0) {
+		/* this is the boundary to a new response, for example
+		   after a redirect */
+		headers.clear();
+		return;
+	}
+
 	const char *header = s.data;
 	const char *end = StripRight(header, header + s.size);
 	if (end == header) {
