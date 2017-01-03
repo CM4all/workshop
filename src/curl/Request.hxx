@@ -95,8 +95,6 @@ private:
 	 */
 	void FreeEasy();
 
-	void HeaderReceived(const char *name, std::string &&value);
-
 	size_t DataReceived(const void *ptr, size_t size);
 
 	void HeadersFinished();

@@ -117,12 +117,6 @@ CurlRequest::Done(CURLcode result)
 }
 
 inline void
-CurlRequest::HeaderReceived(const char *name, std::string &&value)
-{
-	headers.emplace(name, std::move(value));
-}
-
-inline void
 CurlRequest::HeadersFinished()
 {
 	assert(state == State::HEADERS);
@@ -152,14 +146,11 @@ CurlRequest::HeaderFunction(StringView s)
 		return;
 	}
 
-	char name[64];
-
 	const char *value = s.Find(':');
-	if (value == nullptr || (size_t)(value - header) >= sizeof(name))
+	if (value == nullptr)
 		return;
 
-	memcpy(name, header, value - header);
-	name[value - header] = 0;
+	std::string name(header, value);
 
 	/* skip the colon */
 
@@ -170,7 +161,7 @@ CurlRequest::HeaderFunction(StringView s)
 	value = StripLeft(value, end);
 	end = StripRight(value, end);
 
-	HeaderReceived(name, std::string(value, end));
+	headers.emplace(std::move(name), std::string(value, end));
 }
 
 size_t
