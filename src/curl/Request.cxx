@@ -36,8 +36,11 @@
 #include "util/RuntimeError.hxx"
 #include "util/StringUtil.hxx"
 #include "util/StringView.hxx"
+#include "util/CharUtil.hxx"
 
 #include <curl/curl.h>
+
+#include <algorithm>
 
 #include <assert.h>
 #include <string.h>
@@ -151,6 +154,7 @@ CurlRequest::HeaderFunction(StringView s)
 		return;
 
 	std::string name(header, value);
+	std::transform(name.begin(), name.end(), name.begin(), ToLowerASCII);
 
 	/* skip the colon */
 
