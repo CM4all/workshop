@@ -62,15 +62,15 @@ public:
 
 	void SocketAction(curl_socket_t fd, int ev_bitmask);
 
+	void InvalidateSockets() {
+		SocketAction(CURL_SOCKET_TIMEOUT, 0);
+	}
+
 private:
 	/**
 	 * Check for finished HTTP responses.
 	 */
 	void ReadInfo();
-
-	void InvalidateSockets() {
-		SocketAction(CURL_SOCKET_TIMEOUT, 0);
-	}
 
 	void ScheduleTimeout(long timeout_ms);
 	static int TimerFunction(CURLM *multi, long timeout_ms, void *userp);
