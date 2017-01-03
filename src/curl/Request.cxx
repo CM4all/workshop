@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2016 Max Kellermann <max@duempel.org>
+ * Copyright (C) 2008-2017 Max Kellermann <max@duempel.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -28,11 +28,9 @@
  */
 
 #include "Request.hxx"
-#include "Handler.hxx"
 #include "Global.hxx"
 #include "Version.hxx"
-#include "event/SocketEvent.hxx"
-#include "event/TimerEvent.hxx"
+#include "Handler.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringUtil.hxx"
 #include "util/StringView.hxx"
