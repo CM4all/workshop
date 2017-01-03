@@ -70,6 +70,11 @@ public:
 		return easy.Get();
 	}
 
+	template<typename T>
+	void SetOption(CURLoption option, T value) {
+		easy.SetOption(option, value);
+	}
+
 	/**
 	 * CurlResponseHandler::OnData() shall throw this to pause the
 	 * stream.  Call Resume() to resume the transfer.
