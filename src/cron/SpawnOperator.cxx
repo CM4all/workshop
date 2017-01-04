@@ -13,6 +13,19 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
+CronSpawnOperator::CronSpawnOperator(CronQueue &_queue,
+                                     CronWorkplace &_workplace, CronJob &&_job,
+                                     std::string &&_start_time) noexcept
+        :CronOperator(_queue, _workplace,
+                      std::move(_job),
+                      std::move(_start_time))
+{
+}
+
+CronSpawnOperator::~CronSpawnOperator()
+{
+}
+
 void
 CronSpawnOperator::Spawn(PreparedChildProcess &&p)
 try {

@@ -21,10 +21,8 @@ class CronSpawnOperator final
 
 public:
     CronSpawnOperator(CronQueue &_queue, CronWorkplace &_workplace, CronJob &&_job,
-                      std::string &&_start_time) noexcept
-        :CronOperator(_queue, _workplace,
-                      std::move(_job),
-                      std::move(_start_time)) {}
+                      std::string &&_start_time) noexcept;
+    ~CronSpawnOperator() override;
 
     void Spawn(PreparedChildProcess &&p);
 
