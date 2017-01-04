@@ -1,6 +1,7 @@
 cm4all-workshop (2.0.5) unstable; urgency=low
 
   * cron: capture the process output and save to "cronresults" table
+  * cron: capture the HTTP response and save to "cronresults" table
 
  --   
 

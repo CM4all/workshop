@@ -9,6 +9,10 @@
 #include "curl/Handler.hxx"
 #include "curl/Request.hxx"
 
+#include <memory>
+
+class CaptureBuffer;
+
 /**
  * A #CronJob which sends a HTTP GET request to a specific URL.
  */
@@ -19,12 +23,15 @@ class CronCurlOperator final
 
     unsigned status = 0;
 
+    std::unique_ptr<CaptureBuffer> output_capture;
+
 public:
     CronCurlOperator(CronQueue &_queue, CronWorkplace &_workplace,
                      CronJob &&_job,
                      std::string &&_start_time,
                      CurlGlobal &_global,
                      const char *url) noexcept;
+    ~CronCurlOperator() override;
 
     void Cancel() override;
 

@@ -5,8 +5,11 @@
 #include "CurlOperator.hxx"
 #include "Workplace.hxx"
 #include "Queue.hxx"
+#include "CaptureBuffer.hxx"
 #include "event/Duration.hxx"
 #include "util/PrintException.hxx"
+
+#include <string.h>
 
 CronCurlOperator::CronCurlOperator(CronQueue &_queue,
                                    CronWorkplace &_workplace,
@@ -21,6 +24,10 @@ CronCurlOperator::CronCurlOperator(CronQueue &_queue,
 {
     /* kill after 5 minutes */
     timeout_event.Add(EventDuration<300>::value);
+}
+
+CronCurlOperator::~CronCurlOperator()
+{
 }
 
 void
@@ -38,20 +45,36 @@ CronCurlOperator::OnHeaders(unsigned _status,
 {
     status = _status;
     (void)headers;
+
+    const auto ct = headers.find("content-type");
+    if (ct != headers.end()) {
+        const char *content_type = ct->second.c_str();
+        if (strncmp(content_type, "text/", 5) == 0)
+            /* capture the response body if it's text */
+            output_capture = std::make_unique<CaptureBuffer>();
+    }
 }
 
 void
 CronCurlOperator::OnData(ConstBuffer<void> data)
 {
-    (void)data;
+    if (output_capture) {
+        auto w = output_capture->Write();
+        size_t nbytes = std::min(w.size, data.size);
+        memcpy(w.data, data.data, nbytes);
+        output_capture->Append(nbytes);
+    }
 }
 
 void
 CronCurlOperator::OnEnd()
 {
+    const char *log = output_capture
+        ? output_capture->NormalizeASCII()
+        : nullptr;
+
     queue.Finish(job);
-    // TODO: use response body?
-    queue.InsertResult(job, start_time.c_str(), status, nullptr);
+    queue.InsertResult(job, start_time.c_str(), status, log);
     timeout_event.Cancel();
     workplace.OnExit(this);
 }
