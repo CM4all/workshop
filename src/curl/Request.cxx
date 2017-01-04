@@ -55,7 +55,6 @@ CurlRequest::CurlRequest(CurlGlobal &_global, const char *url,
 	easy.SetOption(CURLOPT_WRITEHEADER, this);
 	easy.SetOption(CURLOPT_WRITEFUNCTION, WriteFunction);
 	easy.SetOption(CURLOPT_WRITEDATA, this);
-	easy.SetOption(CURLOPT_FAILONERROR, 1l);
 	easy.SetOption(CURLOPT_ERRORBUFFER, error_buffer);
 	easy.SetOption(CURLOPT_NOPROGRESS, 1l);
 	easy.SetOption(CURLOPT_NOSIGNAL, 1l);
