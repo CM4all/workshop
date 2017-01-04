@@ -2,8 +2,8 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#ifndef WORKSHOP_INSTANCE_HXX
-#define WORKSHOP_INSTANCE_HXX
+#ifndef CAPTURE_BUFFER_HXX
+#define CAPTURE_BUFFER_HXX
 
 #include "io/UniqueFileDescriptor.hxx"
 #include "event/SocketEvent.hxx"
