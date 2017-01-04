@@ -4,7 +4,7 @@ cm4all-workshop (2.0.5) unstable; urgency=low
   * cron: capture the HTTP response and save to "cronresults" table
   * cron: improved logging of failed HTTP requests
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Wed, 04 Jan 2017 17:50:17 -0000
 
 cm4all-workshop (2.0.4) unstable; urgency=low
 
