@@ -11,7 +11,7 @@
 #include <memory>
 
 struct PreparedChildProcess;
-class CaptureBuffer;
+class PipeCaptureBuffer;
 
 /**
  * A #CronJob being executed as a spawned child process.
@@ -22,7 +22,7 @@ class CronSpawnOperator final
 
     int pid = -1;
 
-    std::unique_ptr<CaptureBuffer> output_capture;
+    std::unique_ptr<PipeCaptureBuffer> output_capture;
 
 public:
     CronSpawnOperator(CronQueue &_queue, CronWorkplace &_workplace, CronJob &&_job,

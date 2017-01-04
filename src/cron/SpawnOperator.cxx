@@ -5,7 +5,7 @@
 #include "SpawnOperator.hxx"
 #include "Workplace.hxx"
 #include "Queue.hxx"
-#include "CaptureBuffer.hxx"
+#include "PipeCaptureBuffer.hxx"
 #include "spawn/Interface.hxx"
 #include "spawn/Prepared.hxx"
 #include "event/Duration.hxx"
@@ -44,8 +44,8 @@ try {
             /* capture STDOUT as well */
             p.stdout_fd = p.stderr_fd;
 
-        output_capture = std::make_unique<CaptureBuffer>(queue.GetEventLoop(),
-                                                         std::move(r));
+        output_capture = std::make_unique<PipeCaptureBuffer>(queue.GetEventLoop(),
+                                                             std::move(r));
     }
 
     pid = workplace.GetSpawnService().SpawnChildProcess(job.id.c_str(),

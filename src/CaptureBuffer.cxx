@@ -7,39 +7,6 @@
 
 #include <algorithm>
 
-CaptureBuffer::CaptureBuffer(EventLoop &event_loop, UniqueFileDescriptor &&_fd)
-        :fd(std::move(_fd)),
-         event(event_loop, fd.Get(), EV_READ|EV_PERSIST,
-               BIND_THIS_METHOD(OnSocket))
-{
-    event.Add();
-}
-
-CaptureBuffer::~CaptureBuffer()
-{
-    event.Delete();
-}
-
-void
-CaptureBuffer::OnSocket(short)
-{
-    if (length < data.size()) {
-        ssize_t nbytes = fd.Read(&data[length], data.size() - length);
-        if (nbytes <= 0) {
-            Close();
-            return;
-        }
-
-        length += nbytes;
-    } else {
-        /* buffer is full: discard data to keep the pipe from blocking
-           the other end */
-        char discard[4096];
-        if (fd.Read(discard, sizeof(discard)) <= 0)
-            Close();
-    }
-}
-
 static constexpr bool
 IsAllowedNonPrintableChar(char ch)
 {

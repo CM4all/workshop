@@ -5,26 +5,25 @@
 #ifndef CAPTURE_BUFFER_HXX
 #define CAPTURE_BUFFER_HXX
 
-#include "io/UniqueFileDescriptor.hxx"
-#include "event/SocketEvent.hxx"
 #include "util/WritableBuffer.hxx"
 
 #include <array>
 
 /**
- * Capture up to 8 kB of data from a pipe asynchronously.  This is
- * useful to capture the output of a child process.
+ * A buffer which helps capture up to 8 kB of data.
  */
 class CaptureBuffer final {
-    UniqueFileDescriptor fd;
-    SocketEvent event;
-
     size_t length = 0;
     std::array<char, 8192> data;
 
 public:
-    explicit CaptureBuffer(EventLoop &event_loop, UniqueFileDescriptor &&_fd);
-    ~CaptureBuffer();
+    WritableBuffer<char> Write() {
+        return { &data[length], data.size() - length };
+    }
+
+    void Append(size_t n) {
+        length += n;
+    }
 
     WritableBuffer<char> GetData() {
         return {&data.front(), length};
@@ -38,14 +37,6 @@ public:
      * @return the null-terminated ASCII string
      */
     char *NormalizeASCII();
-
-private:
-    void Close() {
-        event.Delete();
-        fd.Close();
-    }
-
-    void OnSocket(short events);
 };
 
 #endif

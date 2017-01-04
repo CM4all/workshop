@@ -15,6 +15,7 @@ cm4all_workshop_SOURCES = \
 	src/ExpandableStringList.cxx src/ExpandableStringList.hxx \
 	src/SyslogClient.cxx src/SyslogClient.hxx \
 	src/CaptureBuffer.cxx src/CaptureBuffer.hxx \
+	src/PipeCaptureBuffer.cxx src/PipeCaptureBuffer.hxx \
 	src/Expand.cxx src/Expand.hxx \
 	src/Instance.cxx src/Instance.hxx \
 	src/cron/Config.cxx src/cron/Config.hxx \
