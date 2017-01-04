@@ -5,8 +5,11 @@
 #include "SpawnOperator.hxx"
 #include "Workplace.hxx"
 #include "Queue.hxx"
+#include "CaptureBuffer.hxx"
 #include "spawn/Interface.hxx"
+#include "spawn/Prepared.hxx"
 #include "event/Duration.hxx"
+#include "system/Error.hxx"
 
 #include <daemon/log.h>
 
@@ -29,6 +32,22 @@ CronSpawnOperator::~CronSpawnOperator()
 void
 CronSpawnOperator::Spawn(PreparedChildProcess &&p)
 try {
+    if (p.stderr_fd < 0) {
+        /* no STDERR destination configured: the default is to capture
+           it and save in the cronresults table */
+        UniqueFileDescriptor r, w;
+        if (!UniqueFileDescriptor::CreatePipe(r, w))
+            throw MakeErrno("pipe() failed");
+
+        p.SetStderr(std::move(w));
+        if (p.stdout_fd < 0)
+            /* capture STDOUT as well */
+            p.stdout_fd = p.stderr_fd;
+
+        output_capture = std::make_unique<CaptureBuffer>(queue.GetEventLoop(),
+                                                         std::move(r));
+    }
+
     pid = workplace.GetSpawnService().SpawnChildProcess(job.id.c_str(),
                                                         std::move(p), this);
 
@@ -45,6 +64,7 @@ try {
 void
 CronSpawnOperator::Cancel()
 {
+    output_capture.reset();
     workplace.GetSpawnService().KillChildProcess(pid, SIGTERM);
 
     queue.Finish(job);
@@ -72,9 +92,12 @@ CronSpawnOperator::OnChildProcessExit(int status)
                    job.id.c_str(), pid,
                    exit_status);
 
+    const char *log = output_capture
+        ? output_capture->NormalizeASCII()
+        : nullptr;
+
     queue.Finish(job);
-    // TODO: capture log
-    queue.InsertResult(job, start_time.c_str(), exit_status, nullptr);
+    queue.InsertResult(job, start_time.c_str(), exit_status, log);
     timeout_event.Cancel();
     workplace.OnExit(this);
 }

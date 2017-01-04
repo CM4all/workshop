@@ -8,7 +8,10 @@
 #include "Operator.hxx"
 #include "spawn/ExitListener.hxx"
 
+#include <memory>
+
 struct PreparedChildProcess;
+class CaptureBuffer;
 
 /**
  * A #CronJob being executed as a spawned child process.
@@ -18,6 +21,8 @@ class CronSpawnOperator final
       ExitListener {
 
     int pid = -1;
+
+    std::unique_ptr<CaptureBuffer> output_capture;
 
 public:
     CronSpawnOperator(CronQueue &_queue, CronWorkplace &_workplace, CronJob &&_job,
