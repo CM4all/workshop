@@ -24,6 +24,8 @@ CronCurlOperator::CronCurlOperator(CronQueue &_queue,
 {
     /* kill after 5 minutes */
     timeout_event.Add(EventDuration<300>::value);
+
+    request.Start();
 }
 
 CronCurlOperator::~CronCurlOperator()
