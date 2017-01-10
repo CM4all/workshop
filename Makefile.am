@@ -147,6 +147,7 @@ libcurl_a_SOURCES = \
 	src/curl/Version.cxx src/curl/Version.hxx \
 	src/curl/Easy.hxx \
 	src/curl/Multi.hxx \
+	src/curl/Slist.hxx \
 	src/curl/Request.cxx src/curl/Request.hxx \
 	src/curl/Global.cxx src/curl/Global.hxx \
 	src/curl/Init.cxx src/curl/Init.hxx
