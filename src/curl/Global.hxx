@@ -32,6 +32,7 @@
 
 #include "Multi.hxx"
 #include "event/TimerEvent.hxx"
+#include "event/DeferEvent.hxx"
 
 class CurlSocket;
 class CurlRequest;
@@ -44,6 +45,7 @@ class CurlGlobal final {
 
 	CurlMulti multi;
 
+	DeferEvent read_info_event;
 	TimerEvent timeout_event;
 
 public:
@@ -86,6 +88,7 @@ private:
 	static int TimerFunction(CURLM *multi, long timeout_ms, void *userp);
 
 	void OnTimeout();
+	void OnDeferredReadInfo();
 };
 
 #endif

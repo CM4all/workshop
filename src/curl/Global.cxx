@@ -110,6 +110,7 @@ private:
 
 CurlGlobal::CurlGlobal(EventLoop &_loop)
 	:event_loop(_loop),
+	 read_info_event(_loop, BIND_THIS_METHOD(OnDeferredReadInfo)),
 	 timeout_event(event_loop, BIND_THIS_METHOD(OnTimeout))
 {
 	multi.SetOption(CURLMOPT_SOCKETFUNCTION, CurlSocket::SocketFunction);
@@ -211,6 +212,12 @@ CurlGlobal::SocketAction(curl_socket_t fd, int ev_bitmask)
 						   &running_handles);
 	(void)mcode;
 
+	read_info_event.Schedule();
+}
+
+void
+CurlGlobal::OnDeferredReadInfo()
+{
 	ReadInfo();
 }
 
