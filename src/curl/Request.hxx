@@ -31,9 +31,11 @@
 #define CURL_REQUEST_HXX
 
 #include "Easy.hxx"
+#include "event/DeferEvent.hxx"
 
 #include <map>
 #include <string>
+#include <exception>
 
 struct StringView;
 class CurlGlobal;
@@ -54,6 +56,18 @@ class CurlRequest {
 	} state = State::HEADERS;
 
 	std::multimap<std::string, std::string> headers;
+
+	DeferEvent defer_error_event;
+
+	/**
+	 * An exception caught by DataReceived(), which will be
+	 * forwarded into a "safe" stack frame by
+	 * DeferredMonitor::RunDeferred().  This works around the
+	 * problem that libcurl crashes if you call
+	 * curl_multi_remove_handle() from within the WRITEFUNCTION
+	 * (i.e. DataReceived()).
+	 */
+	std::exception_ptr postponed_error;
 
 	/** error message provided by libcurl */
 	char error_buffer[CURL_ERROR_SIZE];
@@ -129,6 +143,8 @@ private:
 	/** called by curl when new data is available */
 	static size_t WriteFunction(void *ptr, size_t size, size_t nmemb,
 				    void *stream);
+
+	void OnDeferredError();
 };
 
 #endif

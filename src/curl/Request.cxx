@@ -45,7 +45,9 @@
 
 CurlRequest::CurlRequest(CurlGlobal &_global, const char *url,
 			 CurlResponseHandler &_handler)
-	:global(_global), handler(_handler)
+	:global(_global), handler(_handler),
+	 defer_error_event(global.GetEventLoop(),
+			   BIND_THIS_METHOD(OnDeferredError))
 {
 	error_buffer[0] = 0;
 
@@ -224,8 +226,11 @@ CurlRequest::DataReceived(const void *ptr, size_t received_size)
 		return CURL_WRITEFUNC_PAUSE;
 	} catch (...) {
 		state = State::CLOSED;
-		handler.OnError(std::current_exception());
-		return 0;
+		/* move the CurlResponseHandler::OnError() call into a
+		   "safe" stack frame */
+		postponed_error = std::current_exception();
+		defer_error_event.Schedule();
+		return CURL_WRITEFUNC_PAUSE;
 	}
 }
 
@@ -239,4 +244,12 @@ CurlRequest::WriteFunction(void *ptr, size_t size, size_t nmemb, void *stream)
 		return 0;
 
 	return c.DataReceived(ptr, size);
+}
+
+void
+CurlRequest::OnDeferredError()
+{
+	assert(postponed_error);
+
+	handler.OnError(postponed_error);
 }
