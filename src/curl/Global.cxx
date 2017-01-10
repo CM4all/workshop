@@ -123,8 +123,8 @@ int
 CurlSocket::SocketFunction(gcc_unused CURL *easy,
 			   curl_socket_t s, int action,
 			   void *userp, void *socketp) {
-	CurlGlobal &global = *(CurlGlobal *)userp;
-	CurlSocket *cs = (CurlSocket *)socketp;
+	auto &global = *(CurlGlobal *)userp;
+	auto *cs = (CurlSocket *)socketp;
 
 	if (action == CURL_POLL_REMOVE) {
 		delete cs;
@@ -240,7 +240,7 @@ CurlGlobal::ScheduleTimeout(long timeout_ms)
 int
 CurlGlobal::TimerFunction(gcc_unused CURLM *_multi, long timeout_ms, void *userp)
 {
-	CurlGlobal &global = *(CurlGlobal *)userp;
+	auto &global = *(CurlGlobal *)userp;
 	assert(_multi == global.multi.Get());
 	global.ScheduleTimeout(timeout_ms);
 	return 0;
