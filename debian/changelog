@@ -1,6 +1,7 @@
 cm4all-workshop (2.0.6) unstable; urgency=low
 
   * cron: fix HTTP crash bug
+  * spawn: forbid ptrace() and other dangerous system calls
 
  --   
 
