@@ -42,6 +42,9 @@ PKG_CHECK_MODULES([LIBCM4ALL_SOCKET], [libcm4all-socket >= 0.3.5],,
 PKG_CHECK_MODULES([LIBCM4ALL_BENG_PROXY], [libcm4all-beng-proxy >= 12.0.3],,
 	[AC_MSG_ERROR([libcm4all-beng-proxy not found])])
 
+PKG_CHECK_MODULES([LIBSECCOMP], [libseccomp],,
+	[AC_MSG_ERROR([libseccomp not found])])
+
 AC_ARG_WITH(pg-config,
 	AS_HELP_STRING([--with-pg-config=PATH],
 		[The path of libpq's pg_config script]),

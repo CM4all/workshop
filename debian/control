@@ -5,6 +5,7 @@ Maintainer: Max Kellermann <mk@cm4all.com>
 Build-Depends: debhelper (>= 9), dh-systemd,
  libevent-dev (>= 2.0.19),
  libsystemd-dev,
+ libseccomp-dev,
  libboost-dev (>= 1.54),
  libboost-system-dev (>= 1.54),
  libboost-filesystem-dev (>= 1.54),

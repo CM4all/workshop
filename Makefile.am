@@ -45,6 +45,7 @@ cm4all_workshop_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBCM4ALL_DAEMON_CFLAGS) \
 	$(LIBCM4ALL_SOCKET_CFLAGS) \
 	$(LIBSYSTEMD_CFLAGS) \
+	$(LIBSECCOMP_CFLAGS) \
 	$(LIBEVENT_CFLAGS) \
 	$(CURL_CFLAGS) \
 	$(LIBPQ_CPPFLAGS)
@@ -59,6 +60,7 @@ cm4all_workshop_LDADD = $(AM_LDADD) \
 	$(LIBCM4ALL_DAEMON_LIBS) \
 	$(LIBCM4ALL_SOCKET_LIBS) \
 	$(LIBSYSTEMD_LIBS) \
+	$(LIBSECCOMP_LIBS) \
 	$(LIBEVENT_LIBS) \
 	$(CURL_LIBS) \
 	$(BOOST_FILESYSTEM_LIB) \
@@ -176,6 +178,7 @@ libspawn_a_SOURCES = \
 	src/spawn/ChildOptions.cxx src/spawn/ChildOptions.hxx \
 	src/spawn/Client.cxx src/spawn/Client.hxx \
 	src/spawn/Config.hxx \
+	src/spawn/SeccompFilter.cxx src/spawn/SeccompFilter.hxx \
 	src/spawn/Direct.cxx src/spawn/Direct.hxx \
 	src/spawn/ExitListener.hxx \
 	src/spawn/Glue.cxx src/spawn/Glue.hxx \
