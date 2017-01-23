@@ -303,7 +303,7 @@ syntax (see :manpage:`crontab(5)`), though the special `@` strings are
 not yet implemented.
 
 The `cronjobs` table
-^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 * :envvar:`id`: The primary key.
 * :envvar:`account_id`: The user account which owns this job.  This
