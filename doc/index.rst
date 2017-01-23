@@ -193,7 +193,7 @@ Queueing a job
 A job consists of a row in the PostgreSQL table.  Example::
 
   INSERT INTO jobs(plan_name,args)
-  VALUES('foo', ARRAY['--bar', '/var/www/vol01/foo/bar'])
+  VALUES('foo', ARRAY['--bar', 'vol01/foo/bar'])
 
 During job execution, the columns `node_name` and `progress` are set.
 Upon completion, the columns `time_done` and `status` contain
