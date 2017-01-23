@@ -80,6 +80,9 @@ The following settings are recognized:
     documentation
     <https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING>`_)
   * :envvar:`database_schema`: the PostgreSQL schema name (optional)
+  * :envvar:`translation_server`: address the translation server is
+    listening to; must start with :file:`/` (absolute path) or
+    :file:`@` (abstract socket)
 
 The default configuration file includes :file:`local.conf` and
 :file:`conf.d/*.conf`, and you should probably better edit these files
