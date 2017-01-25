@@ -15,7 +15,7 @@
 
 TranslateResponse
 TranslateCron(AllocatorPtr alloc, const char *socket_path,
-              const char *user, const char *param)
+              const char *user, const char *uri, const char *param)
 {
     int fd = socket(AF_UNIX, SOCK_STREAM|SOCK_CLOEXEC, 0);
     if (fd < 0)
@@ -31,5 +31,5 @@ TranslateCron(AllocatorPtr alloc, const char *socket_path,
             throw MakeErrno("Failed to connect to translation server");
     }
 
-    return TranslateCron(alloc, fd, user, param);
+    return TranslateCron(alloc, fd, user, uri, param);
 }

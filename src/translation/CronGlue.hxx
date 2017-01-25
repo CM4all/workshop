@@ -10,6 +10,6 @@ class AllocatorPtr;
 
 TranslateResponse
 TranslateCron(AllocatorPtr alloc, const char *socket_path,
-              const char *user, const char *param);
+              const char *user, const char *uri, const char *param);
 
 #endif

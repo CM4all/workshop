@@ -52,6 +52,7 @@ MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
     try {
         const auto response = TranslateCron(alloc, translation_socket,
                                             job.account_id.c_str(),
+                                            nullptr,
                                             job.translate_param.empty()
                                             ? nullptr
                                             : job.translate_param.c_str());

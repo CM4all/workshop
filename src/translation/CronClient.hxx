@@ -9,6 +9,7 @@ struct TranslateResponse;
 class AllocatorPtr;
 
 TranslateResponse
-TranslateCron(AllocatorPtr alloc, int fd, const char *user, const char *param);
+TranslateCron(AllocatorPtr alloc, int fd, const char *user, const char *uri,
+              const char *param);
 
 #endif
