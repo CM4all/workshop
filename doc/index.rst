@@ -315,7 +315,10 @@ The `cronjobs` table
 * :envvar:`schedule`: A :manpage:`crontab(5)`-like schedule.
 * :envvar:`command`: A command to be executed by :file:`/bin/sh`.  If
   it starts with :samp:`http://` or :samp:`https://`, a HTTP GET
-  request is sent instead of spawning a child process.
+  request is sent instead of spawning a child process.  If it starts
+  with :samp:`urn:`, then that URN will be passed to the translation
+  server as :envvar:`URI` payload, and the response must contain
+  :envvar:`EXECUTE` (may be followed by :envvar:`APPEND`)
 * :envvar:`translate_param`: An opaque parameter to be passed to the
   translation server.
 * :envvar:`enabled`: The cron job is never run when not enabled.

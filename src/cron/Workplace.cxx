@@ -40,12 +40,19 @@ MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
                   CronJob &&job, const char *command,
                   std::string &&start_time)
 {
+    const char *uri = StringStartsWith(command, "urn:")
+        ? command
+        : nullptr;
+
     /* prepare the child process */
 
     PreparedChildProcess p;
-    p.args.push_back("/bin/sh");
-    p.args.push_back("-c");
-    p.args.push_back(command);
+
+    if (uri == nullptr) {
+        p.args.push_back("/bin/sh");
+        p.args.push_back("-c");
+        p.args.push_back(command);
+    }
 
     Allocator alloc;
 
@@ -56,6 +63,21 @@ MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
                                             job.translate_param.empty()
                                             ? nullptr
                                             : job.translate_param.c_str());
+
+        if (uri != nullptr) {
+            if (response.execute == nullptr)
+                throw std::runtime_error("No EXECUTE from translation server");
+
+            p.args.push_back(alloc.Dup(response.execute));
+
+            for (const char *arg : response.args) {
+                if (p.args.full())
+                    throw std::runtime_error("Too many APPEND packets from translation server");
+
+                p.args.push_back(alloc.Dup(arg));
+            }
+        }
+
         response.child_options.CopyTo(p);
     } catch (const std::exception &e) {
         queue.Finish(job);
