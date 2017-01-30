@@ -302,8 +302,7 @@ Cron Schedule
 ^^^^^^^^^^^^^
 
 The :envvar:`schedule` column follows the classic `cron` schedule
-syntax (see :manpage:`crontab(5)`), though the special `@` strings are
-not yet implemented.
+syntax (see :manpage:`crontab(5)`).
 
 The `cronjobs` table
 ^^^^^^^^^^^^^^^^^^^^

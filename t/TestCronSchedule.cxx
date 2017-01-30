@@ -133,6 +133,18 @@ TestCronScheduleNext4()
     ok1(s.Next(ParseISO8601("2015-12-29T05:29:00Z")) == ParseISO8601("2016-01-04T05:30:00Z"));
 }
 
+static void
+TestCronScheduleSpecial()
+{
+    ok1(CronSchedule("@yearly") == CronSchedule("0 0 1 1 *"));
+    ok1(CronSchedule("@annually") == CronSchedule("0 0 1 1 *"));
+    ok1(CronSchedule("@monthly") == CronSchedule("0 0 1 * *"));
+    ok1(CronSchedule("@weekly") == CronSchedule("0 0 * * 0"));
+    ok1(CronSchedule("@daily") == CronSchedule("0 0 * * *"));
+    ok1(CronSchedule("@midnight") == CronSchedule("0 0 * * *"));
+    ok1(CronSchedule("@hourly") == CronSchedule("0 * * * *"));
+}
+
 int
 main(int, char **)
 {
@@ -143,6 +155,7 @@ main(int, char **)
     TestCronScheduleNext2();
     TestCronScheduleNext3();
     TestCronScheduleNext4();
+    TestCronScheduleSpecial();
 
     return EXIT_SUCCESS;
 }

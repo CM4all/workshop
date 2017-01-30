@@ -10,6 +10,7 @@
 #include <stdexcept>
 
 #include <assert.h>
+#include <string.h>
 #include <stdlib.h>
 #include <time.h>
 
@@ -97,8 +98,41 @@ ParseNumericBitSet(RangeBitSet<MIN, MAX> &b, const char *&schedule)
     }
 }
 
+struct CronSpecialSchedule {
+    const char *special;
+    const char *regular;
+};
+
+static constexpr CronSpecialSchedule cron_special_schedules[] = {
+    { "yearly", "0 0 1 1 *" },
+    { "annually", "0 0 1 1 *" },
+    { "monthly", "0 0 1 * *" },
+    { "weekly", "0 0 * * 0" },
+    { "daily", "0 0 * * *" },
+    { "midnight", "0 0 * * *" },
+    { "hourly", "0 * * * *" },
+};
+
+static const char *
+TranslateSpecial(const char *s)
+{
+        for (const auto &i : cron_special_schedules)
+            if (strcmp(s, i.special) == 0)
+                return i.regular;
+
+        return nullptr;
+}
+
 CronSchedule::CronSchedule(const char *s)
 {
+    if (*s == '@') {
+        const char *regular = TranslateSpecial(s + 1);
+        if (regular == nullptr)
+            throw std::runtime_error("Unsupported 'special' cron schedule");
+
+        s = regular;
+    }
+
     ParseNumericBitSet(minutes, s);
     ParseNumericBitSet(hours, s);
     ParseNumericBitSet(days_of_month, s);
