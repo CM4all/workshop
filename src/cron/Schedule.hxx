@@ -30,6 +30,14 @@ struct CronSchedule {
      */
     explicit CronSchedule(const char *s);
 
+    bool operator==(const CronSchedule &other) const {
+        return minutes == other.minutes &&
+            hours == other.hours &&
+            days_of_month == other.days_of_month &&
+            months == other.months &&
+            days_of_week == other.days_of_week;
+    }
+
     gcc_pure
     bool CheckDate(const struct tm &tm) const;
 

@@ -18,6 +18,14 @@ class RangeBitSet {
     BitSet b;
 
 public:
+    bool operator==(const RangeBitSet<MIN, MAX> &other) const {
+        return b == other.b;
+    }
+
+    bool operator!=(const RangeBitSet<MIN, MAX> &other) const {
+        return !(*this == other);
+    }
+
     constexpr size_t size() const {
         return b.size();
     }
