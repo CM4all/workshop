@@ -195,8 +195,12 @@ NextBit(const RangeBitSet<MIN, MAX> b, size_t pos)
 }
 
 std::chrono::system_clock::time_point
-CronSchedule::Next(std::chrono::system_clock::time_point _last) const
+CronSchedule::Next(std::chrono::system_clock::time_point _last,
+                   std::chrono::system_clock::time_point now) const
 {
+    if (_last == std::chrono::system_clock::time_point::min())
+        _last = now - std::chrono::minutes(1);
+
     auto last = LocalTime(_last);
     auto next = last;
     next.tm_sec = 0;

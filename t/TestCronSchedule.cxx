@@ -86,15 +86,16 @@ TestCronScheduleNext1()
 {
     /* every minute; several wraparound checks follow */
     const CronSchedule s("* * * * *");
-    ok1(s.Next(ParseISO8601("2016-10-14T16:41:00Z")) == ParseISO8601("2016-10-14T16:42:00Z"));
-    ok1(s.Next(ParseISO8601("2016-10-14T16:41:30Z")) == ParseISO8601("2016-10-14T16:42:00Z"));
-    ok1(s.Next(ParseISO8601("2016-10-14T16:41:59Z")) == ParseISO8601("2016-10-14T16:42:00Z"));
-    ok1(s.Next(ParseISO8601("2016-10-13T23:59:59Z")) == ParseISO8601("2016-10-14T00:00:00Z"));
-    ok1(s.Next(ParseISO8601("2016-09-30T23:59:59Z")) == ParseISO8601("2016-10-01T00:00:00Z"));
-    ok1(s.Next(ParseISO8601("2015-12-31T23:59:59Z")) == ParseISO8601("2016-01-01T00:00:00Z"));
-    ok1(s.Next(ParseISO8601("2016-02-28T23:59:59Z")) == ParseISO8601("2016-02-29T00:00:00Z"));
-    ok1(s.Next(ParseISO8601("2016-02-29T23:59:59Z")) == ParseISO8601("2016-03-01T00:00:00Z"));
-    ok1(s.Next(ParseISO8601("2015-02-28T23:59:59Z")) == ParseISO8601("2015-03-01T00:00:00Z"));
+    const auto now = std::chrono::system_clock::from_time_t(1485800000);
+    ok1(s.Next(ParseISO8601("2016-10-14T16:41:00Z"), now) == ParseISO8601("2016-10-14T16:42:00Z"));
+    ok1(s.Next(ParseISO8601("2016-10-14T16:41:30Z"), now) == ParseISO8601("2016-10-14T16:42:00Z"));
+    ok1(s.Next(ParseISO8601("2016-10-14T16:41:59Z"), now) == ParseISO8601("2016-10-14T16:42:00Z"));
+    ok1(s.Next(ParseISO8601("2016-10-13T23:59:59Z"), now) == ParseISO8601("2016-10-14T00:00:00Z"));
+    ok1(s.Next(ParseISO8601("2016-09-30T23:59:59Z"), now) == ParseISO8601("2016-10-01T00:00:00Z"));
+    ok1(s.Next(ParseISO8601("2015-12-31T23:59:59Z"), now) == ParseISO8601("2016-01-01T00:00:00Z"));
+    ok1(s.Next(ParseISO8601("2016-02-28T23:59:59Z"), now) == ParseISO8601("2016-02-29T00:00:00Z"));
+    ok1(s.Next(ParseISO8601("2016-02-29T23:59:59Z"), now) == ParseISO8601("2016-03-01T00:00:00Z"));
+    ok1(s.Next(ParseISO8601("2015-02-28T23:59:59Z"), now) == ParseISO8601("2015-03-01T00:00:00Z"));
 }
 
 static void
@@ -102,10 +103,11 @@ TestCronScheduleNext2()
 {
     /* every 6 hours */
     const CronSchedule s("30 */6 * * *");
-    ok1(s.Next(ParseISO8601("2016-10-14T14:41:00Z")) == ParseISO8601("2016-10-14T16:30:00Z"));
-    ok1(s.Next(ParseISO8601("2016-10-14T16:41:00Z")) == ParseISO8601("2016-10-14T22:30:00Z"));
-    ok1(s.Next(ParseISO8601("2016-10-14T22:41:00Z")) == ParseISO8601("2016-10-15T04:30:00Z"));
-    ok1(s.Next(ParseISO8601("2016-02-29T23:41:00Z")) == ParseISO8601("2016-03-01T05:30:00Z"));
+    const auto now = std::chrono::system_clock::from_time_t(1485800000);
+    ok1(s.Next(ParseISO8601("2016-10-14T14:41:00Z"), now) == ParseISO8601("2016-10-14T16:30:00Z"));
+    ok1(s.Next(ParseISO8601("2016-10-14T16:41:00Z"), now) == ParseISO8601("2016-10-14T22:30:00Z"));
+    ok1(s.Next(ParseISO8601("2016-10-14T22:41:00Z"), now) == ParseISO8601("2016-10-15T04:30:00Z"));
+    ok1(s.Next(ParseISO8601("2016-02-29T23:41:00Z"), now) == ParseISO8601("2016-03-01T05:30:00Z"));
 }
 
 static void
@@ -113,12 +115,13 @@ TestCronScheduleNext3()
 {
     /* every month on the 29th*/
     const CronSchedule s("30 6 29 * *");
-    ok1(s.Next(ParseISO8601("2016-10-14T14:41:00Z")) == ParseISO8601("2016-10-29T04:30:00Z"));
-    ok1(s.Next(ParseISO8601("2016-02-01T00:41:00Z")) == ParseISO8601("2016-02-29T05:30:00Z"));
-    ok1(s.Next(ParseISO8601("2015-02-01T00:41:00Z")) == ParseISO8601("2015-03-29T05:30:00Z"));
-    ok1(s.Next(ParseISO8601("2015-12-29T05:29:00Z")) == ParseISO8601("2015-12-29T05:30:00Z"));
-    ok1(s.Next(ParseISO8601("2015-12-29T05:30:00Z")) == ParseISO8601("2016-01-29T05:30:00Z"));
-    ok1(s.Next(ParseISO8601("2015-12-31T05:30:00Z")) == ParseISO8601("2016-01-29T05:30:00Z"));
+    const auto now = std::chrono::system_clock::from_time_t(1485800000);
+    ok1(s.Next(ParseISO8601("2016-10-14T14:41:00Z"), now) == ParseISO8601("2016-10-29T04:30:00Z"));
+    ok1(s.Next(ParseISO8601("2016-02-01T00:41:00Z"), now) == ParseISO8601("2016-02-29T05:30:00Z"));
+    ok1(s.Next(ParseISO8601("2015-02-01T00:41:00Z"), now) == ParseISO8601("2015-03-29T05:30:00Z"));
+    ok1(s.Next(ParseISO8601("2015-12-29T05:29:00Z"), now) == ParseISO8601("2015-12-29T05:30:00Z"));
+    ok1(s.Next(ParseISO8601("2015-12-29T05:30:00Z"), now) == ParseISO8601("2016-01-29T05:30:00Z"));
+    ok1(s.Next(ParseISO8601("2015-12-31T05:30:00Z"), now) == ParseISO8601("2016-01-29T05:30:00Z"));
 }
 
 static void
@@ -126,11 +129,12 @@ TestCronScheduleNext4()
 {
     /* every monday */
     const CronSchedule s("30 6 * * 1");
-    ok1(s.Next(ParseISO8601("2016-10-14T14:41:00Z")) == ParseISO8601("2016-10-17T04:30:00Z"));
-    ok1(s.Next(ParseISO8601("2016-02-01T00:41:00Z")) == ParseISO8601("2016-02-01T05:30:00Z"));
-    ok1(s.Next(ParseISO8601("2016-02-01T05:30:00Z")) == ParseISO8601("2016-02-08T05:30:00Z"));
-    ok1(s.Next(ParseISO8601("2015-02-01T00:41:00Z")) == ParseISO8601("2015-02-02T05:30:00Z"));
-    ok1(s.Next(ParseISO8601("2015-12-29T05:29:00Z")) == ParseISO8601("2016-01-04T05:30:00Z"));
+    const auto now = std::chrono::system_clock::from_time_t(1485800000);
+    ok1(s.Next(ParseISO8601("2016-10-14T14:41:00Z"), now) == ParseISO8601("2016-10-17T04:30:00Z"));
+    ok1(s.Next(ParseISO8601("2016-02-01T00:41:00Z"), now) == ParseISO8601("2016-02-01T05:30:00Z"));
+    ok1(s.Next(ParseISO8601("2016-02-01T05:30:00Z"), now) == ParseISO8601("2016-02-08T05:30:00Z"));
+    ok1(s.Next(ParseISO8601("2015-02-01T00:41:00Z"), now) == ParseISO8601("2015-02-02T05:30:00Z"));
+    ok1(s.Next(ParseISO8601("2015-12-29T05:29:00Z"), now) == ParseISO8601("2016-01-04T05:30:00Z"));
 }
 
 static void

@@ -54,12 +54,10 @@ CalculateNextRun(PgConnection &db)
                 _last_run != nullptr
                 ? ParsePgTimestamp(_last_run)
                 : std::chrono::system_clock::time_point::min();
-            if (last_run == std::chrono::system_clock::time_point::min())
-                last_run = now - std::chrono::minutes(1);
 
             const CronSchedule schedule(_schedule);
 
-            const auto next_run = schedule.Next(last_run);
+            const auto next_run = schedule.Next(last_run, now);
 
             auto r = db.ExecuteParams("UPDATE cronjobs SET next_run=$4 "
                                       "WHERE id=$1 AND schedule=$2 AND"

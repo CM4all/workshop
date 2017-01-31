@@ -55,11 +55,13 @@ struct CronSchedule {
      *
      * @param last the time this job was last run; min() if it was
      * never run
+     * @param now the current time stamp
      * @return the next time this job should run (may be in the past,
      * which means this job can be run immediately)
      */
     gcc_pure
-    std::chrono::system_clock::time_point Next(std::chrono::system_clock::time_point last) const;
+    std::chrono::system_clock::time_point Next(std::chrono::system_clock::time_point last,
+                                               std::chrono::system_clock::time_point now) const;
 };
 
 #endif
