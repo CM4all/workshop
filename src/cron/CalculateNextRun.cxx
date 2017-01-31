@@ -40,6 +40,8 @@ CalculateNextRun(PgConnection &db)
     if (result.IsEmpty())
         return true;
 
+    const auto now = std::chrono::system_clock::now();
+
     for (const auto &row : result) {
         const char *id = row.GetValue(0), *_schedule = row.GetValue(1),
             *_last_run = row.GetValue(2);
@@ -53,7 +55,7 @@ CalculateNextRun(PgConnection &db)
                 ? ParsePgTimestamp(_last_run)
                 : std::chrono::system_clock::time_point::min();
             if (last_run == std::chrono::system_clock::time_point::min())
-                last_run = std::chrono::system_clock::now() - std::chrono::minutes(1);
+                last_run = now - std::chrono::minutes(1);
 
             const CronSchedule schedule(_schedule);
 
