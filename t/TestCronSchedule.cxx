@@ -138,6 +138,18 @@ TestCronScheduleNext4()
 }
 
 static void
+TestCronScheduleOnce()
+{
+    const CronSchedule s("@once");
+    const auto now = std::chrono::system_clock::from_time_t(1485800000);
+    ok1(s.Next(std::chrono::system_clock::time_point::min(), now) >= now - std::chrono::hours(1));
+    ok1(s.Next(std::chrono::system_clock::time_point::min(), now) <= now + std::chrono::hours(1));
+
+    const auto last = std::chrono::system_clock::from_time_t(1485000000);
+    ok1(s.Next(last, now) == std::chrono::system_clock::time_point::max());
+}
+
+static void
 TestCronScheduleSpecial()
 {
     ok1(CronSchedule("@yearly") == CronSchedule("0 0 1 1 *"));
@@ -159,6 +171,7 @@ main(int, char **)
     TestCronScheduleNext2();
     TestCronScheduleNext3();
     TestCronScheduleNext4();
+    TestCronScheduleOnce();
     TestCronScheduleSpecial();
 
     return EXIT_SUCCESS;

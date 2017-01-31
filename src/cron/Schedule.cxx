@@ -126,7 +126,14 @@ TranslateSpecial(const char *s)
 CronSchedule::CronSchedule(const char *s)
 {
     if (*s == '@') {
-        const char *regular = TranslateSpecial(s + 1);
+        ++s;
+
+        if (strcmp(s, "once") == 0) {
+            assert(IsOnce());
+            return;
+        }
+
+        const char *regular = TranslateSpecial(s);
         if (regular == nullptr)
             throw std::runtime_error("Unsupported 'special' cron schedule");
 
@@ -198,6 +205,16 @@ std::chrono::system_clock::time_point
 CronSchedule::Next(std::chrono::system_clock::time_point _last,
                    std::chrono::system_clock::time_point now) const
 {
+    if (IsOnce()) {
+        /* a "@once" job: execute it now or never again */
+        if (_last == std::chrono::system_clock::time_point::min())
+            /* was never run: do it now */
+            return now;
+        else
+            /* already run at least once: never again */
+            return std::chrono::system_clock::time_point::max();
+    }
+
     if (_last == std::chrono::system_clock::time_point::min())
         _last = now - std::chrono::minutes(1);
 

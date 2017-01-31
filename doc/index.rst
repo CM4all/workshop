@@ -304,6 +304,10 @@ Cron Schedule
 The :envvar:`schedule` column follows the classic `cron` schedule
 syntax (see :manpage:`crontab(5)`).
 
+The special schedule ":samp:`@once`" can be used to execute a job once
+instead of periodically.  It will be executed as soon as possible, and
+never again.
+
 The `cronjobs` table
 ^^^^^^^^^^^^^^^^^^^^
 

@@ -38,6 +38,15 @@ struct CronSchedule {
             days_of_week == other.days_of_week;
     }
 
+    /**
+     * Is this a "run once, and never again" job?  (Special schedule
+     * string "@once")
+     */
+    bool IsOnce() const {
+        return minutes.none() && hours.none() && days_of_month.none() &&
+            months.none() && days_of_week.none();
+    }
+
     gcc_pure
     bool CheckDate(const struct tm &tm) const;
 
@@ -57,7 +66,8 @@ struct CronSchedule {
      * never run
      * @param now the current time stamp
      * @return the next time this job should run (may be in the past,
-     * which means this job can be run immediately)
+     * which means this job can be run immediately); returns max() if
+     * the job shall never be executed again
      */
     gcc_pure
     std::chrono::system_clock::time_point Next(std::chrono::system_clock::time_point last,

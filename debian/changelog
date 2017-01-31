@@ -1,6 +1,7 @@
 cm4all-workshop (2.0.7) unstable; urgency=low
 
   * cron: support "special" schedule strings such as "@daily"
+  * cron: add special schedule "@once"
 
  --   
 
