@@ -20,7 +20,7 @@ CronQueue::CronQueue(EventLoop &event_loop, const char *_node_name,
                      const char *conninfo, const char *schema,
                      Callback _callback)
     :node_name(_node_name),
-     db(conninfo, schema, *this),
+     db(event_loop, conninfo, schema, *this),
      callback(_callback),
      check_notify_event(event_loop, BIND_THIS_METHOD(CheckNotify)),
      scheduler_timer(event_loop, BIND_THIS_METHOD(RunScheduler)),

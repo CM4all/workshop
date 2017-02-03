@@ -27,7 +27,7 @@ WorkshopQueue::WorkshopQueue(EventLoop &event_loop,
                              const char *conninfo, const char *schema,
                              Callback _callback)
     :node_name(_node_name),
-     db(conninfo, schema, *this),
+     db(event_loop, conninfo, schema, *this),
      check_notify_event(event_loop, BIND_THIS_METHOD(CheckNotify)),
      timer_event(event_loop, BIND_THIS_METHOD(OnTimer)),
      callback(_callback) {
