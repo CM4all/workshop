@@ -38,7 +38,7 @@ private:
         fd.Close();
     }
 
-    void OnSocket(short events);
+    void OnSocket(unsigned events);
 };
 
 #endif

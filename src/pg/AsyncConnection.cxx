@@ -202,7 +202,7 @@ AsyncPgConnection::ScheduleReconnect()
 }
 
 inline void
-AsyncPgConnection::OnSocketEvent(short)
+AsyncPgConnection::OnSocketEvent(unsigned)
 {
     switch (state) {
     case State::UNINITIALIZED:

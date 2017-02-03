@@ -40,7 +40,7 @@ WorkshopOperator::~WorkshopOperator()
 }
 
 void
-WorkshopOperator::OnOutputReady(short)
+WorkshopOperator::OnOutputReady(unsigned)
 {
     char buffer[512];
     ssize_t nbytes, i;
@@ -90,7 +90,7 @@ WorkshopOperator::SetOutput(UniqueFileDescriptor &&fd)
 }
 
 void
-WorkshopOperator::OnErrorReady(short)
+WorkshopOperator::OnErrorReady(unsigned)
 {
     assert(syslog != nullptr);
 

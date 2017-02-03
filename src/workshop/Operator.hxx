@@ -57,8 +57,8 @@ struct WorkshopOperator final
     void Expand(std::list<std::string> &args) const;
 
 private:
-    void OnOutputReady(short events);
-    void OnErrorReady(short events);
+    void OnOutputReady(unsigned events);
+    void OnErrorReady(unsigned events);
 
 public:
     /* virtual methods from ExitListener */

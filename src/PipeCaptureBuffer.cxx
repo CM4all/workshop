@@ -18,7 +18,7 @@ PipeCaptureBuffer::~PipeCaptureBuffer()
 }
 
 void
-PipeCaptureBuffer::OnSocket(short)
+PipeCaptureBuffer::OnSocket(unsigned)
 {
     auto w = buffer.Write();
     if (!w.IsEmpty()) {
