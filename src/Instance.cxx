@@ -27,7 +27,7 @@ Instance::Instance(const Config &config,
      curl(new CurlGlobal(event_loop))
 {
     shutdown_listener.Enable();
-    sighup_event.Add();
+    sighup_event.Enable();
 
     if (!config.partitions.empty())
         library.reset(new MultiLibrary());
@@ -79,7 +79,7 @@ Instance::OnExit()
     should_exit = true;
 
     shutdown_listener.Disable();
-    sighup_event.Delete();
+    sighup_event.Disable();
     child_process_registry.SetVolatile();
 
     spawn_service->Shutdown();
