@@ -1,5 +1,6 @@
 /files
 /stamp-*
+/*.log
 /*.substvars
 /*.debhelper
 /cm4all-*/

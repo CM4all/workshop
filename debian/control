@@ -3,6 +3,7 @@ Section: non-free/admin
 Priority: optional
 Maintainer: Max Kellermann <mk@cm4all.com>
 Build-Depends: debhelper (>= 9), dh-systemd,
+ meson (>= 0.37), make,
  libevent-dev (>= 2.0.19),
  libsystemd-dev,
  libseccomp-dev,
@@ -13,7 +14,7 @@ Build-Depends: debhelper (>= 9), dh-systemd,
  libcurl4-openssl-dev (>= 7.38),
  libcm4all-inline-dev (>= 0.3.2), libcm4all-daemon-dev (>= 0.4.2),
  libcm4all-socket-dev (>= 0.3.5),
- libcm4all-beng-proxy-dev (>= 12.0.6),
+ libcm4all-beng-proxy-dev (>= 12.0.3),
  python3-sphinx
 Standards-Version: 3.9.3
 Vcs-git: git@dev.intern.cm-ag:max/workshop.git
