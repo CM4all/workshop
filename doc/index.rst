@@ -324,6 +324,7 @@ The `cronjobs` table
   :envvar:`EXECUTE` (may be followed by :envvar:`APPEND`)
 * :envvar:`translate_param`: An opaque parameter to be passed to the
   translation server.
+* :envvar:`notification`: An email address to receive notification.
 * :envvar:`enabled`: The cron job is never run when not enabled.
 * :envvar:`overlapping`: If false, then there is only ever one running
   process at a time.

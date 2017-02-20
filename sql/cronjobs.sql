@@ -33,7 +33,7 @@ CREATE TABLE cronjobs (
     -- shall overlapped execution of slow instances be allowed?
     overlapping boolean NOT NULL DEFAULT TRUE,
 
-    -- ????
+    -- email address to receive notification
     notification varchar(512) NULL,
 
     --------------------------------
