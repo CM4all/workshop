@@ -9,6 +9,11 @@
 
 struct CronJob {
     std::string id, account_id, command, translate_param;
+
+    /**
+     * Email address to receive notification.
+     */
+    std::string notification;
 };
 
 #endif

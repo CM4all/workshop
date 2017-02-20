@@ -243,7 +243,7 @@ CronQueue::CheckPending()
         return false;
 
     const auto result =
-        db.Execute("SELECT id, account_id, command, translate_param "
+        db.Execute("SELECT id, account_id, command, translate_param, notification "
                    "FROM cronjobs WHERE enabled AND next_run<=now() "
                    "AND node_name IS NULL "
                    "LIMIT 1");
@@ -262,6 +262,7 @@ CronQueue::CheckPending()
         job.account_id = row.GetValue(1);
         job.command = row.GetValue(2);
         job.translate_param = row.GetValue(3);
+        job.notification = row.GetValue(4);
 
         callback(std::move(job));
 
