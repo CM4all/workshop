@@ -30,8 +30,6 @@
 #ifndef SYSTEM_ERROR_HXX
 #define SYSTEM_ERROR_HXX
 
-#include "util/StringUtil.hxx"
-
 #include <inline/compiler.h>
 
 #include <system_error>
