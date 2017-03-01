@@ -49,15 +49,20 @@ libdaemon = dependency('libcm4all-daemon', version: '>= 0.4.2')
 libsocket = dependency('libcm4all-socket', version: '>= 0.3.5')
 libbp = dependency('libcm4all-beng-proxy', version: '>= 12.0.3')
 
-inc = include_directories('src')
+inc = include_directories('src', 'libcommon/src')
 
 util = static_library('util',
+  'libcommon/src/util/AllocatedString.cxx',
+  'libcommon/src/util/Exception.cxx',
+  'libcommon/src/util/LeakDetector.cxx',
+  'libcommon/src/util/PrintException.cxx',
+  'libcommon/src/util/StringBuilder.cxx',
+  'libcommon/src/util/StringParser.cxx',
+  'libcommon/src/util/StringUtil.cxx',
+  'libcommon/src/util/StringView.cxx',
   'src/util/djbhash.c',
-  'src/util/PrintException.cxx',
-  'src/util/StringUtil.cxx',
-  'src/util/StringView.cxx',
-  'src/util/StringParser.cxx',
   'src/util/Tokenizer.cxx',
+  include_directories: inc,
   dependencies: [
     libinline
   ])

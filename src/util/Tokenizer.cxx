@@ -28,8 +28,8 @@
  */
 
 #include "Tokenizer.hxx"
-#include "CharUtil.hxx"
-#include "StringUtil.hxx"
+#include "util/CharUtil.hxx"
+#include "util/StringUtil.hxx"
 
 #include <stdexcept>
 
