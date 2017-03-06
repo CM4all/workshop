@@ -66,6 +66,7 @@ util = static_library('util',
   dependencies: [
     libinline
   ])
+util_dep = declare_dependency(link_with: util)
 
 time = static_library('time',
   'src/time/ISO8601.cxx',
@@ -107,6 +108,7 @@ event = static_library('event',
     libevent,
     declare_dependency(link_with: util),
   ])
+event_dep = declare_dependency(link_with: event)
 
 net = static_library('net',
   'libcommon/src/net/SocketAddress.cxx',
@@ -118,15 +120,16 @@ net = static_library('net',
   ])
 
 curl = static_library('curl',
-  'src/curl/Version.cxx',
-  'src/curl/Request.cxx',
-  'src/curl/Global.cxx',
-  'src/curl/Init.cxx',
+  'libcommon/src/curl/Version.cxx',
+  'libcommon/src/curl/Request.cxx',
+  'libcommon/src/curl/Global.cxx',
+  'libcommon/src/curl/Init.cxx',
   include_directories: inc,
   dependencies: [
-    libinline,
     libcurl,
-    declare_dependency(link_with: event),
+    libinline,
+    util_dep,
+    event_dep,
   ])
 
 pg = static_library('pg',
