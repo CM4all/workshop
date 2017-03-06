@@ -109,8 +109,8 @@ event = static_library('event',
   ])
 
 net = static_library('net',
-  'src/net/SocketAddress.cxx',
-  'src/net/AllocatedSocketAddress.cxx',
+  'libcommon/src/net/SocketAddress.cxx',
+  'libcommon/src/net/AllocatedSocketAddress.cxx',
   include_directories: inc,
   dependencies: [
     libinline, libdaemon, libsocket,
