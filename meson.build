@@ -133,10 +133,10 @@ curl = static_library('curl',
   ])
 
 pg = static_library('pg',
-  'src/pg/Array.cxx',
-  'src/pg/Connection.cxx',
-  'src/pg/AsyncConnection.cxx',
-  'src/pg/Result.cxx',
+  'libcommon/src/pg/Array.cxx',
+  'libcommon/src/pg/Connection.cxx',
+  'libcommon/src/pg/AsyncConnection.cxx',
+  'libcommon/src/pg/Result.cxx',
   include_directories: inc,
   dependencies: [
     libpq,
