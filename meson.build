@@ -142,6 +142,7 @@ pg = static_library('pg',
     libpq,
     libinline,
   ])
+pg_dep = declare_dependency(link_with: pg)
 
 translation = static_library('translation',
   'src/translation/CronClient.cxx',
@@ -237,20 +238,6 @@ executable('http',
     declare_dependency(link_with: curl),
   ])
 
-test_pg_decode_array = executable('test_pg_decode_array',
-  't/test-pg_decode_array.cxx',
-  install: false,
-  dependencies: [
-    declare_dependency(link_with: pg),
-  ])
-
-test_pg_encode_array = executable('test_pg_encode_array',
-  't/test-pg_encode_array.cxx',
-  install: false,
-  dependencies: [
-    declare_dependency(link_with: pg),
-  ])
-
 TestCronSchedule = executable('TestCronSchedule',
   't/TestCronSchedule.cxx',
   'src/cron/Schedule.cxx',
@@ -262,6 +249,6 @@ TestCronSchedule = executable('TestCronSchedule',
     declare_dependency(link_with: time),
   ])
 
-test('test_pg_decode_array', test_pg_decode_array)
-test('test_pg_encode_array', test_pg_encode_array)
 test('TestCronSchedule', TestCronSchedule)
+
+subdir('libcommon/test')
