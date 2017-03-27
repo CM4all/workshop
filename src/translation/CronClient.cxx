@@ -3,7 +3,7 @@
  */
 
 #include "CronClient.hxx"
-#include "Parser.hxx"
+#include "translation/Parser.hxx"
 #include "AllocatorPtr.hxx"
 #include "system/Error.hxx"
 #include "util/StaticFifoBuffer.hxx"
@@ -92,10 +92,7 @@ SendTranslateCron(int fd, const char *user, const char *uri, const char *param)
 static TranslateResponse
 ReceiveResponse(AllocatorPtr alloc, int fd)
 {
-    TranslateRequest dummy_request; // TODO: eliminate
-    dummy_request.Clear();
-
-    TranslateParser parser(alloc, dummy_request);
+    TranslateParser parser(alloc);
 
     StaticFifoBuffer<uint8_t, 8192> buffer;
 

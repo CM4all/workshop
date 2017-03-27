@@ -144,17 +144,26 @@ pg = static_library('pg',
   ])
 pg_dep = declare_dependency(link_with: pg)
 
+adata = static_library('adata',
+  'libcommon/src/adata/ExpandableStringList.cxx',
+  include_directories: inc,
+  dependencies: [
+    libinline,
+  ])
+adata_dep = declare_dependency(link_with: adata)
+
 translation = static_library('translation',
   'src/translation/CronClient.cxx',
   'src/translation/CronGlue.cxx',
-  'src/translation/PReader.cxx',
-  'src/translation/Parser.cxx',
-  'src/translation/Response.cxx',
+  'libcommon/src/translation/PReader.cxx',
+  'libcommon/src/translation/Parser.cxx',
+  'libcommon/src/translation/Response.cxx',
   include_directories: inc,
   dependencies: [
     libinline, libbp,
     declare_dependency(link_with: event),
     declare_dependency(link_with: net),
+    adata_dep,
   ])
 
 spawn = static_library('spawn',

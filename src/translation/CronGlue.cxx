@@ -4,7 +4,7 @@
 
 #include "CronGlue.hxx"
 #include "CronClient.hxx"
-#include "Response.hxx"
+#include "translation/Response.hxx"
 #include "AllocatorPtr.hxx"
 #include "net/AllocatedSocketAddress.hxx"
 #include "system/Error.hxx"
