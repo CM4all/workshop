@@ -42,6 +42,7 @@ boost = dependency('boost', modules: ['system', 'filesystem'], version: '>= 1.54
 libevent = dependency('libevent', version: '>= 2.0.19')
 libcurl = dependency('libcurl', version: '>= 7.38')
 libsystemd = dependency('libsystemd')
+libdbus = dependency('dbus-1')
 libseccomp = dependency('libseccomp')
 libpq = dependency('libpq', version: '>= 8.4')
 libinline = dependency('libcm4all-inline', version: '>= 0.3.2')
@@ -60,7 +61,7 @@ util = static_library('util',
   'libcommon/src/util/StringParser.cxx',
   'libcommon/src/util/StringUtil.cxx',
   'libcommon/src/util/StringView.cxx',
-  'src/util/djbhash.c',
+  'libcommon/src/util/djbhash.c',
   'src/util/Tokenizer.cxx',
   include_directories: inc,
   dependencies: [
@@ -79,14 +80,16 @@ time = static_library('time',
 
 system = static_library('system',
   'src/system/SetupProcess.cxx',
-  'src/system/bind_mount.c',
+  'libcommon/src/system/bind_mount.c',
   include_directories: inc,
   dependencies: [
     libinline,
   ])
+system_dep = declare_dependency(link_with: system)
 
 io = static_library('io',
   'libcommon/src/io/FileDescriptor.cxx',
+  'libcommon/src/io/WriteFile.cxx',
   'src/io/LineParser.cxx',
   'src/io/ConfigParser.cxx',
   include_directories: inc,
@@ -95,6 +98,7 @@ io = static_library('io',
     libinline,
     declare_dependency(link_with: util),
   ])
+io_dep = declare_dependency(link_with: io)
 
 event = static_library('event',
   'libcommon/src/event/Loop.cxx',
@@ -166,30 +170,46 @@ translation = static_library('translation',
     adata_dep,
   ])
 
-spawn = static_library('spawn',
-  'src/spawn/CgroupOptions.cxx',
-  'src/spawn/ChildOptions.cxx',
-  'src/spawn/Client.cxx',
-  'src/spawn/SeccompFilter.cxx',
-  'src/spawn/Direct.cxx',
-  'src/spawn/Glue.cxx',
-  'src/spawn/Interface.cxx',
-  'src/spawn/Launch.cxx',
-  'src/spawn/Local.cxx',
-  'src/spawn/mount_list.cxx',
-  'src/spawn/NamespaceOptions.cxx',
-  'src/spawn/Prepared.cxx',
-  'src/spawn/RefenceOptions.cxx',
-  'src/spawn/Registry.cxx',
-  'src/spawn/ResourceLimits.cxx',
-  'src/spawn/Server.cxx',
-  'src/spawn/UidGid.cxx',
+odbus = static_library('odbus',
+  'libcommon/src/odbus/Message.cxx',
   include_directories: inc,
   dependencies: [
+    libdbus,
+    libinline,
+  ])
+odbus_dep = declare_dependency(link_with: odbus)
+
+spawn = static_library('spawn',
+  'libcommon/src/spawn/SeccompFilter.cxx',
+  'libcommon/src/spawn/Systemd.cxx',
+  'libcommon/src/spawn/Prepared.cxx',
+  'libcommon/src/spawn/Registry.cxx',
+  'libcommon/src/spawn/Direct.cxx',
+  'libcommon/src/spawn/Interface.cxx',
+  'libcommon/src/spawn/Local.cxx',
+  'libcommon/src/spawn/NamespaceOptions.cxx',
+  'libcommon/src/spawn/mount_list.cxx',
+  'libcommon/src/spawn/JailConfig.cxx',
+  'libcommon/src/spawn/JailParams.cxx',
+  'libcommon/src/spawn/ChildOptions.cxx',
+  'libcommon/src/spawn/CgroupOptions.cxx',
+  'libcommon/src/spawn/UidGid.cxx',
+  'libcommon/src/spawn/ResourceLimits.cxx',
+  'libcommon/src/spawn/RefenceOptions.cxx',
+  'libcommon/src/spawn/Server.cxx',
+  'libcommon/src/spawn/Launch.cxx',
+  'libcommon/src/spawn/Client.cxx',
+  'libcommon/src/spawn/Glue.cxx',
+  include_directories: inc,
+  dependencies: [
+    libdbus,
     libseccomp,
+    libsystemd,
     libinline, libdaemon,
-    declare_dependency(link_with: util),
-    declare_dependency(link_with: system),
+    system_dep,
+    adata_dep,
+    io_dep,
+    odbus_dep,
   ])
 
 executable('cm4all-workshop',
