@@ -80,7 +80,7 @@ time = static_library('time',
 
 system = static_library('system',
   'src/system/SetupProcess.cxx',
-  'libcommon/src/system/bind_mount.c',
+  'libcommon/src/system/BindMount.cxx',
   include_directories: inc,
   dependencies: [
     libinline,
