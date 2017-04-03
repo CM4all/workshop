@@ -19,6 +19,7 @@ Instance::Instance(const Config &config,
      sighup_event(event_loop, SIGHUP, BIND_THIS_METHOD(OnReload)),
      child_process_registry(event_loop),
      spawn_service(StartSpawnServer(config.spawn, child_process_registry,
+                                    nullptr,
                                     [this, &in_spawner](){
                                         in_spawner();
                                         event_loop.Reinit();
