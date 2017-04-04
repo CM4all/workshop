@@ -14,6 +14,12 @@
 #include <pwd.h>
 #include <grp.h>
 
+Config::Config()
+{
+    if (debug_mode)
+        spawn.default_uid_gid.LoadEffective();
+}
+
 void
 Config::Check()
 {

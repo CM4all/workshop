@@ -23,6 +23,8 @@ struct Config {
     std::forward_list<WorkshopPartitionConfig> partitions;
     std::forward_list<CronPartitionConfig> cron_partitions;
 
+    Config();
+
     void Check();
 };
 
