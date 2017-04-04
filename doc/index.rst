@@ -26,7 +26,7 @@ Workshop (classic):
    SELECT, UPDATE ON jobs TO "cm4all-workshop";`
 #. The PostgreSQL user which manages jobs can be configured like this:
    :samp:`GRANT INSERT, SELECT, DELETE ON jobs TO workshop_client;`
-   and :samp:`GRANT UPDATE, SELECT ON jobs_id_seq TO workshop_client`
+   and :samp:`GRANT UPDATE, SELECT ON jobs_id_seq TO workshop_client;`
 #. Edit :file:`/etc/cm4all/workshop/workshop.conf` and set the variable
    :envvar:`database` (`PostgreSQL documentation
    <https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING>`_)
@@ -42,7 +42,7 @@ Cron:
    SELECT, UPDATE ON cronjobs TO "cm4all-workshop";`
 #. The PostgreSQL user which manages jobs can be configured like this:
    :samp:`GRANT INSERT, SELECT, DELETE ON cronjobs TO cron_client;` and
-   :samp:`GRANT UPDATE, SELECT ON cronjobs_id_seq TO cron_client`
+   :samp:`GRANT UPDATE, SELECT ON cronjobs_id_seq TO cron_client;`
 #. Edit :file:`/etc/cm4all/cron/workshop.conf` and set the variable
    :envvar:`database` (`PostgreSQL documentation
    <https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING>`_)
