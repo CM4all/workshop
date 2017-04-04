@@ -30,7 +30,7 @@ Instance::Instance(const Config &config,
     }
 
     auto *ss = StartSpawnServer(config.spawn, child_process_registry,
-                                nullptr,
+                                this,
                                 [this, &in_spawner](){
                                     in_spawner();
                                     event_loop.Reinit();

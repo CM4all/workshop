@@ -12,6 +12,7 @@
 #include "event/ShutdownListener.hxx"
 #include "event/SignalEvent.hxx"
 #include "spawn/Registry.hxx"
+#include "spawn/Hook.hxx"
 #include "curl/Init.hxx"
 
 #include <functional>
@@ -22,7 +23,7 @@ class SpawnServerClient;
 class CurlGlobal;
 class MultiLibrary;
 
-class Instance final {
+class Instance final : SpawnHook {
     EventLoop event_loop;
 
     bool should_exit = false;
@@ -77,6 +78,9 @@ private:
 
     void OnPartitionIdle();
     void RemoveIdlePartitions();
+
+    /* virtual methods from SpawnHook */
+    bool Verify(const PreparedChildProcess &p) override;
 };
 
 #endif

@@ -65,9 +65,9 @@ The following settings are recognized:
   configures the process spawner:
 
   * :envvar:`allow_user`: allow child processes to impersonate the
-    given user
+    given user (not necessary for Workshop plans)
   * :envvar:`allow_group`: allow child processes to impersonate the
-    given group
+    given group (not necessary for Workshop plans)
 * :envvar:`workshop`: opens a block (with curly braces), which
   configures a Workshop classic database:
 
@@ -122,15 +122,6 @@ in a :envvar:`workshop` section, e.g.::
 
   workshop {
     database "dbname=workshop"
-  }
-
-For security reasons, Workshop version 2 requires you to specify which
-users and groups can be impersonated by job processes::
-
-  spawn {
-    allow_user hans
-    allow_user foo
-    allow_group bar
   }
 
 

@@ -72,6 +72,7 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
     auto o = std::make_unique<WorkshopOperator>(event_loop, *this, job, plan);
 
     PreparedChildProcess p;
+    p.hook_info = job.plan_name.c_str();
 
     if (!debug_mode) {
         p.uid_gid.uid = plan->uid;
