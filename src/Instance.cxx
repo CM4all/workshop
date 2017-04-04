@@ -18,13 +18,6 @@ Instance::Instance(const Config &config,
     :shutdown_listener(event_loop, BIND_THIS_METHOD(OnExit)),
      sighup_event(event_loop, SIGHUP, BIND_THIS_METHOD(OnReload)),
      child_process_registry(event_loop),
-     spawn_service(StartSpawnServer(config.spawn, child_process_registry,
-                                    nullptr,
-                                    [this, &in_spawner](){
-                                        in_spawner();
-                                        event_loop.Reinit();
-                                        event_loop.~EventLoop();
-                                    })),
      curl(new CurlGlobal(event_loop))
 {
     shutdown_listener.Enable();
@@ -35,6 +28,15 @@ Instance::Instance(const Config &config,
         library->InsertPath("/etc/cm4all/workshop/plans");
         library->InsertPath("/usr/share/cm4all/workshop/plans");
     }
+
+    auto *ss = StartSpawnServer(config.spawn, child_process_registry,
+                                nullptr,
+                                [this, &in_spawner](){
+                                    in_spawner();
+                                    event_loop.Reinit();
+                                    event_loop.~EventLoop();
+                                });
+    spawn_service.reset(ss);
 
     for (const auto &i : config.partitions)
         partitions.emplace_front(*this, *library, *spawn_service,
