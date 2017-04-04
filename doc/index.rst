@@ -39,7 +39,9 @@ Cron:
 #. Execute :file:`/usr/share/cm4all/workshop/sql/cronjobs.sql` in the
    PostgreSQL database to create the `cronjobs` table.
 #. Grant the required permissions to the Workshop daemon: :samp:`GRANT
-   SELECT, UPDATE ON cronjobs TO "cm4all-workshop";`
+   SELECT, UPDATE ON cronjobs TO "cm4all-workshop";`,
+   :samp:`GRANT INSERT ON cronresults TO "cm4all-workshop";` and
+   :samp:`GRANT UPDATE, SELECT ON cronresults_id_seq TO "cm4all-workshop";`
 #. The PostgreSQL user which manages jobs can be configured like this:
    :samp:`GRANT INSERT, SELECT, DELETE ON cronjobs TO cron_client;` and
    :samp:`GRANT UPDATE, SELECT ON cronjobs_id_seq TO cron_client;`

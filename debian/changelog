@@ -3,6 +3,7 @@ cm4all-workshop (2.0.8) unstable; urgency=low
   * build with Meson and Ninja
   * check for early PostgreSQL errors (e.g. DNS lookup failures)
   * improved uid/gid verify error messages
+  * doc: document the GRANT on table "cronresults"
 
  --   
 
