@@ -30,8 +30,11 @@ Instance::Instance(const Config &config,
     shutdown_listener.Enable();
     sighup_event.Enable();
 
-    if (!config.partitions.empty())
+    if (!config.partitions.empty()) {
         library.reset(new MultiLibrary());
+        library->InsertPath("/etc/cm4all/workshop/plans");
+        library->InsertPath("/usr/share/cm4all/workshop/plans");
+    }
 
     for (const auto &i : config.partitions)
         partitions.emplace_front(*this, *library, *spawn_service,
@@ -46,13 +49,6 @@ Instance::Instance(const Config &config,
 
 Instance::~Instance()
 {
-}
-
-void
-Instance::InsertLibraryPath(const char *path)
-{
-    if (library)
-        library->InsertPath(path);
 }
 
 void

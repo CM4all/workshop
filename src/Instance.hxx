@@ -57,8 +57,6 @@ public:
         return *curl;
     }
 
-    void InsertLibraryPath(const char *path);
-
     void Start() {
         for (auto &i : partitions)
             i.Start();

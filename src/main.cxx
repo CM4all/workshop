@@ -38,8 +38,6 @@ Run(int argc, char **argv, const Config &config)
                               memset(argv[i], 0, strlen(argv[i]));
                           strncpy(argv[0], "spawn", name_size);
                       });
-    instance.InsertLibraryPath("/etc/cm4all/workshop/plans");
-    instance.InsertLibraryPath("/usr/share/cm4all/workshop/plans");
 
     config.user.Apply();
 
