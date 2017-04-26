@@ -70,6 +70,7 @@ util = static_library('util',
 util_dep = declare_dependency(link_with: util)
 
 time = static_library('time',
+  'libcommon/src/time/gmtime.c',
   'src/time/ISO8601.cxx',
   'src/time/Convert.cxx',
   'src/time/Math.cxx',
@@ -77,6 +78,7 @@ time = static_library('time',
   dependencies: [
     libinline,
   ])
+time_dep = declare_dependency(link_with: time)
 
 system = static_library('system',
   'src/system/SetupProcess.cxx',
@@ -122,6 +124,18 @@ net = static_library('net',
     libinline, libdaemon, libsocket,
     declare_dependency(link_with: event),
   ])
+
+http = static_library('http',
+  'libcommon/src/http/List.cxx',
+  'libcommon/src/http/Date.cxx',
+  'libcommon/src/http/Range.cxx',
+  include_directories: inc,
+  dependencies: [
+    libinline,
+    util_dep,
+    time_dep,
+  ])
+http_dep = declare_dependency(link_with: http)
 
 curl = static_library('curl',
   'libcommon/src/curl/Version.cxx',
