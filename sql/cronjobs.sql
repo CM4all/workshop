@@ -69,11 +69,11 @@ CREATE INDEX cronjobs_release ON cronjobs(node_name, node_timeout)
 
 -- notify all nodes when a new cronjob is added or edited
 CREATE OR REPLACE RULE new_cronjob AS ON INSERT TO cronjobs
-    WHERE NEW.enabled AND new.node_name IS NULL
+    WHERE NEW.enabled AND NEW.node_name IS NULL
     DO SELECT pg_notify('cronjobs_modified', NULL);
 
 CREATE OR REPLACE RULE edit_cronjob AS ON UPDATE TO cronjobs
-    WHERE NEW.enabled AND new.node_name IS NULL AND (
+    WHERE NEW.enabled AND NEW.node_name IS NULL AND (
       NOT OLD.enabled
       OR
       NEW.schedule != OLD.schedule
@@ -82,12 +82,12 @@ CREATE OR REPLACE RULE edit_cronjob AS ON UPDATE TO cronjobs
 
 -- notify all nodes when a cronjob has finished, to run the scheduler
 CREATE OR REPLACE RULE finish_cronjob AS ON UPDATE TO cronjobs
-    WHERE NEW.enabled AND new.node_name IS NULL AND NEW.next_run IS NULL AND OLD.next_run IS NOT NULL
+    WHERE NEW.enabled AND NEW.node_name IS NULL AND NEW.next_run IS NULL AND OLD.next_run IS NOT NULL
     DO SELECT pg_notify('cronjobs_modified', NULL);
 
 -- notify all nodes when a cronjob has been scheduled
 CREATE OR REPLACE RULE schedule_cronjob AS ON UPDATE TO cronjobs
-    WHERE NEW.enabled AND new.node_name IS NULL AND NEW.next_run IS NOT NULL AND (
+    WHERE NEW.enabled AND NEW.node_name IS NULL AND NEW.next_run IS NOT NULL AND (
       OLD.next_run IS NULL OR
       NEW.next_run != OLD.next_run
     )
