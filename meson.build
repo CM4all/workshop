@@ -48,7 +48,7 @@ libpq = dependency('libpq', version: '>= 8.4')
 libinline = dependency('libcm4all-inline', version: '>= 0.3.2')
 libdaemon = dependency('libcm4all-daemon', version: '>= 0.4.2')
 libsocket = dependency('libcm4all-socket', version: '>= 0.3.5')
-libbp = dependency('libcm4all-beng-proxy', version: '>= 12.0.3')
+libbp = dependency('libcm4all-beng-proxy', version: '>= 12.0.13')
 
 inc = include_directories('src', 'libcommon/src')
 
@@ -125,18 +125,6 @@ net = static_library('net',
     declare_dependency(link_with: event),
   ])
 
-http = static_library('http',
-  'libcommon/src/http/List.cxx',
-  'libcommon/src/http/Date.cxx',
-  'libcommon/src/http/Range.cxx',
-  include_directories: inc,
-  dependencies: [
-    libinline,
-    util_dep,
-    time_dep,
-  ])
-http_dep = declare_dependency(link_with: http)
-
 curl = static_library('curl',
   'libcommon/src/curl/Version.cxx',
   'libcommon/src/curl/Request.cxx',
@@ -195,6 +183,7 @@ odbus_dep = declare_dependency(link_with: odbus)
 
 spawn = static_library('spawn',
   'libcommon/src/spawn/SeccompFilter.cxx',
+  'libcommon/src/spawn/SyscallFilter.cxx',
   'libcommon/src/spawn/Systemd.cxx',
   'libcommon/src/spawn/Prepared.cxx',
   'libcommon/src/spawn/Registry.cxx',
@@ -294,4 +283,4 @@ TestCronSchedule = executable('TestCronSchedule',
 
 test('TestCronSchedule', TestCronSchedule)
 
-subdir('libcommon/test')
+subdir('libcommon/test/pg')
