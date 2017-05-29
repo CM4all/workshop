@@ -40,7 +40,7 @@ WorkshopPartition::UpdateFilter()
                            available_plans.emplace(name);
                        });
 
-    queue.SetFilter(pg_encode_array(available_plans),
+    queue.SetFilter(Pg::EncodeArray(available_plans),
                     workplace.GetFullPlanNames(),
                     workplace.GetRunningPlanNames());
 }

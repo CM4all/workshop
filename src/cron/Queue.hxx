@@ -18,12 +18,12 @@
 struct CronJob;
 class EventLoop;
 
-class CronQueue final : private AsyncPgConnectionHandler {
+class CronQueue final : private Pg::AsyncConnectionHandler {
     typedef std::function<void(CronJob &&job)> Callback;
 
     const std::string node_name;
 
-    AsyncPgConnection db;
+    Pg::AsyncConnection db;
 
     const Callback callback;
 
@@ -118,7 +118,7 @@ private:
      */
     bool CheckPending();
 
-    /* virtual methods from AsyncPgConnectionHandler */
+    /* virtual methods from Pg::AsyncConnectionHandler */
     void OnConnect() override;
     void OnDisconnect() override;
     void OnNotify(const char *name) override;

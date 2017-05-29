@@ -105,7 +105,7 @@ CronQueue::ScheduleScheduler(bool immediately)
 }
 
 static std::chrono::seconds
-FindEarliestPending(PgConnection &db)
+FindEarliestPending(Pg::Connection &db)
 {
     const auto result =
         db.Execute("SELECT EXTRACT(EPOCH FROM (MIN(next_run) - now())) FROM cronjobs "

@@ -32,7 +32,7 @@ WorkshopWorkplace::GetRunningPlanNames() const
     for (const auto &o : operators)
         list.emplace(o.job.plan_name);
 
-    return pg_encode_array(list);
+    return Pg::EncodeArray(list);
 }
 
 std::string
@@ -58,7 +58,7 @@ WorkshopWorkplace::GetFullPlanNames() const
             list.emplace(plan_name);
     }
 
-    return pg_encode_array(list);
+    return Pg::EncodeArray(list);
 }
 
 void

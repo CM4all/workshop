@@ -89,7 +89,7 @@ WorkshopQueue::GetNextScheduled(int *span_r)
 }
 
 static bool
-get_job(WorkshopJob &job, const PgResult &result, unsigned row)
+get_job(WorkshopJob &job, const Pg::Result &result, unsigned row)
 {
     assert(row < result.GetRowCount());
 
@@ -98,7 +98,7 @@ get_job(WorkshopJob &job, const PgResult &result, unsigned row)
 
     std::list<std::string> args;
     try {
-        args = pg_decode_array(result.GetValue(row, 2));
+        args = Pg::DecodeArray(result.GetValue(row, 2));
     } catch (const std::invalid_argument &e) {
         daemon_log(1, "pg_decode_array() failed: %s\n", e.what());
         return false;
@@ -114,8 +114,8 @@ get_job(WorkshopJob &job, const PgResult &result, unsigned row)
 
 static int
 get_and_claim_job(WorkshopJob &job, const char *node_name,
-                  PgConnection &db,
-                  const PgResult &result, unsigned row,
+                  Pg::Connection &db,
+                  const Pg::Result &result, unsigned row,
                   const char *timeout) {
     if (!get_job(job, result, row))
         return -1;
@@ -170,7 +170,7 @@ WorkshopQueue::SetFilter(std::string &&_plans_include,
 }
 
 void
-WorkshopQueue::RunResult(const PgResult &result)
+WorkshopQueue::RunResult(const Pg::Result &result)
 {
     for (unsigned row = 0, end = result.GetRowCount();
          row != end && !disabled && !interrupt; ++row) {

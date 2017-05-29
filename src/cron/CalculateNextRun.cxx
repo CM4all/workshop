@@ -25,7 +25,7 @@ ParsePgTimestamp(const char *s)
 }
 
 bool
-CalculateNextRun(PgConnection &db)
+CalculateNextRun(Pg::Connection &db)
 {
     const auto result =
         db.Execute("SELECT id, schedule, last_run "

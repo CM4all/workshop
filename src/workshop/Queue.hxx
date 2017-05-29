@@ -21,12 +21,12 @@
 struct WorkshopJob;
 class EventLoop;
 
-class WorkshopQueue final : private AsyncPgConnectionHandler {
+class WorkshopQueue final : private Pg::AsyncConnectionHandler {
     typedef std::function<void(WorkshopJob &&job)> Callback;
 
     const std::string node_name;
 
-    AsyncPgConnection db;
+    Pg::AsyncConnection db;
 
     bool disabled = false, running = false;
 
@@ -101,7 +101,7 @@ public:
     bool SetJobDone(const WorkshopJob &job, int status);
 
 private:
-    void RunResult(const PgResult &result);
+    void RunResult(const Pg::Result &result);
     void Run2();
     void Run();
 
@@ -137,7 +137,7 @@ private:
 
     int GetNextScheduled(int *span_r);
 
-    /* virtual methods from AsyncPgConnectionHandler */
+    /* virtual methods from Pg::AsyncConnectionHandler */
     void OnConnect() override;
     void OnDisconnect() override;
     void OnNotify(const char *name) override;

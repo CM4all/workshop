@@ -5,7 +5,7 @@
 #ifndef WORKSHOP_CRON_CALCULATE_NEXT_RUN_HXX
 #define WORKSHOP_CRON_CALCULATE_NEXT_RUN_HXX
 
-class PgConnection;
+namespace Pg { class Connection; };
 
 /**
  * Calculate the "next_run" column for all rows where it's missing.
@@ -14,6 +14,6 @@ class PgConnection;
  * calculated (or if there was an error)
  */
 bool
-CalculateNextRun(PgConnection &db);
+CalculateNextRun(Pg::Connection &db);
 
 #endif
