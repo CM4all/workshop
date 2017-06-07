@@ -10,6 +10,7 @@
 #include "spawn/Prepared.hxx"
 #include "event/Duration.hxx"
 #include "system/Error.hxx"
+#include "util/Exception.hxx"
 
 #include <daemon/log.h>
 
@@ -57,7 +58,7 @@ try {
     timeout_event.Add(EventDuration<300>::value);
 } catch (const std::exception &e) {
     queue.Finish(job);
-    queue.InsertResult(job, start_time.c_str(), -1, e.what());
+    queue.InsertResult(job, start_time.c_str(), -1, GetFullMessage(e).c_str());
     throw;
 }
 

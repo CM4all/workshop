@@ -7,6 +7,7 @@
 #include "Queue.hxx"
 #include "CaptureBuffer.hxx"
 #include "event/Duration.hxx"
+#include "util/Exception.hxx"
 #include "util/PrintException.hxx"
 
 #include <string.h>
@@ -87,7 +88,7 @@ CronCurlOperator::OnError(std::exception_ptr ep)
     PrintException(ep);
 
     queue.Finish(job);
-    queue.InsertResult(job, start_time.c_str(), -1, nullptr);
+    queue.InsertResult(job, start_time.c_str(), -1, GetFullMessage(ep).c_str());
     timeout_event.Cancel();
     workplace.OnExit(this);
 }
