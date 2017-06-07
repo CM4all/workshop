@@ -106,6 +106,7 @@ MakeCurlOperator(CronQueue &queue, CronWorkplace &workplace,
                                                 std::move(job),
                                                 std::move(start_time),
                                                 curl_global, url);
+    o->Start();
     return std::unique_ptr<CronOperator>(std::move(o));
 }
 

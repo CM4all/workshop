@@ -23,14 +23,19 @@ CronCurlOperator::CronCurlOperator(CronQueue &_queue,
                   std::move(_start_time)),
      request(_global, url, *this)
 {
-    /* kill after 5 minutes */
-    timeout_event.Add(EventDuration<300>::value);
-
-    request.Start();
 }
 
 CronCurlOperator::~CronCurlOperator()
 {
+}
+
+void
+CronCurlOperator::Start()
+{
+    /* kill after 5 minutes */
+    timeout_event.Add(EventDuration<300>::value);
+
+    request.Start();
 }
 
 void

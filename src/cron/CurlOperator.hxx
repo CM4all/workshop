@@ -33,6 +33,8 @@ public:
                      const char *url) noexcept;
     ~CronCurlOperator() override;
 
+    void Start();
+
     void Cancel() override;
 
 private:
