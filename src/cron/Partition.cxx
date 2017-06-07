@@ -5,6 +5,7 @@
 #include "Partition.hxx"
 #include "Job.hxx"
 #include "../Config.hxx"
+#include "EmailService.hxx"
 #include "util/PrintException.hxx"
 
 CronPartition::CronPartition(EventLoop &event_loop,
@@ -14,12 +15,20 @@ CronPartition::CronPartition(EventLoop &event_loop,
                              const CronPartitionConfig &config,
                              BoundMethod<void()> _idle_callback)
     :translation_socket(config.translation_socket.c_str()),
+     email_service(config.qmqp_server.IsNull()
+                   ? nullptr
+                   : new EmailService(event_loop, config.qmqp_server)),
      queue(event_loop, root_config.node_name.c_str(),
            config.database.c_str(), config.database_schema.c_str(),
            [this](CronJob &&job){ OnJob(std::move(job)); }),
-     workplace(_spawn_service, _curl, *this,
+     workplace(_spawn_service, email_service.get(),
+               _curl, *this,
                root_config.concurrency),
      idle_callback(_idle_callback)
+{
+}
+
+CronPartition::~CronPartition()
 {
 }
 
@@ -28,6 +37,9 @@ CronPartition::BeginShutdown()
 {
     queue.Disable();
     workplace.CancelAll();
+
+    if (email_service)
+        email_service->CancelAll();
 }
 
 void

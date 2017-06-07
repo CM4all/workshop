@@ -10,13 +10,18 @@
 #include "spawn/ExitListener.hxx"
 #include "util/BindMethod.hxx"
 
+#include <memory>
+
 struct Config;
 struct CronPartitionConfig;
 class EventLoop;
 class SpawnService;
+class EmailService;
 
 class CronPartition final : ExitListener {
     const char *const translation_socket;
+
+    std::unique_ptr<EmailService> email_service;
 
     CronQueue queue;
 
@@ -31,6 +36,8 @@ public:
                   const Config &root_config,
                   const CronPartitionConfig &config,
                   BoundMethod<void()> _idle_callback);
+
+    ~CronPartition();
 
     bool IsIdle() const {
         return workplace.IsEmpty();

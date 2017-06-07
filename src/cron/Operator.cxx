@@ -4,6 +4,8 @@
 
 #include "Operator.hxx"
 #include "Queue.hxx"
+#include "Workplace.hxx"
+#include "EmailService.hxx"
 
 #include <daemon/log.h>
 
@@ -30,6 +32,38 @@ CronOperator::Finish(int exit_status, const char *log)
 {
     queue.Finish(job);
     queue.InsertResult(job, start_time.c_str(), exit_status, log);
+
+    if (!job.notification.empty()) {
+        auto *email_service = workplace.GetEmailService();
+        if (email_service != nullptr) {
+            // TODO: configurable sender?
+            Email email("cm4all-workshop");
+            email.AddRecipient(job.notification.c_str());
+
+            char buffer[1024];
+
+            snprintf(buffer, sizeof(buffer),
+                     "X-CM4all-Workshop: " VERSION "\n"
+                     "X-CM4all-Workshop-Job: %s\n"
+                     "X-CM4all-Workshop-Account: %s\n",
+                     job.id.c_str(),
+                     job.account_id.c_str());
+            email.message += buffer;
+
+            if (exit_status >= 0) {
+                snprintf(buffer, sizeof(buffer), "X-CM4all-Workshop-Status: %d\n",
+                         exit_status);
+                email.message += buffer;
+            }
+
+            email.message += "\n";
+
+            if (log != nullptr)
+                email.message += log;
+
+            email_service->Submit(std::move(email));
+        }
+    }
 }
 
 void

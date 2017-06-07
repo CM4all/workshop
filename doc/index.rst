@@ -85,6 +85,8 @@ The following settings are recognized:
   * :envvar:`translation_server`: address the translation server is
     listening to; must start with :file:`/` (absolute path) or
     :file:`@` (abstract socket)
+  * :envvar:`qmqp_server` (optional): address the QMQP server is
+    listening to; it is used for email notifications
 
 The default configuration file includes :file:`local.conf` and
 :file:`conf.d/*.conf`, and you should probably better edit these files

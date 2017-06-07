@@ -7,6 +7,8 @@
 #include "system/Error.hxx"
 #include "io/LineParser.hxx"
 #include "io/ConfigParser.hxx"
+#include "net/Resolver.hxx"
+#include "net/AddressInfo.hxx"
 #include "util/StringParser.hxx"
 #include "util/RuntimeError.hxx"
 
@@ -171,6 +173,24 @@ WorkshopConfigParser::Partition::Finish()
     ConfigParser::Finish();
 }
 
+static AllocatedSocketAddress
+ResolveStreamConnect(const char *host, int default_port)
+{
+    if (*host == '/' || *host == '@') {
+        AllocatedSocketAddress result;
+        result.SetLocal(host);
+        return result;
+    } else {
+        struct addrinfo hints;
+        memset(&hints, 0, sizeof(hints));
+        hints.ai_flags = AI_ADDRCONFIG;
+        hints.ai_socktype = SOCK_STREAM;
+
+        return AllocatedSocketAddress(Resolve(host, default_port,
+                                              &hints).front());
+    }
+}
+
 void
 WorkshopConfigParser::CronPartition::ParseLine(LineParser &line)
 {
@@ -182,6 +202,9 @@ WorkshopConfigParser::CronPartition::ParseLine(LineParser &line)
         config.database_schema = line.ExpectValueAndEnd();
     } else if (strcmp(word, "translation_server") == 0) {
         config.translation_socket = line.ExpectValueAndEnd();
+    } else if (strcmp(word, "qmqp_server") == 0) {
+        config.qmqp_server = ResolveStreamConnect(line.ExpectValueAndEnd(),
+                                                  628);
     } else
         throw LineParser::Error("Unknown option");
 }
