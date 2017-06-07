@@ -51,6 +51,9 @@ public:
      */
     virtual void Cancel() = 0;
 
+protected:
+    void Finish(int exit_status, const char *log);
+
 private:
     void OnTimeout();
 };

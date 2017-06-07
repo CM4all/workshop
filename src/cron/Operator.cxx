@@ -26,6 +26,13 @@ CronOperator::GetEventLoop()
 }
 
 void
+CronOperator::Finish(int exit_status, const char *log)
+{
+    queue.Finish(job);
+    queue.InsertResult(job, start_time.c_str(), exit_status, log);
+}
+
+void
 CronOperator::OnTimeout()
 {
     daemon_log(2, "Timeout on job %s\n", job.id.c_str());

@@ -4,7 +4,6 @@
 
 #include "SpawnOperator.hxx"
 #include "Workplace.hxx"
-#include "Queue.hxx"
 #include "PipeCaptureBuffer.hxx"
 #include "spawn/Interface.hxx"
 #include "spawn/Prepared.hxx"
@@ -59,8 +58,7 @@ try {
     /* kill after 5 minutes */
     timeout_event.Add(EventDuration<300>::value);
 } catch (const std::exception &e) {
-    queue.Finish(job);
-    queue.InsertResult(job, start_time.c_str(), -1, GetFullMessage(e).c_str());
+    Finish(-1, GetFullMessage(e).c_str());
     throw;
 }
 
@@ -70,8 +68,7 @@ CronSpawnOperator::Cancel()
     output_capture.reset();
     spawn_service.KillChildProcess(pid, SIGTERM);
 
-    queue.Finish(job);
-    queue.InsertResult(job, start_time.c_str(), -1, "Canceled");
+    Finish(-1, "Canceled");
     timeout_event.Cancel();
     workplace.OnExit(this);
 }
@@ -99,8 +96,7 @@ CronSpawnOperator::OnChildProcessExit(int status)
         ? output_capture->NormalizeASCII()
         : nullptr;
 
-    queue.Finish(job);
-    queue.InsertResult(job, start_time.c_str(), exit_status, log);
+    Finish(exit_status, log);
     timeout_event.Cancel();
     workplace.OnExit(this);
 }

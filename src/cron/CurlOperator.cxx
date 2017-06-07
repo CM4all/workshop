@@ -4,7 +4,6 @@
 
 #include "CurlOperator.hxx"
 #include "Workplace.hxx"
-#include "Queue.hxx"
 #include "CaptureBuffer.hxx"
 #include "event/Duration.hxx"
 #include "util/Exception.hxx"
@@ -41,8 +40,7 @@ CronCurlOperator::Start()
 void
 CronCurlOperator::Cancel()
 {
-    queue.Finish(job);
-    queue.InsertResult(job, start_time.c_str(), -1, "Canceled");
+    Finish(-1, "Canceled");
     timeout_event.Cancel();
     workplace.OnExit(this);
 }
@@ -81,8 +79,7 @@ CronCurlOperator::OnEnd()
         ? output_capture->NormalizeASCII()
         : nullptr;
 
-    queue.Finish(job);
-    queue.InsertResult(job, start_time.c_str(), status, log);
+    Finish(status, log);
     timeout_event.Cancel();
     workplace.OnExit(this);
 }
@@ -92,8 +89,7 @@ CronCurlOperator::OnError(std::exception_ptr ep)
 {
     PrintException(ep);
 
-    queue.Finish(job);
-    queue.InsertResult(job, start_time.c_str(), -1, GetFullMessage(ep).c_str());
+    Finish(-1, GetFullMessage(ep).c_str());
     timeout_event.Cancel();
     workplace.OnExit(this);
 }
