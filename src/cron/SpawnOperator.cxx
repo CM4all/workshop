@@ -18,11 +18,14 @@
 #include <sys/wait.h>
 
 CronSpawnOperator::CronSpawnOperator(CronQueue &_queue,
-                                     CronWorkplace &_workplace, CronJob &&_job,
+                                     CronWorkplace &_workplace,
+                                     SpawnService &_spawn_service,
+                                     CronJob &&_job,
                                      std::string &&_start_time) noexcept
         :CronOperator(_queue, _workplace,
                       std::move(_job),
-                      std::move(_start_time))
+                      std::move(_start_time)),
+         spawn_service(_spawn_service)
 {
 }
 
@@ -49,8 +52,7 @@ try {
                                                              std::move(r));
     }
 
-    pid = workplace.GetSpawnService().SpawnChildProcess(job.id.c_str(),
-                                                        std::move(p), this);
+    pid = spawn_service.SpawnChildProcess(job.id.c_str(), std::move(p), this);
 
     daemon_log(2, "job %s running as pid %d\n", job.id.c_str(), pid);
 
@@ -66,7 +68,7 @@ void
 CronSpawnOperator::Cancel()
 {
     output_capture.reset();
-    workplace.GetSpawnService().KillChildProcess(pid, SIGTERM);
+    spawn_service.KillChildProcess(pid, SIGTERM);
 
     queue.Finish(job);
     queue.InsertResult(job, start_time.c_str(), -1, "Canceled");

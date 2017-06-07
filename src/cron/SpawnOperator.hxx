@@ -11,6 +11,7 @@
 #include <memory>
 
 struct PreparedChildProcess;
+class SpawnService;
 class PipeCaptureBuffer;
 
 /**
@@ -20,12 +21,16 @@ class CronSpawnOperator final
     : public CronOperator,
       ExitListener {
 
+    SpawnService &spawn_service;
+
     int pid = -1;
 
     std::unique_ptr<PipeCaptureBuffer> output_capture;
 
 public:
-    CronSpawnOperator(CronQueue &_queue, CronWorkplace &_workplace, CronJob &&_job,
+    CronSpawnOperator(CronQueue &_queue, CronWorkplace &_workplace,
+                      SpawnService &_spawn_service,
+                      CronJob &&_job,
                       std::string &&_start_time) noexcept;
     ~CronSpawnOperator() override;
 

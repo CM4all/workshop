@@ -89,6 +89,7 @@ MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
     /* create operator object */
 
     auto o = std::make_unique<CronSpawnOperator>(queue, workplace,
+                                                 workplace.GetSpawnService(),
                                                  std::move(job),
                                                  std::move(start_time));
     o->Spawn(std::move(p));
