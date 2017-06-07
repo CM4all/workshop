@@ -24,6 +24,13 @@ CronPartition::CronPartition(EventLoop &event_loop,
 }
 
 void
+CronPartition::BeginShutdown()
+{
+    queue.Disable();
+    workplace.CancelAll();
+}
+
+void
 CronPartition::OnJob(CronJob &&job)
 {
     printf("OnJob '%s'\n", job.id.c_str());

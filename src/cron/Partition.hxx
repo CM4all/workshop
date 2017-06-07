@@ -44,10 +44,7 @@ public:
         queue.Close();
     }
 
-    void BeginShutdown() {
-        queue.Disable();
-        workplace.CancelAll();
-    }
+    void BeginShutdown();
 
 private:
     void OnJob(CronJob &&job);
