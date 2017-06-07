@@ -84,12 +84,7 @@ CronCurlOperator::OnEnd()
 void
 CronCurlOperator::OnError(std::exception_ptr ep)
 {
-    try {
-        std::rethrow_exception(ep);
-    } catch (const std::exception &e) {
-        PrintException(e);
-    } catch (...) {
-    }
+    PrintException(ep);
 
     queue.Finish(job);
     queue.InsertResult(job, start_time.c_str(), -1, nullptr);
