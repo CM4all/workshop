@@ -48,7 +48,7 @@ try {
             /* capture STDOUT as well */
             p.stdout_fd = p.stderr_fd;
 
-        output_capture = std::make_unique<PipeCaptureBuffer>(queue.GetEventLoop(),
+        output_capture = std::make_unique<PipeCaptureBuffer>(GetEventLoop(),
                                                              std::move(r));
     }
 

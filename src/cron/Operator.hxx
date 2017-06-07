@@ -40,6 +40,8 @@ public:
     CronOperator(const CronOperator &other) = delete;
     CronOperator &operator=(const CronOperator &other) = delete;
 
+    EventLoop &GetEventLoop();
+
     /**
      * Cancel job execution, e.g. by sending SIGTERM to the child
      * process.  This also abandons the child process, i.e. after this
