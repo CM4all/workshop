@@ -6,7 +6,7 @@ cm4all-workshop (2.0.9) unstable; urgency=low
   * cron: store HTTP errors in the results table
   * cron: implement email notification
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Wed, 07 Jun 2017 21:52:46 -0000
 
 cm4all-workshop (2.0.8) unstable; urgency=low
 
