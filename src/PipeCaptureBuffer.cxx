@@ -6,7 +6,7 @@
 
 PipeCaptureBuffer::PipeCaptureBuffer(EventLoop &event_loop, UniqueFileDescriptor &&_fd)
         :fd(std::move(_fd)),
-         event(event_loop, fd.Get(), EV_READ|EV_PERSIST,
+         event(event_loop, fd.Get(), SocketEvent::READ|SocketEvent::PERSIST,
                BIND_THIS_METHOD(OnSocket))
 {
     event.Add();

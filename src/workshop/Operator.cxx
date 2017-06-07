@@ -84,7 +84,7 @@ WorkshopOperator::SetOutput(UniqueFileDescriptor &&fd)
     assert(!stdout_fd.IsDefined());
 
     stdout_fd = std::move(fd);
-    stdout_event.Set(stdout_fd.Get(), EV_READ|EV_PERSIST);
+    stdout_event.Set(stdout_fd.Get(), SocketEvent::READ|SocketEvent::PERSIST);
     stdout_event.Add();
 
 }
@@ -126,7 +126,7 @@ WorkshopOperator::SetSyslog(UniqueFileDescriptor &&fd)
     assert(!stderr_fd.IsDefined());
 
     stderr_fd = std::move(fd);
-    stderr_event.Set(stderr_fd.Get(), EV_READ|EV_PERSIST);
+    stderr_event.Set(stderr_fd.Get(), SocketEvent::READ|SocketEvent::PERSIST);
     stderr_event.Add();
 }
 

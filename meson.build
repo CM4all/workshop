@@ -48,7 +48,7 @@ libpq = dependency('libpq', version: '>= 8.4')
 libinline = dependency('libcm4all-inline', version: '>= 0.3.2')
 libdaemon = dependency('libcm4all-daemon', version: '>= 0.4.2')
 libsocket = dependency('libcm4all-socket', version: '>= 0.3.5')
-libbp = dependency('libcm4all-beng-proxy', version: '>= 12.0.13')
+libbp = dependency('libcm4all-beng-proxy', version: '>= 12.0.17')
 
 inc = include_directories('src', 'libcommon/src')
 
