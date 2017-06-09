@@ -37,6 +37,7 @@ IsURL(const char *command)
 static std::unique_ptr<CronOperator>
 MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
                   const char *translation_socket,
+                  const char *listener_tag,
                   CronJob &&job, const char *command,
                   std::string &&start_time)
 {
@@ -58,7 +59,7 @@ MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
 
     try {
         const auto response = TranslateCron(alloc, translation_socket,
-                                            nullptr,
+                                            listener_tag,
                                             job.account_id.c_str(),
                                             uri,
                                             job.translate_param.empty()
@@ -113,6 +114,7 @@ MakeCurlOperator(CronQueue &queue, CronWorkplace &workplace,
 
 void
 CronWorkplace::Start(CronQueue &queue, const char *translation_socket,
+                     const char *listener_tag,
                      CronJob &&job)
 {
     auto start_time = queue.GetNow();
@@ -126,6 +128,7 @@ CronWorkplace::Start(CronQueue &queue, const char *translation_socket,
                            std::move(job), command.c_str(),
                            std::move(start_time))
         : MakeSpawnOperator(queue, *this, translation_socket,
+                            listener_tag,
                             std::move(job), command.c_str(),
                             std::move(start_time));
 

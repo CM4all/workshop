@@ -52,6 +52,7 @@ CronPartition::OnJob(CronJob &&job)
 
     try {
         workplace.Start(queue, translation_socket,
+                        nullptr,
                         std::move(job));
     } catch (const std::runtime_error &e) {
         PrintException(e);
