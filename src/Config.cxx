@@ -134,7 +134,10 @@ class WorkshopConfigParser final : public NestedConfigParser {
         CronPartitionConfig config;
 
     public:
-        explicit CronPartition(Config &_parent):parent(_parent) {}
+        explicit CronPartition(Config &_parent,
+                               std::string &&name)
+            :parent(_parent),
+             config(std::move(name)) {}
 
     protected:
         /* virtual methods from class ConfigParser */
@@ -227,8 +230,13 @@ WorkshopConfigParser::ParseLine2(LineParser &line)
         line.ExpectSymbolAndEol('{');
         SetChild(std::make_unique<Partition>(config));
     } else if (strcmp(word, "cron") == 0) {
+        std::string name;
+
+        if (line.front() == '"')
+            name = line.ExpectValue();
+
         line.ExpectSymbolAndEol('{');
-        SetChild(std::make_unique<CronPartition>(config));
+        SetChild(std::make_unique<CronPartition>(config, std::move(name)));
     } else if (strcmp(word, "node_name") == 0) {
         config.node_name = line.ExpectValueAndEnd();
     } else if (strcmp(word, "concurrency") == 0) {

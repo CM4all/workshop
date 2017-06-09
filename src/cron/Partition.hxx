@@ -19,6 +19,7 @@ class SpawnService;
 class EmailService;
 
 class CronPartition final : ExitListener {
+    const char *const name;
     const char *const translation_socket;
 
     std::unique_ptr<EmailService> email_service;

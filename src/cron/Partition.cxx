@@ -14,7 +14,8 @@ CronPartition::CronPartition(EventLoop &event_loop,
                              const Config &root_config,
                              const CronPartitionConfig &config,
                              BoundMethod<void()> _idle_callback)
-    :translation_socket(config.translation_socket.c_str()),
+    :name(config.name.empty() ? nullptr : config.name.c_str()),
+     translation_socket(config.translation_socket.c_str()),
      email_service(config.qmqp_server.IsNull()
                    ? nullptr
                    : new EmailService(event_loop, config.qmqp_server)),
@@ -52,7 +53,7 @@ CronPartition::OnJob(CronJob &&job)
 
     try {
         workplace.Start(queue, translation_socket,
-                        nullptr,
+                        name,
                         std::move(job));
     } catch (const std::runtime_error &e) {
         PrintException(e);
