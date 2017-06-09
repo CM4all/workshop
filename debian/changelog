@@ -2,7 +2,7 @@ cm4all-workshop (2.0.10) unstable; urgency=low
 
   * cron: pass LISTENER_TAG to translation server
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Fri, 09 Jun 2017 13:01:54 -0000
 
 cm4all-workshop (2.0.9) unstable; urgency=low
 
