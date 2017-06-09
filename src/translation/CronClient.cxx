@@ -63,7 +63,8 @@ SendFull(int fd, ConstBuffer<void> buffer)
 }
 
 static void
-SendTranslateCron(int fd, const char *user, const char *uri, const char *param)
+SendTranslateCron(int fd, const char *listener_tag,
+                  const char *user, const char *uri, const char *param)
 {
     assert(user != nullptr);
 
@@ -78,6 +79,10 @@ SendTranslateCron(int fd, const char *user, const char *uri, const char *param)
 
     WritePacket(p, TRANSLATE_BEGIN);
     WritePacket(p, TRANSLATE_CRON);
+
+    if (listener_tag != nullptr)
+        WritePacket(p, TRANSLATE_LISTENER_TAG, listener_tag);
+
     WritePacket(p, TRANSLATE_USER, user);
     if (uri != nullptr)
         WritePacket(p, TRANSLATE_URI, uri);
@@ -137,9 +142,11 @@ ReceiveResponse(AllocatorPtr alloc, int fd)
 }
 
 TranslateResponse
-TranslateCron(AllocatorPtr alloc, int fd, const char *user, const char *uri,
+TranslateCron(AllocatorPtr alloc, int fd,
+              const char *listener_tag,
+              const char *user, const char *uri,
               const char *param)
 {
-    SendTranslateCron(fd, user, uri, param);
+    SendTranslateCron(fd, listener_tag, user, uri, param);
     return ReceiveResponse(alloc, fd);
 }
