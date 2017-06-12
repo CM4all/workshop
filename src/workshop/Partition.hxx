@@ -24,6 +24,8 @@ class WorkshopPartition final : ExitListener {
 
     BoundMethod<void()> idle_callback;
 
+    const size_t max_log;
+
 public:
     WorkshopPartition(Instance &instance,
                       MultiLibrary &_library,

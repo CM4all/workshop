@@ -184,13 +184,20 @@ pg_rollback_job(Pg::Connection &db, const char *id)
 }
 
 int
-pg_set_job_done(Pg::Connection &db, const char *id, int status)
+pg_set_job_done(Pg::Connection &db, const char *id, int status,
+                const char *log)
 {
-    const auto result =
-        db.ExecuteParams("UPDATE jobs "
-                         "SET time_done=now(), progress=100, exit_status=$2 "
-                         "WHERE id=$1",
-                         id, status);
+    const auto result = log != nullptr
+        ? db.ExecuteParams("UPDATE jobs "
+                           "SET time_done=now(), progress=100, exit_status=$2, log=$3 "
+                           "WHERE id=$1",
+                           id, status, log)
+        /* keep the old UPDATE statement, because the "log" column is
+           optional */
+        : db.ExecuteParams("UPDATE jobs "
+                           "SET time_done=now(), progress=100, exit_status=$2 "
+                           "WHERE id=$1",
+                           id, status);
     if (!result.IsCommandSuccessful()) {
         fprintf(stderr, "UPDATE/done on jobs failed: %s\n",
                 result.GetErrorMessage());

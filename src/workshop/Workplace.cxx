@@ -62,7 +62,8 @@ WorkshopWorkplace::GetFullPlanNames() const
 
 void
 WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
-                         std::shared_ptr<Plan> &&plan)
+                         std::shared_ptr<Plan> &&plan,
+                         size_t max_log)
 {
     assert(!plan->args.empty());
 
@@ -76,6 +77,7 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 
     auto o = std::make_unique<WorkshopOperator>(event_loop, *this, job, plan,
                                                 std::move(stderr_r),
+                                                max_log,
                                                 enable_journal);
 
     PreparedChildProcess p;

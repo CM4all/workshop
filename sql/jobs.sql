@@ -39,6 +39,8 @@ CREATE TABLE jobs (
 
         -- the time this job was completed
         time_done TIMESTAMP NULL,
+        -- the output logged by the process to stderr
+        log text NULL,
         -- the process' exit code
         exit_status INT NULL
 );

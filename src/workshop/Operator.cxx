@@ -29,11 +29,15 @@ WorkshopOperator::WorkshopOperator(EventLoop &_event_loop,
                                    const WorkshopJob &_job,
                                    const std::shared_ptr<Plan> &_plan,
                                    UniqueFileDescriptor &&stderr_read_pipe,
+                                   size_t max_log_buffer,
                                    bool enable_journal)
     :event_loop(_event_loop), workplace(_workplace), job(_job), plan(_plan),
      log(event_loop, job.plan_name.c_str(), job.id.c_str(),
          std::move(stderr_read_pipe))
 {
+    if (max_log_buffer > 0)
+        log.EnableBuffer(max_log_buffer);
+
     if (enable_journal)
         log.EnableJournal();
 }
@@ -106,7 +110,7 @@ WorkshopOperator::OnChildProcessExit(int status)
                    job.id.c_str(), pid,
                    exit_status);
 
-    job.SetDone(exit_status);
+    job.SetDone(exit_status, log.GetBuffer());
 
     workplace.OnExit(this);
 }

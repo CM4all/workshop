@@ -28,7 +28,8 @@ WorkshopPartition::WorkshopPartition(Instance &_instance,
                root_config.node_name.c_str(),
                root_config.concurrency,
                config.enable_journal),
-     idle_callback(_idle_callback)
+     idle_callback(_idle_callback),
+     max_log(config.max_log)
 {
 }
 
@@ -69,11 +70,12 @@ WorkshopPartition::StartJob(WorkshopJob &&job)
     }
 
     try {
-        workplace.Start(instance.GetEventLoop(), job, std::move(plan));
+        workplace.Start(instance.GetEventLoop(), job, std::move(plan),
+                        queue.HasLogColumn() ? max_log : 0);
     } catch (const std::runtime_error &e) {
         PrintException(e);
 
-        queue.SetJobDone(job, -1);
+        queue.SetJobDone(job, -1, nullptr);
     }
 
     return true;

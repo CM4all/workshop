@@ -10,6 +10,8 @@
 struct WorkshopPartitionConfig {
     std::string database, database_schema;
 
+    size_t max_log = 8192;
+
     bool enable_journal = false;
 
     WorkshopPartitionConfig() = default;

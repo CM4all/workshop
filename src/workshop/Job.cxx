@@ -14,7 +14,7 @@ WorkshopJob::SetProgress(unsigned progress, const char *timeout)
 }
 
 bool
-WorkshopJob::SetDone(int status)
+WorkshopJob::SetDone(int status, const char *log)
 {
-    return queue.SetJobDone(*this, status);
+    return queue.SetJobDone(*this, status, log);
 }

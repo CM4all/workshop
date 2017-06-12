@@ -38,6 +38,11 @@ LogBridge::OnStderrLine(WritableBuffer<char> line)
         return false;
 
     // TODO: strip non-ASCII characters
+
+    if (max_buffer_size > 0 && buffer.length() < max_buffer_size)
+        buffer.append(line.data,
+                      std::min(line.size, max_buffer_size - buffer.length()));
+
     if (syslog)
         syslog->Log(6, {line.data, line.size});
 
@@ -47,7 +52,7 @@ LogBridge::OnStderrLine(WritableBuffer<char> line)
                         "WORKSHOP_JOB=%s", job_id.c_str(),
                         nullptr);
 
-    if (!syslog && !enable_journal)
+    if (max_buffer_size == 0 && !syslog && !enable_journal)
         fprintf(stderr, "[%s:%s] %.*s\n", plan_name.c_str(), job_id.c_str(),
                 int(line.size), line.data);
 

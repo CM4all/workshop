@@ -8,6 +8,7 @@
 #include "PGQueue.hxx"
 #include "Job.hxx"
 #include "pg/Array.hxx"
+#include "pg/Reflection.hxx"
 
 #include <inline/compiler.h>
 #include <daemon/log.h>
@@ -342,13 +343,13 @@ WorkshopQueue::RollbackJob(const WorkshopJob &job)
 }
 
 bool
-WorkshopQueue::SetJobDone(const WorkshopJob &job, int status)
+WorkshopQueue::SetJobDone(const WorkshopJob &job, int status, const char *log)
 {
     assert(&job.queue == this);
 
     daemon_log(6, "job %s done with status %d\n", job.id.c_str(), status);
 
-    pg_set_job_done(db, job.id.c_str(), status);
+    pg_set_job_done(db, job.id.c_str(), status, log);
 
     ScheduleCheckNotify();
     return true;
@@ -362,6 +363,8 @@ WorkshopQueue::OnConnect()
         daemon_log(2, "released %d stale jobs\n", ret);
         pg_notify(db);
     }
+
+    has_log_column = Pg::ColumnExists(db, "public", "jobs", "log");
 
     /* listen on notifications */
 

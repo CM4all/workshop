@@ -44,6 +44,7 @@ public:
                      WorkshopWorkplace &_workplace, const WorkshopJob &_job,
                      const std::shared_ptr<Plan> &_plan,
                      UniqueFileDescriptor &&stderr_read_pipe,
+                     size_t max_log_buffer,
                      bool enable_journal);
 
     WorkshopOperator(const WorkshopOperator &other) = delete;

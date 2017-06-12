@@ -112,6 +112,7 @@ recognized:
 
 This file is Workshop 1.0 legacy, and should not be used anymore.
 
+
 Migrating from Workhop 1.0.x
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -133,6 +134,14 @@ in a :envvar:`workshop` section, e.g.::
   workshop {
     database "dbname=workshop"
   }
+
+Migrating from Workhop 2.0.12 and older
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Workshop 2.0.13 has added the `jobs` table column `log`, which must be
+created manually if upgrading from an older version::
+
+  ALTER TABLE jobs ADD COLUMN log text NULL;
 
 
 Concept
@@ -299,6 +308,7 @@ The `jobs` table
   you cannot assume the job is done when this number reaches 100.
 * :envvar:`time_done`: Time stamp when the job has completed
   execution.
+* :envvar:`log`: Log data written by the job to `stderr`.
 * :envvar:`exit_status`: Exit code of the plan process.  Negative when
   the process was killed by a signal.
 

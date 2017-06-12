@@ -28,6 +28,8 @@ class WorkshopQueue final : private Pg::AsyncConnectionHandler {
 
     Pg::AsyncConnection db;
 
+    bool has_log_column;
+
     bool disabled = false, running = false;
 
     /** if set to true, the current queue run should be interrupted,
@@ -61,6 +63,10 @@ public:
     gcc_pure
     const char *GetNodeName() const {
         return node_name.c_str();
+    }
+
+    bool HasLogColumn() const {
+        return has_log_column;
     }
 
     void Connect() {
@@ -98,7 +104,7 @@ public:
      */
     bool RollbackJob(const WorkshopJob &job);
 
-    bool SetJobDone(const WorkshopJob &job, int status);
+    bool SetJobDone(const WorkshopJob &job, int status, const char *log);
 
 private:
     void RunResult(const Pg::Result &result);

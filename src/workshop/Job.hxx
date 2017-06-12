@@ -37,7 +37,7 @@ struct WorkshopJob {
     /**
      * Mark the job as "done".
      */
-    bool SetDone(int status);
+    bool SetDone(int status, const char *log);
 };
 
 #endif
