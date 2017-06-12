@@ -63,7 +63,7 @@ SendFull(int fd, ConstBuffer<void> buffer)
 }
 
 static void
-SendTranslateCron(int fd, const char *listener_tag,
+SendTranslateCron(int fd, const char *partition_name,
                   const char *user, const char *uri, const char *param)
 {
     assert(user != nullptr);
@@ -78,10 +78,12 @@ SendTranslateCron(int fd, const char *listener_tag,
     void *p = buffer;
 
     WritePacket(p, TRANSLATE_BEGIN);
-    WritePacket(p, TRANSLATE_CRON);
 
-    if (listener_tag != nullptr)
-        WritePacket(p, TRANSLATE_LISTENER_TAG, listener_tag);
+    size_t partition_name_size = partition_name != nullptr
+        ? strlen(partition_name)
+        : 0;
+    WritePacket(p, TRANSLATE_CRON,
+                StringView(partition_name, partition_name_size));
 
     WritePacket(p, TRANSLATE_USER, user);
     if (uri != nullptr)
@@ -143,10 +145,10 @@ ReceiveResponse(AllocatorPtr alloc, int fd)
 
 TranslateResponse
 TranslateCron(AllocatorPtr alloc, int fd,
-              const char *listener_tag,
+              const char *partition_name,
               const char *user, const char *uri,
               const char *param)
 {
-    SendTranslateCron(fd, listener_tag, user, uri, param);
+    SendTranslateCron(fd, partition_name, user, uri, param);
     return ReceiveResponse(alloc, fd);
 }
