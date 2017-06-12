@@ -2,7 +2,7 @@ cm4all-workshop (2.0.11) unstable; urgency=low
 
   * cron: pass partition name in CRON packet, not in LISTENER_TAG
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Mon, 12 Jun 2017 11:16:58 -0000
 
 cm4all-workshop (2.0.10) unstable; urgency=low
 
