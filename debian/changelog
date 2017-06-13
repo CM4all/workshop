@@ -2,7 +2,7 @@ cm4all-workshop (2.0.12) unstable; urgency=low
 
   * cron: add setting "tag" which translates to LISTENER_TAG
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Tue, 13 Jun 2017 07:15:49 -0000
 
 cm4all-workshop (2.0.11) unstable; urgency=low
 
