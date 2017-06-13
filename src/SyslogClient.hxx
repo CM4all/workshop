@@ -7,17 +7,17 @@
 #ifndef SYSLOG_CLIENT_HXX
 #define SYSLOG_CLIENT_HXX
 
-#include "io/UniqueFileDescriptor.hxx"
+#include "net/UniqueSocketDescriptor.hxx"
 
 #include <string>
 
 class SyslogClient {
-    UniqueFileDescriptor fd;
+    UniqueSocketDescriptor fd;
     const std::string me, ident;
     const int facility;
 
 public:
-    SyslogClient(UniqueFileDescriptor &&_fd,
+    SyslogClient(UniqueSocketDescriptor &&_fd,
                  const char *_me, const char *_ident, int _facility)
         :fd(std::move(_fd)), me(_me), ident(_ident), facility(_facility) {}
 

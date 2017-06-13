@@ -5,6 +5,7 @@
  */
 
 #include "SyslogClient.hxx"
+#include "net/SocketAddress.hxx"
 #include "system/Error.hxx"
 #include "util/ScopeExit.hxx"
 
@@ -42,11 +43,11 @@ SyslogClient::Create(const char *me, const char *ident,
 
     AtScopeExit(ai) { freeaddrinfo(ai); };
 
-    UniqueFileDescriptor fd(FileDescriptor(socket(ai->ai_family, ai->ai_socktype, 0)));
-    if (!fd.IsDefined())
+    UniqueSocketDescriptor fd;
+    if (!fd.Create(ai->ai_family, ai->ai_socktype, 0))
         throw MakeErrno("Failed to create socket");
 
-    if (connect(fd.Get(), ai->ai_addr, ai->ai_addrlen) < 0)
+    if (!fd.Connect({ai->ai_addr, ai->ai_addrlen}))
         throw MakeErrno("Failed to connect to syslog server");
 
     return new SyslogClient(std::move(fd), me, ident, facility);
