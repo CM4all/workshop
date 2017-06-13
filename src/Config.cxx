@@ -208,6 +208,8 @@ WorkshopConfigParser::CronPartition::ParseLine(LineParser &line)
     } else if (strcmp(word, "qmqp_server") == 0) {
         config.qmqp_server = ResolveStreamConnect(line.ExpectValueAndEnd(),
                                                   628);
+    } else if (strcmp(word, "tag") == 0) {
+        config.tag = line.ExpectValueAndEnd();
     } else
         throw LineParser::Error("Unknown option");
 }

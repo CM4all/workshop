@@ -10,7 +10,7 @@ class AllocatorPtr;
 
 TranslateResponse
 TranslateCron(AllocatorPtr alloc, int fd,
-              const char *listener_tag,
+              const char *partition_name, const char *listener_tag,
               const char *user, const char *uri,
               const char *param);
 

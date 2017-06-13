@@ -82,6 +82,8 @@ The following settings are recognized:
     a partition name (right before the opening curly brace), which
     will be passed to the translation server in the :envvar:`CRON`
     packet
+  * :envvar:`tag`: a string which will be transmitted to the
+    translation server in a :envvar:`LISTENER_TAG` packet (optional)
   * :envvar:`database`: the PostgreSQL connect string (`PostgreSQL
     documentation
     <https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING>`_)

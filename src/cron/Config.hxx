@@ -15,6 +15,12 @@ struct CronPartitionConfig {
      */
     std::string name;
 
+    /**
+     * Partition tag for #TRANSLATE_LISTENER_TAG.  Empty when not
+     * specified.
+     */
+    std::string tag;
+
     std::string database, database_schema;
 
     std::string translation_socket;
