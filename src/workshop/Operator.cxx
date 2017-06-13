@@ -110,13 +110,12 @@ WorkshopOperator::OnErrorReady(unsigned)
 
         if (ch == '\r' || ch == '\n') {
             if (!stderr_buffer.empty()) {
-                stderr_buffer.push_back('\0');
-                syslog->Log(6, stderr_buffer.begin());
+                syslog->Log(6, {stderr_buffer.begin(), stderr_buffer.size()});
             }
 
             stderr_buffer.clear();
         } else if (ch > 0 && (ch & ~0x7f) == 0 &&
-                   stderr_buffer.size() < stderr_buffer.capacity() - 1) {
+                   !stderr_buffer.full()) {
             stderr_buffer.push_back(ch);
         }
     }
