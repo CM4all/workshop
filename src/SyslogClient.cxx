@@ -5,11 +5,10 @@
  */
 
 #include "SyslogClient.hxx"
+#include "system/Error.hxx"
 #include "util/ScopeExit.hxx"
 
 #include <socket/resolver.h>
-
-#include <system_error>
 
 #include <assert.h>
 #include <stdlib.h>
@@ -45,12 +44,10 @@ SyslogClient::Create(const char *me, const char *ident,
 
     UniqueFileDescriptor fd(FileDescriptor(socket(ai->ai_family, ai->ai_socktype, 0)));
     if (!fd.IsDefined())
-        throw std::system_error(std::error_code(errno, std::system_category()),
-                                "Failed to create socket");
+        throw MakeErrno("Failed to create socket");
 
     if (connect(fd.Get(), ai->ai_addr, ai->ai_addrlen) < 0)
-        throw std::system_error(std::error_code(errno, std::system_category()),
-                                "Failed to connect to syslog server");
+        throw MakeErrno("Failed to connect to syslog server");
 
     return new SyslogClient(std::move(fd), me, ident, facility);
 }
