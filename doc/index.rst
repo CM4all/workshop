@@ -76,8 +76,12 @@ The following settings are recognized:
     <https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING>`_)
   * :envvar:`database_schema`: the PostgreSQL schema name (optional)
 * :envvar:`cron`: opens a block (with curly braces), which
-  configures a cron database:
+  configures a cron database ("partition"):
 
+  * :envvar:`cron` (the top-level block) may optionally be followed by
+    a partition name (right before the opening curly brace), which
+    will be passed to the translation server in the :envvar:`CRON`
+    packet
   * :envvar:`database`: the PostgreSQL connect string (`PostgreSQL
     documentation
     <https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING>`_)
