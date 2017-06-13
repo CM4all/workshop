@@ -5,11 +5,9 @@
  */
 
 #include "SyslogClient.hxx"
-#include "net/SocketAddress.hxx"
+#include "net/Resolver.hxx"
+#include "net/AddressInfo.hxx"
 #include "system/Error.hxx"
-#include "util/ScopeExit.hxx"
-
-#include <socket/resolver.h>
 
 #include <assert.h>
 #include <stdlib.h>
@@ -27,27 +25,19 @@ SyslogClient::Create(const char *me, const char *ident,
                      int facility,
                      const char *host_and_port)
 {
-    struct addrinfo hints, *ai;
-
+    struct addrinfo hints;
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_DGRAM;
 
-    int ret = socket_resolve_host_port(host_and_port, 514, &hints, &ai);
-    if (ret != 0) {
-        char msg[256];
-        snprintf(msg, sizeof(msg), "getaddrinfo('%s') failed: %s",
-                 host_and_port, gai_strerror(ret));
-        throw std::runtime_error(msg);
-    }
-
-    AtScopeExit(ai) { freeaddrinfo(ai); };
+    const auto ail = Resolve(host_and_port, 514, &hints);
+    const auto &ai = ail.front();
 
     UniqueSocketDescriptor fd;
-    if (!fd.Create(ai->ai_family, ai->ai_socktype, 0))
+    if (!fd.Create(ai.GetFamily(), ai.GetType(), ai.GetProtocol()))
         throw MakeErrno("Failed to create socket");
 
-    if (!fd.Connect({ai->ai_addr, ai->ai_addrlen}))
+    if (!fd.Connect(ai))
         throw MakeErrno("Failed to connect to syslog server");
 
     return new SyslogClient(std::move(fd), me, ident, facility);

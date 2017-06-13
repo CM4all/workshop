@@ -261,7 +261,7 @@ executable('cm4all-workshop',
   dependencies: [
     boost,
     libsystemd,
-    libinline, libdaemon, libsocket,
+    libinline, libdaemon,
     declare_dependency(link_with: time),
     declare_dependency(link_with: system),
     declare_dependency(link_with: io),
