@@ -29,7 +29,7 @@ WorkshopWorkplace::GetRunningPlanNames() const
 {
     std::set<std::string> list;
     for (const auto &o : operators)
-        list.emplace(o.job.plan_name);
+        list.emplace(o.GetPlanName());
 
     return Pg::EncodeArray(list);
 }
@@ -40,11 +40,11 @@ WorkshopWorkplace::GetFullPlanNames() const
     std::map<std::string, unsigned> counters;
     std::set<std::string> list;
     for (const auto &o : operators) {
-        const Plan &plan = *o.plan;
+        const Plan &plan = o.GetPlan();
         if (plan.concurrency == 0)
             continue;
 
-        const std::string &plan_name = o.job.plan_name;
+        const std::string &plan_name = o.GetPlanName();
 
         auto i = counters.emplace(plan_name, 0);
         unsigned &n = i.first->second;
@@ -120,12 +120,13 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 
     /* fork */
 
-    o->pid = spawn_service.SpawnChildProcess(job.id.c_str(),
-                                             std::move(p),
-                                             o.get());
+    const auto pid = spawn_service.SpawnChildProcess(job.id.c_str(),
+                                                     std::move(p),
+                                                     o.get());
+    o->SetPid(pid);
 
     daemon_log(2, "job %s (plan '%s') running as pid %d\n",
-               job.id.c_str(), job.plan_name.c_str(), o->pid);
+               job.id.c_str(), job.plan_name.c_str(), pid);
 
     operators.push_back(*o.release());
 }

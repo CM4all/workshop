@@ -22,7 +22,7 @@ class ProgressReader;
 class SyslogBridge;
 
 /** an operator is a job being executed */
-struct WorkshopOperator final
+class WorkshopOperator final
     : public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>,
       public ExitListener {
 
@@ -39,6 +39,7 @@ struct WorkshopOperator final
     SocketEvent stderr_event;
     std::unique_ptr<SyslogBridge> syslog;
 
+public:
     WorkshopOperator(EventLoop &_event_loop,
                      WorkshopWorkplace &_workplace, const WorkshopJob &_job,
                      const std::shared_ptr<Plan> &_plan);
@@ -48,6 +49,18 @@ struct WorkshopOperator final
     ~WorkshopOperator();
 
     WorkshopOperator &operator=(const WorkshopOperator &other) = delete;
+
+    const Plan &GetPlan() const {
+        return *plan;
+    }
+
+    const std::string &GetPlanName() const {
+        return job.plan_name;
+    }
+
+    void SetPid(int _pid) {
+        pid = _pid;
+    }
 
     void SetOutput(UniqueFileDescriptor &&fd);
     void SetSyslog(UniqueFileDescriptor &&fd);
