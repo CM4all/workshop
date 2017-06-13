@@ -54,6 +54,13 @@ struct WorkshopOperator final
     void SetOutput(UniqueFileDescriptor &&fd);
     void SetSyslog(UniqueFileDescriptor &&fd);
 
+    /**
+     * @return a writable pipe to be attached to the child's stderr
+     */
+    UniqueFileDescriptor CreateSyslogClient(const char *me, const char *ident,
+                                            int facility,
+                                            const char *host_and_port);
+
     void Expand(std::list<std::string> &args) const;
 
 private:

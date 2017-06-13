@@ -10,6 +10,8 @@
 #include "Plan.hxx"
 #include "Job.hxx"
 #include "SyslogClient.hxx"
+#include "system/Error.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <daemon/log.h>
 
@@ -128,6 +130,27 @@ WorkshopOperator::SetSyslog(UniqueFileDescriptor &&fd)
     stderr_fd = std::move(fd);
     stderr_event.Set(stderr_fd.Get(), SocketEvent::READ|SocketEvent::PERSIST);
     stderr_event.Add();
+}
+
+UniqueFileDescriptor
+WorkshopOperator::CreateSyslogClient(const char *me, const char *ident,
+                                     int facility,
+                                     const char *host_and_port)
+{
+    try {
+        syslog.reset(SyslogClient::Create(me, ident, facility,
+                                          host_and_port));
+    } catch (const std::runtime_error &e) {
+        std::throw_with_nested(FormatRuntimeError("syslog_open(%s) failed",
+                                                  host_and_port));
+    }
+
+    UniqueFileDescriptor stderr_r, stderr_w;
+    if (!UniqueFileDescriptor::CreatePipe(stderr_r, stderr_w))
+        throw MakeErrno("pipe() failed");
+
+    SetSyslog(std::move(stderr_r));
+    return stderr_w;
 }
 
 void
