@@ -13,20 +13,20 @@
  * A buffer which helps capture up to 8 kB of data.
  */
 class CaptureBuffer final {
-    size_t length = 0;
+    size_t size = 0;
     std::array<char, 8192> data;
 
 public:
     WritableBuffer<char> Write() {
-        return { &data[length], data.size() - length };
+        return { &data[size], data.size() - size };
     }
 
     void Append(size_t n) {
-        length += n;
+        size += n;
     }
 
     WritableBuffer<char> GetData() {
-        return {&data.front(), length};
+        return {&data.front(), size};
     }
 
     /**

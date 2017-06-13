@@ -22,13 +22,13 @@ IsDisallowedChar(char ch)
 char *
 CaptureBuffer::NormalizeASCII()
 {
-    if (length == data.size())
+    if (size == data.size())
         /* crop the last character to make room for the null
            terminator */
-        length = data.size() - 1;
+        size = data.size() - 1;
 
-    std::replace_if(data.begin(), std::next(data.begin(), length),
+    std::replace_if(data.begin(), std::next(data.begin(), size),
                     IsDisallowedChar, ' ');
-    data[length] = 0;
+    data[size] = 0;
     return &data.front();
 }
