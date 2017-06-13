@@ -8,6 +8,7 @@
 #include "net/Resolver.hxx"
 #include "net/AddressInfo.hxx"
 #include "system/Error.hxx"
+#include "util/StringView.hxx"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -49,6 +50,12 @@ MakeIovec(const void *data, size_t size)
     return { const_cast<void *>(data), size };
 }
 
+static constexpr struct iovec
+MakeIovec(StringView value)
+{
+    return MakeIovec(value.data, value.size);
+}
+
 static struct iovec
 MakeIovec(const char *value)
 {
@@ -62,7 +69,7 @@ MakeIovec(const std::string &value)
 }
 
 int
-SyslogClient::Log(int priority, const char *msg)
+SyslogClient::Log(int priority, StringView msg)
 {
     static const char space = ' ';
     static const char newline = '\n';

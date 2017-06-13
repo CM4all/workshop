@@ -11,6 +11,8 @@
 
 #include <string>
 
+struct StringView;
+
 class SyslogClient {
     UniqueSocketDescriptor fd;
     const std::string me, ident;
@@ -30,7 +32,7 @@ public:
                                 int facility,
                                 const char *host_and_port);
 
-    int Log(int priority, const char *msg);
+    int Log(int priority, StringView msg);
 };
 
 #endif
