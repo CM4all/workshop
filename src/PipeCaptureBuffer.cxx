@@ -4,10 +4,13 @@
 
 #include "PipeCaptureBuffer.hxx"
 
-PipeCaptureBuffer::PipeCaptureBuffer(EventLoop &event_loop, UniqueFileDescriptor &&_fd)
+PipeCaptureBuffer::PipeCaptureBuffer(EventLoop &event_loop,
+                                     UniqueFileDescriptor &&_fd,
+                                     size_t capacity)
         :fd(std::move(_fd)),
          event(event_loop, fd.Get(), SocketEvent::READ|SocketEvent::PERSIST,
-               BIND_THIS_METHOD(OnSocket))
+               BIND_THIS_METHOD(OnSocket)),
+         buffer(capacity)
 {
     event.Add();
 }

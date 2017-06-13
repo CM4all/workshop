@@ -7,18 +7,25 @@
 
 #include "util/WritableBuffer.hxx"
 
-#include <array>
+#include <memory>
 
 /**
  * A buffer which helps capture up to 8 kB of data.
  */
 class CaptureBuffer final {
+    const size_t capacity;
+
     size_t size = 0;
-    std::array<char, 8192> data;
+
+    std::unique_ptr<char[]> data;
 
 public:
+    explicit CaptureBuffer(size_t _capacity)
+        :capacity(_capacity),
+         data(new char[capacity]) {}
+
     WritableBuffer<char> Write() {
-        return { &data[size], data.size() - size };
+        return { &data[size], capacity - size };
     }
 
     void Append(size_t n) {
@@ -26,7 +33,7 @@ public:
     }
 
     WritableBuffer<char> GetData() {
-        return {&data.front(), size};
+        return {data.get(), size};
     }
 
     /**

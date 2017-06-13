@@ -48,7 +48,8 @@ try {
             p.stdout_fd = p.stderr_fd;
 
         output_capture = std::make_unique<PipeCaptureBuffer>(GetEventLoop(),
-                                                             std::move(r));
+                                                             std::move(r),
+                                                             8192);
     }
 
     pid = spawn_service.SpawnChildProcess(job.id.c_str(), std::move(p), this);

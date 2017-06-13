@@ -57,7 +57,7 @@ CronCurlOperator::OnHeaders(unsigned _status,
         const char *content_type = ct->second.c_str();
         if (strncmp(content_type, "text/", 5) == 0)
             /* capture the response body if it's text */
-            output_capture = std::make_unique<CaptureBuffer>();
+            output_capture = std::make_unique<CaptureBuffer>(8192);
     }
 }
 

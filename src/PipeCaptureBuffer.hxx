@@ -21,7 +21,8 @@ class PipeCaptureBuffer final {
 
 public:
     explicit PipeCaptureBuffer(EventLoop &event_loop,
-                               UniqueFileDescriptor &&_fd);
+                               UniqueFileDescriptor &&_fd,
+                               size_t capacity);
     ~PipeCaptureBuffer();
 
     WritableBuffer<char> GetData() {
