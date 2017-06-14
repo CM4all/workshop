@@ -19,6 +19,7 @@
 
 struct Plan;
 class WorkshopWorkplace;
+class ProgressReader;
 class SyslogClient;
 
 /** an operator is a job being executed */
@@ -26,22 +27,21 @@ struct WorkshopOperator final
     : public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>,
       public ExitListener {
 
+    EventLoop &event_loop;
+
     WorkshopWorkplace &workplace;
     WorkshopJob job;
     std::shared_ptr<Plan> plan;
     pid_t pid;
 
-    UniqueFileDescriptor stdout_fd;
-    SocketEvent stdout_event;
-    StaticArray<char, 64> stdout_buffer;
-    unsigned progress = 0;
+    std::unique_ptr<ProgressReader> progress_reader;
 
     UniqueFileDescriptor stderr_fd;
     SocketEvent stderr_event;
     StaticArray<char, 64> stderr_buffer;
     std::unique_ptr<SyslogClient> syslog;
 
-    WorkshopOperator(EventLoop &event_loop,
+    WorkshopOperator(EventLoop &_event_loop,
                      WorkshopWorkplace &_workplace, const WorkshopJob &_job,
                      const std::shared_ptr<Plan> &_plan);
 
@@ -64,7 +64,7 @@ struct WorkshopOperator final
     void Expand(std::list<std::string> &args) const;
 
 private:
-    void OnOutputReady(unsigned events);
+    void OnProgress(unsigned progress);
     void OnErrorReady(unsigned events);
 
 public:

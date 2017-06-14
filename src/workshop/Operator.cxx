@@ -5,6 +5,7 @@
  */
 
 #include "Operator.hxx"
+#include "ProgressReader.hxx"
 #include "Expand.hxx"
 #include "Workplace.hxx"
 #include "Plan.hxx"
@@ -23,72 +24,35 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-WorkshopOperator::WorkshopOperator(EventLoop &event_loop,
+WorkshopOperator::WorkshopOperator(EventLoop &_event_loop,
                                    WorkshopWorkplace &_workplace,
                                    const WorkshopJob &_job,
                                    const std::shared_ptr<Plan> &_plan)
-    :workplace(_workplace), job(_job), plan(_plan),
-     stdout_event(event_loop, BIND_THIS_METHOD(OnOutputReady)),
+    :event_loop(_event_loop), workplace(_workplace), job(_job), plan(_plan),
      stderr_event(event_loop, BIND_THIS_METHOD(OnErrorReady))
 {
 }
 
 WorkshopOperator::~WorkshopOperator()
 {
-    if (stdout_fd.IsDefined())
-        stdout_event.Delete();
-
     if (stderr_fd.IsDefined())
         stderr_event.Delete();
 }
 
 void
-WorkshopOperator::OnOutputReady(unsigned)
+WorkshopOperator::OnProgress(unsigned progress)
 {
-    char buffer[512];
-    ssize_t nbytes, i;
-    unsigned new_progress = 0, p;
-
-    nbytes = stdout_fd.Read(buffer, sizeof(buffer));
-    if (nbytes <= 0) {
-        stdout_event.Delete();
-        stdout_fd.Close();
-        return;
-    }
-
-    for (i = 0; i < nbytes; ++i) {
-        char ch = buffer[i];
-
-        if (ch >= '0' && ch <= '9' &&
-            stdout_buffer.size() < stdout_buffer.capacity() - 1) {
-            stdout_buffer.push_back(ch);
-        } else {
-            if (!stdout_buffer.empty()) {
-                stdout_buffer.push_back('\0');
-                p = (unsigned)strtoul(stdout_buffer.begin(), nullptr, 10);
-                if (p <= 100)
-                    new_progress = p;
-            }
-
-            stdout_buffer.clear();
-        }
-    }
-
-    if (new_progress > 0 && new_progress != progress) {
-        job.SetProgress(new_progress, plan->timeout.c_str());
-        progress = new_progress;
-    }
+    job.SetProgress(progress, plan->timeout.c_str());
 }
 
 void
 WorkshopOperator::SetOutput(UniqueFileDescriptor &&fd)
 {
     assert(fd.IsDefined());
-    assert(!stdout_fd.IsDefined());
+    assert(!progress_reader);
 
-    stdout_fd = std::move(fd);
-    stdout_event.Set(stdout_fd.Get(), SocketEvent::READ|SocketEvent::PERSIST);
-    stdout_event.Add();
+    progress_reader.reset(new ProgressReader(event_loop, std::move(fd),
+                                             BIND_THIS_METHOD(OnProgress)));
 
 }
 
