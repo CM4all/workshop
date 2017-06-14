@@ -9,8 +9,6 @@
 
 #include <string>
 #include <list>
-
-#include <string>
 #include <vector>
 
 #include <assert.h>
