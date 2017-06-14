@@ -145,3 +145,10 @@ WorkshopWorkplace::OnExit(WorkshopOperator *o)
 
     exit_listener.OnChildProcessExit(-1);
 }
+
+void
+WorkshopWorkplace::OnTimeout(WorkshopOperator *o, int pid)
+{
+    spawn_service.KillChildProcess(pid);
+    OnExit(o);
+}

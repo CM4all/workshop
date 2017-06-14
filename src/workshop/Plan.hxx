@@ -10,6 +10,7 @@
 #include <string>
 #include <list>
 #include <vector>
+#include <chrono>
 
 #include <assert.h>
 #include <sys/types.h>
@@ -22,6 +23,9 @@ struct Plan {
     std::list<std::string> args;
 
     std::string timeout, chroot;
+
+    std::chrono::steady_clock::duration parsed_timeout =
+        std::chrono::seconds(0);
 
     uid_t uid = 65534;
     gid_t gid = 65534;

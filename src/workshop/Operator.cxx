@@ -32,9 +32,12 @@ WorkshopOperator::WorkshopOperator(EventLoop &_event_loop,
                                    size_t max_log_buffer,
                                    bool enable_journal)
     :event_loop(_event_loop), workplace(_workplace), job(_job), plan(_plan),
+     timeout_event(event_loop, BIND_THIS_METHOD(OnTimeout)),
      log(event_loop, job.plan_name.c_str(), job.id.c_str(),
          std::move(stderr_read_pipe))
 {
+    ScheduleTimeout();
+
     if (max_log_buffer > 0)
         log.EnableBuffer(max_log_buffer);
 
@@ -42,12 +45,49 @@ WorkshopOperator::WorkshopOperator(EventLoop &_event_loop,
         log.EnableJournal();
 }
 
-WorkshopOperator::~WorkshopOperator() = default;
+WorkshopOperator::~WorkshopOperator()
+{
+    timeout_event.Cancel();
+}
+
+template<class Rep, class Period>
+static struct timeval
+ToTimeval(std::chrono::duration<Rep, Period> src)
+{
+    auto s = std::chrono::duration_cast<std::chrono::seconds>(src);
+    auto us = std::chrono::duration_cast<std::chrono::microseconds>(src);
+    us -= s;
+
+    struct timeval tv;
+    tv.tv_sec = s.count();
+    tv.tv_usec = us.count();
+    return tv;
+}
+
+void
+WorkshopOperator::ScheduleTimeout()
+{
+    const auto t = plan->parsed_timeout;
+    if (t > std::chrono::seconds(0))
+        timeout_event.Add(ToTimeval(t));
+}
+
+void
+WorkshopOperator::OnTimeout()
+{
+    daemon_log(2, "job %s (pid %d) timed out; sending SIGTERM\n",
+               job.id.c_str(), pid);
+
+    workplace.OnTimeout(this, pid);
+}
 
 void
 WorkshopOperator::OnProgress(unsigned progress)
 {
     job.SetProgress(progress, plan->timeout.c_str());
+
+    /* refresh the timeout */
+    ScheduleTimeout();
 }
 
 void

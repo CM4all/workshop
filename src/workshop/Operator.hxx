@@ -6,7 +6,7 @@
 #define WORKSHOP_OPERATOR_HXX
 
 #include "spawn/ExitListener.hxx"
-#include "event/SocketEvent.hxx"
+#include "event/TimerEvent.hxx"
 #include "io/UniqueFileDescriptor.hxx"
 #include "Job.hxx"
 #include "LogBridge.hxx"
@@ -17,11 +17,9 @@
 #include <string>
 #include <list>
 
-template<typename T> struct WritableBuffer;
 struct Plan;
 class WorkshopWorkplace;
 class ProgressReader;
-class LogBridge;
 
 /** an operator is a job being executed */
 class WorkshopOperator final
@@ -34,6 +32,8 @@ class WorkshopOperator final
     WorkshopJob job;
     std::shared_ptr<Plan> plan;
     int pid;
+
+    TimerEvent timeout_event;
 
     std::unique_ptr<ProgressReader> progress_reader;
 
@@ -74,6 +74,8 @@ public:
     void Expand(std::list<std::string> &args) const;
 
 private:
+    void ScheduleTimeout();
+    void OnTimeout();
     void OnProgress(unsigned progress);
 
 public:
