@@ -11,7 +11,7 @@
 class SyslogBridge {
     SyslogClient client;
 
-    StaticArray<char, 64> buffer;
+    StaticArray<char, 1024> buffer;
 
 public:
     SyslogBridge(const char *host_and_port,
