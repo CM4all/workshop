@@ -20,13 +20,12 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-SyslogClient *
-SyslogClient::Create(const char *me, const char *ident,
-                     int facility,
-                     const char *host_and_port)
+SyslogClient::SyslogClient(const char *host_and_port,
+                           const char *_me, const char *_ident,
+                           int _facility)
+    :SyslogClient(ResolveConnectDatagramSocket(host_and_port, 514),
+                  _me, _ident, _facility)
 {
-    auto fd = ResolveConnectDatagramSocket(host_and_port, 514);
-    return new SyslogClient(std::move(fd), me, ident, facility);
 }
 
 static constexpr struct iovec

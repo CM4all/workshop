@@ -102,8 +102,7 @@ WorkshopOperator::CreateSyslogClient(const char *me, const char *ident,
                                      const char *host_and_port)
 {
     try {
-        syslog.reset(SyslogClient::Create(me, ident, facility,
-                                          host_and_port));
+        syslog.reset(new SyslogClient(host_and_port, me, ident, facility));
     } catch (const std::runtime_error &e) {
         std::throw_with_nested(FormatRuntimeError("syslog_open(%s) failed",
                                                   host_and_port));

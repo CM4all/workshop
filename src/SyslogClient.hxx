@@ -23,14 +23,13 @@ public:
                  const char *_me, const char *_ident, int _facility)
         :fd(std::move(_fd)), me(_me), ident(_ident), facility(_facility) {}
 
-    SyslogClient(SyslogClient &&src) = default;
-
     /**
      * Throws std::runtime_error on error.
      */
-    static SyslogClient *Create(const char *me, const char *ident,
-                                int facility,
-                                const char *host_and_port);
+    SyslogClient(const char *host_and_port,
+                 const char *_me, const char *_ident, int _facility);
+
+    SyslogClient(SyslogClient &&src) = default;
 
     int Log(int priority, StringView msg);
 };
