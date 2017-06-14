@@ -31,7 +31,7 @@ struct WorkshopOperator final
     WorkshopWorkplace &workplace;
     WorkshopJob job;
     std::shared_ptr<Plan> plan;
-    pid_t pid;
+    int pid;
 
     std::unique_ptr<ProgressReader> progress_reader;
 
