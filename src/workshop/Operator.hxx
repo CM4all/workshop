@@ -8,7 +8,6 @@
 #include "spawn/ExitListener.hxx"
 #include "event/SocketEvent.hxx"
 #include "io/UniqueFileDescriptor.hxx"
-#include "util/StaticArray.hxx"
 #include "Job.hxx"
 
 #include <boost/intrusive/list.hpp>
@@ -20,7 +19,7 @@
 struct Plan;
 class WorkshopWorkplace;
 class ProgressReader;
-class SyslogClient;
+class SyslogBridge;
 
 /** an operator is a job being executed */
 struct WorkshopOperator final
@@ -38,8 +37,7 @@ struct WorkshopOperator final
 
     UniqueFileDescriptor stderr_fd;
     SocketEvent stderr_event;
-    StaticArray<char, 64> stderr_buffer;
-    std::unique_ptr<SyslogClient> syslog;
+    std::unique_ptr<SyslogBridge> syslog;
 
     WorkshopOperator(EventLoop &_event_loop,
                      WorkshopWorkplace &_workplace, const WorkshopJob &_job,

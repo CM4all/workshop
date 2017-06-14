@@ -10,10 +10,9 @@
 #include "Workplace.hxx"
 #include "Plan.hxx"
 #include "Job.hxx"
-#include "SyslogClient.hxx"
+#include "SyslogBridge.hxx"
 #include "system/Error.hxx"
 #include "util/RuntimeError.hxx"
-#include "util/StringView.hxx"
 
 #include <daemon/log.h>
 
@@ -69,20 +68,7 @@ WorkshopOperator::OnErrorReady(unsigned)
         return;
     }
 
-    for (ssize_t i = 0; i < nbytes; ++i) {
-        char ch = buffer[i];
-
-        if (ch == '\r' || ch == '\n') {
-            if (!stderr_buffer.empty()) {
-                syslog->Log(6, {stderr_buffer.begin(), stderr_buffer.size()});
-            }
-
-            stderr_buffer.clear();
-        } else if (ch > 0 && (ch & ~0x7f) == 0 &&
-                   !stderr_buffer.full()) {
-            stderr_buffer.push_back(ch);
-        }
-    }
+    syslog->Feed(buffer, nbytes);
 }
 
 void
@@ -102,7 +88,7 @@ WorkshopOperator::CreateSyslogClient(const char *me, const char *ident,
                                      const char *host_and_port)
 {
     try {
-        syslog.reset(new SyslogClient(host_and_port, me, ident, facility));
+        syslog.reset(new SyslogBridge(host_and_port, me, ident, facility));
     } catch (const std::runtime_error &e) {
         std::throw_with_nested(FormatRuntimeError("syslog_open(%s) failed",
                                                   host_and_port));
