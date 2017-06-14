@@ -5,7 +5,7 @@
  */
 
 #include "SyslogClient.hxx"
-#include "net/Resolver.hxx"
+#include "net/RConnectSocket.hxx"
 #include "net/AddressInfo.hxx"
 #include "system/Error.hxx"
 #include "util/StringView.hxx"
@@ -17,7 +17,6 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <netdb.h>
 #include <unistd.h>
 #include <fcntl.h>
 
@@ -26,21 +25,7 @@ SyslogClient::Create(const char *me, const char *ident,
                      int facility,
                      const char *host_and_port)
 {
-    struct addrinfo hints;
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_DGRAM;
-
-    const auto ail = Resolve(host_and_port, 514, &hints);
-    const auto &ai = ail.front();
-
-    UniqueSocketDescriptor fd;
-    if (!fd.Create(ai.GetFamily(), ai.GetType(), ai.GetProtocol()))
-        throw MakeErrno("Failed to create socket");
-
-    if (!fd.Connect(ai))
-        throw MakeErrno("Failed to connect to syslog server");
-
+    auto fd = ResolveConnectDatagramSocket(host_and_port, 514);
     return new SyslogClient(std::move(fd), me, ident, facility);
 }
 
