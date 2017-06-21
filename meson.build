@@ -107,6 +107,7 @@ io = static_library('io',
   'libcommon/src/io/WriteFile.cxx',
   'libcommon/src/io/MultiWriteBuffer.cxx',
   'libcommon/src/io/LineParser.cxx',
+  'libcommon/src/io/FileLineParser.cxx',
   'libcommon/src/io/ConfigParser.cxx',
   include_directories: inc,
   dependencies: [
