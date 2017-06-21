@@ -5,7 +5,7 @@
 #include "Config.hxx"
 #include "debug.h"
 #include "system/Error.hxx"
-#include "io/LineParser.hxx"
+#include "io/FileLineParser.hxx"
 #include "io/ConfigParser.hxx"
 #include "net/Resolver.hxx"
 #include "net/AddressInfo.hxx"
@@ -67,7 +67,7 @@ public:
 
 protected:
     /* virtual methods from class ConfigParser */
-    void ParseLine(LineParser &line) override;
+    void ParseLine(FileLineParser &line) override;
 };
 
 static uid_t
@@ -101,7 +101,7 @@ ParseGroup(const char *name)
 }
 
 void
-SpawnConfigParser::ParseLine(LineParser &line)
+SpawnConfigParser::ParseLine(FileLineParser &line)
 {
     const char *word = line.ExpectWord();
 
@@ -125,7 +125,7 @@ class WorkshopConfigParser final : public NestedConfigParser {
 
     protected:
         /* virtual methods from class ConfigParser */
-        void ParseLine(LineParser &line) override;
+        void ParseLine(FileLineParser &line) override;
         void Finish() override;
     };
 
@@ -141,7 +141,7 @@ class WorkshopConfigParser final : public NestedConfigParser {
 
     protected:
         /* virtual methods from class ConfigParser */
-        void ParseLine(LineParser &line) override;
+        void ParseLine(FileLineParser &line) override;
         void Finish() override;
     };
 
@@ -151,11 +151,11 @@ public:
 
 protected:
     /* virtual methods from class NestedConfigParser */
-    void ParseLine2(LineParser &line) override;
+    void ParseLine2(FileLineParser &line) override;
 };
 
 void
-WorkshopConfigParser::Partition::ParseLine(LineParser &line)
+WorkshopConfigParser::Partition::ParseLine(FileLineParser &line)
 {
     const char *word = line.ExpectWord();
 
@@ -195,7 +195,7 @@ ResolveStreamConnect(const char *host, int default_port)
 }
 
 void
-WorkshopConfigParser::CronPartition::ParseLine(LineParser &line)
+WorkshopConfigParser::CronPartition::ParseLine(FileLineParser &line)
 {
     const char *word = line.ExpectWord();
 
@@ -224,7 +224,7 @@ WorkshopConfigParser::CronPartition::Finish()
 }
 
 void
-WorkshopConfigParser::ParseLine2(LineParser &line)
+WorkshopConfigParser::ParseLine2(FileLineParser &line)
 {
     const char *word = line.ExpectWord();
 

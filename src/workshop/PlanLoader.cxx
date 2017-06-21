@@ -5,7 +5,7 @@
 #include "PlanLoader.hxx"
 #include "Plan.hxx"
 #include "system/Error.hxx"
-#include "io/LineParser.hxx"
+#include "io/FileLineParser.hxx"
 #include "io/ConfigParser.hxx"
 #include "util/Tokenizer.hxx"
 #include "util/RuntimeError.hxx"
@@ -30,7 +30,7 @@ public:
     }
 
     /* virtual methods from class ConfigParser */
-    void ParseLine(LineParser &line) final;
+    void ParseLine(FileLineParser &line) final;
     void Finish() override;
 };
 
@@ -50,7 +50,7 @@ get_user_groups(const char *user, gid_t gid)
 }
 
 void
-PlanLoader::ParseLine(LineParser &line)
+PlanLoader::ParseLine(FileLineParser &line)
 {
     const char *key = line.ExpectWord();
 

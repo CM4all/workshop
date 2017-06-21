@@ -38,6 +38,19 @@ add_global_arguments('-D_REENTRANT', '-D_GNU_SOURCE',
   '-Werror',
   language: 'cpp')
 
+gtest = declare_dependency(
+  dependencies: [dependency('gtest', main: true)],
+  compile_args: [
+    '-Wno-undef',
+    '-Wno-suggest-attribute=format',
+    '-Wno-suggest-attribute=noreturn',
+    '-Wno-missing-declarations',
+
+    # needed on Jessie for gtest's IsNullLiteralHelper
+    '-Wno-conversion-null',
+  ],
+)
+
 boost = dependency('boost', modules: ['system', 'filesystem'], version: '>= 1.54')
 libevent = dependency('libevent', version: '>= 2.0.19')
 libcurl = dependency('libcurl', version: '>= 7.38')
@@ -297,3 +310,4 @@ TestCronSchedule = executable('TestCronSchedule',
 test('TestCronSchedule', TestCronSchedule)
 
 subdir('libcommon/test/pg')
+subdir('libcommon/test/io')
