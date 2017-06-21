@@ -85,7 +85,7 @@ ParseUser(const char *name)
     return pw->pw_uid;
 }
 
-static uid_t
+static gid_t
 ParseGroup(const char *name)
 {
     char *endptr;
