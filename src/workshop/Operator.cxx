@@ -13,6 +13,7 @@
 #include "SyslogBridge.hxx"
 #include "system/Error.hxx"
 #include "util/RuntimeError.hxx"
+#include "util/StringView.hxx"
 
 #include <daemon/log.h>
 
@@ -27,16 +28,11 @@ WorkshopOperator::WorkshopOperator(EventLoop &_event_loop,
                                    WorkshopWorkplace &_workplace,
                                    const WorkshopJob &_job,
                                    const std::shared_ptr<Plan> &_plan)
-    :event_loop(_event_loop), workplace(_workplace), job(_job), plan(_plan),
-     stderr_event(event_loop, BIND_THIS_METHOD(OnErrorReady))
+    :event_loop(_event_loop), workplace(_workplace), job(_job), plan(_plan)
 {
 }
 
-WorkshopOperator::~WorkshopOperator()
-{
-    if (stderr_fd.IsDefined())
-        stderr_event.Delete();
-}
+WorkshopOperator::~WorkshopOperator() = default;
 
 void
 WorkshopOperator::OnProgress(unsigned progress)
@@ -55,50 +51,23 @@ WorkshopOperator::SetOutput(UniqueFileDescriptor &&fd)
 
 }
 
-void
-WorkshopOperator::OnErrorReady(unsigned)
-{
-    assert(syslog != nullptr);
-
-    char buffer[512];
-    ssize_t nbytes = stderr_fd.Read(buffer, sizeof(buffer));
-    if (nbytes <= 0) {
-        stderr_event.Delete();
-        stderr_fd.Close();
-        return;
-    }
-
-    syslog->Feed(buffer, nbytes);
-}
-
-void
-WorkshopOperator::SetSyslog(UniqueFileDescriptor &&fd)
-{
-    assert(fd.IsDefined());
-    assert(!stderr_fd.IsDefined());
-
-    stderr_fd = std::move(fd);
-    stderr_event.Set(stderr_fd.Get(), SocketEvent::READ|SocketEvent::PERSIST);
-    stderr_event.Add();
-}
-
 UniqueFileDescriptor
 WorkshopOperator::CreateSyslogClient(const char *me, const char *ident,
                                      int facility,
                                      const char *host_and_port)
 {
+    UniqueFileDescriptor stderr_r, stderr_w;
+    if (!UniqueFileDescriptor::CreatePipe(stderr_r, stderr_w))
+        throw MakeErrno("pipe() failed");
+
     try {
-        syslog.reset(new SyslogBridge(host_and_port, me, ident, facility));
+        syslog.reset(new SyslogBridge(event_loop, std::move(stderr_r),
+                                      host_and_port, me, ident, facility));
     } catch (const std::runtime_error &e) {
         std::throw_with_nested(FormatRuntimeError("syslog_open(%s) failed",
                                                   host_and_port));
     }
 
-    UniqueFileDescriptor stderr_r, stderr_w;
-    if (!UniqueFileDescriptor::CreatePipe(stderr_r, stderr_w))
-        throw MakeErrno("pipe() failed");
-
-    SetSyslog(std::move(stderr_r));
     return stderr_w;
 }
 
@@ -120,6 +89,9 @@ WorkshopOperator::Expand(std::list<std::string> &args) const
 void
 WorkshopOperator::OnChildProcessExit(int status)
 {
+    if (syslog)
+        syslog->Flush();
+
     int exit_status = WEXITSTATUS(status);
 
     if (WIFSIGNALED(status)) {

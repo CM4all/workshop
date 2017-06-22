@@ -16,6 +16,7 @@
 #include <string>
 #include <list>
 
+template<typename T> struct WritableBuffer;
 struct Plan;
 class WorkshopWorkplace;
 class ProgressReader;
@@ -35,8 +36,6 @@ class WorkshopOperator final
 
     std::unique_ptr<ProgressReader> progress_reader;
 
-    UniqueFileDescriptor stderr_fd;
-    SocketEvent stderr_event;
     std::unique_ptr<SyslogBridge> syslog;
 
 public:
@@ -63,7 +62,6 @@ public:
     }
 
     void SetOutput(UniqueFileDescriptor &&fd);
-    void SetSyslog(UniqueFileDescriptor &&fd);
 
     /**
      * @return a writable pipe to be attached to the child's stderr
@@ -76,7 +74,6 @@ public:
 
 private:
     void OnProgress(unsigned progress);
-    void OnErrorReady(unsigned events);
 
 public:
     /* virtual methods from ExitListener */

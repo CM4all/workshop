@@ -123,6 +123,7 @@ event = static_library('event',
   'libcommon/src/event/CleanupTimer.cxx',
   'libcommon/src/event/DeferEvent.cxx',
   'libcommon/src/event/SignalEvent.cxx',
+  'libcommon/src/event/PipeLineReader.cxx',
   include_directories: inc,
   dependencies: [
     libinline,

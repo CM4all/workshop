@@ -6,20 +6,30 @@
 #define WORKSHOP_SYSLOG_BRIDGE_HXX
 
 #include "SyslogClient.hxx"
+#include "event/PipeLineReader.hxx"
 #include "util/StaticArray.hxx"
 
 class SyslogBridge {
+    PipeLineReader reader;
     SyslogClient client;
 
     StaticArray<char, 1024> buffer;
 
 public:
-    SyslogBridge(const char *host_and_port,
+    SyslogBridge(EventLoop &event_loop, UniqueFileDescriptor &&read_pipe_fd,
+                 const char *host_and_port,
                  const char *me, const char *ident,
                  int facility)
-        :client(host_and_port, me, ident, facility) {}
+        :reader(event_loop, std::move(read_pipe_fd),
+                BIND_THIS_METHOD(OnStderrLine)),
+         client(host_and_port, me, ident, facility) {}
 
-    void Feed(const void *data, size_t size);
+    void Flush() {
+        reader.Flush();
+    }
+
+private:
+    bool OnStderrLine(WritableBuffer<char> line);
 };
 
 #endif
