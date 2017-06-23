@@ -107,7 +107,7 @@ WorkshopConfigParser::Partition::ParseLine(FileLineParser &line)
         config.database = line.ExpectValueAndEnd();
     } else if (strcmp(word, "database_schema") == 0) {
         config.database_schema = line.ExpectValueAndEnd();
-    } else if (strcmp(word, "enable_journal") == 0) {
+    } else if (strcmp(word, "journal") == 0) {
         config.enable_journal = line.NextBool();
         line.ExpectEnd();
     } else
