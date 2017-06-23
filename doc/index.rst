@@ -207,6 +207,10 @@ The following options are available:
   if it is a heavy workload.  It will only run when the server is
   idle, and no other tasks need resources.
 
+* :samp:`rlimits L`: Configure resource limits.  The syntax is the
+  same as the `beng-proxy` :envvar:`RLIMITS` translation packet.
+  Check its documentation for details.
+
 * :samp:`chroot PATH`: Change the root directory prior to executing
   the process.
 

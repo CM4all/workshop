@@ -151,6 +151,9 @@ PlanLoader::ParseLine(FileLineParser &line)
     } else if (strcmp(key, "idle") == 0) {
         plan.sched_idle = plan.ioprio_idle = true;
         line.ExpectEnd();
+    } else if (strcmp(key, "rlimits") == 0) {
+        if (!plan.rlimits.Parse(line.ExpectValueAndEnd()))
+            throw std::runtime_error("Failed to parse rlimits");
     } else if (strcmp(key, "concurrency") == 0) {
         plan.concurrency = line.NextPositiveInteger();
         line.ExpectEnd();

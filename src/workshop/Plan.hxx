@@ -7,6 +7,8 @@
 #ifndef WORKSHOP_PLAN_HXX
 #define WORKSHOP_PLAN_HXX
 
+#include "spawn/ResourceLimits.hxx"
+
 #include <string>
 #include <list>
 #include <vector>
@@ -32,6 +34,8 @@ struct Plan {
 
     /** supplementary group ids */
     std::vector<gid_t> groups;
+
+    ResourceLimits rlimits;
 
     int priority = 10;
 
