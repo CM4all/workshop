@@ -2,11 +2,11 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#include "SyslogBridge.hxx"
+#include "LogBridge.hxx"
 #include "util/StringView.hxx"
 
 bool
-SyslogBridge::OnStderrLine(WritableBuffer<char> line)
+LogBridge::OnStderrLine(WritableBuffer<char> line)
 {
     if (line.IsNull())
         return false;

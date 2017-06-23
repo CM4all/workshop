@@ -10,7 +10,7 @@
 #include "Workplace.hxx"
 #include "Plan.hxx"
 #include "Job.hxx"
-#include "SyslogBridge.hxx"
+#include "LogBridge.hxx"
 #include "system/Error.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringView.hxx"
@@ -61,8 +61,8 @@ WorkshopOperator::CreateSyslogClient(const char *me, const char *ident,
         throw MakeErrno("pipe() failed");
 
     try {
-        syslog.reset(new SyslogBridge(event_loop, std::move(stderr_r),
-                                      host_and_port, me, ident, facility));
+        log.reset(new LogBridge(event_loop, std::move(stderr_r),
+                                host_and_port, me, ident, facility));
     } catch (const std::runtime_error &e) {
         std::throw_with_nested(FormatRuntimeError("syslog_open(%s) failed",
                                                   host_and_port));
@@ -89,8 +89,8 @@ WorkshopOperator::Expand(std::list<std::string> &args) const
 void
 WorkshopOperator::OnChildProcessExit(int status)
 {
-    if (syslog)
-        syslog->Flush();
+    if (log)
+        log->Flush();
 
     int exit_status = WEXITSTATUS(status);
 

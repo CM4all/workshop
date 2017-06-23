@@ -20,7 +20,7 @@ template<typename T> struct WritableBuffer;
 struct Plan;
 class WorkshopWorkplace;
 class ProgressReader;
-class SyslogBridge;
+class LogBridge;
 
 /** an operator is a job being executed */
 class WorkshopOperator final
@@ -36,7 +36,7 @@ class WorkshopOperator final
 
     std::unique_ptr<ProgressReader> progress_reader;
 
-    std::unique_ptr<SyslogBridge> syslog;
+    std::unique_ptr<LogBridge> log;
 
 public:
     WorkshopOperator(EventLoop &_event_loop,
