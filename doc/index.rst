@@ -205,6 +205,29 @@ During job execution, the columns `node_name` and `progress` are set.
 Upon completion, the columns `time_done` and `status` contain
 interesting data.
 
+Using the systemd journal
+-------------------------
+
+If the `journal` option is enabled, then all log output from job
+processes (text lines printed to `stderr`) are forwarded to the
+systemd journal, along with structured data:
+
+* :envvar:`WORKSHOP_PLAN`: the plan name
+* :envvar:`WORKSHOP_JOB`: the job id
+
+To see all fields, choose output format `verbose` or `json`::
+
+  journalctl -u cm4all-workshop -o verbose
+
+For example, to see all log messages of plan `foo`, type::
+
+  journalctl -u cm4all-workshop WORKSHOP_PLAN=foo
+
+To see the log of job `42`, type::
+
+  journalctl -u cm4all-workshop WORKSHOP_JOB=42
+
+
 Using Cron
 ----------
 
