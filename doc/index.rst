@@ -75,6 +75,8 @@ The following settings are recognized:
     documentation
     <https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING>`_)
   * :envvar:`database_schema`: the PostgreSQL schema name (optional)
+  * :envvar:`max_log`: specifies the maximum amount of log data
+    captured for the `log` column (units such as `kB` may be used)
   * :envvar:`journal`: set to :samp:`yes` to send structured log
     messages to the systemd journal
 * :envvar:`cron`: opens a block (with curly braces), which
