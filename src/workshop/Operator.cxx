@@ -28,11 +28,14 @@ WorkshopOperator::WorkshopOperator(EventLoop &_event_loop,
                                    WorkshopWorkplace &_workplace,
                                    const WorkshopJob &_job,
                                    const std::shared_ptr<Plan> &_plan,
-                                   UniqueFileDescriptor &&stderr_read_pipe)
+                                   UniqueFileDescriptor &&stderr_read_pipe,
+                                   bool enable_journal)
     :event_loop(_event_loop), workplace(_workplace), job(_job), plan(_plan),
      log(event_loop, job.plan_name.c_str(), job.id.c_str(),
          std::move(stderr_read_pipe))
 {
+    if (enable_journal)
+        log.EnableJournal();
 }
 
 WorkshopOperator::~WorkshopOperator() = default;

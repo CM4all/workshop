@@ -26,7 +26,8 @@ WorkshopPartition::WorkshopPartition(Instance &_instance,
            [this](WorkshopJob &&job){ OnJob(std::move(job)); }),
      workplace(_spawn_service, *this,
                root_config.node_name.c_str(),
-               root_config.concurrency),
+               root_config.concurrency,
+               config.enable_journal),
      idle_callback(_idle_callback)
 {
 }

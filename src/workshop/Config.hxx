@@ -10,6 +10,8 @@
 struct WorkshopPartitionConfig {
     std::string database, database_schema;
 
+    bool enable_journal = false;
+
     WorkshopPartitionConfig() = default;
     explicit WorkshopPartitionConfig(const char *_database)
         :database(_database) {}

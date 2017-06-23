@@ -6,6 +6,8 @@
 #include "SyslogClient.hxx"
 #include "util/StringView.hxx"
 
+#include <systemd/sd-journal.h>
+
 LogBridge::LogBridge(EventLoop &event_loop,
                      const char *_plan_name, const char *_job_id,
                      UniqueFileDescriptor &&read_pipe_fd)
@@ -38,7 +40,14 @@ LogBridge::OnStderrLine(WritableBuffer<char> line)
     // TODO: strip non-ASCII characters
     if (syslog)
         syslog->Log(6, {line.data, line.size});
-    else
+
+    if (enable_journal)
+        sd_journal_send("MESSAGE=%.*s", int(line.size), line.data,
+                        "WORKSHOP_PLAN=%s", plan_name.c_str(),
+                        "WORKSHOP_JOB=%s", job_id.c_str(),
+                        nullptr);
+
+    if (!syslog && !enable_journal)
         fprintf(stderr, "[%s:%s] %.*s\n", plan_name.c_str(), job_id.c_str(),
                 int(line.size), line.data);
 

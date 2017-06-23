@@ -75,7 +75,8 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
     /* create operator object */
 
     auto o = std::make_unique<WorkshopOperator>(event_loop, *this, job, plan,
-                                                std::move(stderr_r));
+                                                std::move(stderr_r),
+                                                enable_journal);
 
     PreparedChildProcess p;
     p.hook_info = job.plan_name.c_str();

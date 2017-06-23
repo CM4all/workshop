@@ -33,15 +33,18 @@ class WorkshopWorkplace {
     OperatorList operators;
 
     const unsigned max_operators;
+    const bool enable_journal;
 
 public:
     WorkshopWorkplace(SpawnService &_spawn_service,
                       ExitListener &_exit_listener,
                       const char *_node_name,
-                      unsigned _max_operators)
+                      unsigned _max_operators,
+                      bool _enable_journal)
         :spawn_service(_spawn_service), exit_listener(_exit_listener),
          node_name(_node_name),
-         max_operators(_max_operators) {
+         max_operators(_max_operators),
+         enable_journal(_enable_journal) {
         assert(max_operators > 0);
     }
 

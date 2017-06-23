@@ -17,6 +17,7 @@ class LogBridge {
 
     PipeLineReader reader;
     std::unique_ptr<SyslogClient> syslog;
+    bool enable_journal = false;
 
     StaticArray<char, 1024> buffer;
 
@@ -29,6 +30,10 @@ public:
     void CreateSyslog(const char *host_and_port,
                       const char *me,
                       int facility);
+
+    void EnableJournal() {
+        enable_journal = true;
+    }
 
     void Flush() {
         reader.Flush();

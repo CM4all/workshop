@@ -43,7 +43,8 @@ public:
     WorkshopOperator(EventLoop &_event_loop,
                      WorkshopWorkplace &_workplace, const WorkshopJob &_job,
                      const std::shared_ptr<Plan> &_plan,
-                     UniqueFileDescriptor &&stderr_read_pipe);
+                     UniqueFileDescriptor &&stderr_read_pipe,
+                     bool enable_journal);
 
     WorkshopOperator(const WorkshopOperator &other) = delete;
 

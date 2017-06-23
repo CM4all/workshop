@@ -75,6 +75,8 @@ The following settings are recognized:
     documentation
     <https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING>`_)
   * :envvar:`database_schema`: the PostgreSQL schema name (optional)
+  * :envvar:`journal`: set to :samp:`yes` to send structured log
+    messages to the systemd journal
 * :envvar:`cron`: opens a block (with curly braces), which
   configures a cron database ("partition"):
 
