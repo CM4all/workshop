@@ -52,7 +52,7 @@ WorkshopOperator::SetOutput(UniqueFileDescriptor &&fd)
 }
 
 UniqueFileDescriptor
-WorkshopOperator::CreateSyslogClient(const char *me, const char *ident,
+WorkshopOperator::CreateSyslogClient(const char *me,
                                      int facility,
                                      const char *host_and_port)
 {
@@ -61,8 +61,11 @@ WorkshopOperator::CreateSyslogClient(const char *me, const char *ident,
         throw MakeErrno("pipe() failed");
 
     try {
-        log.reset(new LogBridge(event_loop, std::move(stderr_r)));
-        log->CreateSyslog(host_and_port, me, ident, facility);
+        log.reset(new LogBridge(event_loop,
+                                job.plan_name.c_str(),
+                                job.id.c_str(),
+                                std::move(stderr_r)));
+        log->CreateSyslog(host_and_port, me, facility);
     } catch (const std::runtime_error &e) {
         std::throw_with_nested(FormatRuntimeError("syslog_open(%s) failed",
                                                   host_and_port));

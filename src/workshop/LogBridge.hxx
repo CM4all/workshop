@@ -13,17 +13,21 @@
 class SyslogClient;
 
 class LogBridge {
+    const std::string plan_name, job_id;
+
     PipeLineReader reader;
     std::unique_ptr<SyslogClient> syslog;
 
     StaticArray<char, 1024> buffer;
 
 public:
-    LogBridge(EventLoop &event_loop, UniqueFileDescriptor &&read_pipe_fd);
+    LogBridge(EventLoop &event_loop,
+              const char *_plan_name, const char *_job_id,
+              UniqueFileDescriptor &&read_pipe_fd);
     ~LogBridge();
 
     void CreateSyslog(const char *host_and_port,
-                      const char *me, const char *ident,
+                      const char *me,
                       int facility);
 
     void Flush() {

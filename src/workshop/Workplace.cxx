@@ -98,12 +98,7 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
     }
 
     if (!job.syslog_server.empty()) {
-        char ident[256];
-
-        snprintf(ident, sizeof(ident), "%s[%s]",
-                 job.plan_name.c_str(), job.id.c_str());
-
-        p.SetStderr(o->CreateSyslogClient(node_name.c_str(), ident, 1,
+        p.SetStderr(o->CreateSyslogClient(node_name.c_str(), 1,
                                           job.syslog_server.c_str()));
     }
 

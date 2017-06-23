@@ -66,7 +66,7 @@ public:
     /**
      * @return a writable pipe to be attached to the child's stderr
      */
-    UniqueFileDescriptor CreateSyslogClient(const char *me, const char *ident,
+    UniqueFileDescriptor CreateSyslogClient(const char *me,
                                             int facility,
                                             const char *host_and_port);
 
