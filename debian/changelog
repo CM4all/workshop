@@ -8,7 +8,7 @@ cm4all-workshop (2.0.13) unstable; urgency=low
   * spawn: fix file descriptor leaks
   * spawn: unblock signals
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Fri, 23 Jun 2017 17:52:34 -0000
 
 cm4all-workshop (2.0.12) unstable; urgency=low
 
