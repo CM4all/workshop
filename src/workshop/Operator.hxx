@@ -9,6 +9,7 @@
 #include "event/SocketEvent.hxx"
 #include "io/UniqueFileDescriptor.hxx"
 #include "Job.hxx"
+#include "LogBridge.hxx"
 
 #include <boost/intrusive/list.hpp>
 
@@ -36,12 +37,13 @@ class WorkshopOperator final
 
     std::unique_ptr<ProgressReader> progress_reader;
 
-    std::unique_ptr<LogBridge> log;
+    LogBridge log;
 
 public:
     WorkshopOperator(EventLoop &_event_loop,
                      WorkshopWorkplace &_workplace, const WorkshopJob &_job,
-                     const std::shared_ptr<Plan> &_plan);
+                     const std::shared_ptr<Plan> &_plan,
+                     UniqueFileDescriptor &&stderr_read_pipe);
 
     WorkshopOperator(const WorkshopOperator &other) = delete;
 
@@ -63,12 +65,9 @@ public:
 
     void SetOutput(UniqueFileDescriptor &&fd);
 
-    /**
-     * @return a writable pipe to be attached to the child's stderr
-     */
-    UniqueFileDescriptor CreateSyslogClient(const char *me,
-                                            int facility,
-                                            const char *host_and_port);
+    void CreateSyslogClient(const char *me,
+                            int facility,
+                            const char *host_and_port);
 
     void Expand(std::list<std::string> &args) const;
 

@@ -27,8 +27,11 @@
 WorkshopOperator::WorkshopOperator(EventLoop &_event_loop,
                                    WorkshopWorkplace &_workplace,
                                    const WorkshopJob &_job,
-                                   const std::shared_ptr<Plan> &_plan)
-    :event_loop(_event_loop), workplace(_workplace), job(_job), plan(_plan)
+                                   const std::shared_ptr<Plan> &_plan,
+                                   UniqueFileDescriptor &&stderr_read_pipe)
+    :event_loop(_event_loop), workplace(_workplace), job(_job), plan(_plan),
+     log(event_loop, job.plan_name.c_str(), job.id.c_str(),
+         std::move(stderr_read_pipe))
 {
 }
 
@@ -51,27 +54,17 @@ WorkshopOperator::SetOutput(UniqueFileDescriptor &&fd)
 
 }
 
-UniqueFileDescriptor
+void
 WorkshopOperator::CreateSyslogClient(const char *me,
                                      int facility,
                                      const char *host_and_port)
 {
-    UniqueFileDescriptor stderr_r, stderr_w;
-    if (!UniqueFileDescriptor::CreatePipe(stderr_r, stderr_w))
-        throw MakeErrno("pipe() failed");
-
-    try {
-        log.reset(new LogBridge(event_loop,
-                                job.plan_name.c_str(),
-                                job.id.c_str(),
-                                std::move(stderr_r)));
-        log->CreateSyslog(host_and_port, me, facility);
+    try{
+        log.CreateSyslog(host_and_port, me, facility);
     } catch (const std::runtime_error &e) {
         std::throw_with_nested(FormatRuntimeError("syslog_open(%s) failed",
                                                   host_and_port));
     }
-
-    return stderr_w;
 }
 
 void
@@ -92,8 +85,7 @@ WorkshopOperator::Expand(std::list<std::string> &args) const
 void
 WorkshopOperator::OnChildProcessExit(int status)
 {
-    if (log)
-        log->Flush();
+    log.Flush();
 
     int exit_status = WEXITSTATUS(status);
 

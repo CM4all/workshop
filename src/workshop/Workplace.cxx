@@ -66,12 +66,20 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 {
     assert(!plan->args.empty());
 
+    /* create stdout/stderr pipes */
+
+    UniqueFileDescriptor stderr_r, stderr_w;
+    if (!UniqueFileDescriptor::CreatePipe(stderr_r, stderr_w))
+        throw MakeErrno("pipe() failed");
+
     /* create operator object */
 
-    auto o = std::make_unique<WorkshopOperator>(event_loop, *this, job, plan);
+    auto o = std::make_unique<WorkshopOperator>(event_loop, *this, job, plan,
+                                                std::move(stderr_r));
 
     PreparedChildProcess p;
     p.hook_info = job.plan_name.c_str();
+    p.SetStderr(std::move(stderr_w));
 
     if (!debug_mode) {
         p.uid_gid.uid = plan->uid;
@@ -98,8 +106,8 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
     }
 
     if (!job.syslog_server.empty()) {
-        p.SetStderr(o->CreateSyslogClient(node_name.c_str(), 1,
-                                          job.syslog_server.c_str()));
+        o->CreateSyslogClient(node_name.c_str(), 1,
+                              job.syslog_server.c_str());
     }
 
     /* build command line */
