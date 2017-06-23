@@ -20,15 +20,6 @@ Instance::Instance(const Config &config,
      child_process_registry(event_loop),
      curl(new CurlGlobal(event_loop))
 {
-    shutdown_listener.Enable();
-    sighup_event.Enable();
-
-    if (!config.partitions.empty()) {
-        library.reset(new MultiLibrary());
-        library->InsertPath("/etc/cm4all/workshop/plans");
-        library->InsertPath("/usr/share/cm4all/workshop/plans");
-    }
-
     auto *ss = StartSpawnServer(config.spawn, child_process_registry,
                                 this,
                                 [this, &in_spawner](){
@@ -37,6 +28,15 @@ Instance::Instance(const Config &config,
                                     event_loop.~EventLoop();
                                 });
     spawn_service.reset(ss);
+
+    shutdown_listener.Enable();
+    sighup_event.Enable();
+
+    if (!config.partitions.empty()) {
+        library.reset(new MultiLibrary());
+        library->InsertPath("/etc/cm4all/workshop/plans");
+        library->InsertPath("/usr/share/cm4all/workshop/plans");
+    }
 
     for (const auto &i : config.partitions)
         partitions.emplace_front(*this, *library, *spawn_service,
