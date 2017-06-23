@@ -59,7 +59,7 @@ The following settings are recognized:
 * :envvar:`node_name`: This node's name, for example the
   fully-qualified host name.  Must be unique in the cluster.  By
   default, the hostname is used.
-* :envvar:`concurrency`: How many jobs shall this node concurrently?
+* :envvar:`concurrency`: How many jobs shall this node execute concurrently?
   Rule of thumb: number of CPUs, not much more.
 * :envvar:`spawn`: opens a block (with curly braces), which
   configures the process spawner:
