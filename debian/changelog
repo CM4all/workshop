@@ -4,6 +4,7 @@ cm4all-workshop (2.0.13) unstable; urgency=low
   * workshop: add option sends structured log messages to systemd journal
   * workshop: add database column "log" (requires manual migration)
   * spawn: fix file descriptor leaks
+  * spawn: unblock signals
 
  --   
 
