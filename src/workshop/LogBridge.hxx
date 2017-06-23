@@ -6,7 +6,6 @@
 #define WORKSHOP_LOG_BRIDGE_HXX
 
 #include "event/PipeLineReader.hxx"
-#include "util/StaticArray.hxx"
 
 #include <memory>
 
@@ -18,8 +17,6 @@ class LogBridge {
     PipeLineReader reader;
     std::unique_ptr<SyslogClient> syslog;
     bool enable_journal = false;
-
-    StaticArray<char, 1024> buffer;
 
 public:
     LogBridge(EventLoop &event_loop,
