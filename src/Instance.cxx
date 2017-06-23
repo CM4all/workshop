@@ -25,6 +25,7 @@ Instance::Instance(const Config &config,
                                 [this, &in_spawner](){
                                     in_spawner();
                                     event_loop.Reinit();
+                                    child_process_registry.~ChildProcessRegistry();
                                     event_loop.~EventLoop();
                                 });
     spawn_service.reset(ss);
