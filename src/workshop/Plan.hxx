@@ -16,8 +16,6 @@
 #include <stdlib.h>
 
 class Error;
-class Tokenizer;
-class TextFile;
 
 /** a plan describes how to perform a specific job */
 struct Plan {

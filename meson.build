@@ -75,7 +75,6 @@ util = static_library('util',
   'libcommon/src/util/StringUtil.cxx',
   'libcommon/src/util/StringView.cxx',
   'libcommon/src/util/djbhash.c',
-  'src/util/Tokenizer.cxx',
   include_directories: inc,
   dependencies: [
     libinline

@@ -7,7 +7,6 @@
 #include "system/Error.hxx"
 #include "io/FileLineParser.hxx"
 #include "io/ConfigParser.hxx"
-#include "util/Tokenizer.hxx"
 #include "util/RuntimeError.hxx"
 
 #include <inline/compiler.h>
