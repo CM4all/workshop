@@ -142,6 +142,15 @@ PlanLoader::ParseLine(FileLineParser &line)
         plan.groups = get_user_groups(value, plan.gid);
     } else if (strcmp(key, "nice") == 0) {
         plan.priority = atoi(line.ExpectValueAndEnd());
+    } else if (strcmp(key, "sched_idle") == 0) {
+        plan.sched_idle = true;
+        line.ExpectEnd();
+    } else if (strcmp(key, "ioprio_idle") == 0) {
+        plan.ioprio_idle = true;
+        line.ExpectEnd();
+    } else if (strcmp(key, "idle") == 0) {
+        plan.sched_idle = plan.ioprio_idle = true;
+        line.ExpectEnd();
     } else if (strcmp(key, "concurrency") == 0) {
         plan.concurrency = line.NextPositiveInteger();
         line.ExpectEnd();

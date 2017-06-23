@@ -191,6 +191,22 @@ The following options are available:
   :samp:`-20` (high priority) to :samp:`+19` (low priority).  Negative
   values should be avoided.  The default is :samp:`+10`.
 
+* :samp:`sched_idle`: Select the "idle" CPU scheduling policy,
+  i.e. the process will only get CPU time when no other process runs.
+  (With this policy, the `nice` value is ignored.)
+
+* :samp:`ioprio_idle`: Select the "idle" I/O scheduling class,
+  i.e. the process will only be able to access local hard disks when no
+  other process needs them.  (Works only with I/O schedulers which
+  support it, e.g. `cfq`, and has no effect on NFS.  Check
+  :file:`/sys/block/*/queue/scheduler` to see which I/O scheduler is
+  used for a specific device.)
+
+* :samp:`idle`: Shortcut for `sched_idle` and `ioprio_idle`.  In this
+  mode, the process should not affect the server's performance, even
+  if it is a heavy workload.  It will only run when the server is
+  idle, and no other tasks need resources.
+
 * :samp:`chroot PATH`: Change the root directory prior to executing
   the process.
 

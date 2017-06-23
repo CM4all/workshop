@@ -96,6 +96,8 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
         p.chroot = plan->chroot.c_str();
 
     p.priority = plan->priority;
+    p.sched_idle = plan->sched_idle;
+    p.ioprio_idle = plan->ioprio_idle;
 
     /* create stdout/stderr pipes */
 

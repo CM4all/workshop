@@ -38,6 +38,8 @@ struct Plan {
     /** maximum concurrency for this plan */
     unsigned concurrency = 0;
 
+    bool sched_idle = false, ioprio_idle = false;
+
     Plan() = default;
 
     Plan(Plan &&) = default;

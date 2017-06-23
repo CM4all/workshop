@@ -3,6 +3,7 @@ cm4all-workshop (2.0.13) unstable; urgency=low
   * workshop: show plan name and job id in log messages
   * workshop: add option sends structured log messages to systemd journal
   * workshop: add database column "log" (requires manual migration)
+  * workshop: add plan settings "sched_idle", "ioprio_idle", "idle"
   * spawn: fix file descriptor leaks
   * spawn: unblock signals
 
