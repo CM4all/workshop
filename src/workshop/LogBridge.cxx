@@ -38,5 +38,9 @@ LogBridge::OnStderrLine(WritableBuffer<char> line)
     // TODO: strip non-ASCII characters
     if (syslog)
         syslog->Log(6, {line.data, line.size});
+    else
+        fprintf(stderr, "[%s:%s] %.*s\n", plan_name.c_str(), job_id.c_str(),
+                int(line.size), line.data);
+
     return true;
 }
