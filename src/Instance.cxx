@@ -20,6 +20,10 @@ Instance::Instance(const Config &config,
      child_process_registry(event_loop),
      curl(new CurlGlobal(event_loop))
 {
+    /* the plan library must be initialized before starting the
+       spawner, because it is required by Verify(), which runs inside
+       the spawner process */
+
     if (!config.partitions.empty()) {
         library.reset(new MultiLibrary());
         library->InsertPath("/etc/cm4all/workshop/plans");
