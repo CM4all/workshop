@@ -7,7 +7,7 @@ cm4all-workshop (2.0.14) unstable; urgency=low
   * workshop: fix plan uid/gid verification
   * workshop: create a per-plan cgroup for job processes
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Thu, 29 Jun 2017 13:26:30 -0000
 
 cm4all-workshop (2.0.13) unstable; urgency=low
 
