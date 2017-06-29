@@ -100,6 +100,10 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
     p.sched_idle = plan->sched_idle;
     p.ioprio_idle = plan->ioprio_idle;
 
+    /* use a per-plan cgroup */
+
+    p.cgroup.name = job.plan_name.c_str();
+
     /* create stdout/stderr pipes */
 
     {
