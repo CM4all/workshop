@@ -2,6 +2,7 @@ cm4all-workshop (2.0.15) unstable; urgency=low
 
   * spawn: fix user namespace bug
   * spawn: fix seccomp filters on old kernels
+  * spawn: allow only local, IPv4 and IPv6 sockets
 
  --   
 
