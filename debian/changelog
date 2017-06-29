@@ -1,6 +1,7 @@
 cm4all-workshop (2.0.14) unstable; urgency=low
 
   * spawn: implement an init process for PID namespaces
+  * spawn: switch to a new systemd scope, enabling cgroup management
   * workshop: fix plan uid/gid verification
 
  --   

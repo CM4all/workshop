@@ -18,6 +18,9 @@ Config::Config()
 {
     if (debug_mode)
         spawn.default_uid_gid.LoadEffective();
+
+    spawn.systemd_scope = "cm4all-workshop-spawn.scope";
+    spawn.systemd_scope_description = "The cm4all-workshop child process spawner";
 }
 
 void
