@@ -13,8 +13,7 @@
 
 #include <signal.h>
 
-Instance::Instance(const Config &config,
-                   std::function<void()> &&in_spawner)
+Instance::Instance(const Config &config)
     :shutdown_listener(event_loop, BIND_THIS_METHOD(OnExit)),
      sighup_event(event_loop, SIGHUP, BIND_THIS_METHOD(OnReload)),
      child_process_registry(event_loop),
@@ -32,8 +31,7 @@ Instance::Instance(const Config &config,
 
     auto *ss = StartSpawnServer(config.spawn, child_process_registry,
                                 this,
-                                [this, &in_spawner](){
-                                    in_spawner();
+                                [this](){
                                     event_loop.Reinit();
                                     child_process_registry.~ChildProcessRegistry();
                                     event_loop.~EventLoop();

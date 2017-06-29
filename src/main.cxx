@@ -9,6 +9,7 @@
 #include "CommandLine.hxx"
 #include "Config.hxx"
 #include "system/SetupProcess.hxx"
+#include "system/ProcessName.hxx"
 #include "util/PrintException.hxx"
 
 #include <daemon/log.h>
@@ -19,25 +20,17 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #ifndef NDEBUG
 bool debug_mode = false;
 #endif
 
 static void
-Run(int argc, char **argv, const Config &config)
+Run(const Config &config)
 {
     SetupProcess();
 
-    Instance instance(config,
-                      [argc, argv](){
-                          /* rename the process */
-                          size_t name_size = strlen(argv[0]);
-                          for (int i = 0; i < argc; ++i)
-                              memset(argv[i], 0, strlen(argv[i]));
-                          strncpy(argv[0], "spawn", name_size);
-                      });
+    Instance instance(config);
 
     config.user.Apply();
 
@@ -62,6 +55,8 @@ Run(int argc, char **argv, const Config &config)
 int
 main(int argc, char **argv)
 try {
+    InitProcessName(argc, argv);
+
 #ifndef NDEBUG
     if (geteuid() != 0)
         debug_mode = true;
@@ -94,7 +89,7 @@ try {
 
     /* set up */
 
-    Run(argc, argv, config);
+    Run(config);
 
     daemon_log(4, "exiting\n");
     return EXIT_SUCCESS;

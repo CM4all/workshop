@@ -15,7 +15,6 @@
 #include "spawn/Hook.hxx"
 #include "curl/Init.hxx"
 
-#include <functional>
 #include <forward_list>
 
 struct Config;
@@ -45,8 +44,7 @@ class Instance final : SpawnHook {
     std::forward_list<CronPartition> cron_partitions;
 
 public:
-    Instance(const Config &config,
-             std::function<void()> &&in_spawner);
+    explicit Instance(const Config &config);
 
     ~Instance();
 
