@@ -6,7 +6,7 @@ cm4all-workshop (2.0.15) unstable; urgency=low
   * spawn: allow only local, IPv4 and IPv6 sockets
   * spawn: rename the PID namespace init process to "init"
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Fri, 30 Jun 2017 07:07:46 -0000
 
 cm4all-workshop (2.0.14) unstable; urgency=low
 
