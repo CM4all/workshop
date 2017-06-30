@@ -5,7 +5,7 @@
 #ifndef CALENDAR_HXX
 #define CALENDAR_HXX
 
-#include <inline/compiler.h>
+#include "util/Compiler.h"
 
 gcc_const
 static inline bool

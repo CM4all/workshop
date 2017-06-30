@@ -10,7 +10,7 @@
 #include "pg/Array.hxx"
 #include "pg/Reflection.hxx"
 
-#include <inline/compiler.h>
+#include "util/Compiler.h"
 #include <daemon/log.h>
 
 #include <stdexcept>

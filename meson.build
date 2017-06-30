@@ -58,9 +58,7 @@ libsystemd = dependency('libsystemd')
 libdbus = dependency('dbus-1')
 libseccomp = dependency('libseccomp')
 libpq = dependency('libpq', version: '>= 8.4')
-libinline = dependency('libcm4all-inline', version: '>= 0.3.2')
 libdaemon = dependency('libcm4all-daemon', version: '>= 0.4.2')
-libsocket = dependency('libcm4all-socket', version: '>= 0.3.5')
 libbp = dependency('libcm4all-beng-proxy', version: '>= 12.0.17')
 
 inc = include_directories('src', 'libcommon/src')
@@ -77,7 +75,6 @@ util = static_library('util',
   'libcommon/src/util/djbhash.c',
   include_directories: inc,
   dependencies: [
-    libinline
   ])
 util_dep = declare_dependency(link_with: util)
 
@@ -88,7 +85,6 @@ time = static_library('time',
   'src/time/Math.cxx',
   include_directories: inc,
   dependencies: [
-    libinline,
   ])
 time_dep = declare_dependency(link_with: time)
 
@@ -98,7 +94,6 @@ system = static_library('system',
   'libcommon/src/system/BindMount.cxx',
   include_directories: inc,
   dependencies: [
-    libinline,
   ])
 system_dep = declare_dependency(link_with: system)
 
@@ -112,7 +107,6 @@ io = static_library('io',
   include_directories: inc,
   dependencies: [
     boost,
-    libinline,
     declare_dependency(link_with: util),
   ])
 io_dep = declare_dependency(link_with: io)
@@ -126,7 +120,6 @@ event = static_library('event',
   'libcommon/src/event/PipeLineReader.cxx',
   include_directories: inc,
   dependencies: [
-    libinline,
     libevent,
     declare_dependency(link_with: util),
   ])
@@ -136,6 +129,7 @@ net = static_library('net',
   'libcommon/src/net/SocketDescriptor.cxx',
   'libcommon/src/net/SocketAddress.cxx',
   'libcommon/src/net/AllocatedSocketAddress.cxx',
+  'libcommon/src/net/HostParser.cxx',
   'libcommon/src/net/Resolver.cxx',
   'libcommon/src/net/ConnectSocket.cxx',
   'libcommon/src/net/RConnectSocket.cxx',
@@ -146,7 +140,7 @@ net = static_library('net',
   'libcommon/src/net/djb/QmqpClient.cxx',
   include_directories: inc,
   dependencies: [
-    libinline, libdaemon, libsocket,
+    libdaemon,
     declare_dependency(link_with: event),
   ])
 
@@ -158,7 +152,6 @@ curl = static_library('curl',
   include_directories: inc,
   dependencies: [
     libcurl,
-    libinline,
     util_dep,
     event_dep,
   ])
@@ -172,7 +165,6 @@ pg = static_library('pg',
   include_directories: inc,
   dependencies: [
     libpq,
-    libinline,
   ])
 pg_dep = declare_dependency(link_with: pg)
 
@@ -180,7 +172,6 @@ adata = static_library('adata',
   'libcommon/src/adata/ExpandableStringList.cxx',
   include_directories: inc,
   dependencies: [
-    libinline,
   ])
 adata_dep = declare_dependency(link_with: adata)
 
@@ -192,7 +183,7 @@ translation = static_library('translation',
   'libcommon/src/translation/Response.cxx',
   include_directories: inc,
   dependencies: [
-    libinline, libbp,
+    libbp,
     declare_dependency(link_with: event),
     declare_dependency(link_with: net),
     adata_dep,
@@ -203,7 +194,6 @@ odbus = static_library('odbus',
   include_directories: inc,
   dependencies: [
     libdbus,
-    libinline,
   ])
 odbus_dep = declare_dependency(link_with: odbus)
 
@@ -236,7 +226,7 @@ spawn = static_library('spawn',
     libdbus,
     libseccomp,
     libsystemd,
-    libinline, libdaemon,
+    libdaemon,
     system_dep,
     adata_dep,
     io_dep,
@@ -282,7 +272,7 @@ executable('cm4all-workshop',
   dependencies: [
     boost,
     libsystemd,
-    libinline, libdaemon,
+    libdaemon,
     declare_dependency(link_with: time),
     declare_dependency(link_with: system),
     declare_dependency(link_with: io),
@@ -297,7 +287,6 @@ executable('http',
   install: false,
   include_directories: inc,
   dependencies: [
-    libinline,
     declare_dependency(link_with: curl),
   ])
 
@@ -307,7 +296,6 @@ TestCronSchedule = executable('TestCronSchedule',
   include_directories: inc,
   install: false,
   dependencies: [
-    libinline,
     declare_dependency(link_with: util),
     declare_dependency(link_with: time),
   ])

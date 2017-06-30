@@ -12,7 +12,7 @@
 #include "event/Duration.hxx"
 #include "pg/AsyncConnection.hxx"
 
-#include <inline/compiler.h>
+#include "util/Compiler.h"
 
 #include <functional>
 #include <string>

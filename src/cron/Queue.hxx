@@ -11,7 +11,7 @@
 #include "event/TimerEvent.hxx"
 #include "pg/AsyncConnection.hxx"
 
-#include <inline/compiler.h>
+#include "util/Compiler.h"
 
 #include <string>
 

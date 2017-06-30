@@ -5,7 +5,7 @@
 #ifndef TIME_CONVERT_HXX
 #define TIME_CONVERT_HXX
 
-#include <inline/compiler.h>
+#include "util/Compiler.h"
 
 #include <chrono>
 

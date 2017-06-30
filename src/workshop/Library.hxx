@@ -5,7 +5,7 @@
 #ifndef WORKSHOP_LIBRARY_HXX
 #define WORKSHOP_LIBRARY_HXX
 
-#include <inline/compiler.h>
+#include "util/Compiler.h"
 
 #include <boost/filesystem.hpp>
 

@@ -7,7 +7,7 @@
 
 #include "util/RangeBitSet.hxx"
 
-#include <inline/compiler.h>
+#include "util/Compiler.h"
 
 #include <chrono>
 

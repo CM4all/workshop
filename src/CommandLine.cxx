@@ -9,7 +9,7 @@
 #include "Config.hxx"
 #include "debug.h"
 
-#include <inline/compiler.h>
+#include "util/Compiler.h"
 #include <daemon/log.h>
 
 #include <stdio.h>

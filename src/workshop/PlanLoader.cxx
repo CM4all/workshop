@@ -9,7 +9,7 @@
 #include "io/ConfigParser.hxx"
 #include "util/RuntimeError.hxx"
 
-#include <inline/compiler.h>
+#include "util/Compiler.h"
 
 #include <array>
 
