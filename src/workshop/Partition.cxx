@@ -10,7 +10,9 @@
 #include "Plan.hxx"
 #include "../Config.hxx"
 #include "pg/Array.hxx"
-#include "util/PrintException.hxx"
+#include "util/Exception.hxx"
+
+#include <daemon/log.h>
 
 #include <set>
 
@@ -73,7 +75,9 @@ WorkshopPartition::StartJob(WorkshopJob &&job)
         workplace.Start(instance.GetEventLoop(), job, std::move(plan),
                         queue.HasLogColumn() ? max_log : 0);
     } catch (const std::runtime_error &e) {
-        PrintException(e);
+        daemon_log(1, "failed to start job '%s' plan '%s': %s\n",
+                   job.id.c_str(), job.plan_name.c_str(),
+                   GetFullMessage(e).c_str());
 
         queue.SetJobDone(job, -1, nullptr);
     }

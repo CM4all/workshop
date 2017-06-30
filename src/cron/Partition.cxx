@@ -6,7 +6,9 @@
 #include "Job.hxx"
 #include "../Config.hxx"
 #include "EmailService.hxx"
-#include "util/PrintException.hxx"
+#include "util/Exception.hxx"
+
+#include <daemon/log.h>
 
 CronPartition::CronPartition(EventLoop &event_loop,
                              SpawnService &_spawn_service,
@@ -57,7 +59,8 @@ CronPartition::OnJob(CronJob &&job)
                         name, tag,
                         std::move(job));
     } catch (const std::runtime_error &e) {
-        PrintException(e);
+        daemon_log(1, "failed to start cronjob '%s': %s\n",
+                   job.id.c_str(), GetFullMessage(e).c_str());
     }
 
     if (workplace.IsFull())
