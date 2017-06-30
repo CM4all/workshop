@@ -4,7 +4,7 @@ cm4all-workshop (2.0.16) unstable; urgency=low
   * workshop: create a per-plan cgroup only if cgroups are available
   * improved log message after job start error
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Fri, 30 Jun 2017 13:33:01 -0000
 
 cm4all-workshop (2.0.15) unstable; urgency=low
 
