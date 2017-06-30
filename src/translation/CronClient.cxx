@@ -4,40 +4,36 @@
 
 #include "CronClient.hxx"
 #include "translation/Parser.hxx"
+#include "translation/Protocol.hxx"
 #include "AllocatorPtr.hxx"
 #include "system/Error.hxx"
 #include "util/StaticFifoBuffer.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/StringView.hxx"
 
-#include <beng-proxy/translation.h>
-
 #include <stdexcept>
 
 #include <string.h>
 #include <sys/socket.h>
 
-// TODO: remove this macro once beng-proxy 12 is out
-#define TRANSLATE_CRON beng_translation_command(181)
-
 static void
-WriteHeader(void *&p, enum beng_translation_command command, size_t size)
+WriteHeader(void *&p, TranslationCommand command, size_t size)
 {
-    struct beng_translation_header header;
+    TranslationHeader header;
     header.length = (uint16_t)size;
-    header.command = (uint16_t)command;
+    header.command = command;
 
     p = mempcpy(p, &header, sizeof(header));
 }
 
 static void
-WritePacket(void *&p, enum beng_translation_command cmd)
+WritePacket(void *&p, TranslationCommand cmd)
 {
     WriteHeader(p, cmd, 0);
 }
 
 static void
-WritePacket(void *&p, enum beng_translation_command cmd,
+WritePacket(void *&p, TranslationCommand cmd,
             ConstBuffer<void> payload)
 {
     WriteHeader(p, cmd, payload.size);
@@ -45,7 +41,7 @@ WritePacket(void *&p, enum beng_translation_command cmd,
 }
 
 static void
-WritePacket(void *&p, enum beng_translation_command cmd,
+WritePacket(void *&p, TranslationCommand cmd,
             StringView payload)
 {
     WritePacket(p, cmd, payload.ToVoid());
@@ -77,23 +73,23 @@ SendTranslateCron(int fd, const char *partition_name, const char *listener_tag,
     char buffer[8192];
     void *p = buffer;
 
-    WritePacket(p, TRANSLATE_BEGIN);
+    WritePacket(p, TranslationCommand::BEGIN);
 
     size_t partition_name_size = partition_name != nullptr
         ? strlen(partition_name)
         : 0;
-    WritePacket(p, TRANSLATE_CRON,
+    WritePacket(p, TranslationCommand::CRON,
                 StringView(partition_name, partition_name_size));
 
     if (listener_tag != nullptr)
-        WritePacket(p, TRANSLATE_LISTENER_TAG, listener_tag);
+        WritePacket(p, TranslationCommand::LISTENER_TAG, listener_tag);
 
-    WritePacket(p, TRANSLATE_USER, user);
+    WritePacket(p, TranslationCommand::USER, user);
     if (uri != nullptr)
-        WritePacket(p, TRANSLATE_URI, uri);
+        WritePacket(p, TranslationCommand::URI, uri);
     if (param != nullptr)
-        WritePacket(p, TRANSLATE_PARAM, param);
-    WritePacket(p, TRANSLATE_END);
+        WritePacket(p, TranslationCommand::PARAM, param);
+    WritePacket(p, TranslationCommand::END);
 
     const size_t size = (char *)p - buffer;
     SendFull(fd, {buffer, size});

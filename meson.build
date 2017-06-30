@@ -59,7 +59,6 @@ libdbus = dependency('dbus-1')
 libseccomp = dependency('libseccomp')
 libpq = dependency('libpq', version: '>= 8.4')
 libdaemon = dependency('libcm4all-daemon', version: '>= 0.4.2')
-libbp = dependency('libcm4all-beng-proxy', version: '>= 12.0.17')
 
 inc = include_directories('src', 'libcommon/src')
 
@@ -183,7 +182,6 @@ translation = static_library('translation',
   'libcommon/src/translation/Response.cxx',
   include_directories: inc,
   dependencies: [
-    libbp,
     declare_dependency(link_with: event),
     declare_dependency(link_with: net),
     adata_dep,
