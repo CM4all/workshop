@@ -1,3 +1,9 @@
+cm4all-workshop (2.0.17) unstable; urgency=low
+
+  * 
+
+ --   
+
 cm4all-workshop (2.0.16) unstable; urgency=low
 
   * spawn: abort the process immediately after uid/gid_map failure
