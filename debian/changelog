@@ -1,6 +1,7 @@
 cm4all-workshop (2.0.17) unstable; urgency=low
 
   * spawn: create STDERR_PATH with mode 0600
+  * translation: add packet STDERR_PATH_JAILED
 
  --   
 
