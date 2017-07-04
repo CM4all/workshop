@@ -4,7 +4,7 @@ cm4all-workshop (2.0.17) unstable; urgency=low
   * spawn: fix socket family filter
   * translation: add packets UMASK, STDERR_PATH_JAILED
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Tue, 04 Jul 2017 16:36:07 -0000
 
 cm4all-workshop (2.0.16) unstable; urgency=low
 
