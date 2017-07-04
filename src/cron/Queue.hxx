@@ -10,7 +10,7 @@
 #include "event/DeferEvent.hxx"
 #include "event/TimerEvent.hxx"
 #include "pg/AsyncConnection.hxx"
-
+#include "io/Logger.hxx"
 #include "util/Compiler.h"
 
 #include <string>
@@ -22,6 +22,8 @@ class CronQueue final : private Pg::AsyncConnectionHandler {
     typedef std::function<void(CronJob &&job)> Callback;
 
     const std::string node_name;
+
+    Logger logger;
 
     Pg::AsyncConnection db;
 

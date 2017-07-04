@@ -7,6 +7,7 @@
 
 #include "Job.hxx"
 #include "event/TimerEvent.hxx"
+#include "io/Logger.hxx"
 
 #include <boost/intrusive/list.hpp>
 
@@ -20,12 +21,15 @@ class CronWorkplace;
  * A #CronJob being executed.
  */
 class CronOperator
-    : public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>> {
+    : public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>,
+      LoggerDomainFactory {
 
 protected:
     CronQueue &queue;
     CronWorkplace &workplace;
     const CronJob job;
+
+    LazyDomainLogger logger;
 
     const std::string start_time;
 
@@ -56,6 +60,9 @@ protected:
 
 private:
     void OnTimeout();
+
+    /* virtual methods from LoggerDomainFactory */
+    std::string MakeLoggerDomain() const noexcept;
 };
 
 #endif

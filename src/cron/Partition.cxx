@@ -6,9 +6,6 @@
 #include "Job.hxx"
 #include "../Config.hxx"
 #include "EmailService.hxx"
-#include "util/Exception.hxx"
-
-#include <daemon/log.h>
 
 CronPartition::CronPartition(EventLoop &event_loop,
                              SpawnService &_spawn_service,
@@ -19,6 +16,7 @@ CronPartition::CronPartition(EventLoop &event_loop,
     :name(config.name.empty() ? nullptr : config.name.c_str()),
      tag(config.tag.empty() ? nullptr : config.tag.c_str()),
      translation_socket(config.translation_socket.c_str()),
+     logger("cron/" + config.name),
      email_service(config.qmqp_server.IsNull()
                    ? nullptr
                    : new EmailService(event_loop, config.qmqp_server)),
@@ -49,7 +47,7 @@ CronPartition::BeginShutdown()
 void
 CronPartition::OnJob(CronJob &&job)
 {
-    printf("OnJob '%s'\n", job.id.c_str());
+    logger(4, "OnJob ", job.id);
 
     if (!queue.Claim(job))
         return;
@@ -59,8 +57,8 @@ CronPartition::OnJob(CronJob &&job)
                         name, tag,
                         std::move(job));
     } catch (const std::runtime_error &e) {
-        daemon_log(1, "failed to start cronjob '%s': %s\n",
-                   job.id.c_str(), GetFullMessage(e).c_str());
+        logger(1, "failed to start cronjob '", job.id, "': ",
+               std::current_exception());
     }
 
     if (workplace.IsFull())

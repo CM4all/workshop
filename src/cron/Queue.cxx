@@ -9,8 +9,6 @@
 #include "CalculateNextRun.hxx"
 #include "event/Duration.hxx"
 
-#include <daemon/log.h>
-
 #include <chrono>
 
 #include <string.h>
@@ -20,6 +18,7 @@ CronQueue::CronQueue(EventLoop &event_loop, const char *_node_name,
                      const char *conninfo, const char *schema,
                      Callback _callback)
     :node_name(_node_name),
+     logger("cron.queue"),
      db(event_loop, conninfo, schema, *this),
      callback(_callback),
      check_notify_event(event_loop, BIND_THIS_METHOD(CheckNotify)),
@@ -72,13 +71,13 @@ CronQueue::ReleaseStale()
 
     unsigned n = result.GetAffectedRows();
     if (n > 0)
-        daemon_log(3, "Released %u stale cronjobs\n", n);
+        logger(3, "Released ", n, " stale cronjobs");
 }
 
 void
 CronQueue::RunScheduler()
 {
-    daemon_log(4, "scheduler\n");
+    logger(4, "scheduler");
 
     if (!CalculateNextRun(db))
         ScheduleScheduler(false);
@@ -137,7 +136,7 @@ CronQueue::RunClaim()
     if (disabled)
         return;
 
-    daemon_log(4, "claim\n");
+    logger(4, "claim");
 
     auto delta = FindEarliestPending(db);
     if (delta == delta.max())
@@ -278,13 +277,13 @@ CronQueue::OnConnect()
 {
     auto result = db.Execute("LISTEN cronjobs_modified");
     if (!result.IsCommandSuccessful()) {
-        daemon_log(1, "LISTEN failed: %s\n", result.GetErrorMessage());
+        logger(1, "LISTEN failed: ", result.GetErrorMessage());
         return;
     }
 
     result = db.Execute("LISTEN cronjobs_scheduled");
     if (!result.IsCommandSuccessful()) {
-        daemon_log(1, "LISTEN failed: %s\n", result.GetErrorMessage());
+        logger(1, "LISTEN failed: ", result.GetErrorMessage());
         return;
     }
 
@@ -298,7 +297,7 @@ CronQueue::OnConnect()
 void
 CronQueue::OnDisconnect()
 {
-    daemon_log(4, "disconnected from database\n");
+    logger(4, "disconnected from database");
 
     check_notify_event.Cancel();
     scheduler_timer.Cancel();
@@ -317,5 +316,5 @@ CronQueue::OnNotify(const char *name)
 void
 CronQueue::OnError(const char *prefix, const char *error)
 {
-    daemon_log(2, "%s: %s\n", prefix, error);
+    logger(2, prefix, ": ", prefix, error);
 }

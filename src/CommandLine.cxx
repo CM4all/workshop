@@ -8,6 +8,7 @@
 #include "CommandLine.hxx"
 #include "Config.hxx"
 #include "debug.h"
+#include "io/Logger.hxx"
 
 #include "util/Compiler.h"
 #include <daemon/log.h>
@@ -147,6 +148,8 @@ ParseCommandLine(Config &config, int argc, char **argv)
             exit(EXIT_FAILURE);
         }
     }
+
+    SetLogLevel(daemon_log_config.verbose);
 
     /* check non-option arguments */
 

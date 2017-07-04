@@ -18,8 +18,6 @@
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
 
-#include <daemon/log.h>
-
 #include <string>
 #include <map>
 #include <set>

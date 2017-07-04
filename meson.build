@@ -103,6 +103,7 @@ io = static_library('io',
   'libcommon/src/io/LineParser.cxx',
   'libcommon/src/io/FileLineParser.cxx',
   'libcommon/src/io/ConfigParser.cxx',
+  'libcommon/src/io/Logger.cxx',
   include_directories: inc,
   dependencies: [
     boost,
@@ -139,7 +140,6 @@ net = static_library('net',
   'libcommon/src/net/djb/QmqpClient.cxx',
   include_directories: inc,
   dependencies: [
-    libdaemon,
     declare_dependency(link_with: event),
   ])
 
@@ -224,7 +224,6 @@ spawn = static_library('spawn',
     libdbus,
     libseccomp,
     libsystemd,
-    libdaemon,
     system_dep,
     adata_dep,
     io_dep,

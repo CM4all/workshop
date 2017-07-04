@@ -8,6 +8,7 @@
 #include "spawn/ExitListener.hxx"
 #include "event/TimerEvent.hxx"
 #include "io/UniqueFileDescriptor.hxx"
+#include "io/Logger.hxx"
 #include "Job.hxx"
 #include "LogBridge.hxx"
 
@@ -24,14 +25,16 @@ class ProgressReader;
 /** an operator is a job being executed */
 class WorkshopOperator final
     : public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>,
-      public ExitListener {
+      public ExitListener, LoggerDomainFactory {
 
     EventLoop &event_loop;
 
     WorkshopWorkplace &workplace;
     WorkshopJob job;
     std::shared_ptr<Plan> plan;
-    int pid;
+    int pid = -1;
+
+    LazyDomainLogger logger;
 
     TimerEvent timeout_event;
 
@@ -81,6 +84,10 @@ private:
 public:
     /* virtual methods from ExitListener */
     void OnChildProcessExit(int status) override;
+
+private:
+    /* virtual methods from LoggerDomainFactory */
+    std::string MakeLoggerDomain() const noexcept;
 };
 
 #endif

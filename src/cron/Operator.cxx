@@ -6,16 +6,13 @@
 #include "Queue.hxx"
 #include "Workplace.hxx"
 #include "EmailService.hxx"
-
-#include <daemon/log.h>
-
-#include <unistd.h>
-#include <sys/wait.h>
+#include "util/StringFormat.hxx"
 
 CronOperator::CronOperator(CronQueue &_queue, CronWorkplace &_workplace,
                            CronJob &&_job,
                            std::string &&_start_time) noexcept
     :queue(_queue), workplace(_workplace), job(std::move(_job)),
+     logger(*this),
      start_time(std::move(_start_time)),
      timeout_event(GetEventLoop(), BIND_THIS_METHOD(OnTimeout))
 {
@@ -69,7 +66,13 @@ CronOperator::Finish(int exit_status, const char *log)
 void
 CronOperator::OnTimeout()
 {
-    daemon_log(2, "Timeout on job %s\n", job.id.c_str());
+    logger(2, "Timeout");
 
     Cancel();
+}
+
+std::string
+CronOperator::MakeLoggerDomain() const noexcept
+{
+    return StringFormat<64>("cron job=%s", job.id.c_str()).c_str();
 }

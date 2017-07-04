@@ -19,7 +19,7 @@ class PipeCaptureBuffer;
  */
 class CronSpawnOperator final
     : public CronOperator,
-      ExitListener {
+    ExitListener {
 
     SpawnService &spawn_service;
 

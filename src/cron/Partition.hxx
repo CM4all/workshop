@@ -8,6 +8,7 @@
 #include "Queue.hxx"
 #include "Workplace.hxx"
 #include "spawn/ExitListener.hxx"
+#include "io/Logger.hxx"
 #include "util/BindMethod.hxx"
 
 #include <memory>
@@ -22,6 +23,8 @@ class CronPartition final : ExitListener {
     const char *const name;
     const char *const tag;
     const char *const translation_socket;
+
+    Logger logger;
 
     std::unique_ptr<EmailService> email_service;
 
