@@ -4,7 +4,7 @@ cm4all-workshop (2.0.18) unstable; urgency=low
   * translation: allow underscore in cgroup controller name
   * workshop: ignore jobs with scheduled_time more than 1 year future
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Fri, 07 Jul 2017 12:49:20 -0000
 
 cm4all-workshop (2.0.17) unstable; urgency=low
 
