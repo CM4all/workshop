@@ -87,7 +87,7 @@ pg_next_scheduled_job(Pg::Connection &db, const char *plans_include,
                             the future; some Workshop clients (such as
                             URO) do this, and it slows down the
                             PostgreSQL query */
-                         "AND scheduled_time < current_timestamp + '1 year'::interval "
+                         "AND scheduled_time < now() + '1 year'::interval "
 
                          "AND plan_name = ANY ($1::TEXT[]) ",
                          plans_include);
