@@ -82,6 +82,13 @@ pg_next_scheduled_job(Pg::Connection &db, const char *plans_include,
         db.ExecuteParams("SELECT EXTRACT(EPOCH FROM (MIN(scheduled_time) - now())) "
                          "FROM jobs WHERE node_name IS NULL AND time_done IS NULL AND exit_status IS NULL "
                          "AND scheduled_time IS NOT NULL "
+
+                         /* ignore jobs which are scheduled deep into
+                            the future; some Workshop clients (such as
+                            URO) do this, and it slows down the
+                            PostgreSQL query */
+                         "AND scheduled_time < current_timestamp + '1 year'::interval "
+
                          "AND plan_name = ANY ($1::TEXT[]) ",
                          plans_include);
     if (!result.IsQuerySuccessful()) {

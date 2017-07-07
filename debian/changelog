@@ -2,6 +2,7 @@ cm4all-workshop (2.0.18) unstable; urgency=low
 
   * translation: add packet CGROUP_NAMESPACE
   * translation: allow underscore in cgroup controller name
+  * workshop: ignore jobs with scheduled_time more than 1 year future
 
  --   
 
