@@ -421,6 +421,24 @@ possible; Workshop then tries to continue without affecting the
 current execution, and will attempt to apply the new settings after
 finishing.
 
+The `cronresults` table
+-----------------------
+
+* :envvar:`id`: The primary key.
+* :envvar:`cronjob_id`: A reference to the `cronjobs` record.
+* :envvar:`node_name`: Name of the node which executed this job.
+* :envvar:`start_time`: A time stamp when execution started.
+* :envvar:`finish_time`: A time stamp when execution finished.
+* :envvar:`exit_status`: The process exit code or the HTTP response
+  status.  A value of `-1` indicates an internal error.
+* :envvar:`log`: Text written by the process to `stdout`/`stderr` or
+  the HTTP response body.
+
+The client is allowed to execute the following operations:
+
+* Delete records.
+
+
 Security
 --------
 
