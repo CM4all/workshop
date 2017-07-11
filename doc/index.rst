@@ -400,6 +400,27 @@ The `cronjobs` table
 * :envvar:`description`: Human readable description.  Not used by
   Cron.
 
+The client is allowed to execute the following operations:
+
+* Create new jobs.
+* Update the schedule.  This operation may clear the
+  :envvar:`next_run` column so the scheduler reevaluates the new
+  schedule without waiting for the previous schedule to fire
+  next time.  This is strictly necessary for ":samp:`@once`"
+  schedules.
+* Enable/disable jobs by modifying the :envvar:`enabled` flag.  This
+  does not cancel any running process, it only affects future
+  scheduling.
+* Update other columns such as :envvar:`command`, :envvar:`translate_param`,
+  :envvar:`notification`, :envvar:`description`.
+* Delete jobs which are currently not running, i.e. :samp:`node_name
+  IS NULL`.
+
+Modifying jobs which are currently running should be avoided if
+possible; Workshop then tries to continue without affecting the
+current execution, and will attempt to apply the new settings after
+finishing.
+
 Security
 --------
 
