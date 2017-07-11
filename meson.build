@@ -299,5 +299,6 @@ TestCronSchedule = executable('TestCronSchedule',
 
 test('TestCronSchedule', TestCronSchedule)
 
+subdir('libcommon/test/util')
 subdir('libcommon/test/pg')
 subdir('libcommon/test/io')
