@@ -2,6 +2,7 @@ cm4all-workshop (2.0.19) unstable; urgency=low
 
   * translation: add packet FORBID_MULTICAST
   * spawn: system call filter errors are fatal if explicitly enabled
+  * spawn: apply cgroup namespace again after moving to new cgroup
   * doc: more "cronjobs" table documentation
   * doc: document the "cronresults" table
 
