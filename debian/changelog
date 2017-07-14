@@ -6,7 +6,7 @@ cm4all-workshop (2.0.19) unstable; urgency=low
   * doc: more "cronjobs" table documentation
   * doc: document the "cronresults" table
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Fri, 14 Jul 2017 08:25:32 -0000
 
 cm4all-workshop (2.0.18) unstable; urgency=low
 
