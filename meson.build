@@ -21,7 +21,6 @@ add_global_arguments('-D_REENTRANT', '-D_GNU_SOURCE',
   '-Wunused',
   '-Wundef',
   '-pedantic',
-  '-Werror', '-pedantic-errors',
   language: 'c')
 
 add_global_arguments('-D_REENTRANT', '-D_GNU_SOURCE',
@@ -35,7 +34,6 @@ add_global_arguments('-D_REENTRANT', '-D_GNU_SOURCE',
   '-Wredundant-decls', '-Wno-long-long', '-Wundef',
   '-Wno-missing-field-initializers',
   '-Wno-non-virtual-dtor',
-  '-Werror',
   language: 'cpp')
 
 gtest = declare_dependency(
