@@ -3,7 +3,7 @@ cm4all-workshop (2.0.20) unstable; urgency=low
   * logger: fix log level
   * workshop: don't strip newlines from "log" column
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Mon, 17 Jul 2017 11:41:57 -0000
 
 cm4all-workshop (2.0.19) unstable; urgency=low
 
