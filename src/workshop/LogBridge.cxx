@@ -39,9 +39,11 @@ LogBridge::OnStderrLine(WritableBuffer<char> line)
 
     // TODO: strip non-ASCII characters
 
-    if (max_buffer_size > 0 && buffer.length() < max_buffer_size)
+    if (max_buffer_size > 0 && buffer.length() < max_buffer_size - 1) {
         buffer.append(line.data,
-                      std::min(line.size, max_buffer_size - buffer.length()));
+                      std::min(line.size, max_buffer_size - 1 - buffer.length()));
+        buffer.push_back('\n');
+    }
 
     if (syslog)
         syslog->Log(6, {line.data, line.size});
