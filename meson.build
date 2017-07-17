@@ -5,6 +5,13 @@ project('CM4all Workshop', ['c', 'cpp'], version: '2.0.20',
   ],
 )
 
+# TODO: use get_option('b_ndebug'), but that doesn't work with Meson 0.37.1
+if get_option('buildtype') == 'debug'
+  debug = true
+else
+  debug = false
+endif
+
 common_flags = [
   '-D_REENTRANT', '-D_GNU_SOURCE',
   '-DPACKAGE="' + meson.project_name() + '"',
@@ -18,6 +25,10 @@ common_flags = [
   '-Wunused',
   '-Wundef',
 ]
+
+if debug
+  common_flags += ['-DPOISON']
+endif
 
 add_global_arguments(common_flags,
   '-Wmissing-prototypes', '-Wstrict-prototypes',
