@@ -62,6 +62,7 @@ libevent = dependency('libevent', version: '>= 2.0.19')
 libcurl = dependency('libcurl', version: '>= 7.38')
 libsystemd = dependency('libsystemd')
 libdbus = dependency('dbus-1')
+libcap = dependency('libcap')
 libseccomp = dependency('libseccomp')
 libpq = dependency('libpq', version: '>= 8.4')
 libdaemon = dependency('libcm4all-daemon', version: '>= 0.4.2')
@@ -97,8 +98,10 @@ system = static_library('system',
   'src/system/SetupProcess.cxx',
   'libcommon/src/system/ProcessName.cxx',
   'libcommon/src/system/BindMount.cxx',
+  'libcommon/src/system/CapabilityState.cxx',
   include_directories: inc,
   dependencies: [
+    libcap,
   ])
 system_dep = declare_dependency(link_with: system)
 
