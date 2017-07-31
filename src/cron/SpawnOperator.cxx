@@ -85,7 +85,7 @@ CronSpawnOperator::OnChildProcessExit(int status)
     } else if (exit_status == 0)
         logger(3, "exited with success");
     else
-        logger(2, "exited with status %d", exit_status);
+        logger(2, "exited with status ", exit_status);
 
     const char *log = output_capture
         ? output_capture->NormalizeASCII()
