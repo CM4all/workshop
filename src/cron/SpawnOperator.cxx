@@ -50,6 +50,12 @@ try {
                                                              8192);
     }
 
+    /* change to home directory (if one was set) */
+    if (p.ns.home != nullptr)
+        p.chdir = p.ns.mount_home != nullptr
+            ? p.ns.mount_home
+            : p.ns.home;
+
     pid = spawn_service.SpawnChildProcess(job.id.c_str(), std::move(p), this);
 
     logger(2, "running");
