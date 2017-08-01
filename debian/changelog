@@ -1,6 +1,7 @@
 cm4all-workshop (2.0.22) unstable; urgency=low
 
   * spawn: run the PID namespace init process as root
+  * spawn: tight system call whitelist for init process
   * spawn: forbid fanotify_*, nfsservctl, syslog
   * translation: fix the FORBID_MULTICAST setting
   * translation: add packet FORBID_BIND
