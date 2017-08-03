@@ -69,7 +69,8 @@ WorkshopQueue::GetNextScheduled(int *span_r)
         return 0;
     }
 
-    ret = pg_next_scheduled_job(db, plans_include.c_str(),
+    ret = pg_next_scheduled_job(db, HasEnabledColumn(),
+                                plans_include.c_str(),
                                 &span);
     if (ret > 0) {
         if (span < 0)
@@ -114,7 +115,8 @@ get_job(WorkshopJob &job, const Pg::Result &result, unsigned row)
 }
 
 static int
-get_and_claim_job(WorkshopJob &job, const char *node_name,
+get_and_claim_job(WorkshopJob &job, bool has_enabled_column,
+                  const char *node_name,
                   Pg::Connection &db,
                   const Pg::Result &result, unsigned row,
                   const char *timeout) {
@@ -125,7 +127,8 @@ get_and_claim_job(WorkshopJob &job, const char *node_name,
 
     daemon_log(6, "attempting to claim job %s\n", job.id.c_str());
 
-    ret = pg_claim_job(db, job.id.c_str(), node_name, timeout);
+    ret = pg_claim_job(db, has_enabled_column,
+                       job.id.c_str(), node_name, timeout);
     if (ret < 0)
         return -1;
 
@@ -176,7 +179,7 @@ WorkshopQueue::RunResult(const Pg::Result &result)
     for (unsigned row = 0, end = result.GetRowCount();
          row != end && !disabled && !interrupt; ++row) {
         WorkshopJob job(*this);
-        int ret = get_and_claim_job(job, GetNodeName(),
+        int ret = get_and_claim_job(job, HasEnabledColumn(), GetNodeName(),
                                     db, result, row, "5 minutes");
         if (ret > 0)
             callback(std::move(job));
@@ -225,7 +228,7 @@ WorkshopQueue::Run2()
 
     constexpr unsigned MAX_JOBS = 16;
     auto result =
-        pg_select_new_jobs(db,
+        pg_select_new_jobs(db, HasEnabledColumn(),
                            plans_include.c_str(), plans_exclude.c_str(),
                            plans_lowprio.c_str(),
                            MAX_JOBS);
@@ -243,7 +246,7 @@ WorkshopQueue::Run2()
         daemon_log(7, "requesting new jobs from database II; plans_lowprio=%s\n",
                    plans_lowprio.c_str());
 
-        result = pg_select_new_jobs(db,
+        result = pg_select_new_jobs(db, HasEnabledColumn(),
                                     plans_lowprio.c_str(),
                                     plans_exclude.c_str(),
                                     "{}",
@@ -364,6 +367,7 @@ WorkshopQueue::OnConnect()
         pg_notify(db);
     }
 
+    has_enabled_column = Pg::ColumnExists(db, "public", "jobs", "enabled");
     has_log_column = Pg::ColumnExists(db, "public", "jobs", "log");
 
     /* listen on notifications */

@@ -18,6 +18,8 @@ CREATE TABLE jobs (
         time_created TIMESTAMP NOT NULL DEFAULT now(),
         -- the job will not be executed before this time
         scheduled_time TIMESTAMP NULL,
+        -- is this job enabled?
+        enabled boolean NOT NULL DEFAULT TRUE,
         -- priority of this job; negative value means higher priority
         priority INT NOT NULL DEFAULT 0,
 
@@ -46,12 +48,12 @@ CREATE TABLE jobs (
 );
 
 -- this index is used when determining the next free job
-CREATE INDEX jobs_sorted ON jobs(priority, time_created)
-        WHERE node_name IS NULL AND time_done IS NULL AND exit_status IS NULL;
+CREATE INDEX jobs_sorted2 ON jobs(priority, time_created)
+        WHERE enabled AND node_name IS NULL AND time_done IS NULL AND exit_status IS NULL;
 
 -- find scheduled jobs
-CREATE INDEX jobs_scheduled ON jobs(scheduled_time)
-        WHERE node_name IS NULL AND time_done IS NULL AND exit_status IS NULL AND scheduled_time IS NOT NULL;
+CREATE INDEX jobs_scheduled2 ON jobs(scheduled_time)
+        WHERE enabled AND node_name IS NULL AND time_done IS NULL AND exit_status IS NULL AND scheduled_time IS NOT NULL;
 
 -- for finding jobs to release
 CREATE INDEX jobs_release ON jobs(node_name, node_timeout)
@@ -62,6 +64,12 @@ CREATE INDEX jobs_name ON jobs(name);
 
 -- notify all cm4all-workshop daemons when a new job is added
 CREATE RULE new_job AS ON INSERT TO jobs DO NOTIFY new_job;
+
+-- notify all cm4all-workshop daemons when a job was enabled (requires PostgreSQL 9.x+)
+CREATE OR REPLACE RULE job_enabled AS ON UPDATE TO jobs
+        WHERE NOT OLD.enabled AND NEW.enabled
+        AND NEW.node_name IS NULL AND NEW.time_done IS NULL AND NEW.exit_status IS NULL
+        DO SELECT pg_notify('new_job', NULL);
 
 -- notify all clients when a job was finished (requires PostgreSQL 9.x+)
 CREATE OR REPLACE RULE job_done AS ON UPDATE TO jobs

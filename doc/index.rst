@@ -335,6 +335,8 @@ The `jobs` table
 * :envvar:`time_created`: The time stamp when this job was created.
 * :envvar:`scheduled_time`: The time when the job will be executed.
   The database server's clock is the authoritative reference.
+* :envvar:`enabled`: If :samp:`FALSE`, this job will not be scheduled
+  until somebody reverts the value to :samp:`TRUE`.
 * :envvar:`priority`: Smaller number means higher priority.  Default
   is 0.
 * :envvar:`plan_name`: The name of the plan which is used to execute
@@ -368,8 +370,9 @@ deleting it.
 The client is allowed to execute the following operations:
 
 * Create new jobs (only :envvar:`name`, :envvar:`description`,
-  :envvar:`scheduled_time`, :envvar:`priority`, :envvar:`plan_name`,
-  :envvar:`args`, :envvar:`syslog_server` may be set).
+  :envvar:`scheduled_time`, :envvar:`enabled`, :envvar:`priority`,
+  :envvar:`plan_name`, :envvar:`args`,
+  :envvar:`syslog_server` may be set).
 * Modify jobs which have not yet been assigned, i.e. :samp:`node_name
   IS NULL`.  Afterwards, send the notify :envvar:`new_job`, so
   Workshop gets notified of the change.

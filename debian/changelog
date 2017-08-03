@@ -3,6 +3,7 @@ cm4all-workshop (2.0.23) unstable; urgency=low
   * spawn: attach to existing network namespace with NETWORK_NAMESPACE_NAME
   * spawn: allow unshare(), mount(), umount(), pivot_root()
   * migrate: new database migration tool
+  * workshop: add column "enabled"
 
  --   
 

@@ -24,17 +24,19 @@ int
 pg_expire_jobs(Pg::Connection &db, const char *except_node_name);
 
 int
-pg_next_scheduled_job(Pg::Connection &db, const char *plans_include,
+pg_next_scheduled_job(Pg::Connection &db, bool has_enabled_column,
+                      const char *plans_include,
                       long *span_r);
 
 Pg::Result
-pg_select_new_jobs(Pg::Connection &db,
+pg_select_new_jobs(Pg::Connection &db, bool has_enabled_column,
                    const char *plans_include, const char *plans_exclude,
                    const char *plans_lowprio,
                    unsigned limit);
 
 int
-pg_claim_job(Pg::Connection &db, const char *job_id, const char *node_name,
+pg_claim_job(Pg::Connection &db, bool has_enabled_column,
+             const char *job_id, const char *node_name,
              const char *timeout);
 
 int pg_set_job_progress(Pg::Connection &db, const char *job_id, unsigned progress,
