@@ -1,6 +1,6 @@
 cm4all-workshop (2.0.23) unstable; urgency=low
 
-  * 
+  * spawn: attach to existing network namespace with NETWORK_NAMESPACE_NAME
 
  --   
 
