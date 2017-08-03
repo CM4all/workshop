@@ -291,6 +291,14 @@ executable('cm4all-workshop',
     declare_dependency(link_with: curl),
   ])
 
+executable('cm4all-workshop-migrate',
+  'src/Migrate.cxx',
+  include_directories: inc,
+  dependencies: [
+    pg_dep,
+    util_dep,
+  ])
+
 subdir('t')
 subdir('libcommon/test/util')
 subdir('libcommon/test/pg')

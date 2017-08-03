@@ -21,6 +21,7 @@ Package: cm4all-workshop
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}, adduser,
  systemd-sysv
+Suggests: cm4all-workshop-database, cm4all-workshop-migrate
 Description: Distributed job scheduler
  cm4all-workshop is a daemon which reads jobs from a database queue
  (PostgreSQL) and executes them.  Multiple instances distributed over
@@ -34,6 +35,16 @@ Description: Distributed job scheduler database package
  This package includes only a sql file which can be included by other packages.
  cm4all-workshop is a daemon which reads jobs from a database queue
  (PostgreSQL) and executes them.
+
+Package: cm4all-workshop-migrate
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Database migration tool for Workshop
+ cm4all-workshop is a daemon which reads jobs from a database queue
+ (PostgreSQL) and executes them.  Multiple instances distributed over
+ a network can read the queue at the same time.
+ .
+ This package contains a tool which migrates the database schema.
 
 Package: cm4all-workshop-doc
 Section: non-free/doc

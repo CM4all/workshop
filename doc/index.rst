@@ -137,13 +137,35 @@ in a :envvar:`workshop` section, e.g.::
     database "dbname=workshop"
   }
 
-Migrating from Workhop 2.0.12 and older
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Workshop 2.0.13 has added the `jobs` table column `log`, which must be
-created manually if upgrading from an older version::
+Database Migration
+^^^^^^^^^^^^^^^^^^
 
-  ALTER TABLE jobs ADD COLUMN log text NULL;
+Sometimes, new Workshop releases come with changes to the database
+schema to allow new features.  For this, Workshop comes with a
+migration tool which applies those changes to an existing Workshop
+database.
+
+To avoid compatibility problems, first upgrade all Workshop nodes and
+stop all daemons.  Then migrate the schema and restart the daemons.
+
+Install the package :file:`cm4all-workshop-migrate`, and run the tool
+with the same name.
+
+The regular Workshop user should only have :samp:`SELECT` and
+:samp:`UPDATE` permissions on the database, and thus cannot run the
+tool.  The easiest solution is to run the tool on the database server
+as user :samp:`postgres` (the superuser)::
+
+  su postgres -c 'cm4all-workshop-migrate dbname=workshop'
+
+Note that it is usually possible to run a new Workshop version with an
+old, unmigrated database.  Workshop then disables the new features.
+However, running an old Workshop version with a new database schema
+can be dangerous, because the old version may ignore important
+directives it does not know.  For the best compatibility and
+stability, all Workshop nodes should run the same version and the
+database should be upgraded to the latest schema.
 
 
 Concept
