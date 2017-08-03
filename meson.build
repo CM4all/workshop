@@ -291,26 +291,7 @@ executable('cm4all-workshop',
     declare_dependency(link_with: curl),
   ])
 
-executable('http',
-  't/http.cxx',
-  install: false,
-  include_directories: inc,
-  dependencies: [
-    declare_dependency(link_with: curl),
-  ])
-
-TestCronSchedule = executable('TestCronSchedule',
-  't/TestCronSchedule.cxx',
-  'src/cron/Schedule.cxx',
-  include_directories: inc,
-  install: false,
-  dependencies: [
-    declare_dependency(link_with: util),
-    declare_dependency(link_with: time),
-  ])
-
-test('TestCronSchedule', TestCronSchedule)
-
+subdir('t')
 subdir('libcommon/test/util')
 subdir('libcommon/test/pg')
 subdir('libcommon/test/io')
