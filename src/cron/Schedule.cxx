@@ -6,6 +6,7 @@
 #include "time/Convert.hxx"
 #include "time/Math.hxx"
 #include "util/StringUtil.hxx"
+#include "util/Macros.hxx"
 
 #include <stdexcept>
 
@@ -13,6 +14,55 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+
+struct CronSymbol {
+    const char *name;
+    unsigned value;
+};
+
+static constexpr CronSymbol month_names[] = {
+    { "jan", 1 },
+    { "feb", 2 },
+    { "mar", 3 },
+    { "apr", 4 },
+    { "may", 5 },
+    { "jun", 6 },
+    { "jul", 7 },
+    { "aug", 8 },
+    { "sep", 9 },
+    { "oct", 10 },
+    { "nov", 11 },
+    { "dec", 12 },
+};
+
+static constexpr CronSymbol days_of_week_names[] = {
+    { "mon", 1 },
+    { "tue", 2 },
+    { "wed", 3 },
+    { "thu", 4 },
+    { "fri", 5 },
+    { "sat", 6 },
+    { "sun", 7 },
+};
+
+static_assert(ARRAY_SIZE(month_names) == 12, "Wrong number of months");
+
+static const CronSymbol *
+LookupCronSymbol(const char *&s, const CronSymbol dictionary[])
+{
+    assert(s != nullptr);
+    assert(dictionary != nullptr);
+
+    for (const auto *i = dictionary; i->name != nullptr; ++i) {
+        size_t length = strlen(i->name);
+        if (strncmp(s, i->name, length) == 0) {
+            s += length;
+            return i;
+        }
+    }
+
+    return nullptr;
+}
 
 template<size_t MIN, size_t MAX>
 static void
@@ -25,12 +75,20 @@ MakeRangeBitSet(RangeBitSet<MIN, MAX> &b,
 
 template<unsigned long MIN, unsigned long MAX>
 static unsigned
-ParseNumber(const char *&s)
+ParseNumber(const char *&s,
+            const CronSymbol dictionary[])
 {
     char *endptr;
     unsigned long value = strtoul(s, &endptr, 10);
-    if (endptr == s)
+    if (endptr == s) {
+        if (dictionary != nullptr) {
+            auto *i = LookupCronSymbol(s, dictionary);
+            if (i != nullptr)
+                return i->value;
+        }
+
         throw std::runtime_error("Failed to parse number");
+    }
 
     if (value < MIN)
         throw std::runtime_error("Number is too small");
@@ -44,7 +102,8 @@ ParseNumber(const char *&s)
 
 template<size_t MIN, size_t MAX>
 static void
-ParseNumericRangeBitSet(RangeBitSet<MIN, MAX> &b, const char *&schedule)
+ParseNumericRangeBitSet(RangeBitSet<MIN, MAX> &b, const char *&schedule,
+                        const CronSymbol dictionary[])
 {
     unsigned first, last;
 
@@ -53,12 +112,12 @@ ParseNumericRangeBitSet(RangeBitSet<MIN, MAX> &b, const char *&schedule)
         first = MIN;
         last = MAX;
     } else {
-        first = last = ParseNumber<MIN, MAX>(schedule);
+        first = last = ParseNumber<MIN, MAX>(schedule, dictionary);
 
         if (*schedule == '-') {
             ++schedule;
 
-            last = ParseNumber<MIN, MAX>(schedule);
+            last = ParseNumber<MIN, MAX>(schedule, dictionary);
             if (last < first)
                 throw std::runtime_error("Malformed range");
         } else
@@ -69,7 +128,7 @@ ParseNumericRangeBitSet(RangeBitSet<MIN, MAX> &b, const char *&schedule)
     if (*schedule == '/') {
         ++schedule;
 
-        step = ParseNumber<1, MAX>(schedule);
+        step = ParseNumber<1, MAX>(schedule, dictionary);
     }
 
     MakeRangeBitSet(b, first, last, step);
@@ -77,12 +136,13 @@ ParseNumericRangeBitSet(RangeBitSet<MIN, MAX> &b, const char *&schedule)
 
 template<size_t MIN, size_t MAX>
 static void
-ParseNumericBitSet(RangeBitSet<MIN, MAX> &b, const char *&schedule)
+ParseNumericBitSet(RangeBitSet<MIN, MAX> &b, const char *&schedule,
+                   const CronSymbol dictionary[]=nullptr)
 {
     schedule = StripLeft(schedule);
 
     while (true) {
-        ParseNumericRangeBitSet<MIN, MAX>(b, schedule);
+        ParseNumericRangeBitSet<MIN, MAX>(b, schedule, dictionary);
         assert(b.count() > 0);
         if (*schedule != ',')
             break;
@@ -136,10 +196,10 @@ CronSchedule::CronSchedule(const char *s)
     ParseNumericBitSet(minutes, s);
     ParseNumericBitSet(hours, s);
     ParseNumericBitSet(days_of_month, s);
-    ParseNumericBitSet(months, s);
+    ParseNumericBitSet(months, s, month_names);
 
     RangeBitSet<0, 7> _days_of_week;
-    ParseNumericBitSet(_days_of_week, s);
+    ParseNumericBitSet(_days_of_week, s, days_of_week_names);
 
     for (unsigned i = 0; i < days_of_week.size(); ++i)
         days_of_week[i] = _days_of_week[i];

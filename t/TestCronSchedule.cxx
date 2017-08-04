@@ -79,6 +79,66 @@ TestCronScheduleParser()
         ok1(s.months.all());
         ok1(s.days_of_week.all());
     }
+
+    /* month names */
+
+    {
+        const CronSchedule s("* * * feb *");
+        ok1(s.minutes.all());
+        ok1(s.hours.all());
+        ok1(s.days_of_month.all());
+        ok1(s.months.count() == 1);
+        ok1(s.months[2]);
+        ok1(s.days_of_week.all());
+    }
+
+    {
+        const CronSchedule s("* * * jun,dec,jan *");
+        ok1(s.minutes.all());
+        ok1(s.hours.all());
+        ok1(s.days_of_month.all());
+        ok1(s.months.count() == 3);
+        ok1(s.months[1]);
+        ok1(s.months[6]);
+        ok1(s.months[12]);
+        ok1(s.days_of_week.all());
+    }
+
+    /* day of week names */
+
+    {
+        const CronSchedule s("* * * * mon");
+        ok1(s.minutes.all());
+        ok1(s.hours.all());
+        ok1(s.days_of_month.all());
+        ok1(s.months.all());
+        ok1(s.days_of_week.count() == 1);
+        ok1(s.days_of_week[1]);
+    }
+
+    {
+        const CronSchedule s("* * * * wed,sat,mon");
+        ok1(s.minutes.all());
+        ok1(s.hours.all());
+        ok1(s.days_of_month.all());
+        ok1(s.months.all());
+        ok1(s.days_of_week.count() == 3);
+        ok1(s.days_of_week[1]);
+        ok1(s.days_of_week[3]);
+        ok1(s.days_of_week[6]);
+    }
+
+    {
+        const CronSchedule s("* * * jun,dec,jan *");
+        ok1(s.minutes.all());
+        ok1(s.hours.all());
+        ok1(s.days_of_month.all());
+        ok1(s.months.count() == 3);
+        ok1(s.months[1]);
+        ok1(s.months[6]);
+        ok1(s.months[12]);
+        ok1(s.days_of_week.all());
+    }
 }
 
 static void
