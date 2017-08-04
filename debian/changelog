@@ -6,7 +6,7 @@ cm4all-workshop (2.0.23) unstable; urgency=low
   * workshop: add column "enabled"
   * cron: support month and weekday names
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Fri, 04 Aug 2017 17:04:17 -0000
 
 cm4all-workshop (2.0.22) unstable; urgency=low
 
