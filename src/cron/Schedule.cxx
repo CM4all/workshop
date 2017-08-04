@@ -23,6 +23,25 @@ MakeRangeBitSet(RangeBitSet<MIN, MAX> &b,
         b[i] = true;
 }
 
+template<unsigned long MIN, unsigned long MAX>
+static unsigned
+ParseNumber(const char *&s)
+{
+    char *endptr;
+    unsigned long value = strtoul(s, &endptr, 10);
+    if (endptr == s)
+        throw std::runtime_error("Failed to parse number");
+
+    if (value < MIN)
+        throw std::runtime_error("Number is too small");
+
+    if (value > MAX)
+        throw std::runtime_error("Number is too large");
+
+    s = endptr;
+    return value;
+}
+
 template<size_t MIN, size_t MAX>
 static void
 ParseNumericRangeBitSet(RangeBitSet<MIN, MAX> &b, const char *&schedule)
@@ -34,32 +53,14 @@ ParseNumericRangeBitSet(RangeBitSet<MIN, MAX> &b, const char *&schedule)
         first = MIN;
         last = MAX;
     } else {
-        char *endptr;
-        first = last = strtoul(schedule, &endptr, 10);
-        if (endptr == schedule)
-            throw std::runtime_error("Failed to parse number");
-
-        if (first < MIN)
-            throw std::runtime_error("Number is too large");
-
-        if (first > MAX)
-            throw std::runtime_error("Number is too large");
-
-        schedule = endptr;
+        first = last = ParseNumber<MIN, MAX>(schedule);
 
         if (*schedule == '-') {
             ++schedule;
-            last = strtoul(schedule, &endptr, 10);
-            if (endptr == schedule)
-                throw std::runtime_error("Failed to parse number");
 
-            if (last > MAX)
-                throw std::runtime_error("Number is too large");
-
+            last = ParseNumber<MIN, MAX>(schedule);
             if (last < first)
                 throw std::runtime_error("Malformed range");
-
-            schedule = endptr;
         } else
             last = first;
     }
@@ -68,15 +69,7 @@ ParseNumericRangeBitSet(RangeBitSet<MIN, MAX> &b, const char *&schedule)
     if (*schedule == '/') {
         ++schedule;
 
-        char *endptr;
-        step = strtoul(schedule, &endptr, 10);
-        if (endptr == schedule)
-            throw std::runtime_error("Failed to parse number");
-
-        if (step > MAX)
-            throw std::runtime_error("Number is too large");
-
-        schedule = endptr;
+        step = ParseNumber<1, MAX>(schedule);
     }
 
     MakeRangeBitSet(b, first, last, step);
