@@ -201,6 +201,7 @@ translation = static_library('translation',
 
 odbus = static_library('odbus',
   'libcommon/src/odbus/Message.cxx',
+  'libcommon/src/odbus/Error.cxx',
   include_directories: inc,
   dependencies: [
     libdbus,
