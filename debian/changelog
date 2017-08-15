@@ -2,6 +2,7 @@ cm4all-workshop (2.0.24) unstable; urgency=low
 
   * spawn: fix bogus pivot_root() error message
   * workshop: write failure to jobs table after timeout
+  * translation: add packet MOUNT_ROOT_TMPFS
 
  --   
 
