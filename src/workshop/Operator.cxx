@@ -77,6 +77,8 @@ WorkshopOperator::OnTimeout()
 {
     logger(2, "timed out; sending SIGTERM");
 
+    job.SetDone(-1, "Timeout");
+
     workplace.OnTimeout(this, pid);
 }
 
