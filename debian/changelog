@@ -4,7 +4,7 @@ cm4all-workshop (2.0.24) unstable; urgency=low
   * workshop: write failure to jobs table after timeout
   * translation: add packet MOUNT_ROOT_TMPFS
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Tue, 15 Aug 2017 10:07:22 -0000
 
 cm4all-workshop (2.0.23) unstable; urgency=low
 
