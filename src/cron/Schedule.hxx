@@ -30,7 +30,7 @@ struct CronSchedule {
      */
     explicit CronSchedule(const char *s);
 
-    bool operator==(const CronSchedule &other) const {
+    bool operator==(const CronSchedule &other) const noexcept {
         return minutes == other.minutes &&
             hours == other.hours &&
             days_of_month == other.days_of_month &&
@@ -42,22 +42,22 @@ struct CronSchedule {
      * Is this a "run once, and never again" job?  (Special schedule
      * string "@once")
      */
-    bool IsOnce() const {
+    bool IsOnce() const noexcept {
         return minutes.none() && hours.none() && days_of_month.none() &&
             months.none() && days_of_week.none();
     }
 
     gcc_pure
-    bool CheckDate(const struct tm &tm) const;
+    bool CheckDate(const struct tm &tm) const noexcept;
 
     gcc_pure
-    bool CheckTime(const struct tm &tm) const;
+    bool CheckTime(const struct tm &tm) const noexcept;
 
     gcc_pure
-    bool Check(const struct tm &tm) const;
+    bool Check(const struct tm &tm) const noexcept;
 
     gcc_pure
-    bool Check(std::chrono::system_clock::time_point t) const;
+    bool Check(std::chrono::system_clock::time_point t) const noexcept;
 
     /**
      * Determine when to run the job next time.
@@ -71,7 +71,7 @@ struct CronSchedule {
      */
     gcc_pure
     std::chrono::system_clock::time_point Next(std::chrono::system_clock::time_point last,
-                                               std::chrono::system_clock::time_point now) const;
+                                               std::chrono::system_clock::time_point now) const noexcept;
 };
 
 #endif

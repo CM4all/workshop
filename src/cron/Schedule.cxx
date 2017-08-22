@@ -213,7 +213,7 @@ CronSchedule::CronSchedule(const char *s)
 }
 
 bool
-CronSchedule::CheckDate(const struct tm &tm) const
+CronSchedule::CheckDate(const struct tm &tm) const noexcept
 {
     return days_of_month[tm.tm_mday] &&
         months[tm.tm_mon + 1] &&
@@ -221,19 +221,19 @@ CronSchedule::CheckDate(const struct tm &tm) const
 }
 
 bool
-CronSchedule::CheckTime(const struct tm &tm) const
+CronSchedule::CheckTime(const struct tm &tm) const noexcept
 {
     return minutes[tm.tm_sec] && hours[tm.tm_hour];
 }
 
 bool
-CronSchedule::Check(const struct tm &tm) const
+CronSchedule::Check(const struct tm &tm) const noexcept
 {
     return CheckDate(tm) && CheckTime(tm);
 }
 
 bool
-CronSchedule::Check(std::chrono::system_clock::time_point t) const
+CronSchedule::Check(std::chrono::system_clock::time_point t) const noexcept
 {
     return Check(LocalTime(t));
 }
@@ -241,7 +241,7 @@ CronSchedule::Check(std::chrono::system_clock::time_point t) const
 template<size_t MIN, size_t MAX>
 gcc_const
 static size_t
-NextBit(const RangeBitSet<MIN, MAX> b, size_t pos)
+NextBit(const RangeBitSet<MIN, MAX> b, size_t pos) noexcept
 {
     for (size_t i = pos + 1; i <= MAX; ++i)
         if (b[i])
@@ -256,7 +256,7 @@ NextBit(const RangeBitSet<MIN, MAX> b, size_t pos)
 
 std::chrono::system_clock::time_point
 CronSchedule::Next(std::chrono::system_clock::time_point _last,
-                   std::chrono::system_clock::time_point now) const
+                   std::chrono::system_clock::time_point now) const noexcept
 {
     if (IsOnce()) {
         /* a "@once" job: execute it now or never again */
