@@ -169,6 +169,7 @@ curl = static_library('curl',
 
 pg = static_library('pg',
   'libcommon/src/pg/Array.cxx',
+  'libcommon/src/pg/Interval.cxx',
   'libcommon/src/pg/Connection.cxx',
   'libcommon/src/pg/AsyncConnection.cxx',
   'libcommon/src/pg/Result.cxx',
