@@ -68,7 +68,7 @@ CalculateNextRun(const Logger &logger, Pg::Connection &db)
 
             if (r.GetAffectedRows() == 0)
                 throw std::runtime_error("Lost race to schedule job");
-        } catch (const std::runtime_error &e) {
+        } catch (...) {
             logger(1, "Failed to schedule job '", id, "': ",
                    std::current_exception());
         }
