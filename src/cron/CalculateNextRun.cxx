@@ -5,6 +5,7 @@
 #include "CalculateNextRun.hxx"
 #include "Schedule.hxx"
 #include "pg/Connection.hxx"
+#include "pg/Error.hxx"
 #include "time/Convert.hxx"
 #include "time/ISO8601.hxx"
 
@@ -63,7 +64,7 @@ CalculateNextRun(Pg::Connection &db)
                                       id, _schedule, _last_run,
                                       FormatISO8601(next_run).c_str());
             if (!r.IsCommandSuccessful())
-                throw std::runtime_error(r.GetErrorMessage());
+                throw Pg::Error(std::move(r));
 
             if (r.GetAffectedRows() == 0)
                 fprintf(stderr, "Lost race to schedule job '%s'\n", id);
