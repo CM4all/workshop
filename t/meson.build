@@ -14,6 +14,8 @@ TestCronSchedule = executable('TestCronSchedule',
   dependencies: [
     declare_dependency(link_with: util),
     declare_dependency(link_with: time),
+    gtest,
   ])
 
-test('TestCronSchedule', TestCronSchedule)
+test('TestCronSchedule', TestCronSchedule,
+    env: ['TZ=CET'])
