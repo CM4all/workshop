@@ -56,6 +56,7 @@ CalculateNextRun(Pg::Connection &db)
             const CronSchedule schedule(_schedule);
 
             const auto next_run = schedule.Next(last_run, now);
+            // TODO: check next_run==max() and don't write this bogus value into the database
 
             auto r = db.ExecuteParams("UPDATE cronjobs SET next_run=$4 "
                                       "WHERE id=$1 AND schedule=$2 AND"
