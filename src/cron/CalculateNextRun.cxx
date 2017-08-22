@@ -6,11 +6,11 @@
 #include "Schedule.hxx"
 #include "pg/Connection.hxx"
 #include "pg/Error.hxx"
+#include "io/Logger.hxx"
 #include "time/Convert.hxx"
 #include "time/ISO8601.hxx"
 
 #include <assert.h>
-#include <stdio.h>
 
 static std::chrono::system_clock::time_point
 ParsePgTimestamp(const char *s)
@@ -26,15 +26,14 @@ ParsePgTimestamp(const char *s)
 }
 
 bool
-CalculateNextRun(Pg::Connection &db)
+CalculateNextRun(const Logger &logger, Pg::Connection &db)
 {
     const auto result =
         db.Execute("SELECT id, schedule, last_run "
                    "FROM cronjobs WHERE enabled AND next_run IS NULL "
                    "LIMIT 1000");
     if (!result.IsQuerySuccessful()) {
-        fprintf(stderr, "SELECT on cronjobs failed: %s\n",
-                result.GetErrorMessage());
+        logger(1, "SELECT on cronjobs failed: ", result.GetErrorMessage());
         return false;
     }
 
@@ -70,8 +69,8 @@ CalculateNextRun(Pg::Connection &db)
             if (r.GetAffectedRows() == 0)
                 throw std::runtime_error("Lost race to schedule job");
         } catch (const std::runtime_error &e) {
-            fprintf(stderr, "Failed to schedule job '%s': %s\n",
-                    id, e.what());
+            logger(1, "Failed to schedule job '", id, "': ",
+                   std::current_exception());
         }
     }
 

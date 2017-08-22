@@ -6,6 +6,7 @@
 #define WORKSHOP_CRON_CALCULATE_NEXT_RUN_HXX
 
 namespace Pg { class Connection; };
+class Logger;
 
 /**
  * Calculate the "next_run" column for all rows where it's missing.
@@ -14,6 +15,6 @@ namespace Pg { class Connection; };
  * calculated (or if there was an error)
  */
 bool
-CalculateNextRun(Pg::Connection &db);
+CalculateNextRun(const Logger &logger, Pg::Connection &db);
 
 #endif

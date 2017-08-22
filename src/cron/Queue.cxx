@@ -79,7 +79,7 @@ CronQueue::RunScheduler()
 {
     logger(4, "scheduler");
 
-    if (!CalculateNextRun(db))
+    if (!CalculateNextRun(logger, db))
         ScheduleScheduler(false);
 
     ScheduleCheckNotify();
