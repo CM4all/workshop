@@ -149,7 +149,7 @@ get_and_claim_job(WorkshopJob &job, bool has_enabled_column,
 static bool
 copy_string(std::string &dest, std::string &&src)
 {
-    if (dest.compare(src) == 0)
+    if (dest == src)
         return false;
 
     dest = std::move(src);
