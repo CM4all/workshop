@@ -152,7 +152,7 @@ copy_string(std::string &dest, std::string &&src)
     if (dest.compare(src) == 0)
         return false;
 
-    dest = src;
+    dest = std::move(src);
     return true;
 }
 
