@@ -89,6 +89,13 @@ MigrateWorkshopDatabase(Pg::Connection &c, const char *schema)
                     " DO SELECT pg_notify('new_job', NULL)");
 }
 
+static void
+MigrateCronDatabase(Pg::Connection &c, const char *schema)
+{
+    (void)c;
+    (void)schema;
+}
+
 int
 main(int argc, char **argv)
 try {
@@ -102,10 +109,20 @@ try {
 
     Pg::Connection c(conninfo);
 
+    bool found_table = false;
+
     if (Pg::TableExists(c, schema, "jobs")) {
+        found_table = true;
         MigrateWorkshopDatabase(c, schema);
-    } else
-        printf("No table 'jobs' - not a Workshop database\n");
+    }
+
+    if (Pg::TableExists(c, schema, "cronjobs")) {
+        found_table = true;
+        MigrateCronDatabase(c, schema);
+    }
+
+    if (!found_table)
+        throw std::runtime_error("No table 'jobs' or 'cronjobs' - not a Workshop/Cron database");
 
     return EXIT_SUCCESS;
 } catch (const std::exception &e) {
