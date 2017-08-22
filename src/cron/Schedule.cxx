@@ -154,24 +154,25 @@ ParseNumericBitSet(RangeBitSet<MIN, MAX> &b, const char *&schedule,
 struct CronSpecialSchedule {
     const char *special;
     const char *regular;
+    std::chrono::seconds delay_range;
 };
 
 static constexpr CronSpecialSchedule cron_special_schedules[] = {
-    { "yearly", "0 0 1 1 *" },
-    { "annually", "0 0 1 1 *" },
-    { "monthly", "0 0 1 * *" },
-    { "weekly", "0 0 * * 0" },
-    { "daily", "0 0 * * *" },
-    { "midnight", "0 0 * * *" },
-    { "hourly", "0 * * * *" },
+    { "yearly", "0 0 1 1 *", std::chrono::hours(24 * 365) },
+    { "annually", "0 0 1 1 *", std::chrono::hours(24 * 365) },
+    { "monthly", "0 0 1 * *", std::chrono::hours(24 * 28) },
+    { "weekly", "0 0 * * 0", std::chrono::hours(24 * 7) },
+    { "daily", "0 0 * * *", std::chrono::hours(24) },
+    { "midnight", "0 0 * * *", std::chrono::hours(1) },
+    { "hourly", "0 * * * *", std::chrono::hours(1) },
 };
 
-static const char *
+static const CronSpecialSchedule *
 TranslateSpecial(const char *s)
 {
         for (const auto &i : cron_special_schedules)
             if (strcmp(s, i.special) == 0)
-                return i.regular;
+                return &i;
 
         return nullptr;
 }
@@ -183,14 +184,27 @@ CronSchedule::CronSchedule(const char *s)
 
         if (strcmp(s, "once") == 0) {
             assert(IsOnce());
+            /* don't delay "@once" jobs; they shall be executed as
+               soon as they are added to the database */
+            delay_range = std::chrono::seconds(0);
             return;
         }
 
-        const char *regular = TranslateSpecial(s);
-        if (regular == nullptr)
+        const auto *special = TranslateSpecial(s);
+        if (special == nullptr)
             throw std::runtime_error("Unsupported 'special' cron schedule");
 
-        s = regular;
+        s = special->regular;
+        delay_range = special->delay_range;
+    } else if (s[0] == '*' && s[1] == '/') {
+        /* if a job shall be executed every N minutes, delay it
+           randomly up to those N minutes; this block is a simplified
+           parser just for calculating the delay_range */
+        const char *t = s + 2;
+        char *endptr;
+        unsigned long value = strtoul(t, &endptr, 10);
+        if (endptr > t && *endptr != ',')
+            delay_range = std::chrono::minutes(value);
     }
 
     ParseNumericBitSet(minutes, s);

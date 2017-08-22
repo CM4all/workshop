@@ -40,6 +40,13 @@ CREATE TABLE cronjobs (
     -- Scheduler state/control (calculated)
     --------------------------------
 
+    -- a random delay which is applied to the raw schedule values
+    delay interval SECOND(0) NULL,
+
+    -- the range which was used to generate the "delay" value (to
+    -- detect whether a new delay is necessary)
+    delay_range interval SECOND(0) NULL,
+
     -- the last time this job was run; NULL means never
     last_run timestamp NULL,
 

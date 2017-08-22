@@ -92,8 +92,12 @@ MigrateWorkshopDatabase(Pg::Connection &c, const char *schema)
 static void
 MigrateCronDatabase(Pg::Connection &c, const char *schema)
 {
-    (void)c;
     (void)schema;
+
+    /* since Workshop 2.0.25 */
+    Pg::CheckError(c.Execute("ALTER TABLE cronjobs"
+                             " ADD COLUMN IF NOT EXISTS delay interval SECOND(0) NULL,"
+                             " ADD COLUMN IF NOT EXISTS delay_range interval SECOND(0) NULL"));
 }
 
 int

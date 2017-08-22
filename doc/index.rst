@@ -391,6 +391,11 @@ The special schedule ":samp:`@once`" can be used to execute a job once
 instead of periodically.  It will be executed as soon as possible, and
 never again.
 
+To avoid hogging the servers with too many concurrent cron jobs, a
+random delay is added to the scheduled execution time.  The randomized
+delay depends on the schedule; e.g. ":samp:`@hourly`" will be delayed
+up to an hour and ":samp:`@daily`" will be delayed up to one day.
+
 The `cronjobs` table
 ^^^^^^^^^^^^^^^^^^^^
 

@@ -16,6 +16,7 @@ TEST(CronSchedule, Parser)
         ASSERT_TRUE(s.days_of_month.all());
         ASSERT_TRUE(s.months.all());
         ASSERT_TRUE(s.days_of_week.all());
+        ASSERT_EQ(s.delay_range, std::chrono::minutes(1));
     }
 
     {
@@ -25,6 +26,7 @@ TEST(CronSchedule, Parser)
         ASSERT_TRUE(s.days_of_month.all());
         ASSERT_TRUE(s.months.all());
         ASSERT_TRUE(s.days_of_week.all());
+        ASSERT_EQ(s.delay_range, std::chrono::minutes(1));
     }
 
     {
@@ -34,6 +36,7 @@ TEST(CronSchedule, Parser)
         ASSERT_TRUE(s.days_of_month.all());
         ASSERT_TRUE(s.months.all());
         ASSERT_TRUE(s.days_of_week.all());
+        ASSERT_EQ(s.delay_range, std::chrono::minutes(1));
     }
 
     {
@@ -46,6 +49,7 @@ TEST(CronSchedule, Parser)
         ASSERT_TRUE(s.days_of_month.all());
         ASSERT_TRUE(s.months.all());
         ASSERT_TRUE(s.days_of_week.all());
+        ASSERT_EQ(s.delay_range, std::chrono::minutes(20));
     }
 
     {
@@ -59,6 +63,7 @@ TEST(CronSchedule, Parser)
         ASSERT_TRUE(s.days_of_month.all());
         ASSERT_TRUE(s.months.all());
         ASSERT_TRUE(s.days_of_week.all());
+        ASSERT_EQ(s.delay_range, std::chrono::minutes(15));
     }
 
     {
@@ -72,6 +77,7 @@ TEST(CronSchedule, Parser)
         ASSERT_TRUE(s.days_of_month.all());
         ASSERT_TRUE(s.months.all());
         ASSERT_TRUE(s.days_of_week.all());
+        ASSERT_EQ(s.delay_range, std::chrono::minutes(19));
     }
 
     /* month names */
@@ -84,6 +90,7 @@ TEST(CronSchedule, Parser)
         ASSERT_EQ(s.months.count(), 1);
         ASSERT_TRUE(s.months[2]);
         ASSERT_TRUE(s.days_of_week.all());
+        ASSERT_EQ(s.delay_range, std::chrono::minutes(1));
     }
 
     {
@@ -96,6 +103,7 @@ TEST(CronSchedule, Parser)
         ASSERT_TRUE(s.months[6]);
         ASSERT_TRUE(s.months[12]);
         ASSERT_TRUE(s.days_of_week.all());
+        ASSERT_EQ(s.delay_range, std::chrono::minutes(1));
     }
 
     /* day of week names */
@@ -108,6 +116,7 @@ TEST(CronSchedule, Parser)
         ASSERT_TRUE(s.months.all());
         ASSERT_EQ(s.days_of_week.count(), 1);
         ASSERT_TRUE(s.days_of_week[1]);
+        ASSERT_EQ(s.delay_range, std::chrono::minutes(1));
     }
 
     {
@@ -120,6 +129,7 @@ TEST(CronSchedule, Parser)
         ASSERT_TRUE(s.days_of_week[1]);
         ASSERT_TRUE(s.days_of_week[3]);
         ASSERT_TRUE(s.days_of_week[6]);
+        ASSERT_EQ(s.delay_range, std::chrono::minutes(1));
     }
 
     {
@@ -132,6 +142,7 @@ TEST(CronSchedule, Parser)
         ASSERT_TRUE(s.months[6]);
         ASSERT_TRUE(s.months[12]);
         ASSERT_TRUE(s.days_of_week.all());
+        ASSERT_EQ(s.delay_range, std::chrono::minutes(1));
     }
 }
 
@@ -156,6 +167,7 @@ TEST(CronSchedule, Next2)
     /* every 6 hours */
     const CronSchedule s("30 */6 * * *");
     const auto now = std::chrono::system_clock::from_time_t(1485800000);
+    ASSERT_EQ(s.delay_range, std::chrono::minutes(1));
     ASSERT_EQ(s.Next(ParseISO8601("2016-10-14T14:41:00Z"), now), ParseISO8601("2016-10-14T16:30:00Z"));
     ASSERT_EQ(s.Next(ParseISO8601("2016-10-14T16:41:00Z"), now), ParseISO8601("2016-10-14T22:30:00Z"));
     ASSERT_EQ(s.Next(ParseISO8601("2016-10-14T22:41:00Z"), now), ParseISO8601("2016-10-15T04:30:00Z"));
@@ -167,6 +179,7 @@ TEST(CronSchedule, Next3)
     /* every month on the 29th*/
     const CronSchedule s("30 6 29 * *");
     const auto now = std::chrono::system_clock::from_time_t(1485800000);
+    ASSERT_EQ(s.delay_range, std::chrono::minutes(1));
     ASSERT_EQ(s.Next(ParseISO8601("2016-10-14T14:41:00Z"), now), ParseISO8601("2016-10-29T04:30:00Z"));
     ASSERT_EQ(s.Next(ParseISO8601("2016-02-01T00:41:00Z"), now), ParseISO8601("2016-02-29T05:30:00Z"));
     ASSERT_EQ(s.Next(ParseISO8601("2015-02-01T00:41:00Z"), now), ParseISO8601("2015-03-29T05:30:00Z"));
@@ -180,6 +193,7 @@ TEST(CronSchedule, Next4)
     /* every monday */
     const CronSchedule s("30 6 * * 1");
     const auto now = std::chrono::system_clock::from_time_t(1485800000);
+    ASSERT_EQ(s.delay_range, std::chrono::minutes(1));
     ASSERT_EQ(s.Next(ParseISO8601("2016-10-14T14:41:00Z"), now), ParseISO8601("2016-10-17T04:30:00Z"));
     ASSERT_EQ(s.Next(ParseISO8601("2016-02-01T00:41:00Z"), now), ParseISO8601("2016-02-01T05:30:00Z"));
     ASSERT_EQ(s.Next(ParseISO8601("2016-02-01T05:30:00Z"), now), ParseISO8601("2016-02-08T05:30:00Z"));
@@ -190,6 +204,7 @@ TEST(CronSchedule, Next4)
 TEST(CronSchedule, Once)
 {
     const CronSchedule s("@once");
+    ASSERT_EQ(s.delay_range, std::chrono::seconds(0));
     const auto now = std::chrono::system_clock::from_time_t(1485800000);
     ASSERT_TRUE(s.Next(std::chrono::system_clock::time_point::min(), now) >= now - std::chrono::hours(1));
     ASSERT_TRUE(s.Next(std::chrono::system_clock::time_point::min(), now) <= now + std::chrono::hours(1));

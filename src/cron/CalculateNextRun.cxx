@@ -5,10 +5,13 @@
 #include "CalculateNextRun.hxx"
 #include "Schedule.hxx"
 #include "pg/Connection.hxx"
-#include "pg/Error.hxx"
+#include "pg/CheckError.hxx"
+#include "pg/Interval.hxx"
 #include "io/Logger.hxx"
 #include "time/Convert.hxx"
 #include "time/ISO8601.hxx"
+
+#include <random>
 
 #include <assert.h>
 
@@ -25,11 +28,60 @@ ParsePgTimestamp(const char *s)
     return TimeGm(tm);
 }
 
+static bool
+IsSameInterval(const char *a, std::chrono::seconds b) noexcept
+{
+    try {
+        return a != nullptr && Pg::ParseIntervalS(a) == b;
+    } catch (...) {
+        return false;
+    }
+}
+
+static int64_t
+RandomInt64(int64_t range)
+{
+    // TODO: use global generator
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<uint64_t> dis(0, range - 1);
+
+    return dis(gen);
+}
+
+static std::chrono::seconds
+RandomSeconds(std::chrono::seconds range)
+{
+    return std::chrono::seconds(RandomInt64(range.count()));
+}
+
+/**
+ * Roll the dice to generate a random delay in the given range and
+ * write it to the database.
+ */
+static std::chrono::seconds
+MakeRandomDelay(Pg::Connection &db, const char *id, const char *schedule,
+                std::chrono::seconds range)
+{
+    const auto delay = RandomSeconds(range);
+
+    const auto result =
+        Pg::CheckError(db.ExecuteParams("UPDATE cronjobs"
+                                        " SET delay=$3::interval, delay_range=$4::interval"
+                                        " WHERE id=$1 AND schedule=$2 AND enabled AND next_run IS NULL",
+                                        id, schedule,
+                                        delay.count(), range.count()));
+    if (result.GetAffectedRows() == 0)
+        throw std::runtime_error("Lost race to schedule job");
+
+    return delay;
+}
+
 bool
 CalculateNextRun(const Logger &logger, Pg::Connection &db)
 {
     const auto result =
-        db.Execute("SELECT id, schedule, last_run "
+        db.Execute("SELECT id, schedule, last_run, delay, delay_range "
                    "FROM cronjobs WHERE enabled AND next_run IS NULL "
                    "LIMIT 1000");
     if (!result.IsQuerySuccessful()) {
@@ -44,17 +96,34 @@ CalculateNextRun(const Logger &logger, Pg::Connection &db)
 
     for (const auto &row : result) {
         const char *id = row.GetValue(0), *_schedule = row.GetValue(1),
-            *_last_run = row.GetValueOrNull(2);
+            *_last_run = row.GetValueOrNull(2),
+            *_delay = row.GetValueOrNull(3),
+            *_delay_range = row.GetValueOrNull(4);
 
         try {
+            auto delay = _delay != nullptr
+                ? Pg::ParseIntervalS(_delay)
+                : std::chrono::seconds(0);
+
             std::chrono::system_clock::time_point last_run =
                 _last_run != nullptr
-                ? ParsePgTimestamp(_last_run)
+                /* note: subtracting the old delay, because it has
+                   been added previously (and will be re-added later),
+                   to get a consistent view */
+                ? ParsePgTimestamp(_last_run) - delay
                 : std::chrono::system_clock::time_point::min();
 
             const CronSchedule schedule(_schedule);
 
-            const auto next_run = schedule.Next(last_run, now);
+            /* generate a random delay if there is none yet (or if the
+               range has changed, i.e. the schedule has been
+               modified) */
+            if (_delay == nullptr ||
+                !IsSameInterval(_delay_range, schedule.delay_range))
+                delay = MakeRandomDelay(db, id, _schedule,
+                                        schedule.delay_range);
+
+            const auto next_run = schedule.Next(last_run, now) + delay;
             // TODO: check next_run==max() and don't write this bogus value into the database
 
             auto r = db.ExecuteParams("UPDATE cronjobs SET next_run=$4 "

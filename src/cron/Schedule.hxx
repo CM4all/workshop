@@ -24,6 +24,15 @@ struct CronSchedule {
     RangeBitSet<0, 6> days_of_week;
 
     /**
+     * The maximum duration for generating a random delay.  For
+     * example, an hourly cron job will return std::chrono::hours(1).
+     *
+     * The default is 1 minute, which is the smallest cron
+     * granularity.
+     */
+    std::chrono::seconds delay_range = std::chrono::minutes(1);
+
+    /**
      * Parse a crontab(5) schedule specification.
      *
      * Throws std::runtime_error if the string cannot be parsed.
