@@ -44,10 +44,7 @@ CalculateNextRun(Pg::Connection &db)
 
     for (const auto &row : result) {
         const char *id = row.GetValue(0), *_schedule = row.GetValue(1),
-            *_last_run = row.GetValue(2);
-
-        if (row.IsValueNull(2))
-            _last_run = nullptr;
+            *_last_run = row.GetValueOrNull(2);
 
         try {
             std::chrono::system_clock::time_point last_run =
