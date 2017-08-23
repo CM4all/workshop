@@ -15,6 +15,9 @@ TimerSlackNSec=1s
 
 SyslogIdentifier=cm4all-workshop
 
+# enable crash dumps
+LimitCORE=infinity
+
 [Install]
 Alias=workshop.service
 WantedBy=multi-user.target

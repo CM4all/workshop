@@ -3,6 +3,7 @@ cm4all-workshop (2.0.25) unstable; urgency=low
   * spawn: use the "systemd" controller
   * cron: apply random delay to all cron jobs
   * systemd: override the locale, fixes "_S_create_c_locale" error
+  * systemd: enable crash dumps
 
  --   
 
