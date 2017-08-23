@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# work around the boost::locale::facet::_S_create_c_locale exception
+export LC_ALL=C
+
 NODE_NAME=""
 CONCURRENCY=2
 DATABASE=""
