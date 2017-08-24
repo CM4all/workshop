@@ -1,6 +1,6 @@
 cm4all-workshop (2.0.26) unstable; urgency=low
 
-  * 
+  * fix crash when database is unavailable during startup
 
  --   
 
