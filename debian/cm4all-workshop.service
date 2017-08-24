@@ -1,6 +1,7 @@
 [Unit]
 Description=CM4all Workshop
 After=network.target
+After=postgresql.service
 
 [Service]
 Type=notify
