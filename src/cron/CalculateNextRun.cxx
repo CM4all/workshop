@@ -41,6 +41,11 @@ IsSameInterval(const char *a, std::chrono::seconds b) noexcept
 static int64_t
 RandomInt64(int64_t range)
 {
+    if (range <= 1)
+        /* avoid integer underflow; if the range is zero, then no
+           delay is wanted */
+        return 0;
+
     // TODO: use global generator
     std::random_device rd;
     std::mt19937 gen(rd());
