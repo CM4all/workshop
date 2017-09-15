@@ -271,6 +271,11 @@ CronSchedule::Next(std::chrono::system_clock::time_point _last,
     auto next = last;
     next.tm_sec = 0;
 
+    if (!hours[next.tm_hour])
+        /* last hour was invalid: recover by forcing a skip to the
+           next valid hour */
+        last.tm_min = 60;
+
     next.tm_min = NextBit(minutes, last.tm_min);
     if (next.tm_min <= last.tm_min) {
         /* TODO: what about daylight saving transitions? */

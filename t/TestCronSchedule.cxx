@@ -201,6 +201,19 @@ TEST(CronSchedule, Next4)
     ASSERT_EQ(s.Next(ParseISO8601("2015-12-29T05:29:00Z"), now), ParseISO8601("2016-01-04T05:30:00Z"));
 }
 
+TEST(CronSchedule, Next5)
+{
+    /* every 5 minutes in one certain hour of day */
+    const CronSchedule s("*/5 6 * * *");
+    const auto now = std::chrono::system_clock::from_time_t(1485800000);
+    ASSERT_EQ(s.delay_range, std::chrono::minutes(5));
+    ASSERT_EQ(s.Next(ParseISO8601("2016-10-14T04:40:00Z"), now), ParseISO8601("2016-10-14T04:45:00Z"));
+    ASSERT_EQ(s.Next(ParseISO8601("2016-10-14T04:55:00Z"), now), ParseISO8601("2016-10-15T04:00:00Z"));
+    ASSERT_EQ(s.Next(ParseISO8601("2016-10-14T14:00:00Z"), now), ParseISO8601("2016-10-15T04:00:00Z"));
+    ASSERT_EQ(s.Next(ParseISO8601("2016-10-14T14:01:00Z"), now), ParseISO8601("2016-10-15T04:00:00Z"));
+    ASSERT_EQ(s.Next(ParseISO8601("2016-10-14T14:41:00Z"), now), ParseISO8601("2016-10-15T04:00:00Z"));
+}
+
 TEST(CronSchedule, Once)
 {
     const CronSchedule s("@once");
