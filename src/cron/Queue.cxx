@@ -287,6 +287,13 @@ CronQueue::OnConnect()
         return;
     }
 
+    /* internally, all time stamps should be UTC, and PostgreSQL
+       should not mangle those time stamps to the time zone that our
+       process happens to be configured for */
+    result = db.Execute("SET timezone='UTC'");
+    if (!result.IsCommandSuccessful())
+        logger(1, "SET timezone failed: ", result.GetErrorMessage());
+
     ReleaseStale();
 
     ScheduleScheduler(true);

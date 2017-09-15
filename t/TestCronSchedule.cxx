@@ -168,10 +168,11 @@ TEST(CronSchedule, Next2)
     const CronSchedule s("30 */6 * * *");
     const auto now = std::chrono::system_clock::from_time_t(1485800000);
     ASSERT_EQ(s.delay_range, std::chrono::minutes(1));
-    ASSERT_EQ(s.Next(ParseISO8601("2016-10-14T14:41:00Z"), now), ParseISO8601("2016-10-14T16:30:00Z"));
-    ASSERT_EQ(s.Next(ParseISO8601("2016-10-14T16:41:00Z"), now), ParseISO8601("2016-10-14T22:30:00Z"));
-    ASSERT_EQ(s.Next(ParseISO8601("2016-10-14T22:41:00Z"), now), ParseISO8601("2016-10-15T04:30:00Z"));
-    ASSERT_EQ(s.Next(ParseISO8601("2016-02-29T23:41:00Z"), now), ParseISO8601("2016-03-01T05:30:00Z"));
+    ASSERT_EQ(s.Next(ParseISO8601("2016-10-14T14:41:00Z"), now), ParseISO8601("2016-10-14T18:30:00Z"));
+    ASSERT_EQ(s.Next(ParseISO8601("2016-10-14T16:41:00Z"), now), ParseISO8601("2016-10-14T18:30:00Z"));
+    ASSERT_EQ(s.Next(ParseISO8601("2016-10-14T18:41:00Z"), now), ParseISO8601("2016-10-15T00:30:00Z"));
+    ASSERT_EQ(s.Next(ParseISO8601("2016-10-15T00:41:00Z"), now), ParseISO8601("2016-10-15T06:30:00Z"));
+    ASSERT_EQ(s.Next(ParseISO8601("2016-02-29T23:41:00Z"), now), ParseISO8601("2016-03-01T00:30:00Z"));
 }
 
 TEST(CronSchedule, Next3)
@@ -180,12 +181,13 @@ TEST(CronSchedule, Next3)
     const CronSchedule s("30 6 29 * *");
     const auto now = std::chrono::system_clock::from_time_t(1485800000);
     ASSERT_EQ(s.delay_range, std::chrono::minutes(1));
-    ASSERT_EQ(s.Next(ParseISO8601("2016-10-14T14:41:00Z"), now), ParseISO8601("2016-10-29T04:30:00Z"));
-    ASSERT_EQ(s.Next(ParseISO8601("2016-02-01T00:41:00Z"), now), ParseISO8601("2016-02-29T05:30:00Z"));
-    ASSERT_EQ(s.Next(ParseISO8601("2015-02-01T00:41:00Z"), now), ParseISO8601("2015-03-29T05:30:00Z"));
-    ASSERT_EQ(s.Next(ParseISO8601("2015-12-29T05:29:00Z"), now), ParseISO8601("2015-12-29T05:30:00Z"));
-    ASSERT_EQ(s.Next(ParseISO8601("2015-12-29T05:30:00Z"), now), ParseISO8601("2016-01-29T05:30:00Z"));
-    ASSERT_EQ(s.Next(ParseISO8601("2015-12-31T05:30:00Z"), now), ParseISO8601("2016-01-29T05:30:00Z"));
+    ASSERT_EQ(s.Next(ParseISO8601("2016-10-14T14:41:00Z"), now), ParseISO8601("2016-10-29T06:30:00Z"));
+    ASSERT_EQ(s.Next(ParseISO8601("2016-02-01T00:41:00Z"), now), ParseISO8601("2016-02-29T06:30:00Z"));
+    ASSERT_EQ(s.Next(ParseISO8601("2015-02-01T00:41:00Z"), now), ParseISO8601("2015-03-29T06:30:00Z"));
+    ASSERT_EQ(s.Next(ParseISO8601("2015-12-29T05:30:00Z"), now), ParseISO8601("2015-12-29T06:30:00Z"));
+    ASSERT_EQ(s.Next(ParseISO8601("2015-12-29T06:29:00Z"), now), ParseISO8601("2015-12-29T06:30:00Z"));
+    ASSERT_EQ(s.Next(ParseISO8601("2015-12-29T06:30:00Z"), now), ParseISO8601("2016-01-29T06:30:00Z"));
+    ASSERT_EQ(s.Next(ParseISO8601("2015-12-31T06:30:00Z"), now), ParseISO8601("2016-01-29T06:30:00Z"));
 }
 
 TEST(CronSchedule, Next4)
@@ -194,11 +196,17 @@ TEST(CronSchedule, Next4)
     const CronSchedule s("30 6 * * 1");
     const auto now = std::chrono::system_clock::from_time_t(1485800000);
     ASSERT_EQ(s.delay_range, std::chrono::minutes(1));
-    ASSERT_EQ(s.Next(ParseISO8601("2016-10-14T14:41:00Z"), now), ParseISO8601("2016-10-17T04:30:00Z"));
-    ASSERT_EQ(s.Next(ParseISO8601("2016-02-01T00:41:00Z"), now), ParseISO8601("2016-02-01T05:30:00Z"));
-    ASSERT_EQ(s.Next(ParseISO8601("2016-02-01T05:30:00Z"), now), ParseISO8601("2016-02-08T05:30:00Z"));
-    ASSERT_EQ(s.Next(ParseISO8601("2015-02-01T00:41:00Z"), now), ParseISO8601("2015-02-02T05:30:00Z"));
-    ASSERT_EQ(s.Next(ParseISO8601("2015-12-29T05:29:00Z"), now), ParseISO8601("2016-01-04T05:30:00Z"));
+    ASSERT_EQ(s.Next(ParseISO8601("2016-10-14T14:41:00Z"), now), ParseISO8601("2016-10-17T06:30:00Z"));
+    ASSERT_EQ(s.Next(ParseISO8601("2016-02-01T00:41:00Z"), now), ParseISO8601("2016-02-01T06:30:00Z"));
+    ASSERT_EQ(s.Next(ParseISO8601("2016-02-01T05:30:00Z"), now), ParseISO8601("2016-02-01T06:30:00Z"));
+    ASSERT_EQ(s.Next(ParseISO8601("2015-02-01T00:41:00Z"), now), ParseISO8601("2015-02-02T06:30:00Z"));
+    ASSERT_EQ(s.Next(ParseISO8601("2015-12-28T05:29:00Z"), now), ParseISO8601("2015-12-28T06:30:00Z"));
+    ASSERT_EQ(s.Next(ParseISO8601("2015-12-28T06:29:59Z"), now), ParseISO8601("2015-12-28T06:30:00Z"));
+    ASSERT_EQ(s.Next(ParseISO8601("2015-12-29T05:29:00Z"), now), ParseISO8601("2016-01-04T06:30:00Z"));
+    ASSERT_EQ(s.Next(ParseISO8601("2015-12-29T06:29:00Z"), now), ParseISO8601("2016-01-04T06:30:00Z"));
+    ASSERT_EQ(s.Next(ParseISO8601("2015-12-29T06:30:00Z"), now), ParseISO8601("2016-01-04T06:30:00Z"));
+    ASSERT_EQ(s.Next(ParseISO8601("2015-12-29T06:31:00Z"), now), ParseISO8601("2016-01-04T06:30:00Z"));
+    ASSERT_EQ(s.Next(ParseISO8601("2015-12-31T06:30:01Z"), now), ParseISO8601("2016-01-04T06:30:00Z"));
 }
 
 TEST(CronSchedule, Next5)
@@ -207,11 +215,11 @@ TEST(CronSchedule, Next5)
     const CronSchedule s("*/5 6 * * *");
     const auto now = std::chrono::system_clock::from_time_t(1485800000);
     ASSERT_EQ(s.delay_range, std::chrono::minutes(5));
-    ASSERT_EQ(s.Next(ParseISO8601("2016-10-14T04:40:00Z"), now), ParseISO8601("2016-10-14T04:45:00Z"));
-    ASSERT_EQ(s.Next(ParseISO8601("2016-10-14T04:55:00Z"), now), ParseISO8601("2016-10-15T04:00:00Z"));
-    ASSERT_EQ(s.Next(ParseISO8601("2016-10-14T14:00:00Z"), now), ParseISO8601("2016-10-15T04:00:00Z"));
-    ASSERT_EQ(s.Next(ParseISO8601("2016-10-14T14:01:00Z"), now), ParseISO8601("2016-10-15T04:00:00Z"));
-    ASSERT_EQ(s.Next(ParseISO8601("2016-10-14T14:41:00Z"), now), ParseISO8601("2016-10-15T04:00:00Z"));
+    ASSERT_EQ(s.Next(ParseISO8601("2016-10-14T06:40:00Z"), now), ParseISO8601("2016-10-14T06:45:00Z"));
+    ASSERT_EQ(s.Next(ParseISO8601("2016-10-14T06:55:00Z"), now), ParseISO8601("2016-10-15T06:00:00Z"));
+    ASSERT_EQ(s.Next(ParseISO8601("2016-10-14T14:00:00Z"), now), ParseISO8601("2016-10-15T06:00:00Z"));
+    ASSERT_EQ(s.Next(ParseISO8601("2016-10-14T14:01:00Z"), now), ParseISO8601("2016-10-15T06:00:00Z"));
+    ASSERT_EQ(s.Next(ParseISO8601("2016-10-14T14:41:00Z"), now), ParseISO8601("2016-10-15T06:00:00Z"));
 }
 
 TEST(CronSchedule, Once)

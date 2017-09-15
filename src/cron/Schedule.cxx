@@ -267,7 +267,7 @@ CronSchedule::Next(std::chrono::system_clock::time_point _last,
     if (_last == std::chrono::system_clock::time_point::min())
         _last = now - std::chrono::minutes(1);
 
-    auto last = LocalTime(_last);
+    auto last = GmTime(_last);
     auto next = last;
     next.tm_sec = 0;
 
@@ -287,5 +287,5 @@ CronSchedule::Next(std::chrono::system_clock::time_point _last,
     while (!CheckDate(next))
         IncrementDay(next);
 
-    return MakeTime(next);
+    return TimeGm(next);
 }
