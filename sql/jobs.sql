@@ -10,41 +10,41 @@ CREATE TABLE jobs (
         id SERIAL PRIMARY KEY,
 
         -- non-unique name of the job
-        name VARCHAR(64) NULL,
+        name varchar(64) NULL,
         -- human readable long description of this job
-        description VARCHAR(4096) NULL,
+        description varchar(4096) NULL,
 
         -- the time this job was created
-        time_created TIMESTAMP NOT NULL DEFAULT now(),
+        time_created timestamp NOT NULL DEFAULT now(),
         -- the job will not be executed before this time
-        scheduled_time TIMESTAMP NULL,
+        scheduled_time timestamp NULL,
         -- is this job enabled?
         enabled boolean NOT NULL DEFAULT TRUE,
         -- priority of this job; negative value means higher priority
-        priority INT NOT NULL DEFAULT 0,
+        priority int NOT NULL DEFAULT 0,
 
         -- which plan executes this job?
-        plan_name VARCHAR(64) NOT NULL,
+        plan_name varchar(64) NOT NULL,
         -- command line arguments appended to the plan executable
-        args VARCHAR(4096)[] NULL,
+        args varchar(4096)[] NULL,
 
         -- syslog server which receives stderr output
-        syslog_server VARCHAR(256) NULL,
+        syslog_server varchar(256) NULL,
 
         -- which cm4all-workshop node is executing this job?
-        node_name VARCHAR(256) NULL,
+        node_name varchar(256) NULL,
         -- which time can we assume the node is dead?
-        node_timeout TIMESTAMP NULL,
+        node_timeout timestamp NULL,
 
         -- how much is done? 0 to 100 percent
-        progress INT NOT NULL DEFAULT 0,
+        progress int NOT NULL DEFAULT 0,
 
         -- the time this job was completed
-        time_done TIMESTAMP NULL,
+        time_done timestamp NULL,
         -- the output logged by the process to stderr
         log text NULL,
         -- the process' exit code
-        exit_status INT NULL
+        exit_status int NULL
 );
 
 -- this index is used when determining the next free job
