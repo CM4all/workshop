@@ -111,6 +111,43 @@ MigrateCronDatabase(Pg::Connection &c, const char *schema)
                              "  NEW.next_run != OLD.next_run"
                              ")"
                              " DO SELECT pg_notify('cronjobs_scheduled', NULL)"));
+
+    /* since Workshop 2.0.28 */
+    if (Pg::GetColumnType(c, schema, "cronjobs", "next_run") == "timestamp without time zone") {
+        /* we need to drop those rules because they reference the
+           columns to be edited, or else PostgreSQL won't allow the
+           change */
+        Pg::CheckError(c.Execute("DROP RULE IF EXISTS finish_cronjob ON cronjobs"));
+        Pg::CheckError(c.Execute("DROP RULE IF EXISTS schedule_cronjob ON cronjobs"));
+
+        /* drop the index due to "functions in index predicate must be
+           marked IMMUTABLE" (because the 'infinity' literal was
+           implicitly a "timestamp without timezone") */
+        Pg::CheckError(c.Execute("DROP INDEX cronjobs_scheduled2"));
+
+        /* add time zones to timestamps */
+        Pg::CheckError(c.Execute("ALTER TABLE cronjobs"
+                                 " ALTER COLUMN last_run TYPE timestamp with time zone,"
+                                 " ALTER COLUMN next_run TYPE timestamp with time zone,"
+                                 " ALTER COLUMN node_timeout TYPE timestamp with time zone"));
+
+        /* recreate the rules */
+        Pg::CheckError(c.Execute("CREATE OR REPLACE RULE finish_cronjob AS ON UPDATE TO cronjobs"
+                                 " WHERE NEW.enabled AND NEW.node_name IS NULL AND NEW.next_run IS NULL AND OLD.next_run IS NOT NULL"
+                                 " DO SELECT pg_notify('cronjobs_modified', NULL)"));
+        Pg::CheckError(c.Execute("CREATE OR REPLACE RULE schedule_cronjob AS ON UPDATE TO cronjobs"
+                                 " WHERE NEW.enabled AND NEW.node_name IS NULL AND NEW.next_run IS NOT NULL AND ("
+                                 "   OLD.next_run IS NULL OR"
+                                 "   NEW.next_run != OLD.next_run"
+                                 " )"
+                                 " DO SELECT pg_notify('cronjobs_scheduled', NULL)"));
+
+        /* recreate the index */
+        Pg::CheckError(c.Execute("CREATE INDEX cronjobs_scheduled2 ON cronjobs(next_run)"
+                                 " WHERE enabled AND node_name IS NULL"
+                                 " AND next_run IS NOT NULL AND next_run != 'infinity'"));
+
+    }
 }
 
 int

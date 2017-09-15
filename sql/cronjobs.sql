@@ -48,15 +48,15 @@ CREATE TABLE cronjobs (
     delay_range interval SECOND(0) NULL,
 
     -- the last time this job was run; NULL means never
-    last_run timestamp NULL,
+    last_run timestamp with time zone NULL,
 
     -- the next time this job will run; this was calculated from the schedule
-    next_run timestamp NULL,
+    next_run timestamp with time zone NULL,
 
     -- which node is executing this job?
     node_name varchar(256) NULL,
     -- which time can we assume the node is dead?
-    node_timeout timestamp NULL,
+    node_timeout timestamp with time zone NULL,
 
     --------------------------------
     -- UI columns

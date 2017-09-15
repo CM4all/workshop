@@ -21,10 +21,10 @@ CREATE TABLE cronresults (
     node_name varchar(256) NULL,
 
     -- the time this job execution was started
-    start_time timestamp NOT NULL,
+    start_time timestamp with time zone NOT NULL,
 
     -- the time this job execution was completed
-    finish_time timestamp NOT NULL DEFAULT now(),
+    finish_time timestamp with time zone NOT NULL DEFAULT now(),
 
     -- the process' exit code
     exit_status INT NOT NULL,
