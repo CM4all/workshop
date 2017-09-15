@@ -234,24 +234,6 @@ CronSchedule::CheckDate(const struct tm &tm) const noexcept
         days_of_week[tm.tm_wday];
 }
 
-bool
-CronSchedule::CheckTime(const struct tm &tm) const noexcept
-{
-    return minutes[tm.tm_sec] && hours[tm.tm_hour];
-}
-
-bool
-CronSchedule::Check(const struct tm &tm) const noexcept
-{
-    return CheckDate(tm) && CheckTime(tm);
-}
-
-bool
-CronSchedule::Check(std::chrono::system_clock::time_point t) const noexcept
-{
-    return Check(LocalTime(t));
-}
-
 template<size_t MIN, size_t MAX>
 gcc_const
 static size_t

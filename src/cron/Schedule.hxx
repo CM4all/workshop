@@ -59,15 +59,6 @@ struct CronSchedule {
     gcc_pure
     bool CheckDate(const struct tm &tm) const noexcept;
 
-    gcc_pure
-    bool CheckTime(const struct tm &tm) const noexcept;
-
-    gcc_pure
-    bool Check(const struct tm &tm) const noexcept;
-
-    gcc_pure
-    bool Check(std::chrono::system_clock::time_point t) const noexcept;
-
     /**
      * Determine when to run the job next time.
      *
