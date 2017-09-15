@@ -24,7 +24,7 @@ void
 PipeCaptureBuffer::OnSocket(unsigned)
 {
     auto w = buffer.Write();
-    if (!w.IsEmpty()) {
+    if (!w.empty()) {
         ssize_t nbytes = fd.Read(w.data, w.size);
         if (nbytes <= 0) {
             Close();

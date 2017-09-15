@@ -13,7 +13,7 @@ AllocatorPtr::Dup(ConstBuffer<void> src)
     if (src.IsNull())
         return nullptr;
 
-    if (src.IsEmpty())
+    if (src.empty())
         return {"", 0};
 
     return {Dup(src.data, src.size), src.size};
@@ -25,7 +25,7 @@ AllocatorPtr::Dup(StringView src)
     if (src.IsNull())
         return nullptr;
 
-    if (src.IsEmpty())
+    if (src.empty())
         return "";
 
     return {(const char *)Dup(src.data, src.size), src.size};
@@ -37,7 +37,7 @@ AllocatorPtr::DupZ(StringView src)
     if (src.IsNull())
         return nullptr;
 
-    if (src.IsEmpty())
+    if (src.empty())
         return "";
 
     char *p = NewArray<char>(src.size + 1);

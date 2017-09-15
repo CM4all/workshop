@@ -104,7 +104,7 @@ ReceiveResponse(AllocatorPtr alloc, int fd)
 
     while (true) {
         auto w = buffer.Write();
-        if (w.IsEmpty())
+        if (w.empty())
             throw std::runtime_error("Translation receive buffer is full");
 
         ssize_t nbytes = recv(fd, w.data, w.size, MSG_NOSIGNAL);
@@ -118,7 +118,7 @@ ReceiveResponse(AllocatorPtr alloc, int fd)
 
         while (true) {
             auto r = buffer.Read();
-            if (r.IsEmpty())
+            if (r.empty())
                 break;
 
             size_t consumed = parser.Feed(r.data, r.size);
