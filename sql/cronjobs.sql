@@ -67,8 +67,9 @@ CREATE TABLE cronjobs (
 );
 
 -- find scheduled jobs
-CREATE INDEX cronjobs_scheduled ON cronjobs(next_run)
-    WHERE enabled AND node_name IS NULL AND next_run IS NOT NULL;
+CREATE INDEX cronjobs_scheduled2 ON cronjobs(next_run)
+    WHERE enabled AND node_name IS NULL
+    AND next_run IS NOT NULL AND next_run != 'infinity';
 
 -- for finding jobs to release
 CREATE INDEX cronjobs_release ON cronjobs(node_name, node_timeout)
@@ -94,7 +95,8 @@ CREATE OR REPLACE RULE finish_cronjob AS ON UPDATE TO cronjobs
 
 -- notify all nodes when a cronjob has been scheduled
 CREATE OR REPLACE RULE schedule_cronjob AS ON UPDATE TO cronjobs
-    WHERE NEW.enabled AND NEW.node_name IS NULL AND NEW.next_run IS NOT NULL AND (
+    WHERE NEW.enabled AND NEW.node_name IS NULL
+    AND NEW.next_run IS NOT NULL AND NEW.next_run != 'infinity' AND (
       OLD.next_run IS NULL OR
       NEW.next_run != OLD.next_run
     )

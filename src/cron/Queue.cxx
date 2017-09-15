@@ -108,7 +108,7 @@ FindEarliestPending(Pg::Connection &db)
 {
     const auto result =
         db.Execute("SELECT EXTRACT(EPOCH FROM (MIN(next_run) - now())) FROM cronjobs "
-                   "WHERE enabled AND next_run IS NOT NULL AND node_name IS NULL");
+                   "WHERE enabled AND next_run IS NOT NULL AND next_run != 'infinity' AND node_name IS NULL");
     if (!result.IsQuerySuccessful()) {
         fprintf(stderr, "SELECT FROM cronjobs failed: %s\n",
                 result.GetErrorMessage());

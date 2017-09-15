@@ -98,6 +98,19 @@ MigrateCronDatabase(Pg::Connection &c, const char *schema)
     Pg::CheckError(c.Execute("ALTER TABLE cronjobs"
                              " ADD COLUMN IF NOT EXISTS delay interval SECOND(0) NULL,"
                              " ADD COLUMN IF NOT EXISTS delay_range interval SECOND(0) NULL"));
+
+    /* since Workshop 2.0.27: next_run can be 'infinity' for expired @once jobs */
+    Pg::CheckError(c.Execute("DROP INDEX IF EXISTS cronjobs_scheduled"));
+    Pg::CheckError(c.Execute("CREATE INDEX IF NOT EXISTS cronjobs_scheduled2 ON cronjobs(next_run)"
+                             " WHERE enabled AND node_name IS NULL"
+                             " AND next_run IS NOT NULL AND next_run != 'infinity'"));
+    Pg::CheckError(c.Execute("CREATE OR REPLACE RULE schedule_cronjob AS ON UPDATE TO cronjobs"
+                             " WHERE NEW.enabled AND NEW.node_name IS NULL"
+                             " AND NEW.next_run IS NOT NULL AND NEW.next_run != 'infinity' AND ("
+                             "  OLD.next_run IS NULL OR"
+                             "  NEW.next_run != OLD.next_run"
+                             ")"
+                             " DO SELECT pg_notify('cronjobs_scheduled', NULL)"));
 }
 
 int

@@ -117,14 +117,17 @@ CalculateNextRun(const Logger &logger, Pg::Connection &db)
                                         schedule.delay_range);
 
             const auto next_run = schedule.Next(last_run, now) + delay;
-            // TODO: check next_run==max() and don't write this bogus value into the database
+            std::string next_run_buffer;
+            const char *next_run_string = next_run == std::chrono::system_clock::time_point::max()
+                ? "infinity" /* never again execute the "@once" job */
+                : (next_run_buffer = FormatISO8601(next_run)).c_str();
 
             auto r = db.ExecuteParams("UPDATE cronjobs SET next_run=$4 "
                                       "WHERE id=$1 AND schedule=$2 AND"
                                       " (last_run=$3 OR last_run IS NULL) AND enabled AND"
                                       " next_run IS NULL",
                                       id, _schedule, _last_run,
-                                      FormatISO8601(next_run).c_str());
+                                      next_run_string);
             if (!r.IsCommandSuccessful())
                 throw Pg::Error(std::move(r));
 
