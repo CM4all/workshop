@@ -7,6 +7,7 @@
 #include "pg/Connection.hxx"
 #include "pg/CheckError.hxx"
 #include "pg/Interval.hxx"
+#include "pg/Timestamp.hxx"
 #include "io/Logger.hxx"
 #include "time/Convert.hxx"
 #include "time/ISO8601.hxx"
@@ -14,19 +15,6 @@
 #include <random>
 
 #include <assert.h>
-
-static std::chrono::system_clock::time_point
-ParsePgTimestamp(const char *s)
-{
-    assert(s != nullptr);
-
-    struct tm tm;
-    const char *end = strptime(s, "%F %T", &tm);
-    if (end == nullptr)
-        throw std::runtime_error("Failed to parse PostgreSQL timestamp");
-
-    return TimeGm(tm);
-}
 
 static bool
 IsSameInterval(const char *a, std::chrono::seconds b) noexcept
@@ -115,7 +103,7 @@ CalculateNextRun(const Logger &logger, Pg::Connection &db)
                 /* note: subtracting the old delay, because it has
                    been added previously (and will be re-added later),
                    to get a consistent view */
-                ? ParsePgTimestamp(_last_run) - delay
+                ? Pg::ParseTimestamp(_last_run) - delay
                 : std::chrono::system_clock::time_point::min();
 
             const CronSchedule schedule(_schedule);
