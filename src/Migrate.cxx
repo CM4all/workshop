@@ -148,6 +148,13 @@ MigrateCronDatabase(Pg::Connection &c, const char *schema)
                                  " AND next_run IS NOT NULL AND next_run != 'infinity'"));
 
     }
+
+    if (Pg::GetColumnType(c, schema, "cronresults", "start_time") == "timestamp without time zone") {
+        /* add time zones to timestamps */
+        Pg::CheckError(c.Execute("ALTER TABLE cronresults"
+                                 " ALTER COLUMN start_time TYPE timestamp with time zone,"
+                                 " ALTER COLUMN finish_time TYPE timestamp with time zone"));
+    }
 }
 
 int
