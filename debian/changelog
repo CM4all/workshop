@@ -1,3 +1,9 @@
+cm4all-workshop (2.0.28) unstable; urgency=low
+
+  * 
+
+ --   
+
 cm4all-workshop (2.0.27) unstable; urgency=low
 
   * cron: fix hour check in scheduler
