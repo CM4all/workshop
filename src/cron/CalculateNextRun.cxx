@@ -74,7 +74,8 @@ bool
 CalculateNextRun(const Logger &logger, Pg::Connection &db)
 {
     const auto result =
-        db.Execute("SELECT id, schedule, last_run, delay, delay_range "
+        db.Execute("SELECT id, schedule, last_run, delay, delay_range,"
+                   " NOW()"
                    "FROM cronjobs WHERE enabled AND next_run IS NULL "
                    "LIMIT 1000");
     if (!result.IsQuerySuccessful()) {
@@ -85,13 +86,12 @@ CalculateNextRun(const Logger &logger, Pg::Connection &db)
     if (result.IsEmpty())
         return true;
 
-    const auto now = std::chrono::system_clock::now();
-
     for (const auto &row : result) {
         const char *id = row.GetValue(0), *_schedule = row.GetValue(1),
             *_last_run = row.GetValueOrNull(2),
             *_delay = row.GetValueOrNull(3),
-            *_delay_range = row.GetValueOrNull(4);
+            *_delay_range = row.GetValueOrNull(4),
+            *_now = row.GetValue(5);
 
         try {
             auto delay = _delay != nullptr
@@ -105,6 +105,8 @@ CalculateNextRun(const Logger &logger, Pg::Connection &db)
                    to get a consistent view */
                 ? Pg::ParseTimestamp(_last_run) - delay
                 : std::chrono::system_clock::time_point::min();
+
+            const auto now = Pg::ParseTimestamp(_now);
 
             const CronSchedule schedule(_schedule);
 
