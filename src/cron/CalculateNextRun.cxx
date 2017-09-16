@@ -74,8 +74,10 @@ bool
 CalculateNextRun(const Logger &logger, Pg::Connection &db)
 {
     const auto result =
-        db.Execute("SELECT id, schedule, last_run, delay, delay_range,"
-                   " NOW()"
+        db.Execute("SELECT id, schedule,"
+                   " last_run AT TIME ZONE COALESCE(tz, 'UTC'),"
+                   " delay, delay_range, "
+                   " NOW() AT TIME ZONE COALESCE(tz, 'UTC')"
                    "FROM cronjobs WHERE enabled AND next_run IS NULL "
                    "LIMIT 1000");
     if (!result.IsQuerySuccessful()) {
@@ -124,9 +126,11 @@ CalculateNextRun(const Logger &logger, Pg::Connection &db)
                 ? "infinity" /* never again execute the "@once" job */
                 : (next_run_buffer = Pg::FormatTimestamp(next_run)).c_str();
 
-            auto r = db.ExecuteParams("UPDATE cronjobs SET next_run=$4 "
+            auto r = db.ExecuteParams("UPDATE cronjobs SET"
+                                      " next_run=$4::timestamp AT TIME ZONE COALESCE(tz, 'UTC') "
                                       "WHERE id=$1 AND schedule=$2 AND"
-                                      " (last_run=$3 OR last_run IS NULL) AND enabled AND"
+                                      " (last_run AT TIME ZONE COALESCE(tz, 'UTC')=$3 OR last_run IS NULL)"
+                                      " AND enabled AND"
                                       " next_run IS NULL",
                                       id, _schedule, _last_run,
                                       next_run_string);

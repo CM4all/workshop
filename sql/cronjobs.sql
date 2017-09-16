@@ -21,6 +21,9 @@ CREATE TABLE cronjobs (
     -- the schedule in crontab(5) syntax
     schedule varchar(256) NOT NULL,
 
+    -- the time zone in which the schedule is expressed
+    tz varchar(64) NULL,
+
     -- the command to be executed by /bin/sh
     command varchar(1024) NOT NULL,
 

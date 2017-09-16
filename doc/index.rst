@@ -404,6 +404,10 @@ The `cronjobs` table
   gets passed to the translation server to determine the process
   parameters.
 * :envvar:`schedule`: A :manpage:`crontab(5)`-like schedule.
+* :envvar:`tz`: A time zone which is used to calculate the given
+  schedule.  This can be any `time zone understood by PostgreSQL
+  <https://www.postgresql.org/docs/current/static/datatype-datetime.html#DATATYPE-TIMEZONES>`_.
+  A :samp:`NULL` value selects the UTC time zone.
 * :envvar:`command`: A command to be executed by :file:`/bin/sh`.  If
   it starts with :samp:`http://` or :samp:`https://`, a HTTP GET
   request is sent instead of spawning a child process.  If it starts

@@ -278,7 +278,6 @@ CronSchedule::Next(std::chrono::system_clock::time_point _last,
 
     next.tm_min = NextBit(minutes, last.tm_min);
     if (next.tm_min <= last.tm_min) {
-        /* TODO: what about daylight saving transitions? */
         next.tm_hour = NextBit(hours, last.tm_hour);
         if (next.tm_hour <= last.tm_hour)
             IncrementDay(next);

@@ -155,6 +155,9 @@ MigrateCronDatabase(Pg::Connection &c, const char *schema)
                                  " ALTER COLUMN start_time TYPE timestamp with time zone,"
                                  " ALTER COLUMN finish_time TYPE timestamp with time zone"));
     }
+
+    Pg::CheckError(c.Execute("ALTER TABLE cronjobs"
+                             " ADD COLUMN IF NOT EXISTS tz varchar(64) NULL"));
 }
 
 int
