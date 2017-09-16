@@ -10,7 +10,7 @@
 #include "pg/Timestamp.hxx"
 #include "io/Logger.hxx"
 #include "time/Convert.hxx"
-#include "time/ISO8601.hxx"
+#include "util/StringBuffer.hxx"
 
 #include <random>
 
@@ -120,7 +120,7 @@ CalculateNextRun(const Logger &logger, Pg::Connection &db)
             std::string next_run_buffer;
             const char *next_run_string = next_run == std::chrono::system_clock::time_point::max()
                 ? "infinity" /* never again execute the "@once" job */
-                : (next_run_buffer = FormatISO8601(next_run)).c_str();
+                : (next_run_buffer = Pg::FormatTimestamp(next_run)).c_str();
 
             auto r = db.ExecuteParams("UPDATE cronjobs SET next_run=$4 "
                                       "WHERE id=$1 AND schedule=$2 AND"
