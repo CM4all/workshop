@@ -323,5 +323,5 @@ CronQueue::OnNotify(const char *name)
 void
 CronQueue::OnError(const char *prefix, const char *error)
 {
-    logger(1, prefix, ": ", prefix, error);
+    logger(1, prefix, ": ", error);
 }
