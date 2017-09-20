@@ -397,5 +397,5 @@ WorkshopQueue::OnNotify(const char *name)
 void
 WorkshopQueue::OnError(const char *prefix, const char *error)
 {
-    daemon_log(2, "%s: %s\n", prefix, error);
+    daemon_log(1, "%s: %s\n", prefix, error);
 }
