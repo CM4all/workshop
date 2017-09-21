@@ -9,6 +9,7 @@
 
 #include <stdexcept>
 
+#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -163,15 +164,18 @@ MigrateCronDatabase(Pg::Connection &c, const char *schema)
 int
 main(int argc, char **argv)
 try {
-    if (argc != 2) {
-        fprintf(stderr, "Usage: %s CONNINFO\n", argv[0]);
+    if (argc < 2 || argc > 3) {
+        fprintf(stderr, "Usage: %s CONNINFO [SCHEMA]\n", argv[0]);
         return EXIT_FAILURE;
     }
 
     const char *const conninfo = argv[1];
-    const char *const schema = "public";
+    const char *const schema = argc >= 3 ? argv[2] : "public";
 
     Pg::Connection c(conninfo);
+
+    if (strcmp(schema, "public") != 0 && !c.SetSchema(schema))
+        throw std::runtime_error(c.GetErrorMessage());
 
     bool found_table = false;
 
