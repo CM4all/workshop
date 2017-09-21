@@ -4,7 +4,7 @@ cm4all-workshop (2.0.29) unstable; urgency=low
   * log database connection failures at the default verbosity
   * migrate: schema support
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Thu, 21 Sep 2017 17:17:47 -0000
 
 cm4all-workshop (2.0.28) unstable; urgency=low
 
