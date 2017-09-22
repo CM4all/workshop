@@ -4,6 +4,7 @@
 
 #include "PlanLoader.hxx"
 #include "Plan.hxx"
+#include "pg/Interval.hxx"
 #include "system/Error.hxx"
 #include "io/FileLineParser.hxx"
 #include "io/ConfigParser.hxx"
@@ -32,45 +33,6 @@ public:
     void ParseLine(FileLineParser &line) final;
     void Finish() override;
 };
-
-static constexpr struct {
-    const char *name;
-    std::chrono::steady_clock::duration value;
-} pg_duration_units[] = {
-    {"s", std::chrono::seconds(1) },
-    {"m", std::chrono::minutes(1) },
-    {"h", std::chrono::hours(1) },
-    {"second", std::chrono::seconds(1) },
-    {"seconds", std::chrono::seconds(1) },
-    {"minute", std::chrono::minutes(1) },
-    {"minutes", std::chrono::minutes(1) },
-    {"hour", std::chrono::hours(1) },
-    {"hours", std::chrono::hours(1) },
-};
-
-static std::chrono::steady_clock::duration
-ParsePgDurationUnit(const char *p)
-{
-    for (const auto &i : pg_duration_units)
-        if (strcmp(i.name, p) == 0)
-            return i.value;
-
-    throw std::runtime_error("Unrecognized duration unit");
-}
-
-static std::chrono::steady_clock::duration
-ParsePgDuration(const char *p)
-{
-    p = StripLeft(p);
-
-    char *endptr;
-    auto value = strtoul(p, &endptr, 10);
-    if (endptr == p)
-        throw std::runtime_error("Malformed number");
-
-    p = StripLeft(endptr);
-    return value * ParsePgDurationUnit(p);
-}
 
 gcc_pure
 static std::vector<gid_t>
@@ -106,7 +68,7 @@ PlanLoader::ParseLine(FileLineParser &line)
         } while (value != nullptr);
     } else if (strcmp(key, "timeout") == 0) {
         plan.timeout = line.ExpectValueAndEnd();
-        plan.parsed_timeout = ParsePgDuration(plan.timeout.c_str());
+        plan.parsed_timeout = Pg::ParseIntervalS(plan.timeout.c_str());
     } else if (strcmp(key, "chroot") == 0) {
         const char *value = line.ExpectValueAndEnd();
 
