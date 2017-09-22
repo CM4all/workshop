@@ -66,6 +66,9 @@ PlanLoader::ParseLine(FileLineParser &line)
             plan.args.push_back(value);
             value = line.NextRelaxedValue();
         } while (value != nullptr);
+    } else if (strcmp(key, "control_channel") == 0) {
+        plan.control_channel = line.NextBool();
+        line.ExpectEnd();
     } else if (strcmp(key, "timeout") == 0) {
         plan.timeout = line.ExpectValueAndEnd();
         plan.parsed_timeout = Pg::ParseIntervalS(plan.timeout.c_str());

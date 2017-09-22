@@ -7,6 +7,7 @@
 
 #include "spawn/ExitListener.hxx"
 #include "event/TimerEvent.hxx"
+#include "event/net/UdpHandler.hxx"
 #include "io/UniqueFileDescriptor.hxx"
 #include "io/Logger.hxx"
 #include "Job.hxx"
@@ -16,16 +17,19 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 #include <list>
 
 struct Plan;
 class WorkshopWorkplace;
 class ProgressReader;
+class UdpListener;
+class UniqueSocketDescriptor;
 
 /** an operator is a job being executed */
 class WorkshopOperator final
     : public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>,
-      public ExitListener, LoggerDomainFactory {
+      public ExitListener, UdpHandler, LoggerDomainFactory {
 
     EventLoop &event_loop;
 
@@ -42,6 +46,8 @@ class WorkshopOperator final
 
     std::unique_ptr<ProgressReader> progress_reader;
 
+    std::unique_ptr<UdpListener> control_channel;
+
     LogBridge log;
 
 public:
@@ -49,6 +55,7 @@ public:
                      WorkshopWorkplace &_workplace, const WorkshopJob &_job,
                      const std::shared_ptr<Plan> &_plan,
                      UniqueFileDescriptor stderr_read_pipe,
+                     UniqueSocketDescriptor control_socket,
                      size_t max_log_buffer,
                      bool enable_journal);
 
@@ -90,6 +97,13 @@ public:
 private:
     /* virtual methods from LoggerDomainFactory */
     std::string MakeLoggerDomain() const noexcept;
+
+    /* virtual methods from UdpHandler */
+    bool OnUdpDatagram(const void *data, size_t length,
+                       SocketAddress address, int uid) override;
+    void OnUdpError(std::exception_ptr ep) noexcept override;
+
+    bool OnControl(std::vector<std::string> &&args) noexcept;
 };
 
 #endif

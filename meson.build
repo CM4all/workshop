@@ -155,6 +155,7 @@ net_dep = declare_dependency(link_with: net)
 
 event_net = static_library('event_net',
   'libcommon/src/event/net/ConnectSocket.cxx',
+  'libcommon/src/event/net/UdpListener.cxx',
   'libcommon/src/event/net/djb/NetstringClient.cxx',
   'libcommon/src/event/net/djb/QmqpClient.cxx',
   include_directories: inc,

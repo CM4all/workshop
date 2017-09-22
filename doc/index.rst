@@ -200,6 +200,8 @@ The following options are available:
 * :samp:`exec PROGRAM ARG1 ...`: Command line.  The program path must
   be absolute, because Workshop will not consider the :envvar:`PATH`.
 
+* :samp:`control_channel "yes"`: see `Control Channel`_.
+
 * :samp:`timeout INTERVAL`: A timeout for this plan.  If the process
   does not finish or update its state within this time span, it is
   assumed to be dead; the process will be killed and the job will be
@@ -303,7 +305,9 @@ The environment is empty.  There are only two file handles: 1
 
 The process writes its progress to `stdout`, i.e. an integer number
 between 0 and 100 per line.  At the end of a line, Workshop writes
-this number into the job's database row.
+this number into the job's database row.  (If the plan enables the
+control channel, then this feature is disabled, and the control
+channel shall be used instead.)
 
 The process may log errors and other messages to `stderr`.  They will
 be forwarded to the configured syslog server, or will be logged to
@@ -380,6 +384,24 @@ The client is allowed to execute the following operations:
   IS NULL`.
 * Delete jobs which have been completed, i.e.  :samp:`time_done
   IS NOT NULL`.
+
+Control Channel
+^^^^^^^^^^^^^^^
+
+With the :envvar:`control_channel` option enabled, the child process
+gets a SEQPACKET socket on file descriptor 3.  It can be used to
+communicate with Workshop.
+
+A datagram contains a brief text message.  The first word is the
+command, and may be followed by space-separated parameters.
+
+The following commands are available:
+
+* :samp:`progress VALUE`: update the job progress, which Workshop will
+  write to the `progress` column.  (Note that the old `stdout`
+  protocol for submitting job progress is disabled if there is a
+  control channel.)
+
 
 Cron Schedule
 ^^^^^^^^^^^^^

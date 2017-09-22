@@ -13,6 +13,7 @@
 #include "spawn/Interface.hxx"
 #include "spawn/Client.hxx"
 #include "system/Error.hxx"
+#include "net/UniqueSocketDescriptor.hxx"
 #include "util/RuntimeError.hxx"
 
 #include "util/Compiler.h"
@@ -74,16 +75,27 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
     if (!UniqueFileDescriptor::CreatePipe(stderr_r, stderr_w))
         throw MakeErrno("pipe() failed");
 
+    /* create control socket */
+
+    UniqueSocketDescriptor control_parent, control_child;
+    if (plan->control_channel) {
+        if (!UniqueSocketDescriptor::CreateSocketPair(AF_LOCAL, SOCK_SEQPACKET, 0,
+                                                      control_parent, control_child))
+            throw MakeErrno("socketpair() failed");
+    }
+
     /* create operator object */
 
     auto o = std::make_unique<WorkshopOperator>(event_loop, *this, job, plan,
                                                 std::move(stderr_r),
+                                                std::move(control_parent),
                                                 max_log,
                                                 enable_journal);
 
     PreparedChildProcess p;
     p.hook_info = job.plan_name.c_str();
     p.SetStderr(std::move(stderr_w));
+    p.SetControl(std::move(control_child));
 
     if (!debug_mode) {
         p.uid_gid.uid = plan->uid;
@@ -109,7 +121,12 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 
     /* create stdout/stderr pipes */
 
-    {
+    if (plan->control_channel) {
+        /* copy stdout to stderr into the "log" column */
+        p.SetStdout(p.stderr_fd);
+    } else {
+        /* if there is no control channel, read progress from the
+           stdout pipe */
         UniqueFileDescriptor stdout_r, stdout_w;
         if (!UniqueFileDescriptor::CreatePipe(stdout_r, stdout_w))
             throw MakeErrno("pipe() failed");
