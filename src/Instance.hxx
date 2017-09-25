@@ -11,6 +11,7 @@
 #include "event/Loop.hxx"
 #include "event/ShutdownListener.hxx"
 #include "event/SignalEvent.hxx"
+#include "event/DeferEvent.hxx"
 #include "spawn/Registry.hxx"
 #include "spawn/Hook.hxx"
 #include "curl/Init.hxx"
@@ -29,6 +30,7 @@ class Instance final : SpawnHook {
 
     ShutdownListener shutdown_listener;
     SignalEvent sighup_event;
+    DeferEvent defer_idle_check;
 
     ChildProcessRegistry child_process_registry;
 

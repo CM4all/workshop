@@ -16,6 +16,7 @@
 Instance::Instance(const Config &config)
     :shutdown_listener(event_loop, BIND_THIS_METHOD(OnExit)),
      sighup_event(event_loop, SIGHUP, BIND_THIS_METHOD(OnReload)),
+     defer_idle_check(event_loop, BIND_THIS_METHOD(RemoveIdlePartitions)),
      child_process_registry(event_loop),
      curl(new CurlGlobal(event_loop))
 {
@@ -111,7 +112,10 @@ void
 Instance::OnPartitionIdle()
 {
     if (should_exit)
-        RemoveIdlePartitions();
+        /* defer the RemoveIdlePartitions() call to avoid deleting the
+           partitions while iterating the partition list in
+           OnExit() */
+        defer_idle_check.Schedule();
 }
 
 void
