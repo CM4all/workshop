@@ -174,8 +174,8 @@ try {
 
     Pg::Connection c(conninfo);
 
-    if (strcmp(schema, "public") != 0 && !c.SetSchema(schema))
-        throw std::runtime_error(c.GetErrorMessage());
+    if (strcmp(schema, "public") != 0)
+        c.SetSchema(schema);
 
     bool found_table = false;
 
