@@ -143,18 +143,28 @@ net = static_library('net',
   'libcommon/src/net/HostParser.cxx',
   'libcommon/src/net/AddressInfo.cxx',
   'libcommon/src/net/Resolver.cxx',
-  'libcommon/src/net/ConnectSocket.cxx',
   'libcommon/src/net/RConnectSocket.cxx',
   'libcommon/src/net/djb/NetstringHeader.cxx',
   'libcommon/src/net/djb/NetstringGenerator.cxx',
   'libcommon/src/net/djb/NetstringInput.cxx',
-  'libcommon/src/net/djb/NetstringClient.cxx',
-  'libcommon/src/net/djb/QmqpClient.cxx',
   include_directories: inc,
   dependencies: [
     event_dep,
   ])
 net_dep = declare_dependency(link_with: net)
+
+event_net = static_library('event_net',
+  'libcommon/src/event/net/ConnectSocket.cxx',
+  'libcommon/src/event/net/djb/NetstringClient.cxx',
+  'libcommon/src/event/net/djb/QmqpClient.cxx',
+  include_directories: inc,
+  dependencies: [
+    libevent,
+    event_dep,
+    net_dep,
+    util_dep,
+  ])
+event_net_dep = declare_dependency(link_with: event_net)
 
 curl = static_library('curl',
   'libcommon/src/curl/Version.cxx',
@@ -292,6 +302,7 @@ executable('cm4all-workshop',
     boost,
     libsystemd,
     libdaemon,
+    event_net_dep,
     time_dep,
     system_dep,
     io_dep,

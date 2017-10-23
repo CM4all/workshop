@@ -6,8 +6,8 @@
 #define EMAIL_SERVICE_HXX
 
 #include "net/AllocatedSocketAddress.hxx"
-#include "net/ConnectSocket.hxx"
-#include "net/djb/QmqpClient.hxx"
+#include "event/net/ConnectSocket.hxx"
+#include "event/net/djb/QmqpClient.hxx"
 
 #include <boost/intrusive/list.hpp>
 
