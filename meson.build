@@ -116,7 +116,7 @@ io = static_library('io',
   include_directories: inc,
   dependencies: [
     boost,
-    declare_dependency(link_with: util),
+    util_dep,
   ])
 io_dep = declare_dependency(link_with: io)
 
@@ -130,7 +130,7 @@ event = static_library('event',
   include_directories: inc,
   dependencies: [
     libevent,
-    declare_dependency(link_with: util),
+    util_dep,
   ])
 event_dep = declare_dependency(link_with: event)
 
@@ -152,8 +152,9 @@ net = static_library('net',
   'libcommon/src/net/djb/QmqpClient.cxx',
   include_directories: inc,
   dependencies: [
-    declare_dependency(link_with: event),
+    event_dep,
   ])
+net_dep = declare_dependency(link_with: net)
 
 curl = static_library('curl',
   'libcommon/src/curl/Version.cxx',
@@ -166,6 +167,7 @@ curl = static_library('curl',
     util_dep,
     event_dep,
   ])
+curl_dep = declare_dependency(link_with: curl)
 
 pg = static_library('pg',
   'libcommon/src/pg/Array.cxx',
@@ -196,8 +198,8 @@ translation = static_library('translation',
   'libcommon/src/translation/Response.cxx',
   include_directories: inc,
   dependencies: [
-    declare_dependency(link_with: event),
-    declare_dependency(link_with: net),
+    event_dep,
+    net_dep,
     adata_dep,
   ])
 
@@ -248,6 +250,7 @@ spawn = static_library('spawn',
     io_dep,
     odbus_dep,
   ])
+spawn_dep = declare_dependency(link_with: spawn)
 
 executable('cm4all-workshop',
   'src/main.cxx',
@@ -289,13 +292,13 @@ executable('cm4all-workshop',
     boost,
     libsystemd,
     libdaemon,
-    declare_dependency(link_with: time),
-    declare_dependency(link_with: system),
-    declare_dependency(link_with: io),
+    time_dep,
+    system_dep,
+    io_dep,
     declare_dependency(link_with: translation),
-    declare_dependency(link_with: spawn),
-    declare_dependency(link_with: pg),
-    declare_dependency(link_with: curl),
+    spawn_dep,
+    pg_dep,
+    curl_dep,
   ])
 
 executable('cm4all-workshop-migrate',

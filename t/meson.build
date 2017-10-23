@@ -3,7 +3,7 @@ executable('http',
   install: false,
   include_directories: inc,
   dependencies: [
-    declare_dependency(link_with: curl),
+    curl_dep,
   ])
 
 TestCronSchedule = executable('TestCronSchedule',
@@ -12,8 +12,8 @@ TestCronSchedule = executable('TestCronSchedule',
   include_directories: inc,
   install: false,
   dependencies: [
-    declare_dependency(link_with: util),
-    declare_dependency(link_with: time),
+    util_dep,
+    time_dep,
     gtest,
   ])
 
