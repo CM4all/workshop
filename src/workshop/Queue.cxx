@@ -367,8 +367,12 @@ WorkshopQueue::OnConnect()
         pg_notify(db);
     }
 
-    has_enabled_column = Pg::ColumnExists(db, "public", "jobs", "enabled");
-    has_log_column = Pg::ColumnExists(db, "public", "jobs", "log");
+    const char *schema = db.GetSchemaName().empty()
+        ? "public"
+        : db.GetSchemaName().c_str();
+
+    has_enabled_column = Pg::ColumnExists(db, schema, "jobs", "enabled");
+    has_log_column = Pg::ColumnExists(db, schema, "jobs", "log");
 
     /* listen on notifications */
 

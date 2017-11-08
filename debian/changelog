@@ -1,6 +1,6 @@
 cm4all-workshop (2.0.31) unstable; urgency=low
 
-  * 
+  * workshop: fix schema support for "log" and "enabled" columns
 
  --   
 
