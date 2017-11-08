@@ -16,13 +16,7 @@ debian/stamp-build: build/build.ninja
 	ninja -C build test
 	touch $@
 
-doc/_build/html/.buildinfo: doc/*.rst
-	$(MAKE) -C doc html
-
-debian/stamp-doc: doc/_build/html/.buildinfo
-	touch $@
-
-build: debian/stamp-build debian/stamp-doc
+build: debian/stamp-build
 check:
 
 clean:
