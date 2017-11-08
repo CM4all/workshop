@@ -1,3 +1,3 @@
-build/cm4all-workshop usr/sbin
+debian/build/cm4all-workshop usr/sbin
 systemd/run.sh usr/lib/cm4all/workshop/systemd
 debian/workshop.conf etc/cm4all/workshop

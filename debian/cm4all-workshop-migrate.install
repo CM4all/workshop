@@ -1,1 +1,1 @@
-build/cm4all-workshop-migrate usr/bin
+debian/build/cm4all-workshop-migrate usr/bin

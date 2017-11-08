@@ -3,5 +3,6 @@
 /*.log
 /*.substvars
 /*.debhelper
-/cm4all-*/
 
+/build/
+/cm4all-*/

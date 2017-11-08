@@ -8,12 +8,12 @@ MESON_BUILDTYPE = debug
 
 MESON_OPTIONS = --buildtype $(MESON_BUILDTYPE)
 
-build/build.ninja: meson.build
-	rm -rf build
-	meson . build $(MESON_OPTIONS)
+debian/build/build.ninja: meson.build
+	rm -rf debian/build
+	meson . debian/build $(MESON_OPTIONS)
 
-debian/stamp-build: build/build.ninja
-	ninja -C build test
+debian/stamp-build: debian/build/build.ninja
+	ninja -C debian/build test
 	touch $@
 
 build: debian/stamp-build
