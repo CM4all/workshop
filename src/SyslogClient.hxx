@@ -19,7 +19,7 @@ class SyslogClient {
     const int facility;
 
 public:
-    SyslogClient(UniqueSocketDescriptor &&_fd,
+    SyslogClient(UniqueSocketDescriptor _fd,
                  const char *_me, const char *_ident, int _facility)
         :fd(std::move(_fd)), me(_me), ident(_ident), facility(_facility) {}
 

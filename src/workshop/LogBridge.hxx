@@ -24,7 +24,7 @@ class LogBridge {
 public:
     LogBridge(EventLoop &event_loop,
               const char *_plan_name, const char *_job_id,
-              UniqueFileDescriptor &&read_pipe_fd);
+              UniqueFileDescriptor read_pipe_fd);
     ~LogBridge();
 
     void CreateSyslog(const char *host_and_port,

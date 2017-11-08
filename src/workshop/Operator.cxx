@@ -27,7 +27,7 @@ WorkshopOperator::WorkshopOperator(EventLoop &_event_loop,
                                    WorkshopWorkplace &_workplace,
                                    const WorkshopJob &_job,
                                    const std::shared_ptr<Plan> &_plan,
-                                   UniqueFileDescriptor &&stderr_read_pipe,
+                                   UniqueFileDescriptor stderr_read_pipe,
                                    size_t max_log_buffer,
                                    bool enable_journal)
     :event_loop(_event_loop), workplace(_workplace), job(_job), plan(_plan),
@@ -92,7 +92,7 @@ WorkshopOperator::OnProgress(unsigned progress)
 }
 
 void
-WorkshopOperator::SetOutput(UniqueFileDescriptor &&fd)
+WorkshopOperator::SetOutput(UniqueFileDescriptor fd)
 {
     assert(fd.IsDefined());
     assert(!progress_reader);

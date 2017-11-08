@@ -46,7 +46,7 @@ public:
     WorkshopOperator(EventLoop &_event_loop,
                      WorkshopWorkplace &_workplace, const WorkshopJob &_job,
                      const std::shared_ptr<Plan> &_plan,
-                     UniqueFileDescriptor &&stderr_read_pipe,
+                     UniqueFileDescriptor stderr_read_pipe,
                      size_t max_log_buffer,
                      bool enable_journal);
 
@@ -68,7 +68,7 @@ public:
         pid = _pid;
     }
 
-    void SetOutput(UniqueFileDescriptor &&fd);
+    void SetOutput(UniqueFileDescriptor fd);
 
     void CreateSyslogClient(const char *me,
                             int facility,

@@ -21,7 +21,7 @@ class ProgressReader {
 
 public:
     ProgressReader(EventLoop &event_loop,
-                   UniqueFileDescriptor &&_fd,
+                   UniqueFileDescriptor _fd,
                    Callback _callback);
 
     ~ProgressReader() {
