@@ -1,8 +1,10 @@
 /files
 /stamp-*
+/*-stamp
 /*.log
 /*.substvars
 /*.debhelper
 
+/tmp/
 /build/
 /cm4all-*/
