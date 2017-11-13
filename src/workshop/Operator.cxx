@@ -85,6 +85,13 @@ WorkshopOperator::OnTimeout()
 void
 WorkshopOperator::OnProgress(unsigned progress)
 {
+    if (exited)
+        /* after the child process has exited, it's pointless to
+           update the progress because it will be set to 100% anyway;
+           this state can occur in OnChildProcessExit() during the
+           LogBridge::Flush() call */
+        return;
+
     job.SetProgress(progress, plan->timeout.c_str());
 
     /* refresh the timeout */
@@ -133,6 +140,8 @@ WorkshopOperator::Expand(std::list<std::string> &args) const
 void
 WorkshopOperator::OnChildProcessExit(int status)
 {
+    exited = true;
+
     log.Flush();
 
     int exit_status = WEXITSTATUS(status);

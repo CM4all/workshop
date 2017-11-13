@@ -34,6 +34,8 @@ class WorkshopOperator final
     std::shared_ptr<Plan> plan;
     int pid = -1;
 
+    bool exited = false;
+
     LazyDomainLogger logger;
 
     TimerEvent timeout_event;
