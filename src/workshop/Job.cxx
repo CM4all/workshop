@@ -18,3 +18,9 @@ WorkshopJob::SetDone(int status, const char *log)
 {
     queue.SetJobDone(*this, status, log);
 }
+
+void
+WorkshopJob::SetAgain()
+{
+    queue.RollbackJob(*this);
+}

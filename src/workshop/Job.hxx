@@ -38,6 +38,11 @@ struct WorkshopJob {
      * Mark the job as "done".
      */
     void SetDone(int status, const char *log);
+
+    /**
+     * Mark the job as "execute again".
+     */
+    void SetAgain();
 };
 
 #endif

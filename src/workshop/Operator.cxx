@@ -163,7 +163,10 @@ WorkshopOperator::OnChildProcessExit(int status)
     else
         logger(2, "exited with status ", exit_status);
 
-    job.SetDone(exit_status, log.GetBuffer());
+    if (again)
+        job.SetAgain();
+    else
+        job.SetDone(exit_status, log.GetBuffer());
 
     workplace.OnExit(this);
 }
@@ -234,6 +237,14 @@ WorkshopOperator::OnControl(std::vector<std::string> &&args) noexcept
 
         OnProgress(progress);
 
+        return true;
+    } else if (cmd == "again") {
+        if (args.size() != 1) {
+            logger(2, "malformed 'again' command on control channel");
+            return true;
+        }
+
+        again = true;
         return true;
     } else {
         logger(2, "unknown command on control channel: '", cmd, "'");

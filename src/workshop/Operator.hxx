@@ -40,6 +40,11 @@ class WorkshopOperator final
 
     bool exited = false;
 
+    /**
+     * Shall the job be executed again?
+     */
+    bool again = false;
+
     LazyDomainLogger logger;
 
     TimerEvent timeout_event;
