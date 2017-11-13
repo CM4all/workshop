@@ -103,12 +103,10 @@ public:
     /**
      * Disassociate from the job, act as if this node had never
      * claimed it.  It will notify the other workshop nodes.
-     *
-     * @return true on success
      */
-    bool RollbackJob(const WorkshopJob &job);
+    void RollbackJob(const WorkshopJob &job);
 
-    bool SetJobDone(const WorkshopJob &job, int status, const char *log);
+    void SetJobDone(const WorkshopJob &job, int status, const char *log);
 
 private:
     void RunResult(const Pg::Result &result);

@@ -330,7 +330,7 @@ WorkshopQueue::SetJobProgress(const WorkshopJob &job, unsigned progress,
     return pg_set_job_progress(db, job.id.c_str(), progress, timeout);
 }
 
-bool
+void
 WorkshopQueue::RollbackJob(const WorkshopJob &job)
 {
     assert(&job.queue == this);
@@ -341,11 +341,9 @@ WorkshopQueue::RollbackJob(const WorkshopJob &job)
     pg_notify(db);
 
     ScheduleCheckNotify();
-
-    return true;
 }
 
-bool
+void
 WorkshopQueue::SetJobDone(const WorkshopJob &job, int status, const char *log)
 {
     assert(&job.queue == this);
@@ -355,7 +353,6 @@ WorkshopQueue::SetJobDone(const WorkshopJob &job, int status, const char *log)
     pg_set_job_done(db, job.id.c_str(), status, log);
 
     ScheduleCheckNotify();
-    return true;
 }
 
 void
