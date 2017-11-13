@@ -2,7 +2,7 @@ cm4all-workshop (2.0.32) unstable; urgency=low
 
   * workshop: add control channel for job processes
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Mon, 13 Nov 2017 12:02:45 -0000
 
 cm4all-workshop (2.0.31) unstable; urgency=low
 
