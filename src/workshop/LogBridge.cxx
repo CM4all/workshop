@@ -32,7 +32,7 @@ LogBridge::CreateSyslog(const char *host_and_port,
 }
 
 bool
-LogBridge::OnStderrLine(WritableBuffer<char> line)
+LogBridge::OnStderrLine(WritableBuffer<char> line) noexcept
 {
     if (line.IsNull())
         return false;

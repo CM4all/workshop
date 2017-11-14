@@ -45,12 +45,12 @@ public:
         enable_journal = true;
     }
 
-    void Flush() {
+    void Flush() noexcept {
         reader.Flush();
     }
 
 private:
-    bool OnStderrLine(WritableBuffer<char> line);
+    bool OnStderrLine(WritableBuffer<char> line) noexcept;
 };
 
 #endif
