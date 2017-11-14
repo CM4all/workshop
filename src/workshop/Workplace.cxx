@@ -95,7 +95,9 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
     PreparedChildProcess p;
     p.hook_info = job.plan_name.c_str();
     p.SetStderr(std::move(stderr_w));
-    p.SetControl(std::move(control_child));
+
+    if (control_child.IsDefined())
+        p.SetControl(std::move(control_child));
 
     if (!debug_mode) {
         p.uid_gid.uid = plan->uid;
