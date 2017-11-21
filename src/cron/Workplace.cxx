@@ -71,7 +71,7 @@ MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
             p.args.push_back(alloc.Dup(response.execute));
 
             for (const char *arg : response.args) {
-                if (p.args.full())
+                if (p.args.size() >= 4096)
                     throw std::runtime_error("Too many APPEND packets from translation server");
 
                 p.args.push_back(alloc.Dup(arg));

@@ -151,7 +151,7 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
     o->Expand(args);
 
     for (const auto &i : args) {
-        if (p.args.full())
+        if (p.args.size() >= 4096)
             throw std::runtime_error("Too many command-line arguments");
 
         p.args.push_back(i.c_str());
