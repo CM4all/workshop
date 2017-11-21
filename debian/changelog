@@ -3,7 +3,7 @@ cm4all-workshop (2.0.34) unstable; urgency=low
   * workshop: fix assertion failure with too many command-line arguments
   * raise the command-line argument limit from 32 to 4096
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Tue, 21 Nov 2017 11:49:15 -0000
 
 cm4all-workshop (2.0.33) unstable; urgency=low
 
