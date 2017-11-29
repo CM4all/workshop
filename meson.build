@@ -134,6 +134,7 @@ event = static_library('event',
 event_dep = declare_dependency(link_with: event)
 
 net = static_library('net',
+  'libcommon/src/net/SocketConfig.cxx',
   'libcommon/src/net/SocketDescriptor.cxx',
   'libcommon/src/net/SocketAddress.cxx',
   'libcommon/src/net/AllocatedSocketAddress.cxx',
@@ -144,6 +145,7 @@ net = static_library('net',
   'libcommon/src/net/Parser.cxx',
   'libcommon/src/net/Resolver.cxx',
   'libcommon/src/net/RConnectSocket.cxx',
+  'libcommon/src/net/ToString.cxx',
   'libcommon/src/net/djb/NetstringHeader.cxx',
   'libcommon/src/net/djb/NetstringGenerator.cxx',
   'libcommon/src/net/djb/NetstringInput.cxx',
@@ -298,6 +300,7 @@ executable('cm4all-workshop',
   'src/workshop/LogBridge.cxx',
   'src/workshop/Operator.cxx',
   'src/workshop/Workplace.cxx',
+  'src/control/Server.cxx',
   include_directories: inc,
   dependencies: [
     boost,
@@ -319,6 +322,17 @@ executable('cm4all-workshop-migrate',
     pg_dep,
     util_dep,
   ])
+
+executable(
+  'cm4all-workshop-control',
+  'src/control/Client.cxx',
+  include_directories: inc,
+  dependencies: [
+    net_dep,
+    io_dep,
+    util_dep,
+  ]
+)
 
 subdir('t')
 subdir('libcommon/test/util')

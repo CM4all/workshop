@@ -98,6 +98,21 @@ The following settings are recognized:
   * :envvar:`qmqp_server` (optional): address the QMQP server is
     listening to; it is used for email notifications
 
+* :envvar:`control`: opens a block (with curly braces), which
+  configures a control listener (see `Controlling the Daemon`_)
+
+  * :envvar:`bind`: The address to bind to. May be the wildcard "*" or
+    an IPv4/IPv6 address followed by a port.  IPv6 addresses should be
+    enclosed in square brackets to disambiguate the port separator.
+    Local sockets start with a slash "/", and abstract sockets start
+    with an at symbol "@".
+  * :envvar:`multicast_group`: Join this multicast group, which allows
+    receiving multicast commands.  Value is a multicast IPv4/IPv6
+    address.  IPv6 addresses may contain a scope identifier after a
+    percent sign ('%').
+  * :envvar:`interface`: Limit this listener to the given network
+    interface.
+
 The default configuration file includes :file:`local.conf` and
 :file:`conf.d/*.conf`, and you should probably better edit these files
 instead of editing the main :file:`workshop.conf`.
@@ -292,6 +307,21 @@ A cron job consists of a row in the PostgreSQL table.  Example::
   VALUES('foo', '*/15 * * * *', 'echo Hello World');
 
 During job execution, the column `node_name` is set.
+
+
+Controlling the Daemon
+----------------------
+
+The :envvar:`control` block in the configuration file sets up a
+control listener.  The :file:`cm4all-workshop-control` program can
+then be used to send control commands to the daemon.  Most commands
+are only allowed when issued over a local socket by the *root* user.
+
+The following commands are implemented:
+
+* :samp:`nop`: No-op, does nothing.
+
+
 
 Reference
 ---------

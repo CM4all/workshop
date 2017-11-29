@@ -5,6 +5,7 @@
 #ifndef WORKSHOP_INSTANCE_HXX
 #define WORKSHOP_INSTANCE_HXX
 
+#include "control/Handler.hxx"
 #include "workshop/Partition.hxx"
 #include "workshop/MultiLibrary.hxx"
 #include "cron/Partition.hxx"
@@ -23,8 +24,9 @@ struct Config;
 class SpawnServerClient;
 class CurlGlobal;
 class MultiLibrary;
+class ControlServer;
 
-class Instance final : SpawnHook {
+class Instance final : SpawnHook, ControlHandler {
     const RootLogger logger;
 
     EventLoop event_loop;
@@ -47,6 +49,8 @@ class Instance final : SpawnHook {
     std::forward_list<WorkshopPartition> partitions;
 
     std::forward_list<CronPartition> cron_partitions;
+
+    std::forward_list<ControlServer> control_servers;
 
 public:
     explicit Instance(const Config &config);
@@ -84,6 +88,11 @@ private:
 
     /* virtual methods from SpawnHook */
     bool Verify(const PreparedChildProcess &p) override;
+
+    /* virtual methods from ControlHandler */
+    void OnControlPacket(WorkshopControlCommand command,
+                         ConstBuffer<void> payload) override;
+    void OnControlError(std::exception_ptr ep) noexcept override;
 };
 
 #endif

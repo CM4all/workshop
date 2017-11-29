@@ -4,6 +4,7 @@
 
 #include "Instance.hxx"
 #include "Config.hxx"
+#include "control/Server.hxx"
 #include "workshop/MultiLibrary.hxx"
 #include "spawn/Client.hxx"
 #include "spawn/Glue.hxx"
@@ -49,6 +50,11 @@ Instance::Instance(const Config &config)
         cron_partitions.emplace_front(event_loop, *spawn_service, *curl,
                                       config, i,
                                       BIND_THIS_METHOD(OnPartitionIdle));
+
+    ControlHandler &control_handler = *this;
+    for (const auto &i : config.control_listen)
+        control_servers.emplace_front(event_loop, i.Create(SOCK_DGRAM),
+                                      control_handler);
 }
 
 Instance::~Instance()
@@ -95,6 +101,8 @@ Instance::OnExit()
 
     if (!partitions.empty())
         logger(1, "waiting for operators to finish");
+
+    control_servers.clear();
 }
 
 void
@@ -126,4 +134,22 @@ Instance::RemoveIdlePartitions()
     cron_partitions.remove_if([](const CronPartition &partition){
             return partition.IsIdle();
         });
+}
+
+void
+Instance::OnControlPacket(WorkshopControlCommand command,
+                          ConstBuffer<void> payload)
+{
+    (void)payload;
+
+    switch (command) {
+    case WorkshopControlCommand::NOP:
+        break;
+    }
+}
+
+void
+Instance::OnControlError(std::exception_ptr ep) noexcept
+{
+    logger(1, "Control error: ", ep);
 }

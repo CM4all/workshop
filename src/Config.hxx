@@ -8,6 +8,7 @@
 #include "workshop/Config.hxx"
 #include "cron/Config.hxx"
 #include "spawn/Config.hxx"
+#include "net/SocketConfig.hxx"
 
 #include <string>
 #include <forward_list>
@@ -22,6 +23,19 @@ struct Config {
 
     std::forward_list<WorkshopPartitionConfig> partitions;
     std::forward_list<CronPartitionConfig> cron_partitions;
+
+    struct ControlListener : SocketConfig {
+        ControlListener() {
+            pass_cred = true;
+        }
+
+        explicit ControlListener(SocketAddress _bind_address)
+            :SocketConfig(_bind_address) {
+            pass_cred = true;
+        }
+    };
+
+    std::forward_list<ControlListener> control_listen;
 
     Config();
 

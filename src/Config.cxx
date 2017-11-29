@@ -3,6 +3,7 @@
  */
 
 #include "Config.hxx"
+#include "control/Protocol.hxx"
 #include "spawn/ConfigParser.hxx"
 #include "debug.h"
 #include "system/Error.hxx"
@@ -10,6 +11,7 @@
 #include "io/ConfigParser.hxx"
 #include "net/Resolver.hxx"
 #include "net/AddressInfo.hxx"
+#include "net/Parser.hxx"
 #include "util/StringParser.hxx"
 
 #include <string.h>
@@ -92,6 +94,20 @@ class WorkshopConfigParser final : public NestedConfigParser {
         void Finish() override;
     };
 
+    class Control final : public ConfigParser {
+        WorkshopConfigParser &parent;
+        Config::ControlListener config;
+
+    public:
+        explicit Control(WorkshopConfigParser &_parent)
+            :parent(_parent) {}
+
+    protected:
+        /* virtual methods from class ConfigParser */
+        void ParseLine(FileLineParser &line) override;
+        void Finish() override;
+    };
+
 public:
     explicit WorkshopConfigParser(Config &_config)
         :config(_config) {}
@@ -99,6 +115,9 @@ public:
 protected:
     /* virtual methods from class NestedConfigParser */
     void ParseLine2(FileLineParser &line) override;
+
+private:
+    void CreateControl(FileLineParser &line);
 };
 
 void
@@ -176,6 +195,44 @@ WorkshopConfigParser::CronPartition::Finish()
 }
 
 void
+WorkshopConfigParser::Control::ParseLine(FileLineParser &line)
+{
+    const char *word = line.ExpectWord();
+
+    if (strcmp(word, "bind") == 0) {
+        config.bind_address = ParseSocketAddress(line.ExpectValueAndEnd(),
+                                                 WORKSHOP_CONTROL_DEFAULT_PORT,
+                                                 true);
+    } else if (strcmp(word, "multicast_group") == 0) {
+        config.multicast_group = ParseSocketAddress(line.ExpectValueAndEnd(),
+                                                    0, false);
+    } else if (strcmp(word, "interface") == 0) {
+        config.interface = line.ExpectValueAndEnd();
+    } else
+        throw LineParser::Error("Unknown option");
+}
+
+void
+WorkshopConfigParser::Control::Finish()
+{
+    if (config.bind_address.IsNull())
+        throw LineParser::Error("Bind address is missing");
+
+    config.Fixup();
+
+    parent.config.control_listen.emplace_front(std::move(config));
+
+    ConfigParser::Finish();
+}
+
+inline void
+WorkshopConfigParser::CreateControl(FileLineParser &line)
+{
+    line.ExpectSymbolAndEol('{');
+    SetChild(std::make_unique<Control>(*this));
+}
+
+void
 WorkshopConfigParser::ParseLine2(FileLineParser &line)
 {
     const char *word = line.ExpectWord();
@@ -199,6 +256,8 @@ WorkshopConfigParser::ParseLine2(FileLineParser &line)
     } else if (strcmp(word, "spawn") == 0) {
         line.ExpectSymbolAndEol('{');
         SetChild(std::make_unique<SpawnConfigParser>(config.spawn));
+    } else if (strcmp(word, "control") == 0) {
+        CreateControl(line);
     } else
         throw LineParser::Error("Unknown option");
 }
