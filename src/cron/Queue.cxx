@@ -14,11 +14,12 @@
 #include <string.h>
 #include <stdlib.h>
 
-CronQueue::CronQueue(EventLoop &event_loop, const char *_node_name,
+CronQueue::CronQueue(const Logger &parent_logger,
+                     EventLoop &event_loop, const char *_node_name,
                      const char *conninfo, const char *schema,
                      Callback _callback)
     :node_name(_node_name),
-     logger("cron.queue"),
+     logger(parent_logger, "queue"),
      db(event_loop, conninfo, schema, *this),
      callback(_callback),
      check_notify_event(event_loop, BIND_THIS_METHOD(CheckNotify)),

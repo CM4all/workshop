@@ -23,7 +23,7 @@ class CronQueue final : private Pg::AsyncConnectionHandler {
 
     const std::string node_name;
 
-    Logger logger;
+    ChildLogger logger;
 
     Pg::AsyncConnection db;
 
@@ -40,7 +40,8 @@ class CronQueue final : private Pg::AsyncConnectionHandler {
     bool disabled = false;
 
 public:
-    CronQueue(EventLoop &event_loop, const char *_node_name,
+    CronQueue(const Logger &parent_logger,
+              EventLoop &event_loop, const char *_node_name,
               const char *conninfo, const char *schema,
               Callback _callback);
     ~CronQueue();

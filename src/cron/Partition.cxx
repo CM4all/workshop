@@ -20,7 +20,7 @@ CronPartition::CronPartition(EventLoop &event_loop,
      email_service(config.qmqp_server.IsNull()
                    ? nullptr
                    : new EmailService(event_loop, config.qmqp_server)),
-     queue(event_loop, root_config.node_name.c_str(),
+     queue(logger, event_loop, root_config.node_name.c_str(),
            config.database.c_str(), config.database_schema.c_str(),
            [this](CronJob &&job){ OnJob(std::move(job)); }),
      workplace(_spawn_service, email_service.get(),

@@ -71,7 +71,7 @@ MakeRandomDelay(Pg::Connection &db, const char *id, const char *schedule,
 }
 
 bool
-CalculateNextRun(const Logger &logger, Pg::Connection &db)
+CalculateNextRun(const ChildLogger &logger, Pg::Connection &db)
 {
     const auto result =
         db.Execute("SELECT id, schedule,"
