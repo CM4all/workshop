@@ -10,9 +10,6 @@
 #include "debug.h"
 #include "io/Logger.hxx"
 
-#include "util/Compiler.h"
-#include <daemon/log.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -93,6 +90,8 @@ ParseCommandLine(Config &config, int argc, char **argv)
     };
 #endif
 
+    unsigned log_level = 1;
+
     while (1) {
 #ifdef __GLIBC__
         int option_index = 0;
@@ -115,11 +114,11 @@ ParseCommandLine(Config &config, int argc, char **argv)
             exit(EXIT_SUCCESS);
 
         case 'v':
-            ++daemon_log_config.verbose;
+            ++log_level;
             break;
 
         case 'q':
-            daemon_log_config.verbose = 0;
+            log_level = 0;
             break;
 
         case 'N':
@@ -149,7 +148,7 @@ ParseCommandLine(Config &config, int argc, char **argv)
         }
     }
 
-    SetLogLevel(daemon_log_config.verbose);
+    SetLogLevel(log_level);
 
     /* check non-option arguments */
 

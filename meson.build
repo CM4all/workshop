@@ -65,7 +65,6 @@ libdbus = dependency('dbus-1')
 libcap = dependency('libcap')
 libseccomp = dependency('libseccomp')
 libpq = dependency('libpq', version: '>= 8.4')
-libdaemon = dependency('libcm4all-daemon', version: '>= 0.4.2')
 
 inc = include_directories('src', 'libcommon/src')
 
@@ -303,7 +302,6 @@ executable('cm4all-workshop',
   dependencies: [
     boost,
     libsystemd,
-    libdaemon,
     event_net_dep,
     time_dep,
     system_dep,

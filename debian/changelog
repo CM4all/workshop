@@ -1,6 +1,6 @@
 cm4all-workshop (2.0.34) unstable; urgency=low
 
-  * 
+  * remove libdaemon dependency
 
  --   
 
