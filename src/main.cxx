@@ -12,8 +12,6 @@
 #include "system/ProcessName.hxx"
 #include "util/PrintException.hxx"
 
-#include <daemon/log.h>
-
 #include <systemd/sd-daemon.h>
 
 #include <stdexcept>
@@ -36,7 +34,7 @@ Run(const Config &config)
 
     instance.Start();
 
-    daemon_log(1, "cm4all-workshop v" VERSION "\n");
+    LogConcat(1, nullptr, "cm4all-workshop v" VERSION);
 
     instance.UpdateLibraryAndFilter(true);
 
@@ -49,7 +47,7 @@ Run(const Config &config)
 
     /* cleanup */
 
-    daemon_log(5, "cleaning up\n");
+    LogConcat(5, nullptr, "cleaning up");
 }
 
 int
@@ -91,7 +89,7 @@ try {
 
     Run(config);
 
-    daemon_log(4, "exiting\n");
+    LogConcat(4, nullptr, "exiting");
     return EXIT_SUCCESS;
 } catch (const std::exception &e) {
     PrintException(e);
