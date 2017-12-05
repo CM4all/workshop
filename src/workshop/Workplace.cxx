@@ -16,9 +16,6 @@
 #include "net/UniqueSocketDescriptor.hxx"
 #include "util/RuntimeError.hxx"
 
-#include "util/Compiler.h"
-#include <daemon/log.h>
-
 #include <string>
 #include <map>
 #include <set>
@@ -164,8 +161,8 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
                                                      o.get());
     o->SetPid(pid);
 
-    daemon_log(2, "job %s (plan '%s') running as pid %d\n",
-               job.id.c_str(), job.plan_name.c_str(), pid);
+    logger(2, "job ", job.id, " (plan '", job.plan_name,
+           "') running as pid ", pid);
 
     operators.push_back(*o.release());
 }

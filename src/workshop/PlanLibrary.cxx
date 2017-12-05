@@ -8,8 +8,6 @@
 #include "Plan.hxx"
 #include "util/CharUtil.hxx"
 
-#include <daemon/log.h>
-
 #include <assert.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -53,8 +51,7 @@ Library::UpdatePlans()
 
     DIR *dir = opendir(path.c_str());
     if (dir == nullptr) {
-        fprintf(stderr, "failed to opendir '%s': %s\n",
-                path.c_str(), strerror(errno));
+        logger(2, "failed to opendir '", path.c_str(), "': ", strerror(errno));
         return false;
     }
 
@@ -95,7 +92,7 @@ Library::UpdatePlans()
     /* remove all plans */
 
     for (const auto &i : old_plans)
-        daemon_log(3, "removed plan '%s'\n", i.first.c_str());
+        logger(3, "removed plan '", i.first, "'");
 
     if (!old_plans.empty()) {
         modified = true;
@@ -114,13 +111,12 @@ Library::Update(bool force)
 
     ret = stat(path.c_str(), &st);
     if (ret < 0) {
-        fprintf(stderr, "failed to stat '%s': %s\n",
-                path.c_str(), strerror(errno));
+        logger(2, "failed to stat '", path.c_str(), "': ", strerror(errno));
         return false;
     }
 
     if (!S_ISDIR(st.st_mode)) {
-        fprintf(stderr, "not a directory: %s\n", path.c_str());
+        logger(2, "not a directory: ", path.c_str());
         return false;
     }
 

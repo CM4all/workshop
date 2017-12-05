@@ -10,8 +10,6 @@
 #include "PlanLoader.hxx"
 #include "util/Exception.hxx"
 
-#include <daemon/log.h>
-
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -40,8 +38,8 @@ Library::CheckPlanModified(const char *name, PlanEntry &entry,
     ret = stat(plan_path.c_str(), &st);
     if (ret < 0) {
         if (ret != ENOENT)
-            fprintf(stderr, "failed to stat '%s': %s\n",
-                    plan_path.c_str(), strerror(errno));
+            logger(2, "failed to stat '", plan_path.c_str(), "': ",
+                   strerror(errno));
 
         entry.Clear();
 
@@ -85,10 +83,11 @@ Library::ValidatePlan(PlanEntry &entry,
 
     ret = stat(plan->GetExecutablePath().c_str(), &st);
     if (ret < 0) {
-        if (errno != ENOENT || !entry.deinstalled)
-            fprintf(stderr, "failed to stat '%s': %s\n",
-                    plan->GetExecutablePath().c_str(), strerror(errno));
-        if (errno == ENOENT)
+        const int e = errno;
+        if (e != ENOENT || !entry.deinstalled)
+            logger(2, "failed to stat '", plan->GetExecutablePath().c_str(),
+                   "': ", strerror(e));
+        if (e == ENOENT)
             entry.deinstalled = true;
         else
             DisablePlan(entry, now, std::chrono::seconds(60));
@@ -107,15 +106,15 @@ Library::LoadPlan(const char *name, PlanEntry &entry,
     assert(entry.plan == nullptr);
     assert(entry.mtime != 0);
 
-    daemon_log(6, "loading plan '%s'\n", name);
+    logger(6, "loading plan '", name, "'");
 
     const auto plan_path = GetPath() / name;
 
     try {
         entry.plan.reset(new Plan(LoadPlanFile(plan_path)));
-    } catch (const std::runtime_error &e) {
-        daemon_log(2, "failed to load plan '%s': %s\n",
-                   name, GetFullMessage(e).c_str());
+    } catch (...) {
+        logger(2, "failed to load plan '", name, "': ",
+               std::current_exception());
         DisablePlan(entry, now, std::chrono::seconds(600));
         return false;
     }

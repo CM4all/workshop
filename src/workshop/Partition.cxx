@@ -12,8 +12,6 @@
 #include "pg/Array.hxx"
 #include "util/Exception.hxx"
 
-#include <daemon/log.h>
-
 #include <set>
 
 WorkshopPartition::WorkshopPartition(Instance &_instance,
@@ -22,11 +20,12 @@ WorkshopPartition::WorkshopPartition(Instance &_instance,
                                      const Config &root_config,
                                      const WorkshopPartitionConfig &config,
                                      BoundMethod<void()> _idle_callback)
-    :instance(_instance), library(_library),
-     queue(instance.GetEventLoop(), root_config.node_name.c_str(),
+    :logger("workshop"), // TODO: add partition name
+     instance(_instance), library(_library),
+     queue(logger, instance.GetEventLoop(), root_config.node_name.c_str(),
            config.database.c_str(), config.database_schema.c_str(),
            [this](WorkshopJob &&job){ OnJob(std::move(job)); }),
-     workplace(_spawn_service, *this,
+     workplace(_spawn_service, *this, logger,
                root_config.node_name.c_str(),
                root_config.concurrency,
                config.enable_journal),
@@ -60,7 +59,7 @@ WorkshopPartition::StartJob(WorkshopJob &&job)
 {
     auto plan = library.Get(job.plan_name.c_str());
     if (!plan) {
-        fprintf(stderr, "library_get('%s') failed\n", job.plan_name.c_str());
+        logger(1, "library_get('", job.plan_name, "') failed");
         queue.RollbackJob(job);
         return false;
     }
@@ -74,10 +73,9 @@ WorkshopPartition::StartJob(WorkshopJob &&job)
     try {
         workplace.Start(instance.GetEventLoop(), job, std::move(plan),
                         queue.HasLogColumn() ? max_log : 0);
-    } catch (const std::runtime_error &e) {
-        daemon_log(1, "failed to start job '%s' plan '%s': %s\n",
-                   job.id.c_str(), job.plan_name.c_str(),
-                   GetFullMessage(e).c_str());
+    } catch (...) {
+        logger(1, "failed to start job '", job.id,
+               "' plan '", job.plan_name, "': ", std::current_exception());
 
         queue.SetJobDone(job, -1, nullptr);
     }

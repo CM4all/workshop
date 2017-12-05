@@ -6,7 +6,7 @@
 #define WORKSHOP_WORKPLACE_HXX
 
 #include "Operator.hxx"
-
+#include "io/Logger.hxx"
 #include "util/Compiler.h"
 
 #include <boost/intrusive/list.hpp>
@@ -25,6 +25,8 @@ class WorkshopWorkplace {
     SpawnService &spawn_service;
     ExitListener &exit_listener;
 
+    const ChildLogger logger;
+
     const std::string node_name;
 
     typedef boost::intrusive::list<WorkshopOperator,
@@ -38,10 +40,12 @@ class WorkshopWorkplace {
 public:
     WorkshopWorkplace(SpawnService &_spawn_service,
                       ExitListener &_exit_listener,
+                      const Logger &parent_logger,
                       const char *_node_name,
                       unsigned _max_operators,
                       bool _enable_journal)
         :spawn_service(_spawn_service), exit_listener(_exit_listener),
+         logger(parent_logger, "workplace"),
          node_name(_node_name),
          max_operators(_max_operators),
          enable_journal(_enable_journal) {

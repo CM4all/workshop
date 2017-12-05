@@ -5,7 +5,7 @@
 #ifndef WORKSHOP_LIBRARY_HXX
 #define WORKSHOP_LIBRARY_HXX
 
-#include "util/Compiler.h"
+#include "io/Logger.hxx"
 
 #include <boost/filesystem.hpp>
 
@@ -49,6 +49,8 @@ class Library {
         }
     };
 
+    const LLogger logger;
+
     const boost::filesystem::path path;
 
     std::map<std::string, PlanEntry> plans;
@@ -60,7 +62,8 @@ class Library {
 
 public:
     explicit Library(boost::filesystem::path &&_path)
-        :path(std::move(_path)) {}
+        :logger("library"),
+         path(std::move(_path)) {}
 
     Library(const Library &other) = delete;
 

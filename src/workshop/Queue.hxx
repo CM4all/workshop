@@ -11,7 +11,7 @@
 #include "event/TimerEvent.hxx"
 #include "event/Duration.hxx"
 #include "pg/AsyncConnection.hxx"
-
+#include "io/Logger.hxx"
 #include "util/Compiler.h"
 
 #include <functional>
@@ -23,6 +23,8 @@ class EventLoop;
 
 class WorkshopQueue final : private Pg::AsyncConnectionHandler {
     typedef std::function<void(WorkshopJob &&job)> Callback;
+
+    const ChildLogger logger;
 
     const std::string node_name;
 
@@ -54,7 +56,7 @@ class WorkshopQueue final : private Pg::AsyncConnectionHandler {
     const Callback callback;
 
 public:
-    WorkshopQueue(EventLoop &event_loop,
+    WorkshopQueue(const Logger &parent_logger, EventLoop &event_loop,
                   const char *_node_name,
                   const char *conninfo, const char *schema,
                   Callback _callback);

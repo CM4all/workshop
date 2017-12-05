@@ -8,6 +8,7 @@
 #include "Queue.hxx"
 #include "Workplace.hxx"
 #include "spawn/ExitListener.hxx"
+#include "io/Logger.hxx"
 #include "util/BindMethod.hxx"
 
 struct Config;
@@ -16,6 +17,8 @@ class Instance;
 class MultiLibrary;
 
 class WorkshopPartition final : ExitListener {
+    const Logger logger;
+
     Instance &instance;
     MultiLibrary &library;
 

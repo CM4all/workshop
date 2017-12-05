@@ -10,9 +10,6 @@
 #include "pg/Array.hxx"
 #include "pg/Reflection.hxx"
 
-#include "util/Compiler.h"
-#include <daemon/log.h>
-
 #include <stdexcept>
 
 #include <stdbool.h>
@@ -23,11 +20,12 @@
 #include <string.h>
 #include <time.h>
 
-WorkshopQueue::WorkshopQueue(EventLoop &event_loop,
+WorkshopQueue::WorkshopQueue(const Logger &parent_logger,
+                             EventLoop &event_loop,
                              const char *_node_name,
                              const char *conninfo, const char *schema,
                              Callback _callback)
-    :node_name(_node_name),
+    :logger(parent_logger, "queue"), node_name(_node_name),
      db(event_loop, conninfo, schema, *this),
      check_notify_event(event_loop, BIND_THIS_METHOD(CheckNotify)),
      timer_event(event_loop, BIND_THIS_METHOD(OnTimer)),
@@ -91,7 +89,8 @@ WorkshopQueue::GetNextScheduled(int *span_r)
 }
 
 static bool
-get_job(WorkshopJob &job, const Pg::Result &result, unsigned row)
+get_job(const ChildLogger &logger, WorkshopJob &job,
+        const Pg::Result &result, unsigned row)
 {
     assert(row < result.GetRowCount());
 
@@ -102,7 +101,7 @@ get_job(WorkshopJob &job, const Pg::Result &result, unsigned row)
     try {
         args = Pg::DecodeArray(result.GetValue(row, 2));
     } catch (const std::invalid_argument &e) {
-        daemon_log(1, "pg_decode_array() failed: %s\n", e.what());
+        logger(1, "pg_decode_array() failed: ", std::current_exception());
         return false;
     }
 
@@ -115,17 +114,18 @@ get_job(WorkshopJob &job, const Pg::Result &result, unsigned row)
 }
 
 static int
-get_and_claim_job(WorkshopJob &job, bool has_enabled_column,
+get_and_claim_job(const ChildLogger &logger, WorkshopJob &job,
+                  bool has_enabled_column,
                   const char *node_name,
                   Pg::Connection &db,
                   const Pg::Result &result, unsigned row,
                   const char *timeout) {
-    if (!get_job(job, result, row))
+    if (!get_job(logger, job, result, row))
         return -1;
 
     int ret;
 
-    daemon_log(6, "attempting to claim job %s\n", job.id.c_str());
+    logger(6, "attempting to claim job ", job.id);
 
     ret = pg_claim_job(db, has_enabled_column,
                        job.id.c_str(), node_name, timeout);
@@ -133,11 +133,11 @@ get_and_claim_job(WorkshopJob &job, bool has_enabled_column,
         return -1;
 
     if (ret == 0) {
-        daemon_log(6, "job %s was not claimed\n", job.id.c_str());
+        logger(6, "job ", job.id, " was not claimed");
         return 0;
     }
 
-    daemon_log(6, "job %s claimed\n", job.id.c_str());
+    logger(6, "job ", job.id, " claimed");
     return 1;
 }
 
@@ -179,7 +179,8 @@ WorkshopQueue::RunResult(const Pg::Result &result)
     for (unsigned row = 0, end = result.GetRowCount();
          row != end && !disabled && !interrupt; ++row) {
         WorkshopJob job(*this);
-        int ret = get_and_claim_job(job, HasEnabledColumn(), GetNodeName(),
+        int ret = get_and_claim_job(logger, job,
+                                    HasEnabledColumn(), GetNodeName(),
                                     db, result, row, "5 minutes");
         if (ret > 0)
             callback(std::move(job));
@@ -213,7 +214,7 @@ WorkshopQueue::Run2()
             return;
 
         if (ret > 0) {
-            daemon_log(2, "released %d expired jobs\n", ret);
+            logger(2, "released ", ret, " expired jobs");
             pg_notify(db);
         }
     }
@@ -222,9 +223,10 @@ WorkshopQueue::Run2()
 
     interrupt = false;
 
-    daemon_log(7, "requesting new jobs from database; plans_include=%s plans_exclude=%s plans_lowprio=%s\n",
-               plans_include.c_str(), plans_exclude.c_str(),
-               plans_lowprio.c_str());
+    logger(7, "requesting new jobs from database; "
+           "plans_include=", plans_include,
+           " plans_exclude=", plans_exclude,
+           " plans_lowprio=", plans_lowprio);
 
     constexpr unsigned MAX_JOBS = 16;
     auto result =
@@ -243,8 +245,8 @@ WorkshopQueue::Run2()
         plans_lowprio.compare("{}") != 0) {
         /* now also select plans which are already running */
 
-        daemon_log(7, "requesting new jobs from database II; plans_lowprio=%s\n",
-                   plans_lowprio.c_str());
+        logger(7, "requesting new jobs from database II; plans_lowprio=",
+               plans_lowprio);
 
         result = pg_select_new_jobs(db, HasEnabledColumn(),
                                     plans_lowprio.c_str(),
@@ -262,10 +264,10 @@ WorkshopQueue::Run2()
     /* update timeout */
 
     if (disabled) {
-        daemon_log(7, "queue has been disabled\n");
+        logger(7, "queue has been disabled");
     } else if (interrupt) {
         /* we have been interrupted: run again in 100ms */
-        daemon_log(7, "aborting queue run\n");
+        logger(7, "aborting queue run");
 
         Reschedule();
     } else if (full) {
@@ -278,7 +280,7 @@ WorkshopQueue::Run2()
 
         GetNextScheduled(&ret);
         if (ret >= 0)
-            daemon_log(3, "next scheduled job is in %d seconds\n", ret);
+            logger(3, "next scheduled job is in ", ret, " seconds");
         else
             ret = 600;
 
@@ -323,7 +325,7 @@ WorkshopQueue::SetJobProgress(const WorkshopJob &job, unsigned progress,
 {
     assert(&job.queue == this);
 
-    daemon_log(5, "job %s progress=%u\n", job.id.c_str(), progress);
+    logger(5, "job ", job.id, " progress=", progress);
 
     ScheduleCheckNotify();
 
@@ -335,7 +337,7 @@ WorkshopQueue::RollbackJob(const WorkshopJob &job)
 {
     assert(&job.queue == this);
 
-    daemon_log(6, "rolling back job %s\n", job.id.c_str());
+    logger(6, "rolling back job ", job.id);
 
     pg_rollback_job(db, job.id.c_str());
     pg_notify(db);
@@ -348,7 +350,7 @@ WorkshopQueue::SetJobDone(const WorkshopJob &job, int status, const char *log)
 {
     assert(&job.queue == this);
 
-    daemon_log(6, "job %s done with status %d\n", job.id.c_str(), status);
+    logger(6, "job ", job.id, " done with status ", status);
 
     pg_set_job_done(db, job.id.c_str(), status, log);
 
@@ -360,7 +362,7 @@ WorkshopQueue::OnConnect()
 {
     int ret = pg_release_jobs(db, node_name.c_str());
     if (ret > 0) {
-        daemon_log(2, "released %d stale jobs\n", ret);
+        logger(2, "released ", ret, " stale jobs");
         pg_notify(db);
     }
 
@@ -382,7 +384,7 @@ WorkshopQueue::OnConnect()
 void
 WorkshopQueue::OnDisconnect()
 {
-    daemon_log(4, "disconnected from database\n");
+    logger(4, "disconnected from database");
 
     timer_event.Cancel();
     check_notify_event.Cancel();
@@ -398,5 +400,5 @@ WorkshopQueue::OnNotify(const char *name)
 void
 WorkshopQueue::OnError(const char *prefix, const char *error)
 {
-    daemon_log(1, "%s: %s\n", prefix, error);
+    logger(1, prefix, ": ", error);
 }
