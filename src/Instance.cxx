@@ -9,8 +9,6 @@
 #include "spawn/Glue.hxx"
 #include "curl/Global.hxx"
 
-#include <daemon/log.h>
-
 #include <signal.h>
 
 Instance::Instance(const Config &config)
@@ -96,13 +94,13 @@ Instance::OnExit()
     RemoveIdlePartitions();
 
     if (!partitions.empty())
-        daemon_log(1, "waiting for operators to finish\n");
+        logger(1, "waiting for operators to finish");
 }
 
 void
 Instance::OnReload(int)
 {
-    daemon_log(4, "reloading\n");
+    logger(4, "reloading");
 
     if (library)
         UpdateLibraryAndFilter(true);

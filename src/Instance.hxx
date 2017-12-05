@@ -15,6 +15,7 @@
 #include "spawn/Registry.hxx"
 #include "spawn/Hook.hxx"
 #include "curl/Init.hxx"
+#include "io/Logger.hxx"
 
 #include <forward_list>
 
@@ -24,6 +25,8 @@ class CurlGlobal;
 class MultiLibrary;
 
 class Instance final : SpawnHook {
+    const RootLogger logger;
+
     EventLoop event_loop;
 
     bool should_exit = false;
