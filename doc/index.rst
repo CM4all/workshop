@@ -510,7 +510,7 @@ current execution, and will attempt to apply the new settings after
 finishing.
 
 The `cronresults` table
------------------------
+^^^^^^^^^^^^^^^^^^^^^^^
 
 * :envvar:`id`: The primary key.
 * :envvar:`cronjob_id`: A reference to the `cronjobs` record.
