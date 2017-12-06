@@ -46,6 +46,16 @@ Description: Database migration tool for Workshop
  .
  This package contains a tool which migrates the database schema.
 
+Package: cm4all-workshop-control
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Control client for Workshop
+ cm4all-workshop is a daemon which reads jobs from a database queue
+ (PostgreSQL) and executes them.  Multiple instances distributed over
+ a network can read the queue at the same time.
+ .
+ This package contains the control client.
+
 Package: cm4all-workshop-doc
 Section: non-free/doc
 Architecture: all
