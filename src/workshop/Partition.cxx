@@ -88,12 +88,12 @@ WorkshopPartition::OnJob(WorkshopJob &&job)
 {
     if (workplace.IsFull()) {
         queue.RollbackJob(job);
-        queue.Disable();
+        queue.DisableFull();
         return;
     }
 
     if (!StartJob(std::move(job)) || workplace.IsFull())
-        queue.Disable();
+        queue.DisableFull();
 
     UpdateFilter();
 }
@@ -104,7 +104,7 @@ WorkshopPartition::OnChildProcessExit(int)
     UpdateLibraryAndFilter(false);
 
     if (!workplace.IsFull())
-        queue.Enable();
+        queue.EnableFull();
 
     if (IsIdle())
         idle_callback();

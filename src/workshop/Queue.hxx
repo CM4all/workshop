@@ -32,7 +32,19 @@ class WorkshopQueue final : private Pg::AsyncConnectionHandler {
 
     bool has_enabled_column, has_log_column;
 
-    bool disabled = false, running = false;
+    /**
+     * Was the queue disabled by the administrator?  Also used during
+     * shutdown.
+     */
+    bool disabled_admin = false;
+
+    /**
+     * Is the queue disabled because the node is busy and all slots
+     * are full?
+     */
+    bool disabled_full = false;
+
+    bool running = false;
 
     /** if set to true, the current queue run should be interrupted,
         to be started again */
@@ -87,17 +99,34 @@ public:
     void SetFilter(std::string &&plans_include, std::string &&plans_exclude,
                    std::string &&plans_lowprio);
 
-    /**
-     * Disable the queue, e.g. when the node is busy.
-     */
-    void Disable() {
-        disabled = true;
+    bool IsDisabled() const {
+        return disabled_admin || disabled_full;
     }
 
     /**
-     * Enable the queue after it has been disabled with Disable().
+     * Disable the queue as an administrative decision (e.g. daemon
+     * shutdown).
      */
-    void Enable();
+    void DisableAdmin() {
+        disabled_admin = true;
+    }
+
+    /**
+     * Enable the queue after it has been disabled with DisableAdmin().
+     */
+    void EnableAdmin();
+
+    /**
+     * Disable the queue, e.g. when the node is busy.
+     */
+    void DisableFull() {
+        disabled_full = true;
+    }
+
+    /**
+     * Enable the queue after it has been disabled with DisableFull().
+     */
+    void EnableFull();
 
     int SetJobProgress(const WorkshopJob &job, unsigned progress,
                        const char *timeout);

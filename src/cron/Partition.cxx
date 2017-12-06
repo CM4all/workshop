@@ -37,7 +37,7 @@ CronPartition::~CronPartition()
 void
 CronPartition::BeginShutdown()
 {
-    queue.Disable();
+    queue.DisableAdmin();
     workplace.CancelAll();
 
     if (email_service)
@@ -62,14 +62,14 @@ CronPartition::OnJob(CronJob &&job)
     }
 
     if (workplace.IsFull())
-        queue.Disable();
+        queue.DisableFull();
 }
 
 void
 CronPartition::OnChildProcessExit(int)
 {
     if (!workplace.IsFull())
-        queue.Enable();
+        queue.EnableFull();
 
     if (IsIdle())
         idle_callback();

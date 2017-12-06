@@ -50,7 +50,7 @@ public:
     }
 
     void BeginShutdown() {
-        queue.Disable();
+        queue.DisableAdmin();
     }
 
     void UpdateFilter();

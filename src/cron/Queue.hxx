@@ -37,7 +37,17 @@ class CronQueue final : private Pg::AsyncConnectionHandler {
 
     TimerEvent scheduler_timer, claim_timer;
 
-    bool disabled = false;
+    /**
+     * Was the queue disabled by the administrator?  Also used during
+     * shutdown.
+     */
+    bool disabled_admin = false;
+
+    /**
+     * Is the queue disabled because the node is busy and all slots
+     * are full?
+     */
+    bool disabled_full = false;
 
 public:
     CronQueue(const Logger &parent_logger,
@@ -68,17 +78,34 @@ public:
         return result.GetOnlyStringChecked();
     }
 
-    /**
-     * Disable the queue, e.g. when the node is busy.
-     */
-    void Disable() {
-        disabled = true;
+    bool IsDisabled() const {
+        return disabled_admin || disabled_full;
     }
 
     /**
-     * Enable the queue after it has been disabled with Disable().
+     * Disable the queue as an administrative decision (e.g. daemon
+     * shutdown).
      */
-    void Enable();
+    void DisableAdmin() {
+        disabled_admin = true;
+    }
+
+    /**
+     * Enable the queue after it has been disabled with DisableAdmin().
+     */
+    void EnableAdmin();
+
+    /**
+     * Disable the queue, e.g. when the node is busy.
+     */
+    void DisableFull() {
+        disabled_full = true;
+    }
+
+    /**
+     * Enable the queue after it has been disabled with DisableFull().
+     */
+    void EnableFull();
 
     bool Claim(const CronJob &job);
     void Finish(const CronJob &job);
