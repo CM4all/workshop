@@ -5,7 +5,7 @@ cm4all-workshop (2.0.35) unstable; urgency=low
     - DISABLE_QUEUE, ENABLE_QUEUE control the queue
   * remove libdaemon dependency
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Wed, 06 Dec 2017 11:55:04 -0000
 
 cm4all-workshop (2.0.34) unstable; urgency=low
 
