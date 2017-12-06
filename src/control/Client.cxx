@@ -98,6 +98,24 @@ Nop(const char *server, ConstBuffer<const char *> args)
     SimpleCommand(server, args, WorkshopControlCommand::NOP);
 }
 
+static void
+Verbose(const char *server, ConstBuffer<const char *> args)
+{
+    if (args.empty())
+        throw Usage{"Log level missing"};
+
+    const char *s = args.shift();
+
+    if (!args.empty())
+        throw Usage{"Too many arguments"};
+
+    uint8_t log_level = atoi(s);
+
+    WorkshopControlClient client(server);
+    client.Send(WorkshopControlCommand::VERBOSE,
+                {&log_level, sizeof(log_level)});
+}
+
 int
 main(int argc, char **argv)
 try {
@@ -121,6 +139,9 @@ try {
     if (StringIsEqual(command, "nop")) {
         Nop(server, args);
         return EXIT_SUCCESS;
+    } else if (StringIsEqual(command, "verbose")) {
+        Verbose(server, args);
+        return EXIT_SUCCESS;
     } else
         throw Usage{"Unknown command"};
 } catch (const Usage &u) {
@@ -130,6 +151,7 @@ try {
     fprintf(stderr, "Usage: %s [--server=SERVER[:PORT]] COMMAND ...\n"
             "\n"
             "Commands:\n"
+            "  verbose LEVEL\n"
             "  nop\n",
             argv[0]);
     return EXIT_FAILURE;

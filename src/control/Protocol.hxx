@@ -58,6 +58,13 @@ struct WorkshopControlDatagramHeader {
 
 enum class WorkshopControlCommand : uint16_t {
     NOP = 0,
+
+    /**
+     * Set the logger verbosity.  The payload is one byte: 0 means
+     * quiet, 1 is the default, and bigger values make the daemon more
+     * verbose.
+     */
+    VERBOSE = 1,
 };
 
 struct WorkshopControlHeader {
