@@ -1,5 +1,6 @@
-cm4all-workshop (2.0.34) unstable; urgency=low
+cm4all-workshop (2.0.35) unstable; urgency=low
 
+  * control channel
   * remove libdaemon dependency
 
  --   
