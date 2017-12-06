@@ -58,6 +58,14 @@ public:
 
     void BeginShutdown();
 
+    void DisableQueue() {
+        queue.DisableAdmin();
+    }
+
+    void EnableQueue() {
+        queue.EnableAdmin();
+    }
+
 private:
     void OnJob(CronJob &&job);
 

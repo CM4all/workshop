@@ -65,6 +65,16 @@ enum class WorkshopControlCommand : uint16_t {
      * verbose.
      */
     VERBOSE = 1,
+
+    /**
+     * Disable all queues, i.e. do not accept any new jobs.
+     */
+    DISABLE_QUEUE = 2,
+
+    /**
+     * Re-enable all queues, i.e. resume accepting new jobs.
+     */
+    ENABLE_QUEUE = 3,
 };
 
 struct WorkshopControlHeader {

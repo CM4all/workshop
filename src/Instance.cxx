@@ -155,6 +155,22 @@ Instance::OnControlPacket(WorkshopControlCommand command,
             SetLogLevel(*log_level);
         }
         break;
+
+    case WorkshopControlCommand::DISABLE_QUEUE:
+        logger(2, "Disabling all queues");
+        for (auto &i : partitions)
+            i.DisableQueue();
+        for (auto &i : cron_partitions)
+            i.DisableQueue();
+        break;
+
+    case WorkshopControlCommand::ENABLE_QUEUE:
+        logger(2, "Enabling all queues");
+        for (auto &i : partitions)
+            i.EnableQueue();
+        for (auto &i : cron_partitions)
+            i.EnableQueue();
+        break;
     }
 }
 

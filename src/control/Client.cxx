@@ -116,6 +116,18 @@ Verbose(const char *server, ConstBuffer<const char *> args)
                 {&log_level, sizeof(log_level)});
 }
 
+static void
+DisableQueue(const char *server, ConstBuffer<const char *> args)
+{
+    SimpleCommand(server, args, WorkshopControlCommand::DISABLE_QUEUE);
+}
+
+static void
+EnableQueue(const char *server, ConstBuffer<const char *> args)
+{
+    SimpleCommand(server, args, WorkshopControlCommand::ENABLE_QUEUE);
+}
+
 int
 main(int argc, char **argv)
 try {
@@ -142,6 +154,10 @@ try {
     } else if (StringIsEqual(command, "verbose")) {
         Verbose(server, args);
         return EXIT_SUCCESS;
+    } else if (StringIsEqual(command, "disable-queue")) {
+        DisableQueue(server, args);
+    } else if (StringIsEqual(command, "enable-queue")) {
+        EnableQueue(server, args);
     } else
         throw Usage{"Unknown command"};
 } catch (const Usage &u) {
@@ -152,6 +168,8 @@ try {
             "\n"
             "Commands:\n"
             "  verbose LEVEL\n"
+            "  disable-queue\n"
+            "  enable-queue\n"
             "  nop\n",
             argv[0]);
     return EXIT_FAILURE;

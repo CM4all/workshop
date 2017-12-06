@@ -53,6 +53,14 @@ public:
         queue.DisableAdmin();
     }
 
+    void DisableQueue() {
+        queue.DisableAdmin();
+    }
+
+    void EnableQueue() {
+        queue.EnableAdmin();
+    }
+
     void UpdateFilter();
     void UpdateLibraryAndFilter(bool force);
 
