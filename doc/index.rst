@@ -246,6 +246,11 @@ The following options are available:
   if it is a heavy workload.  It will only run when the server is
   idle, and no other tasks need resources.
 
+* :samp:`private_network`: Run the process in an empty network
+  namespace.  It can only use its own private loopback interface and
+  has no network access to the outside world or even the regular
+  loopback interface.
+
 * :samp:`rlimits L`: Configure resource limits.  The syntax is the
   same as the `beng-proxy` :envvar:`RLIMITS` translation packet.
   Check its documentation for details.

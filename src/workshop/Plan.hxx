@@ -44,6 +44,8 @@ struct Plan {
 
     bool sched_idle = false, ioprio_idle = false;
 
+    bool private_network = false;
+
     bool control_channel = false;
 
     Plan() = default;
