@@ -139,8 +139,11 @@ public:
 
     /**
      * Reschedule the given job after it has been executed already.
+     *
+     * @param delay don't execute this job until the given duration
+     * has passed
      */
-    void AgainJob(const WorkshopJob &job) noexcept;
+    void AgainJob(const WorkshopJob &job, std::chrono::seconds delay) noexcept;
 
     void SetJobDone(const WorkshopJob &job, int status, const char *log);
 

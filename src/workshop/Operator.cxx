@@ -163,8 +163,8 @@ WorkshopOperator::OnChildProcessExit(int status)
     else
         logger(2, "exited with status ", exit_status);
 
-    if (again)
-        job.SetAgain();
+    if (again >= std::chrono::seconds())
+        job.SetAgain(again);
     else
         job.SetDone(exit_status, log.GetBuffer());
 
@@ -239,12 +239,24 @@ WorkshopOperator::OnControl(std::vector<std::string> &&args) noexcept
 
         return true;
     } else if (cmd == "again") {
-        if (args.size() != 1) {
+        if (args.size() > 2) {
             logger(2, "malformed 'again' command on control channel");
             return true;
         }
 
-        again = true;
+        if (args.size() >= 2) {
+            const char *s = args[1].c_str();
+            char *endptr;
+            auto value = strtoull(s, &endptr, 10);
+            if (endptr == s || *endptr != 0 || value > 3600 * 24) {
+                logger(2, "malformed 'again' parameter on control channel");
+                return true;
+            }
+
+            again = std::chrono::seconds(value);
+        } else
+            again = std::chrono::seconds();
+
         return true;
     } else {
         logger(2, "unknown command on control channel: '", cmd, "'");

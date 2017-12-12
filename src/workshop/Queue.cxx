@@ -366,14 +366,18 @@ WorkshopQueue::RollbackJob(const WorkshopJob &job) noexcept
 }
 
 void
-WorkshopQueue::AgainJob(const WorkshopJob &job) noexcept
+WorkshopQueue::AgainJob(const WorkshopJob &job,
+                        std::chrono::seconds delay) noexcept
 {
     assert(&job.queue == this);
 
     logger(6, "rescheduling job ", job.id);
 
     try {
-        pg_rollback_job(db, job.id.c_str());
+        if (delay > std::chrono::seconds())
+            pg_again_job(db, job.id.c_str(), delay);
+        else
+            pg_rollback_job(db, job.id.c_str());
     } catch (...) {
         logger(1, "Failed to reschedule job '", job.id, "': ",
                std::current_exception());

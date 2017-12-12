@@ -432,8 +432,10 @@ The following commands are available:
   protocol for submitting job progress is disabled if there is a
   control channel.)
 
-* :samp:`again`: execute the job again (which may occur on a different
-  node).
+* :samp:`again [SECONDS]`: execute the job again (which may occur on a
+  different node).  The optional parameter specifies how many seconds
+  shall pass at least; if present, then :envvar:`scheduled_time` will
+  be updated.
 
 
 Cron Schedule

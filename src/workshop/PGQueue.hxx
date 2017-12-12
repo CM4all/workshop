@@ -7,6 +7,8 @@
 #ifndef __QUEUE_PG_H
 #define __QUEUE_PG_H
 
+#include <chrono>
+
 namespace Pg {
 class Connection;
 class Result;
@@ -47,6 +49,15 @@ int pg_set_job_progress(Pg::Connection &db, const char *job_id, unsigned progres
  */
 void
 pg_rollback_job(Pg::Connection &db, const char *id);
+
+/**
+ * Like pg_rollback_job(), but also update the "scheduled_time"
+ * column.
+ *
+ * Throws on error.
+ */
+void
+pg_again_job(Pg::Connection &db, const char *id, std::chrono::seconds delay);
 
 int
 pg_set_job_done(Pg::Connection &db, const char *id, int status,

@@ -5,6 +5,7 @@
 #ifndef WORKSHOP_JOB_HXX
 #define WORKSHOP_JOB_HXX
 
+#include <chrono>
 #include <string>
 #include <list>
 
@@ -41,8 +42,11 @@ struct WorkshopJob {
 
     /**
      * Mark the job as "execute again".
+     *
+     * @param delay don't execute this job until the given duration
+     * has passed
      */
-    void SetAgain();
+    void SetAgain(std::chrono::seconds delay);
 };
 
 #endif

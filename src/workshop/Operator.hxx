@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 #include <list>
+#include <chrono>
 
 struct Plan;
 class WorkshopWorkplace;
@@ -42,8 +43,11 @@ class WorkshopOperator final
 
     /**
      * Shall the job be executed again?
+     *
+     * The value is negative if the job shall NOT be executed again,
+     * and positive to delay the repeated execution.
      */
-    bool again = false;
+    std::chrono::seconds again = std::chrono::seconds(-1);
 
     LazyDomainLogger logger;
 
