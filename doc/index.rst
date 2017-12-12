@@ -427,6 +427,10 @@ command, and may be followed by space-separated parameters.
 
 The following commands are available:
 
+* :samp:`version`: Query the Workshop version number.  Workshop
+  replies with a datagram containing :samp:`version 2.0.36` (for
+  example).
+
 * :samp:`progress VALUE`: update the job progress, which Workshop will
   write to the `progress` column.  (Note that the old `stdout`
   protocol for submitting job progress is disabled if there is a

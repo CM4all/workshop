@@ -258,6 +258,10 @@ WorkshopOperator::OnControl(std::vector<std::string> &&args) noexcept
             again = std::chrono::seconds();
 
         return true;
+    } else if (cmd == "version") {
+        StringView payload("version " VERSION);
+        control_channel->GetSocket().Write(payload.data, payload.size);
+        return true;
     } else {
         logger(2, "unknown command on control channel: '", cmd, "'");
         return true;
