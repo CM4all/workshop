@@ -226,6 +226,9 @@ The following options are available:
 * :samp:`user USERNAME`: The name of the UNIX user which is
   impersonated by the process.  `root` is not allowed.
 
+* :samp:`umask OCTAL`: Sets the process umask.  The value is an octal
+  number starting with `0`.
+
 * :samp:`nice PRIO`: The CPU scheduler priority, ranging from
   :samp:`-20` (high priority) to :samp:`+19` (low priority).  Negative
   values should be avoided.  The default is :samp:`+10`.

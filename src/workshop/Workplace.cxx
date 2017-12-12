@@ -107,6 +107,7 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
     if (!plan->chroot.empty())
         p.chroot = plan->chroot.c_str();
 
+    p.umask = plan->umask;
     p.rlimits = plan->rlimits;
     p.priority = plan->priority;
     p.sched_idle = plan->sched_idle;

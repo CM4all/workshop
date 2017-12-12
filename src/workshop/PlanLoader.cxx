@@ -107,6 +107,20 @@ PlanLoader::ParseLine(FileLineParser &line)
         plan.gid = pw->pw_gid;
 
         plan.groups = get_user_groups(value, plan.gid);
+    } else if (strcmp(key, "umask") == 0) {
+        const char *s = line.ExpectValueAndEnd();
+        if (*s != '0')
+            throw std::runtime_error("umask must be an octal value starting with '0'");
+
+        char *endptr;
+        auto value = strtoul(s, &endptr, 8);
+        if (endptr == s || *endptr != 0)
+            throw std::runtime_error("Failed to parse umask");
+
+        if (value & ~0777)
+            throw std::runtime_error("umask is too large");
+
+        plan.umask = value;
     } else if (strcmp(key, "nice") == 0) {
         plan.priority = atoi(line.ExpectValueAndEnd());
     } else if (strcmp(key, "sched_idle") == 0) {

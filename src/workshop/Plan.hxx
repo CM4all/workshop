@@ -35,6 +35,8 @@ struct Plan {
     /** supplementary group ids */
     std::vector<gid_t> groups;
 
+    int umask = -1;
+
     ResourceLimits rlimits;
 
     int priority = 10;
