@@ -20,18 +20,6 @@ Execute(Pg::Connection &c, const char *statement)
 }
 
 static void
-CheckCreateColumn(Pg::Connection &c, const char *schema,
-                  const char *table_name, const char *column_name,
-                  const char *alter_statement)
-{
-    if (Pg::ColumnExists(c, schema, table_name, column_name))
-        return;
-
-    printf("Creating column %s.%s\n", table_name, column_name);
-    Execute(c, alter_statement);
-}
-
-static void
 CheckCreateIndex(Pg::Connection &c, const char *schema,
                  const char *table_name, const char *index_name,
                  const char *create_statement)
@@ -59,12 +47,10 @@ static void
 MigrateWorkshopDatabase(Pg::Connection &c, const char *schema)
 {
     /* since Workshop 2.0.13 */
-    CheckCreateColumn(c, schema, "jobs", "log",
-                      "ALTER TABLE jobs ADD COLUMN log text NULL");
+    Execute(c, "ALTER TABLE jobs ADD COLUMN IF NOT EXISTS log text NULL");
 
     /* since Workshop 2.0.23 */
-    CheckCreateColumn(c, schema, "jobs", "enabled",
-                      "ALTER TABLE jobs ADD COLUMN enabled boolean NOT NULL DEFAULT TRUE");
+    Execute(c, "ALTER TABLE jobs ADD COLUMN IF NOT EXISTS enabled boolean NOT NULL DEFAULT TRUE");
 
     Execute(c, "DROP INDEX IF EXISTS jobs_sorted");
     CheckCreateIndex(c, schema, "jobs", "jobs_sorted2",
