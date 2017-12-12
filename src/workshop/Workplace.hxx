@@ -85,7 +85,7 @@ public:
      * Throws std::runtime_error on error.
      */
     void Start(EventLoop &event_loop, const WorkshopJob &job,
-               std::shared_ptr<Plan> &&plan,
+               std::shared_ptr<Plan> plan,
                size_t max_log);
 
     void OnExit(WorkshopOperator *o);

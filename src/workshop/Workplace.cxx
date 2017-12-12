@@ -61,7 +61,7 @@ WorkshopWorkplace::GetFullPlanNames() const
 
 void
 WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
-                         std::shared_ptr<Plan> &&plan,
+                         std::shared_ptr<Plan> plan,
                          size_t max_log)
 {
     assert(!plan->args.empty());
