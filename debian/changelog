@@ -5,7 +5,7 @@ cm4all-workshop (2.0.36) unstable; urgency=low
   * workshop/plan: no boolean value after "control_channel"
   * workshop/plan: add options "umask", "private_network"
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Tue, 12 Dec 2017 22:18:57 -0000
 
 cm4all-workshop (2.0.35) unstable; urgency=low
 
