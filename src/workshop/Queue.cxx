@@ -347,13 +347,19 @@ WorkshopQueue::SetJobProgress(const WorkshopJob &job, unsigned progress,
 }
 
 void
-WorkshopQueue::RollbackJob(const WorkshopJob &job)
+WorkshopQueue::RollbackJob(const WorkshopJob &job) noexcept
 {
     assert(&job.queue == this);
 
     logger(6, "rolling back job ", job.id);
 
-    pg_rollback_job(db, job.id.c_str());
+    try {
+        pg_rollback_job(db, job.id.c_str());
+    } catch (...) {
+        logger(1, "Failed to roll back job '", job.id, "': ",
+               std::current_exception());
+    }
+
     pg_notify(db);
 
     ScheduleCheckNotify();

@@ -135,7 +135,7 @@ public:
      * Disassociate from the job, act as if this node had never
      * claimed it.  It will notify the other workshop nodes.
      */
-    void RollbackJob(const WorkshopJob &job);
+    void RollbackJob(const WorkshopJob &job) noexcept;
 
     void SetJobDone(const WorkshopJob &job, int status, const char *log);
 

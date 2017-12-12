@@ -42,7 +42,11 @@ pg_claim_job(Pg::Connection &db, bool has_enabled_column,
 int pg_set_job_progress(Pg::Connection &db, const char *job_id, unsigned progress,
                         const char *timeout);
 
-int pg_rollback_job(Pg::Connection &db, const char *id);
+/**
+ * Throws on error.
+ */
+void
+pg_rollback_job(Pg::Connection &db, const char *id);
 
 int
 pg_set_job_done(Pg::Connection &db, const char *id, int status,

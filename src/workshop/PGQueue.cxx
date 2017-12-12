@@ -6,6 +6,7 @@
 
 #include "PGQueue.hxx"
 #include "pg/Connection.hxx"
+#include "pg/CheckError.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -188,22 +189,17 @@ pg_set_job_progress(Pg::Connection &db, const char *job_id,
     return result.GetAffectedRows();
 }
 
-int
+void
 pg_rollback_job(Pg::Connection &db, const char *id)
 {
-    const auto result =
+    const auto result = Pg::CheckError(
         db.ExecuteParams("UPDATE jobs "
                          "SET node_name=NULL, node_timeout=NULL, progress=0 "
                          "WHERE id=$1 AND node_name IS NOT NULL "
                          "AND time_done IS NULL",
-                         id);
-    if (!result.IsCommandSuccessful()) {
-        fprintf(stderr, "UPDATE/done on jobs failed: %s\n",
-                result.GetErrorMessage());
-        return -1;
-    }
-
-    return result.GetAffectedRows();
+                         id));
+    if (result.GetAffectedRows() < 1)
+        throw std::runtime_error("No matching job");
 }
 
 int
