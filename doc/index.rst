@@ -336,7 +336,7 @@ The environment is empty.  There are only two file handles: 1
 The process writes its progress to `stdout`, i.e. an integer number
 between 0 and 100 per line.  At the end of a line, Workshop writes
 this number into the job's database row.  (If the plan enables the
-control channel, then this feature is disabled, and the control
+`Control Channel`_, then this feature is disabled, and the control
 channel shall be used instead.)
 
 The process may log errors and other messages to `stderr`.  They will
