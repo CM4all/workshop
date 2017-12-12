@@ -341,7 +341,8 @@ channel shall be used instead.)
 
 The process may log errors and other messages to `stderr`.  They will
 be forwarded to the configured syslog server, or will be logged to
-Workshop's journal.
+Workshop's journal.  Additionally, the log will be copied to the job's
+`log` column.
 
 Upon successful completion, the process exits with status 0.
 
