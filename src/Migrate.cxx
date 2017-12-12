@@ -20,18 +20,6 @@ Execute(Pg::Connection &c, const char *statement)
 }
 
 static void
-CheckCreateIndex(Pg::Connection &c, const char *schema,
-                 const char *table_name, const char *index_name,
-                 const char *create_statement)
-{
-    if (Pg::IndexExists(c, schema, table_name, index_name))
-        return;
-
-    printf("Creating index %s.%s\n", table_name, index_name);
-    Execute(c, create_statement);
-}
-
-static void
 CheckCreateRule(Pg::Connection &c, const char *schema,
                 const char *table_name, const char *rule_name,
                 const char *create_statement)
@@ -53,14 +41,12 @@ MigrateWorkshopDatabase(Pg::Connection &c, const char *schema)
     Execute(c, "ALTER TABLE jobs ADD COLUMN IF NOT EXISTS enabled boolean NOT NULL DEFAULT TRUE");
 
     Execute(c, "DROP INDEX IF EXISTS jobs_sorted");
-    CheckCreateIndex(c, schema, "jobs", "jobs_sorted2",
-                     "CREATE INDEX jobs_sorted2 ON jobs(priority, time_created)"
-                     " WHERE enabled AND node_name IS NULL AND time_done IS NULL AND exit_status IS NULL");
+    Execute(c, "CREATE INDEX IF NOT EXISTS jobs_sorted2 ON jobs(priority, time_created)"
+            " WHERE enabled AND node_name IS NULL AND time_done IS NULL AND exit_status IS NULL");
 
     Execute(c, "DROP INDEX IF EXISTS jobs_scheduled");
-    CheckCreateIndex(c, schema, "jobs", "jobs_scheduled2",
-                     "CREATE INDEX jobs_scheduled2 ON jobs(scheduled_time)"
-                     " WHERE enabled AND node_name IS NULL AND time_done IS NULL AND exit_status IS NULL AND scheduled_time IS NOT NULL;");
+    Execute(c, "CREATE INDEX IF NOT EXISTS jobs_scheduled2 ON jobs(scheduled_time)"
+            " WHERE enabled AND node_name IS NULL AND time_done IS NULL AND exit_status IS NULL AND scheduled_time IS NOT NULL;");
 
     CheckCreateRule(c, schema, "jobs", "job_enabled",
                     "CREATE OR REPLACE RULE job_enabled AS ON UPDATE TO jobs"
