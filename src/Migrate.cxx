@@ -26,18 +26,6 @@ CheckCreateColumn(Pg::Connection &c, const char *schema,
 }
 
 static void
-CheckDropIndex(Pg::Connection &c, const char *schema,
-               const char *table_name, const char *index_name,
-               const char *drop_statement)
-{
-    if (!Pg::IndexExists(c, schema, table_name, index_name))
-        return;
-
-    printf("Dropping index %s.%s\n", table_name, index_name);
-    Pg::CheckError(c.Execute(drop_statement));
-}
-
-static void
 CheckCreateIndex(Pg::Connection &c, const char *schema,
                  const char *table_name, const char *index_name,
                  const char *create_statement)
@@ -72,13 +60,12 @@ MigrateWorkshopDatabase(Pg::Connection &c, const char *schema)
     CheckCreateColumn(c, schema, "jobs", "enabled",
                       "ALTER TABLE jobs ADD COLUMN enabled boolean NOT NULL DEFAULT TRUE");
 
-    CheckDropIndex(c, schema, "jobs", "jobs_sorted", "DROP INDEX jobs_sorted");
+    Pg::CheckError(c.Execute("DROP INDEX IF EXISTS jobs_sorted"));
     CheckCreateIndex(c, schema, "jobs", "jobs_sorted2",
                      "CREATE INDEX jobs_sorted2 ON jobs(priority, time_created)"
                      " WHERE enabled AND node_name IS NULL AND time_done IS NULL AND exit_status IS NULL");
 
-    CheckDropIndex(c, schema, "jobs", "jobs_scheduled",
-                   "DROP INDEX jobs_scheduled");
+    Pg::CheckError(c.Execute("DROP INDEX IF EXISTS jobs_scheduled"));
     CheckCreateIndex(c, schema, "jobs", "jobs_scheduled2",
                      "CREATE INDEX jobs_scheduled2 ON jobs(scheduled_time)"
                      " WHERE enabled AND node_name IS NULL AND time_done IS NULL AND exit_status IS NULL AND scheduled_time IS NOT NULL;");
