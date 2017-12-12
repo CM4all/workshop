@@ -215,7 +215,7 @@ The following options are available:
 * :samp:`exec PROGRAM ARG1 ...`: Command line.  The program path must
   be absolute, because Workshop will not consider the :envvar:`PATH`.
 
-* :samp:`control_channel "yes"`: see `Control Channel`_.
+* :samp:`control_channel`: see `Control Channel`_.
 
 * :samp:`timeout INTERVAL`: A timeout for this plan.  If the process
   does not finish or update its state within this time span, it is

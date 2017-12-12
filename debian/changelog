@@ -2,6 +2,7 @@ cm4all-workshop (2.0.36) unstable; urgency=low
 
   * workshop: command "again" can be delayed
   * workshop: command "version" queries Workshop version number
+  * workshop/plan: no boolean value after "control_channel"
 
  --   
 

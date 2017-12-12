@@ -67,7 +67,9 @@ PlanLoader::ParseLine(FileLineParser &line)
             value = line.NextRelaxedValue();
         } while (value != nullptr);
     } else if (strcmp(key, "control_channel") == 0) {
-        plan.control_channel = line.NextBool();
+        /* previously, the "yes"/"no" parameter was mandatory, but
+           that's deprecated since 2.0.36 */
+        plan.control_channel = line.IsEnd() || line.NextBool();
         line.ExpectEnd();
     } else if (strcmp(key, "timeout") == 0) {
         plan.timeout = line.ExpectValueAndEnd();
