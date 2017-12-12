@@ -137,6 +137,11 @@ public:
      */
     void RollbackJob(const WorkshopJob &job) noexcept;
 
+    /**
+     * Reschedule the given job after it has been executed already.
+     */
+    void AgainJob(const WorkshopJob &job) noexcept;
+
     void SetJobDone(const WorkshopJob &job, int status, const char *log);
 
 private:

@@ -366,6 +366,25 @@ WorkshopQueue::RollbackJob(const WorkshopJob &job) noexcept
 }
 
 void
+WorkshopQueue::AgainJob(const WorkshopJob &job) noexcept
+{
+    assert(&job.queue == this);
+
+    logger(6, "rescheduling job ", job.id);
+
+    try {
+        pg_rollback_job(db, job.id.c_str());
+    } catch (...) {
+        logger(1, "Failed to reschedule job '", job.id, "': ",
+               std::current_exception());
+    }
+
+    pg_notify(db);
+
+    ScheduleCheckNotify();
+}
+
+void
 WorkshopQueue::SetJobDone(const WorkshopJob &job, int status, const char *log)
 {
     assert(&job.queue == this);
