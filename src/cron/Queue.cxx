@@ -7,6 +7,7 @@
 #include "Queue.hxx"
 #include "Job.hxx"
 #include "CalculateNextRun.hxx"
+#include "pg/CheckError.hxx"
 #include "event/Duration.hxx"
 
 #include <chrono>
@@ -72,16 +73,11 @@ CronQueue::EnableFull()
 void
 CronQueue::ReleaseStale()
 {
-    const auto result =
+    const auto result = CheckError(
         db.ExecuteParams("UPDATE cronjobs "
                          "SET node_name=NULL, node_timeout=NULL, next_run=NULL "
                          "WHERE node_name=$1",
-                         node_name.c_str());
-    if (!result.IsCommandSuccessful()) {
-        fprintf(stderr, "UPDATE/stale on cronjobs failed: %s\n",
-                result.GetErrorMessage());
-        return;
-    }
+                         node_name.c_str()));
 
     unsigned n = result.GetAffectedRows();
     if (n > 0)
@@ -289,22 +285,13 @@ CronQueue::CheckPending()
 void
 CronQueue::OnConnect()
 {
-    auto result = db.Execute("LISTEN cronjobs_modified");
-    if (!result.IsCommandSuccessful()) {
-        logger(1, "LISTEN failed: ", result.GetErrorMessage());
-        return;
-    }
-
-    result = db.Execute("LISTEN cronjobs_scheduled");
-    if (!result.IsCommandSuccessful()) {
-        logger(1, "LISTEN failed: ", result.GetErrorMessage());
-        return;
-    }
+    db.ExecuteOrThrow("LISTEN cronjobs_modified");
+    db.ExecuteOrThrow("LISTEN cronjobs_scheduled");
 
     /* internally, all time stamps should be UTC, and PostgreSQL
        should not mangle those time stamps to the time zone that our
        process happens to be configured for */
-    result = db.Execute("SET timezone='UTC'");
+    auto result = db.Execute("SET timezone='UTC'");
     if (!result.IsCommandSuccessful())
         logger(1, "SET timezone failed: ", result.GetErrorMessage());
 
