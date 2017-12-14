@@ -441,7 +441,7 @@ WorkshopQueue::OnNotify(const char *name)
 }
 
 void
-WorkshopQueue::OnError(std::exception_ptr e)
+WorkshopQueue::OnError(std::exception_ptr e) noexcept
 {
     logger(1, e);
 }
