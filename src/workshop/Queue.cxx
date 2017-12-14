@@ -425,7 +425,7 @@ WorkshopQueue::OnConnect()
 }
 
 void
-WorkshopQueue::OnDisconnect()
+WorkshopQueue::OnDisconnect() noexcept
 {
     logger(4, "disconnected from database");
 

@@ -316,7 +316,7 @@ CronQueue::OnConnect()
 }
 
 void
-CronQueue::OnDisconnect()
+CronQueue::OnDisconnect() noexcept
 {
     logger(4, "disconnected from database");
 
