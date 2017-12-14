@@ -174,14 +174,6 @@ as user :samp:`postgres` (the superuser)::
 
   su postgres -c 'cm4all-workshop-migrate dbname=workshop'
 
-Note that it is usually possible to run a new Workshop version with an
-old, unmigrated database.  Workshop then disables the new features.
-However, running an old Workshop version with a new database schema
-can be dangerous, because the old version may ignore important
-directives it does not know.  For the best compatibility and
-stability, all Workshop nodes should run the same version and the
-database should be upgraded to the latest schema.
-
 
 Concept
 -------

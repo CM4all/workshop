@@ -62,13 +62,13 @@ pg_expire_jobs(Pg::Connection &db, const char *except_node_name)
 }
 
 int
-pg_next_scheduled_job(Pg::Connection &db, bool has_enabled_column,
+pg_next_scheduled_job(Pg::Connection &db,
                       const char *plans_include,
                       long *span_r)
 {
     assert(plans_include != nullptr && *plans_include == '{');
 
-    char sql[1024] = "SELECT EXTRACT(EPOCH FROM (MIN(scheduled_time) - now())) "
+    const char *sql = "SELECT EXTRACT(EPOCH FROM (MIN(scheduled_time) - now())) "
         "FROM jobs WHERE node_name IS NULL AND time_done IS NULL AND exit_status IS NULL "
         "AND scheduled_time IS NOT NULL "
 
@@ -78,10 +78,8 @@ pg_next_scheduled_job(Pg::Connection &db, bool has_enabled_column,
            PostgreSQL query */
         "AND scheduled_time < now() + '1 year'::interval "
 
-        "AND plan_name = ANY ($1::TEXT[])";
-
-    if (has_enabled_column)
-        strcat(sql, " AND enabled");
+        "AND plan_name = ANY ($1::TEXT[]) "
+        "AND enabled";
 
     const auto result = db.ExecuteParams(sql, plans_include);
     if (!result.IsQuerySuccessful()) {
@@ -102,7 +100,7 @@ pg_next_scheduled_job(Pg::Connection &db, bool has_enabled_column,
 }
 
 Pg::Result
-pg_select_new_jobs(Pg::Connection &db, bool has_enabled_column,
+pg_select_new_jobs(Pg::Connection &db,
                    const char *plans_include, const char *plans_exclude,
                    const char *plans_lowprio,
                    unsigned limit)
@@ -111,19 +109,16 @@ pg_select_new_jobs(Pg::Connection &db, bool has_enabled_column,
     assert(plans_exclude != nullptr && *plans_exclude == '{');
     assert(plans_lowprio != nullptr && *plans_lowprio == '{');
 
-    char sql[1024] = "SELECT id,plan_name,args,syslog_server "
+    const char *sql = "SELECT id,plan_name,args,syslog_server "
         "FROM jobs "
         "WHERE node_name IS NULL "
         "AND time_done IS NULL AND exit_status IS NULL "
         "AND (scheduled_time IS NULL OR now() >= scheduled_time) "
         "AND plan_name = ANY ($1::TEXT[]) "
-        "AND plan_name <> ALL ($2::TEXT[] || $3::TEXT[]) ";
-
-    if (has_enabled_column)
-        strcat(sql, "AND enabled ");
-
-    strcat(sql, "ORDER BY priority, time_created "
-           "LIMIT $4");
+        "AND plan_name <> ALL ($2::TEXT[] || $3::TEXT[]) "
+        "AND enabled "
+        "ORDER BY priority, time_created "
+        "LIMIT $4";
 
     auto result =
         db.ExecuteParams(sql,
@@ -136,16 +131,14 @@ pg_select_new_jobs(Pg::Connection &db, bool has_enabled_column,
 }
 
 int
-pg_claim_job(Pg::Connection &db, bool has_enabled_column,
+pg_claim_job(Pg::Connection &db,
              const char *job_id, const char *node_name,
              const char *timeout)
 {
-    char sql[1024] = "UPDATE jobs "
+    const char *sql = "UPDATE jobs "
         "SET node_name=$1, node_timeout=now()+$3::INTERVAL "
-        "WHERE id=$2 AND node_name IS NULL";
-
-    if (has_enabled_column)
-        strcat(sql, " AND enabled");
+        "WHERE id=$2 AND node_name IS NULL"
+        " AND enabled";
 
     const auto result =
         db.ExecuteParams(sql, node_name, job_id, timeout);

@@ -72,7 +72,7 @@ WorkshopPartition::StartJob(WorkshopJob &&job)
 
     try {
         workplace.Start(instance.GetEventLoop(), job, std::move(plan),
-                        queue.HasLogColumn() ? max_log : 0);
+                        max_log);
     } catch (...) {
         logger(1, "failed to start job '", job.id,
                "' plan '", job.plan_name, "': ", std::current_exception());

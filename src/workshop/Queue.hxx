@@ -30,8 +30,6 @@ class WorkshopQueue final : private Pg::AsyncConnectionHandler {
 
     Pg::AsyncConnection db;
 
-    bool has_enabled_column, has_log_column;
-
     /**
      * Was the queue disabled by the administrator?  Also used during
      * shutdown.
@@ -77,14 +75,6 @@ public:
     gcc_pure
     const char *GetNodeName() const {
         return node_name.c_str();
-    }
-
-    bool HasEnabledColumn() const {
-        return has_enabled_column;
-    }
-
-    bool HasLogColumn() const {
-        return has_log_column;
     }
 
     void Connect() {

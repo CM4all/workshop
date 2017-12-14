@@ -9,6 +9,7 @@
 #include "Job.hxx"
 #include "pg/Array.hxx"
 #include "pg/Reflection.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <stdexcept>
 
@@ -67,7 +68,7 @@ WorkshopQueue::GetNextScheduled(int *span_r)
         return 0;
     }
 
-    ret = pg_next_scheduled_job(db, HasEnabledColumn(),
+    ret = pg_next_scheduled_job(db,
                                 plans_include.c_str(),
                                 &span);
     if (ret > 0) {
@@ -115,7 +116,6 @@ get_job(const ChildLogger &logger, WorkshopJob &job,
 
 static int
 get_and_claim_job(const ChildLogger &logger, WorkshopJob &job,
-                  bool has_enabled_column,
                   const char *node_name,
                   Pg::Connection &db,
                   const Pg::Result &result, unsigned row,
@@ -127,8 +127,7 @@ get_and_claim_job(const ChildLogger &logger, WorkshopJob &job,
 
     logger(6, "attempting to claim job ", job.id);
 
-    ret = pg_claim_job(db, has_enabled_column,
-                       job.id.c_str(), node_name, timeout);
+    ret = pg_claim_job(db, job.id.c_str(), node_name, timeout);
     if (ret < 0)
         return -1;
 
@@ -180,7 +179,7 @@ WorkshopQueue::RunResult(const Pg::Result &result)
          row != end && !IsDisabled() && !interrupt; ++row) {
         WorkshopJob job(*this);
         int ret = get_and_claim_job(logger, job,
-                                    HasEnabledColumn(), GetNodeName(),
+                                    GetNodeName(),
                                     db, result, row, "5 minutes");
         if (ret > 0)
             callback(std::move(job));
@@ -230,7 +229,7 @@ WorkshopQueue::Run2()
 
     constexpr unsigned MAX_JOBS = 16;
     auto result =
-        pg_select_new_jobs(db, HasEnabledColumn(),
+        pg_select_new_jobs(db,
                            plans_include.c_str(), plans_exclude.c_str(),
                            plans_lowprio.c_str(),
                            MAX_JOBS);
@@ -248,7 +247,7 @@ WorkshopQueue::Run2()
         logger(7, "requesting new jobs from database II; plans_lowprio=",
                plans_lowprio);
 
-        result = pg_select_new_jobs(db, HasEnabledColumn(),
+        result = pg_select_new_jobs(db,
                                     plans_lowprio.c_str(),
                                     plans_exclude.c_str(),
                                     "{}",
@@ -403,6 +402,20 @@ WorkshopQueue::SetJobDone(const WorkshopJob &job, int status, const char *log)
 void
 WorkshopQueue::OnConnect()
 {
+    static constexpr const char *const required_jobs_columns[] = {
+        "enabled",
+        "log",
+    };
+
+    const char *schema = db.GetSchemaName().empty()
+        ? "public"
+        : db.GetSchemaName().c_str();
+
+    for (const char *name : required_jobs_columns)
+        if (!Pg::ColumnExists(db, schema, "jobs", name))
+            throw FormatRuntimeError("No column 'jobs.%s'; please migrate the database",
+                                     name);
+
     db.ExecuteOrThrow("LISTEN new_job");
 
     int ret = pg_release_jobs(db, node_name.c_str());
@@ -410,13 +423,6 @@ WorkshopQueue::OnConnect()
         logger(2, "released ", ret, " stale jobs");
         pg_notify(db);
     }
-
-    const char *schema = db.GetSchemaName().empty()
-        ? "public"
-        : db.GetSchemaName().c_str();
-
-    has_enabled_column = Pg::ColumnExists(db, schema, "jobs", "enabled");
-    has_log_column = Pg::ColumnExists(db, schema, "jobs", "log");
 
     Reschedule();
 }
