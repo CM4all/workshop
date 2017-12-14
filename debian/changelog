@@ -5,7 +5,7 @@ cm4all-workshop (2.0.37) unstable; urgency=low
   * workshop: add "env" column for environment variables
   * workshop: command "setenv" adds environment variables
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Thu, 14 Dec 2017 15:59:47 -0000
 
 cm4all-workshop (2.0.36) unstable; urgency=low
 
