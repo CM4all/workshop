@@ -14,6 +14,7 @@
 #include "util/Compiler.h"
 
 #include <string>
+#include <functional>
 
 struct CronJob;
 class EventLoop;
