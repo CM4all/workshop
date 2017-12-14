@@ -90,7 +90,7 @@ WorkshopQueue::GetNextScheduled(int *span_r)
 }
 
 static bool
-get_job(const ChildLogger &logger, WorkshopJob &job,
+get_job(WorkshopJob &job,
         const Pg::Result &result, unsigned row)
 {
     assert(row < result.GetRowCount());
@@ -98,15 +98,7 @@ get_job(const ChildLogger &logger, WorkshopJob &job,
     job.id = result.GetValue(row, 0);
     job.plan_name = result.GetValue(row, 1);
 
-    std::list<std::string> args;
-    try {
-        args = Pg::DecodeArray(result.GetValue(row, 2));
-    } catch (const std::invalid_argument &e) {
-        logger(1, "pg_decode_array() failed: ", std::current_exception());
-        return false;
-    }
-
-    job.args.splice(job.args.end(), args, args.begin(), args.end());
+    job.args = Pg::DecodeArray(result.GetValue(row, 2));
 
     if (!result.IsValueNull(row, 3))
         job.syslog_server = result.GetValue(row, 3);
@@ -120,8 +112,14 @@ get_and_claim_job(const ChildLogger &logger, WorkshopJob &job,
                   Pg::Connection &db,
                   const Pg::Result &result, unsigned row,
                   const char *timeout) {
-    if (!get_job(logger, job, result, row))
+    try {
+        if (!get_job(job, result, row))
+            return -1;
+    } catch (...) {
+        logger(1, "Failed to load job from database record",
+               std::current_exception());
         return -1;
+    }
 
     int ret;
 
