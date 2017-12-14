@@ -13,19 +13,6 @@
 #include <stdlib.h>
 
 bool
-pg_listen(Pg::Connection &db)
-{
-    const auto result = db.Execute("LISTEN new_job");
-    if (!result.IsCommandSuccessful()) {
-        fprintf(stderr, "LISTEN new_job failed: %s\n",
-                result.GetErrorMessage());
-        return false;
-    }
-
-    return true;
-}
-
-bool
 pg_notify(Pg::Connection &db)
 {
     const auto result = db.Execute("NOTIFY new_job");

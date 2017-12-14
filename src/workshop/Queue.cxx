@@ -403,6 +403,8 @@ WorkshopQueue::SetJobDone(const WorkshopJob &job, int status, const char *log)
 void
 WorkshopQueue::OnConnect()
 {
+    db.ExecuteOrThrow("LISTEN new_job");
+
     int ret = pg_release_jobs(db, node_name.c_str());
     if (ret > 0) {
         logger(2, "released ", ret, " stale jobs");
@@ -415,11 +417,6 @@ WorkshopQueue::OnConnect()
 
     has_enabled_column = Pg::ColumnExists(db, schema, "jobs", "enabled");
     has_log_column = Pg::ColumnExists(db, schema, "jobs", "log");
-
-    /* listen on notifications */
-
-    if (!pg_listen(db))
-        throw std::runtime_error("LISTEN failed");
 
     Reschedule();
 }

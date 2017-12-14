@@ -15,9 +15,6 @@ class Result;
 }
 
 bool
-pg_listen(Pg::Connection &db);
-
-bool
 pg_notify(Pg::Connection &db);
 
 int pg_release_jobs(Pg::Connection &db, const char *node_name);
