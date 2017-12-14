@@ -27,6 +27,8 @@ CREATE TABLE jobs (
         plan_name varchar(64) NOT NULL,
         -- command line arguments appended to the plan executable
         args varchar(4096)[] NULL,
+        -- environment variables in the form NAME=VALUE
+        env varchar(4096)[] NULL,
 
         -- syslog server which receives stderr output
         syslog_server varchar(256) NULL,

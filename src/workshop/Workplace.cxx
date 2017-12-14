@@ -156,6 +156,13 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
         p.args.push_back(i.c_str());
     }
 
+    for (const auto &i : job.env) {
+        if (p.env.size() >= 64)
+            throw std::runtime_error("Too many environment variables");
+
+        p.env.push_back(i.c_str());
+    }
+
     /* fork */
 
     const auto pid = spawn_service.SpawnChildProcess(job.id.c_str(),

@@ -377,6 +377,9 @@ The `jobs` table
 * :envvar:`plan_name`: The name of the plan which is used to execute
   this job.
 * :envvar:`args`: Additional command-line arguments for the plan.
+* :envvar:`env`: Additional environment variables.  Some dangerous
+  environment variables cannot be set, though, for example
+  :envvar:`LD_PRELOAD`.
 * :envvar:`syslog_server`: If this column is not :samp:`NULL`, then
   all `stderr` lines are sent to this address with the syslog protocol
   (see :rfc:`3164`)

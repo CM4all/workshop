@@ -81,6 +81,10 @@ MigrateWorkshopDatabase(Pg::Connection &c, const char *schema)
                     " WHERE NOT OLD.enabled AND NEW.enabled"
                     " AND NEW.node_name IS NULL AND NEW.time_done IS NULL AND NEW.exit_status IS NULL"
                     " DO SELECT pg_notify('new_job', NULL)");
+
+    /* since Workshop 2.0.37 */
+    CheckCreateColumn(c, schema, "jobs", "env",
+                      "ALTER TABLE jobs ADD COLUMN env varchar(4096)[] NULL");
 }
 
 static void

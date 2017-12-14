@@ -13,7 +13,6 @@
 
 #include <stdexcept>
 
-#include <stdbool.h>
 #include <sys/types.h>
 #include <assert.h>
 #include <stdlib.h>
@@ -99,6 +98,7 @@ get_job(WorkshopJob &job,
     job.plan_name = result.GetValue(row, 1);
 
     job.args = Pg::DecodeArray(result.GetValue(row, 2));
+    job.env = Pg::DecodeArray(result.GetValue(row, 4));
 
     if (!result.IsValueNull(row, 3))
         job.syslog_server = result.GetValue(row, 3);

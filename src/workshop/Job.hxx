@@ -18,6 +18,8 @@ struct WorkshopJob {
 
     std::list<std::string> args;
 
+    std::list<std::string> env;
+
     explicit WorkshopJob(WorkshopQueue &_queue):queue(_queue) {}
 
     WorkshopJob(WorkshopQueue &_queue, const char *_id, const char *_plan_name)
