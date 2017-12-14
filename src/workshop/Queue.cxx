@@ -441,7 +441,7 @@ WorkshopQueue::OnNotify(const char *name)
 }
 
 void
-WorkshopQueue::OnError(const char *prefix, const char *error)
+WorkshopQueue::OnError(std::exception_ptr e)
 {
-    logger(1, prefix, ": ", error);
+    logger(1, e);
 }

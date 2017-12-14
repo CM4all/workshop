@@ -188,7 +188,7 @@ private:
     void OnConnect() override;
     void OnDisconnect() override;
     void OnNotify(const char *name) override;
-    void OnError(const char *prefix, const char *error) override;
+    void OnError(std::exception_ptr e) override;
 };
 
 #endif

@@ -335,7 +335,7 @@ CronQueue::OnNotify(const char *name)
 }
 
 void
-CronQueue::OnError(const char *prefix, const char *error)
+CronQueue::OnError(std::exception_ptr e)
 {
-    logger(1, prefix, ": ", error);
+    logger(1, e);
 }
