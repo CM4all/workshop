@@ -172,11 +172,20 @@ pg_set_job_progress(Pg::Connection &db, const char *job_id,
 void
 PgSetEnv(Pg::Connection &db, const char *job_id, const char *more_env)
 {
+    const char *eq = strchr(more_env, '=');
+    if (eq == nullptr || eq == more_env)
+        throw std::runtime_error("Malformed environment variable");
+
+    /* for filtering out old environment variables with the same
+       name */
+    std::string like(more_env, eq + 1);
+    like.push_back('%');
+
     const auto result = Pg::CheckError(
         db.ExecuteParams("UPDATE jobs "
-                         "SET env=env||ARRAY[$2]::varchar[] "
+                         "SET env=ARRAY(SELECT x FROM (SELECT unnest(env) as x) AS y WHERE x NOT LIKE $3)||ARRAY[$2]::varchar[] "
                          "WHERE id=$1",
-                         job_id, more_env));
+                         job_id, more_env, like.c_str()));
     if (result.GetAffectedRows() < 1)
         throw std::runtime_error("No matching job");
 }
