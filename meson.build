@@ -5,6 +5,8 @@ project('CM4all Workshop', ['c', 'cpp'], version: '2.0.37',
   ],
 )
 
+compiler = meson.get_compiler('cpp')
+
 # TODO: use get_option('b_ndebug'), but that doesn't work with Meson 0.37.1
 if get_option('buildtype') == 'debug'
   debug = true
@@ -44,17 +46,24 @@ add_global_arguments(common_flags,
   '-Wno-non-virtual-dtor',
   language: 'cpp')
 
-gtest = declare_dependency(
-  dependencies: [dependency('gtest', main: true)],
-  compile_args: [
-    '-Wno-undef',
+gtest_compile_args = [
+  '-Wno-undef',
+]
+
+if compiler.get_id() == 'gcc'
+  gtest_compile_args += [
     '-Wno-suggest-attribute=format',
     '-Wno-suggest-attribute=noreturn',
     '-Wno-missing-declarations',
 
     # needed on Jessie for gtest's IsNullLiteralHelper
     '-Wno-conversion-null',
-  ],
+  ]
+endif
+
+gtest = declare_dependency(
+  dependencies: [dependency('gtest', main: true)],
+  compile_args: gtest_compile_args,
 )
 
 boost = dependency('boost', modules: ['system', 'filesystem'], version: '>= 1.54')
