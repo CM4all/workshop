@@ -105,7 +105,7 @@ public:
 
 private:
     /* virtual methods from LoggerDomainFactory */
-    std::string MakeLoggerDomain() const noexcept;
+    std::string MakeLoggerDomain() const noexcept override;
 
     /* virtual methods from UdpHandler */
     bool OnUdpDatagram(const void *data, size_t length,
