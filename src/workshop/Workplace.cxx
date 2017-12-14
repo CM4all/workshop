@@ -15,6 +15,7 @@
 #include "system/Error.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "util/RuntimeError.hxx"
+#include "util/StringCompare.hxx"
 
 #include <string>
 #include <map>
@@ -159,6 +160,10 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
     for (const auto &i : job.env) {
         if (p.env.size() >= 64)
             throw std::runtime_error("Too many environment variables");
+
+        if (StringStartsWith(i.c_str(), "LD_"))
+            /* reject - too dangerous */
+            continue;
 
         p.env.push_back(i.c_str());
     }
