@@ -238,6 +238,19 @@ WorkshopOperator::OnControl(std::vector<std::string> &&args) noexcept
         OnProgress(progress);
 
         return true;
+    } else if (cmd == "setenv") {
+        if (args.size() != 2) {
+            logger(2, "malformed 'setenv' command on control channel");
+            return true;
+        }
+
+        try {
+            job.SetEnv(args[1].c_str());
+        } catch (...) {
+            logger(1, "Failed to 'setenv': ", std::current_exception());
+        }
+
+        return true;
     } else if (cmd == "again") {
         if (args.size() > 2) {
             logger(2, "malformed 'again' command on control channel");

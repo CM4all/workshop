@@ -38,6 +38,15 @@ struct WorkshopJob {
     int SetProgress(unsigned progress, const char *timeout);
 
     /**
+     * Add more environment variables to the record in the "jobs"
+     * table.  This is useful when executing the job again via
+     * SetAgain().
+     *
+     * Throws exception on error.
+     */
+    void SetEnv(const char *more_env);
+
+    /**
      * Mark the job as "done".
      */
     void SetDone(int status, const char *log);

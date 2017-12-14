@@ -3,6 +3,7 @@ cm4all-workshop (2.0.37) unstable; urgency=low
   * migrate: revert changes with PostgreSQL 9.6 syntax
   * workshop: make database migration mandatory
   * workshop: add "env" column for environment variables
+  * workshop: command "setenv" adds environment variables
 
  --   
 

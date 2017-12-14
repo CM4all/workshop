@@ -170,6 +170,18 @@ pg_set_job_progress(Pg::Connection &db, const char *job_id,
 }
 
 void
+PgSetEnv(Pg::Connection &db, const char *job_id, const char *more_env)
+{
+    const auto result = Pg::CheckError(
+        db.ExecuteParams("UPDATE jobs "
+                         "SET env=env||ARRAY[$2]::varchar[] "
+                         "WHERE id=$1",
+                         job_id, more_env));
+    if (result.GetAffectedRows() < 1)
+        throw std::runtime_error("No matching job");
+}
+
+void
 pg_rollback_job(Pg::Connection &db, const char *id)
 {
     const auto result = Pg::CheckError(

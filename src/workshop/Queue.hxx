@@ -121,6 +121,8 @@ public:
     int SetJobProgress(const WorkshopJob &job, unsigned progress,
                        const char *timeout);
 
+    void SetJobEnv(const WorkshopJob &job, const char *more_env);
+
     /**
      * Disassociate from the job, act as if this node had never
      * claimed it.  It will notify the other workshop nodes.

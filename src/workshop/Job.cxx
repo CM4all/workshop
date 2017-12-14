@@ -14,6 +14,12 @@ WorkshopJob::SetProgress(unsigned progress, const char *timeout)
 }
 
 void
+WorkshopJob::SetEnv(const char *more_env)
+{
+    queue.SetJobEnv(*this, more_env);
+}
+
+void
 WorkshopJob::SetDone(int status, const char *log)
 {
     queue.SetJobDone(*this, status, log);

@@ -344,6 +344,16 @@ WorkshopQueue::SetJobProgress(const WorkshopJob &job, unsigned progress,
 }
 
 void
+WorkshopQueue::SetJobEnv(const WorkshopJob &job, const char *more_env)
+{
+    assert(&job.queue == this);
+
+    ScheduleCheckNotify();
+
+    return PgSetEnv(db, job.id.c_str(), more_env);
+}
+
+void
 WorkshopQueue::RollbackJob(const WorkshopJob &job) noexcept
 {
     assert(&job.queue == this);

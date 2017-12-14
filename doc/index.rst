@@ -440,6 +440,9 @@ The following commands are available:
   protocol for submitting job progress is disabled if there is a
   control channel.)
 
+* :samp:`setenv NAME=VALUE`: Add another environment variable for the
+  next execution via :samp:`again`.
+
 * :samp:`again [SECONDS]`: execute the job again (which may occur on a
   different node).  The optional parameter specifies how many seconds
   shall pass at least; if present, then :envvar:`scheduled_time` will
