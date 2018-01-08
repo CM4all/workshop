@@ -151,22 +151,17 @@ pg_claim_job(Pg::Connection &db,
     return result.GetAffectedRows();
 }
 
-int
+void
 pg_set_job_progress(Pg::Connection &db, const char *job_id,
                     unsigned progress, const char *timeout)
 {
-    const auto result =
+    const auto result = Pg::CheckError(
         db.ExecuteParams("UPDATE jobs "
                          "SET progress=$2, node_timeout=now()+$3::INTERVAL "
                          "WHERE id=$1",
-                         job_id, progress, timeout);
-    if (!result.IsCommandSuccessful()) {
-        fprintf(stderr, "UPDATE/progress on jobs failed: %s\n",
-                result.GetErrorMessage());
-        return -1;
-    }
-
-    return result.GetAffectedRows();
+                         job_id, progress, timeout));
+    if (result.GetAffectedRows() < 1)
+        throw std::runtime_error("No matching job");
 }
 
 void

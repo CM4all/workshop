@@ -7,7 +7,7 @@
 
 #include <assert.h>
 
-int
+bool
 WorkshopJob::SetProgress(unsigned progress, const char *timeout)
 {
     return queue.SetJobProgress(*this, progress, timeout);

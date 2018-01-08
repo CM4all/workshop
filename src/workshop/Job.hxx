@@ -33,9 +33,9 @@ struct WorkshopJob {
      * @param progress a percent value (0 .. 100)
      * @param timeout the timeout for the next feedback (an interval
      * string that is understood by PostgreSQL)
-     * @return 1 on success, 0 if the job was not found, -1 on error
+     * @return true on success
      */
-    int SetProgress(unsigned progress, const char *timeout);
+    bool SetProgress(unsigned progress, const char *timeout);
 
     /**
      * Add more environment variables to the record in the "jobs"

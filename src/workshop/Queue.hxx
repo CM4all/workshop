@@ -118,8 +118,11 @@ public:
      */
     void EnableFull();
 
-    int SetJobProgress(const WorkshopJob &job, unsigned progress,
-                       const char *timeout);
+    /**
+     * @return true on success
+     */
+    bool SetJobProgress(const WorkshopJob &job, unsigned progress,
+                        const char *timeout) noexcept;
 
     void SetJobEnv(const WorkshopJob &job, const char *more_env);
 

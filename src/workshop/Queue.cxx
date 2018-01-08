@@ -330,9 +330,9 @@ WorkshopQueue::EnableFull()
         Reschedule();
 }
 
-int
+bool
 WorkshopQueue::SetJobProgress(const WorkshopJob &job, unsigned progress,
-                              const char *timeout)
+                              const char *timeout) noexcept
 {
     assert(&job.queue == this);
 
@@ -340,7 +340,14 @@ WorkshopQueue::SetJobProgress(const WorkshopJob &job, unsigned progress,
 
     ScheduleCheckNotify();
 
-    return pg_set_job_progress(db, job.id.c_str(), progress, timeout);
+    try {
+        pg_set_job_progress(db, job.id.c_str(), progress, timeout);
+        return true;
+    } catch (...) {
+        logger(1, "Failed to update job '", job.id, "' progress: ",
+               std::current_exception());
+        return false;
+    }
 }
 
 void

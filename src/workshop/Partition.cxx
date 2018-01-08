@@ -64,8 +64,7 @@ WorkshopPartition::StartJob(WorkshopJob &&job)
         return false;
     }
 
-    int ret = job.SetProgress(0, plan->timeout.c_str());
-    if (ret < 0) {
+    if (!job.SetProgress(0, plan->timeout.c_str())){
         queue.RollbackJob(job);
         return false;
     }

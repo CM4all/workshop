@@ -38,8 +38,12 @@ pg_claim_job(Pg::Connection &db,
              const char *job_id, const char *node_name,
              const char *timeout);
 
-int pg_set_job_progress(Pg::Connection &db, const char *job_id, unsigned progress,
-                        const char *timeout);
+/**
+ * Throws on error.
+ */
+void
+pg_set_job_progress(Pg::Connection &db, const char *job_id, unsigned progress,
+                    const char *timeout);
 
 void
 PgSetEnv(Pg::Connection &db, const char *job_id, const char *more_env);
