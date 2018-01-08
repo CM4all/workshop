@@ -187,9 +187,12 @@ try {
     }
 
     if (!found_table)
-        throw std::runtime_error("No table 'jobs' or 'cronjobs' - not a Workshop/Cron database");
+        throw "No table 'jobs' or 'cronjobs' - not a Workshop/Cron database";
 
     return EXIT_SUCCESS;
+} catch (const char *msg) {
+    fprintf(stderr, "%s\n", msg);
+    return EXIT_FAILURE;
 } catch (const std::exception &e) {
     PrintException(e);
     return EXIT_FAILURE;
