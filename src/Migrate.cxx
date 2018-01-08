@@ -164,8 +164,13 @@ main(int argc, char **argv)
 try {
     ConstBuffer<const char *> args(argv + 1, argc - 1);
 
+    const char *set_role = nullptr;
+
     while (!args.empty() && *args.front() == '-') {
-        if (false) {
+        if (strncmp(args.front(), "--set-role=", 11) == 0) {
+            set_role = args.shift() + 11;
+            if (*set_role == 0)
+                throw "Role name missing";
         } else {
             fprintf(stderr, "Unknown option: %s\n\n", args.front());
             /* clear the list to trigger printing the usage */
@@ -177,6 +182,7 @@ try {
         fprintf(stderr, "Usage: %s [OPTIONS] CONNINFO [SCHEMA]\n"
                 "\n"
                 "Options:\n"
+                "  --set-role=ROLE       Execute \"SET ROLE ...\"\n"
                 "\n", argv[0]);
         return EXIT_FAILURE;
     }
@@ -186,6 +192,9 @@ try {
     assert(args.empty());
 
     Pg::Connection c(conninfo);
+
+    if (set_role != nullptr)
+        c.SetRole(set_role);
 
     if (strcmp(schema, "public") != 0)
         c.SetSchema(schema);
