@@ -164,8 +164,20 @@ main(int argc, char **argv)
 try {
     ConstBuffer<const char *> args(argv + 1, argc - 1);
 
+    while (!args.empty() && *args.front() == '-') {
+        if (false) {
+        } else {
+            fprintf(stderr, "Unknown option: %s\n\n", args.front());
+            /* clear the list to trigger printing the usage */
+            args.size = 0;
+        }
+    }
+
     if (args.size < 1 || args.size > 2) {
-        fprintf(stderr, "Usage: %s CONNINFO [SCHEMA]\n", argv[0]);
+        fprintf(stderr, "Usage: %s [OPTIONS] CONNINFO [SCHEMA]\n"
+                "\n"
+                "Options:\n"
+                "\n", argv[0]);
         return EXIT_FAILURE;
     }
 
