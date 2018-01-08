@@ -5,6 +5,7 @@
 #include "pg/Connection.hxx"
 #include "pg/Reflection.hxx"
 #include "pg/CheckError.hxx"
+#include "util/ConstBuffer.hxx"
 #include "util/PrintException.hxx"
 
 #include <stdexcept>
@@ -161,13 +162,16 @@ MigrateCronDatabase(Pg::Connection &c, const char *schema)
 int
 main(int argc, char **argv)
 try {
-    if (argc < 2 || argc > 3) {
+    ConstBuffer<const char *> args(argv + 1, argc - 1);
+
+    if (args.size < 1 || args.size > 2) {
         fprintf(stderr, "Usage: %s CONNINFO [SCHEMA]\n", argv[0]);
         return EXIT_FAILURE;
     }
 
-    const char *const conninfo = argv[1];
-    const char *const schema = argc >= 3 ? argv[2] : "public";
+    const char *const conninfo = args.shift();
+    const char *const schema = args.empty() ? "public" : args.shift();
+    assert(args.empty());
 
     Pg::Connection c(conninfo);
 
