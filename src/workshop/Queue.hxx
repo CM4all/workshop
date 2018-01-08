@@ -137,7 +137,8 @@ public:
      */
     void AgainJob(const WorkshopJob &job, std::chrono::seconds delay) noexcept;
 
-    void SetJobDone(const WorkshopJob &job, int status, const char *log);
+    void SetJobDone(const WorkshopJob &job, int status,
+                    const char *log) noexcept;
 
 private:
     void RunResult(const Pg::Result &result);

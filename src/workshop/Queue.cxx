@@ -396,13 +396,19 @@ WorkshopQueue::AgainJob(const WorkshopJob &job,
 }
 
 void
-WorkshopQueue::SetJobDone(const WorkshopJob &job, int status, const char *log)
+WorkshopQueue::SetJobDone(const WorkshopJob &job, int status,
+                          const char *log) noexcept
 {
     assert(&job.queue == this);
 
     logger(6, "job ", job.id, " done with status ", status);
 
-    pg_set_job_done(db, job.id.c_str(), status, log);
+    try {
+        pg_set_job_done(db, job.id.c_str(), status, log);
+    } catch (...) {
+        logger(1, "Failed to mark job '", job.id, "' done: ",
+               std::current_exception());
+    }
 
     ScheduleCheckNotify();
 }

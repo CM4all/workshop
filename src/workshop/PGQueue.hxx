@@ -59,7 +59,10 @@ pg_rollback_job(Pg::Connection &db, const char *id);
 void
 pg_again_job(Pg::Connection &db, const char *id, std::chrono::seconds delay);
 
-int
+/**
+ * Throws on error.
+ */
+void
 pg_set_job_done(Pg::Connection &db, const char *id, int status,
                 const char *log);
 

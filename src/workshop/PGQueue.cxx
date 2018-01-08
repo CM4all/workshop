@@ -217,20 +217,15 @@ pg_again_job(Pg::Connection &db, const char *id, std::chrono::seconds delay)
         throw std::runtime_error("No matching job");
 }
 
-int
+void
 pg_set_job_done(Pg::Connection &db, const char *id, int status,
                 const char *log)
 {
-    const auto result =
+    const auto result = Pg::CheckError(
         db.ExecuteParams("UPDATE jobs "
                          "SET time_done=now(), progress=100, exit_status=$2, log=$3 "
                          "WHERE id=$1",
-                         id, status, log);
-    if (!result.IsCommandSuccessful()) {
-        fprintf(stderr, "UPDATE/done on jobs failed: %s\n",
-                result.GetErrorMessage());
-        return -1;
-    }
-
-    return result.GetAffectedRows();
+                         id, status, log));
+    if (result.GetAffectedRows() < 1)
+        throw std::runtime_error("No matching job");
 }
