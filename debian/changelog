@@ -5,7 +5,7 @@ cm4all-workshop (2.1) unstable; urgency=low
   * spawn: fix resource limits problem with user namespaces
   * spawn: increase the OOM score of child processes
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Tue, 23 Jan 2018 18:41:32 -0000
 
 cm4all-workshop (2.0.37) unstable; urgency=low
 
