@@ -10,6 +10,7 @@
 #include "pg/Array.hxx"
 #include "pg/Reflection.hxx"
 #include "util/RuntimeError.hxx"
+#include "util/StringCompare.hxx"
 
 #include <stdexcept>
 
@@ -439,6 +440,12 @@ WorkshopQueue::OnConnect()
 
     db.ExecuteOrThrow("LISTEN new_job");
 
+    if (strcmp(schema, "public") != 0)
+        /* for compatibility with future Workshop versions with
+           improved schema support */
+        db.ExecuteOrThrow(("LISTEN \"" + db.Escape(schema)
+                           + ":new_job\"").c_str());
+
     int ret = pg_release_jobs(db, node_name.c_str());
     if (ret > 0) {
         logger(2, "released ", ret, " stale jobs");
@@ -460,7 +467,7 @@ WorkshopQueue::OnDisconnect() noexcept
 void
 WorkshopQueue::OnNotify(const char *name)
 {
-    if (strcmp(name, "new_job") == 0)
+    if (StringEndsWith(name, "new_job"))
         Reschedule();
 }
 
