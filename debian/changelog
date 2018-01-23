@@ -1,6 +1,8 @@
 cm4all-workshop (2.0.38) unstable; urgency=low
 
   * migrate: add option "--set-role=ROLE"
+  * spawn: fix resource limits problem with user namespaces
+  * spawn: increase the OOM score of child processes
 
  --   
 
