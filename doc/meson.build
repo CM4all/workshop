@@ -2,7 +2,7 @@ sphinx = find_program('sphinx-build')
 
 custom_target('HTML documentation',
   output: 'html',
-  input: 'index.rst',
+  input: ['index.rst', 'conf.py'],
   command: [sphinx, '-q', '-b', 'html', '-d', '@OUTDIR@/doctrees', meson.current_source_dir(), '@OUTPUT@'],
   build_by_default: true,
   install: true,
