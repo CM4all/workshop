@@ -82,7 +82,7 @@ WorkshopControlClient::Send(WorkshopControlCommand cmd,
     if (nbytes < 0)
         throw MakeErrno("Failed to send");
 
-    if (size_t(nbytes) != sizeof(dh) + sizeof(h) + payload.size)
+    if (size_t(nbytes) != sizeof(dh) + sizeof(h) + payload.size + PaddingSize(payload.size))
         throw std::runtime_error("Short send");
 }
 
