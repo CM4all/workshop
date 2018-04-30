@@ -3,6 +3,7 @@ cm4all-workshop (2.2) unstable; urgency=low
   * spawn: fix kernel warning "oom_adj is deprecated, please use
     oom_score_adj instead"
   * control: fix error "Short send"
+  * config: require "allow_user" only if cron is enabled
 
  --   
 
