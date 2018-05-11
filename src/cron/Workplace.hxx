@@ -34,7 +34,7 @@
 #define CRON_WORKPLACE_HXX
 
 #include "Operator.hxx"
-
+#include "net/SocketDescriptor.hxx"
 #include "util/Compiler.h"
 
 #include <boost/intrusive/list.hpp>
@@ -51,6 +51,7 @@ class ExitListener;
 class CronWorkplace {
     SpawnService &spawn_service;
     EmailService *const email_service;
+    const SocketDescriptor pond_socket;
 
     CurlGlobal &curl;
     ExitListener &exit_listener;
@@ -65,11 +66,13 @@ class CronWorkplace {
 public:
     CronWorkplace(SpawnService &_spawn_service,
                   EmailService *_email_service,
+                  SocketDescriptor _pond_socket,
                   CurlGlobal &_curl,
                   ExitListener &_exit_listener,
                   unsigned _max_operators)
         :spawn_service(_spawn_service),
          email_service(_email_service),
+         pond_socket(_pond_socket),
          curl(_curl),
          exit_listener(_exit_listener),
          max_operators(_max_operators) {
@@ -88,6 +91,10 @@ public:
 
     EmailService *GetEmailService() {
         return email_service;
+    }
+
+    SocketDescriptor GetPondSocket() const noexcept {
+        return pond_socket;
     }
 
     bool IsEmpty() const {

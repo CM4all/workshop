@@ -118,7 +118,7 @@ MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
                                                  workplace.GetSpawnService(),
                                                  std::move(job),
                                                  std::move(start_time));
-    o->Spawn(std::move(p));
+    o->Spawn(std::move(p), workplace.GetPondSocket());
     return std::unique_ptr<CronOperator>(std::move(o));
 }
 

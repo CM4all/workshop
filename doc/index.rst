@@ -97,6 +97,8 @@ The following settings are recognized:
     :file:`@` (abstract socket)
   * :envvar:`qmqp_server` (optional): address the QMQP server is
     listening to; it is used for email notifications
+  * :envvar:`pond_server` (optional): send job log messages to this
+    Pond server; the :envvar:`account_id` value is passed as "site"
 
 * :envvar:`control`: opens a block (with curly braces), which
   configures a control listener (see `Controlling the Daemon`_)

@@ -32,7 +32,7 @@
 
 #include "SpawnOperator.hxx"
 #include "Workplace.hxx"
-#include "PipeCaptureBuffer.hxx"
+#include "PipePondAdapter.hxx"
 #include "spawn/Interface.hxx"
 #include "spawn/Prepared.hxx"
 #include "event/Duration.hxx"
@@ -59,7 +59,8 @@ CronSpawnOperator::~CronSpawnOperator()
 }
 
 void
-CronSpawnOperator::Spawn(PreparedChildProcess &&p)
+CronSpawnOperator::Spawn(PreparedChildProcess &&p,
+                         SocketDescriptor pond_socket)
 try {
     if (p.stderr_fd < 0) {
         /* no STDERR destination configured: the default is to capture
@@ -73,9 +74,11 @@ try {
             /* capture STDOUT as well */
             p.stdout_fd = p.stderr_fd;
 
-        output_capture = std::make_unique<PipeCaptureBuffer>(GetEventLoop(),
-                                                             std::move(r),
-                                                             8192);
+        output_capture = std::make_unique<PipePondAdapter>(GetEventLoop(),
+                                                           std::move(r),
+                                                           8192,
+                                                           pond_socket,
+                                                           job.account_id);
     }
 
     /* change to home directory (if one was set) */

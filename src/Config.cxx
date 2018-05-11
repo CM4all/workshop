@@ -207,6 +207,9 @@ WorkshopConfigParser::CronPartition::ParseLine(FileLineParser &line)
     } else if (strcmp(word, "qmqp_server") == 0) {
         config.qmqp_server = ResolveStreamConnect(line.ExpectValueAndEnd(),
                                                   628);
+    } else if (strcmp(word, "pond_server") == 0) {
+        config.pond_server = ParseSocketAddress(line.ExpectValueAndEnd(),
+                                                5479, false);
     } else if (strcmp(word, "tag") == 0) {
         config.tag = line.ExpectValueAndEnd();
     } else

@@ -41,6 +41,7 @@
 struct PreparedChildProcess;
 class SpawnService;
 class PipeCaptureBuffer;
+class SocketDescriptor;
 
 /**
  * A #CronJob being executed as a spawned child process.
@@ -62,7 +63,7 @@ public:
                       std::string &&_start_time) noexcept;
     ~CronSpawnOperator() override;
 
-    void Spawn(PreparedChildProcess &&p);
+    void Spawn(PreparedChildProcess &&p, SocketDescriptor pond_socket);
 
     void Cancel() override;
 

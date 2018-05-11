@@ -1,6 +1,6 @@
 cm4all-workshop (3.0.1) unstable; urgency=low
 
-  * 
+  * cron: setting "pond_server" sends job log messages to Pond server
 
  --   
 
