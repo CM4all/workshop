@@ -275,6 +275,7 @@ spawn = static_library('spawn',
     system_dep,
     adata_dep,
     io_dep,
+    net_dep,
     odbus_dep,
   ])
 spawn_dep = declare_dependency(link_with: spawn)
