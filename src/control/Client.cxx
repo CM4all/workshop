@@ -35,6 +35,7 @@
 #include "system/Error.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "net/RConnectSocket.hxx"
+#include "net/SendMessage.hxx"
 #include "util/ByteOrder.hxx"
 #include "util/Macros.hxx"
 #include "util/StringCompare.hxx"
@@ -96,22 +97,7 @@ WorkshopControlClient::Send(WorkshopControlCommand cmd,
 
     dh.crc = ToBE32(crc.checksum());
 
-    struct msghdr m = {
-        .msg_name = nullptr,
-        .msg_namelen = 0,
-        .msg_iov = v,
-        .msg_iovlen = ARRAY_SIZE(v),
-        .msg_control = nullptr,
-        .msg_controllen = 0,
-        .msg_flags = 0,
-    };
-
-    ssize_t nbytes = sendmsg(socket.Get(), &m, 0);
-    if (nbytes < 0)
-        throw MakeErrno("Failed to send");
-
-    if (size_t(nbytes) != sizeof(dh) + sizeof(h) + payload.size + PaddingSize(payload.size))
-        throw std::runtime_error("Short send");
+    SendMessage(socket, ConstBuffer<struct iovec>(v), 0);
 }
 
 static void
