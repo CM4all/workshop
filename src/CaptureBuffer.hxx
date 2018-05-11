@@ -52,6 +52,10 @@ public:
         :capacity(_capacity),
          data(new char[capacity]) {}
 
+    bool IsFull() const noexcept {
+        return size == capacity;
+    }
+
     WritableBuffer<char> Write() {
         return { &data[size], capacity - size };
     }

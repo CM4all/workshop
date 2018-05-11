@@ -56,10 +56,15 @@ PipeCaptureBuffer::OnSocket(unsigned)
         ssize_t nbytes = fd.Read(w.data, w.size);
         if (nbytes <= 0) {
             Close();
+            OnEnd();
             return;
         }
 
         buffer.Append(nbytes);
+        OnAppend();
+
+        if (IsFull())
+            OnEnd();
     } else {
         /* buffer is full: discard data to keep the pipe from blocking
            the other end */
