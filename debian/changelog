@@ -6,7 +6,7 @@ cm4all-workshop (2.2) unstable; urgency=low
   * config: require "allow_user" only if cron is enabled
   * debian: don't start daemon during initial installation
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Fri, 11 May 2018 06:52:25 -0000
 
 cm4all-workshop (2.1) unstable; urgency=low
 
