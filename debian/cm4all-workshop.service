@@ -1,6 +1,7 @@
 [Unit]
 Description=CM4all Workshop
-After=network.target
+Wants=network-online.target
+After=network-online.target
 After=postgresql.service
 
 [Service]
