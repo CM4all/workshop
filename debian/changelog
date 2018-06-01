@@ -3,7 +3,7 @@ cm4all-workshop (3.0.3) unstable; urgency=low
   * config: allow host name in "pond_server" setting
   * systemd: depend on network-online.target
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Fri, 01 Jun 2018 12:21:55 -0000
 
 cm4all-workshop (3.0.2) unstable; urgency=low
 
