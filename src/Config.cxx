@@ -189,7 +189,7 @@ ResolveStreamConnect(const char *host, int default_port)
         hints.ai_socktype = SOCK_STREAM;
 
         return AllocatedSocketAddress(Resolve(host, default_port,
-                                              &hints).front());
+                                              &hints).GetBest());
     }
 }
 
