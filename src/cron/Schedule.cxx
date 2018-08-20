@@ -33,7 +33,7 @@
 #include "Schedule.hxx"
 #include "time/Convert.hxx"
 #include "time/Math.hxx"
-#include "util/StringUtil.hxx"
+#include "util/StringStrip.hxx"
 #include "util/Macros.hxx"
 
 #include <stdexcept>
