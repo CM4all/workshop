@@ -36,11 +36,11 @@ ProgressReader::ProgressReader(EventLoop &event_loop,
                                UniqueFileDescriptor _fd,
                                Callback _callback)
     :fd(std::move(_fd)),
-     event(event_loop, fd.Get(), SocketEvent::READ|SocketEvent::PERSIST,
-           BIND_THIS_METHOD(PipeReady)),
+     event(event_loop, BIND_THIS_METHOD(PipeReady),
+           SocketDescriptor::FromFileDescriptor(fd)),
      callback(_callback)
 {
-    event.Add();
+    event.ScheduleRead();
 }
 
 void
@@ -52,7 +52,7 @@ ProgressReader::PipeReady(unsigned)
 
     nbytes = fd.Read(buffer, sizeof(buffer));
     if (nbytes <= 0) {
-        event.Delete();
+        event.Cancel();
         fd.Close();
         return;
     }
