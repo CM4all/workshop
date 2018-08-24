@@ -36,16 +36,11 @@ PipeCaptureBuffer::PipeCaptureBuffer(EventLoop &event_loop,
                                      UniqueFileDescriptor _fd,
                                      size_t capacity)
         :fd(std::move(_fd)),
-         event(event_loop, fd.Get(), SocketEvent::READ|SocketEvent::PERSIST,
-               BIND_THIS_METHOD(OnSocket)),
+         event(event_loop, BIND_THIS_METHOD(OnSocket),
+               SocketDescriptor::FromFileDescriptor(fd)),
          buffer(capacity)
 {
-    event.Add();
-}
-
-PipeCaptureBuffer::~PipeCaptureBuffer()
-{
-    event.Delete();
+    event.ScheduleRead();
 }
 
 void

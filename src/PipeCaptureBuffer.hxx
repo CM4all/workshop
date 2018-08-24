@@ -35,7 +35,7 @@
 
 #include "CaptureBuffer.hxx"
 #include "io/UniqueFileDescriptor.hxx"
-#include "event/SocketEvent.hxx"
+#include "event/NewSocketEvent.hxx"
 
 /**
  * Capture up to 8 kB of data from a pipe asynchronously.  This is
@@ -43,7 +43,7 @@
  */
 class PipeCaptureBuffer {
     UniqueFileDescriptor fd;
-    SocketEvent event;
+    NewSocketEvent event;
 
     CaptureBuffer buffer;
 
@@ -51,7 +51,7 @@ public:
     explicit PipeCaptureBuffer(EventLoop &event_loop,
                                UniqueFileDescriptor _fd,
                                size_t capacity);
-    virtual ~PipeCaptureBuffer();
+    virtual ~PipeCaptureBuffer() noexcept = default;
 
     bool IsFull() const noexcept {
         return buffer.IsFull();
@@ -79,7 +79,7 @@ protected:
 
 private:
     void Close() {
-        event.Delete();
+        event.Cancel();
         fd.Close();
     }
 
