@@ -71,7 +71,7 @@ private:
                    std::multimap<std::string, std::string> &&headers) override;
     void OnData(ConstBuffer<void> data) override;
     void OnEnd() override;
-    void OnError(std::exception_ptr ep) override;
+    void OnError(std::exception_ptr ep) noexcept override;
 };
 
 #endif

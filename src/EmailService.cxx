@@ -51,7 +51,7 @@ EmailService::Job::Start()
 }
 
 void
-EmailService::Job::OnSocketConnectSuccess(UniqueSocketDescriptor &&_fd)
+EmailService::Job::OnSocketConnectSuccess(UniqueSocketDescriptor &&_fd) noexcept
 {
     client.Begin({email.message.data(), email.message.length()},
                  {email.sender.data(), email.sender.length()});
@@ -63,7 +63,7 @@ EmailService::Job::OnSocketConnectSuccess(UniqueSocketDescriptor &&_fd)
 }
 
 void
-EmailService::Job::OnSocketConnectError(std::exception_ptr error)
+EmailService::Job::OnSocketConnectError(std::exception_ptr error) noexcept
 {
     // TODO add context to log message
     PrintException(error);
@@ -71,7 +71,7 @@ EmailService::Job::OnSocketConnectError(std::exception_ptr error)
 }
 
 void
-EmailService::Job::OnQmqpClientSuccess(StringView description)
+EmailService::Job::OnQmqpClientSuccess(StringView description) noexcept
 {
     // TODO log?
     (void)description;
@@ -80,7 +80,7 @@ EmailService::Job::OnQmqpClientSuccess(StringView description)
 }
 
 void
-EmailService::Job::OnQmqpClientError(std::exception_ptr error)
+EmailService::Job::OnQmqpClientError(std::exception_ptr error) noexcept
 {
     // TODO add context to log message
     PrintException(error);

@@ -74,12 +74,12 @@ class EmailService {
 
     private:
         /* virtual methods from ConnectSocketHandler */
-        void OnSocketConnectSuccess(UniqueSocketDescriptor &&fd) override;
-        void OnSocketConnectError(std::exception_ptr error) override;
+        void OnSocketConnectSuccess(UniqueSocketDescriptor &&fd) noexcept override;
+        void OnSocketConnectError(std::exception_ptr error) noexcept override;
 
         /* virtual methods from QmqpClientHandler */
-        void OnQmqpClientSuccess(StringView description) override;
-        void OnQmqpClientError(std::exception_ptr error) override;
+        void OnQmqpClientSuccess(StringView description) noexcept override;
+        void OnQmqpClientError(std::exception_ptr error) noexcept override;
     };
 
     typedef boost::intrusive::list<Job,

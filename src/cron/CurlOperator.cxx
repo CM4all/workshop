@@ -113,7 +113,7 @@ CronCurlOperator::OnEnd()
 }
 
 void
-CronCurlOperator::OnError(std::exception_ptr ep)
+CronCurlOperator::OnError(std::exception_ptr ep) noexcept
 {
     PrintException(ep);
 

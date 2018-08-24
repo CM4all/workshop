@@ -31,7 +31,7 @@ public:
     void OnEnd() {
     }
 
-    void OnError(std::exception_ptr ep) {
+    void OnError(std::exception_ptr ep) noexcept {
         try {
             std::rethrow_exception(ep);
         } catch (const std::exception &e) {
