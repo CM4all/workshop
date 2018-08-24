@@ -41,6 +41,10 @@ test_common_flags = [
 test_cxxflags = test_common_flags + [
   '-Wno-missing-field-initializers',
   '-Wno-non-virtual-dtor',
+
+  # the only warnings we got from this are from formatted error
+  # messages, and their truncation is harmless
+  '-Wno-format-truncation',
 ]
 
 test_cflags = test_common_flags + [
