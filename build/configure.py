@@ -22,6 +22,8 @@ flavors = {
             '-Db_ndebug=true',
         ],
         'env': {
+            'CFLAGS': '-ffunction-sections -fdata-sections',
+            'CXXFLAGS': '-ffunction-sections -fdata-sections',
             'LDFLAGS': '-fuse-ld=gold -Wl,--gc-sections,--icf=all',
         },
     },
