@@ -14,6 +14,9 @@ else
   debug = false
 endif
 
+compiler = meson.get_compiler('cpp')
+c_compiler = meson.get_compiler('c')
+
 common_flags = [
   '-D_REENTRANT', '-D_GNU_SOURCE',
   '-DPACKAGE="' + meson.project_name() + '"',
@@ -32,18 +35,36 @@ if debug
   common_flags += ['-DPOISON']
 endif
 
-add_global_arguments(common_flags,
+test_common_flags = [
+]
+
+test_cxxflags = test_common_flags + [
+  '-Wno-missing-field-initializers',
+  '-Wno-non-virtual-dtor',
+]
+
+test_cflags = test_common_flags + [
   '-Wmissing-prototypes', '-Wstrict-prototypes',
   '-Wbad-function-cast',
   '-Waggregate-return',
   '-Wnested-externs',
   '-pedantic',
-  language: 'c')
+]
 
-add_global_arguments(common_flags,
-  '-Wno-missing-field-initializers',
-  '-Wno-non-virtual-dtor',
-  language: 'cpp')
+add_global_arguments(common_flags, language: 'c')
+add_global_arguments(common_flags, language: 'cpp')
+
+foreach f: test_cxxflags
+  if compiler.has_argument(f)
+    add_global_arguments(f, language: 'cpp')
+  endif
+endforeach
+
+foreach f: test_cflags
+  if c_compiler.has_argument(f)
+    add_global_arguments(f, language: 'c')
+  endif
+endforeach
 
 gtest_compile_args = [
   '-Wno-undef',
