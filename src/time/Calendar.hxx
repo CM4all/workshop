@@ -39,7 +39,6 @@ gcc_const
 static inline bool
 IsLeapYear(unsigned y)
 {
-    y += 1900;
     return (y % 4) == 0 && ((y % 100) != 0 || (y % 400) == 0);
 }
 
