@@ -97,11 +97,9 @@ gtest = declare_dependency(
 inc = include_directories(
   'src',
   'libcommon/src',
-
-  # This is for the BufferedSocket class which this project doesn't
-  # use
-  'libcommon/fake',
 )
+
+libcommon_enable_DefaultFifoBuffer = false
 
 subdir('libcommon/src/util')
 
