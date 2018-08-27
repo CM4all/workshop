@@ -83,26 +83,12 @@ WorkshopOperator::~WorkshopOperator()
     timeout_event.Cancel();
 }
 
-template<class Rep, class Period>
-static struct timeval
-ToTimeval(std::chrono::duration<Rep, Period> src)
-{
-    auto s = std::chrono::duration_cast<std::chrono::seconds>(src);
-    auto us = std::chrono::duration_cast<std::chrono::microseconds>(src);
-    us -= s;
-
-    struct timeval tv;
-    tv.tv_sec = s.count();
-    tv.tv_usec = us.count();
-    return tv;
-}
-
 void
 WorkshopOperator::ScheduleTimeout()
 {
     const auto t = plan->parsed_timeout;
-    if (t > std::chrono::seconds(0))
-        timeout_event.Add(ToTimeval(t));
+    if (t > t.zero())
+        timeout_event.Schedule(t);
 }
 
 void
