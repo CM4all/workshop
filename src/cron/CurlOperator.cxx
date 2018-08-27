@@ -33,7 +33,6 @@
 #include "CurlOperator.hxx"
 #include "Workplace.hxx"
 #include "CaptureBuffer.hxx"
-#include "event/Duration.hxx"
 #include "util/Exception.hxx"
 #include "util/PrintException.hxx"
 
@@ -60,7 +59,7 @@ void
 CronCurlOperator::Start()
 {
     /* kill after 5 minutes */
-    timeout_event.Add(EventDuration<300>::value);
+    timeout_event.Schedule(std::chrono::minutes(5));
 
     request.Start();
 }
