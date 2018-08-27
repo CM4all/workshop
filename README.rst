@@ -15,7 +15,6 @@ You need:
 
 - a C++14 compliant compiler (e.g. gcc or clang)
 - `libcap2 <https://sites.google.com/site/fullycapable/>`__
-- `libevent <http://libevent.org/>`__
 - `libpq <https://www.postgresql.org/>`__
 - `Boost <http://www.boost.org/>`__
 - `CURL <https://curl.haxx.se/>`__

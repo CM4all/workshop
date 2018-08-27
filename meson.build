@@ -95,7 +95,6 @@ gtest = declare_dependency(
 )
 
 boost = dependency('boost', modules: ['system', 'filesystem'], version: '>= 1.54')
-libevent = dependency('libevent', version: '>= 2.0.19')
 libcurl = dependency('libcurl', version: '>= 7.38')
 libsystemd = dependency('libsystemd')
 libdbus = dependency('dbus-1')
@@ -137,6 +136,7 @@ system = static_library('system',
   'libcommon/src/system/BindMount.cxx',
   'libcommon/src/system/CapabilityState.cxx',
   'libcommon/src/system/LinuxFD.cxx',
+  'libcommon/src/system/EpollFD.cxx',
   include_directories: inc,
   dependencies: [
     libcap,
@@ -163,12 +163,13 @@ event = static_library('event',
   'libcommon/src/event/ShutdownListener.cxx',
   'libcommon/src/event/CleanupTimer.cxx',
   'libcommon/src/event/DeferEvent.cxx',
-  'libcommon/src/event/NewSocketEvent.cxx',
+  'libcommon/src/event/SocketEvent.cxx',
+  'libcommon/src/event/TimerEvent.cxx',
   'libcommon/src/event/SignalEvent.cxx',
   'libcommon/src/event/PipeLineReader.cxx',
   include_directories: inc,
   dependencies: [
-    libevent,
+    system_dep,
     util_dep,
   ])
 event_dep = declare_dependency(link_with: event)
@@ -205,7 +206,6 @@ event_net = static_library('event_net',
   'libcommon/src/event/net/djb/QmqpClient.cxx',
   include_directories: inc,
   dependencies: [
-    libevent,
     event_dep,
     net_dep,
     util_dep,
