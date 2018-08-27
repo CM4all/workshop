@@ -35,7 +35,6 @@
 #include "PipePondAdapter.hxx"
 #include "spawn/Interface.hxx"
 #include "spawn/Prepared.hxx"
-#include "event/Duration.hxx"
 #include "system/Error.hxx"
 #include "util/Exception.hxx"
 
@@ -89,7 +88,7 @@ try {
     logger(2, "running");
 
     /* kill after 5 minutes */
-    timeout_event.Add(EventDuration<300>::value);
+    timeout_event.Schedule(std::chrono::minutes(5));
 } catch (const std::exception &e) {
     Finish(-1, GetFullMessage(e).c_str());
     throw;
