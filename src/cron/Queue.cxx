@@ -34,7 +34,6 @@
 #include "Job.hxx"
 #include "CalculateNextRun.hxx"
 #include "pg/CheckError.hxx"
-#include "event/Duration.hxx"
 
 #include <chrono>
 
@@ -124,19 +123,16 @@ CronQueue::RunScheduler()
 void
 CronQueue::ScheduleScheduler(bool immediately)
 {
-    struct timeval tv;
+    Event::Duration d;
     if (immediately) {
-        tv.tv_sec = 0;
-        tv.tv_usec = 0;
+        d = d.zero();
     } else {
         /* randomize the scheduler to reduce race conditions with
            other nodes */
-        const long r = random();
-        tv.tv_sec = (r / 1000000) % 5;
-        tv.tv_usec = r % 1000000;
+        d = std::chrono::microseconds(random() % 5000000);
     }
 
-    scheduler_timer.Add(tv);
+    scheduler_timer.Schedule(d);
 }
 
 static std::chrono::seconds
@@ -181,11 +177,8 @@ CronQueue::RunClaim()
     if (delta > delta.zero()) {
         /* randomize the claim to reduce race conditions with
            other nodes */
-        const long r = random();
-        struct timeval tv;
-        tv.tv_sec = delta.count() + (r / 1000000) % 30;
-        tv.tv_usec = r % 1000000;
-        claim_timer.Add(tv);
+        Event::Duration r = std::chrono::microseconds(random() % 30000000);
+        claim_timer.Schedule(Event::Duration(delta) + r);
         return;
     }
 
@@ -198,7 +191,7 @@ CronQueue::RunClaim()
 void
 CronQueue::ScheduleClaim()
 {
-    claim_timer.Add(EventDuration<1>::value);
+    claim_timer.Schedule(std::chrono::seconds(1));
 }
 
 bool
