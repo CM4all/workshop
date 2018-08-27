@@ -35,7 +35,7 @@
 
 #include "CaptureBuffer.hxx"
 #include "io/UniqueFileDescriptor.hxx"
-#include "event/NewSocketEvent.hxx"
+#include "event/SocketEvent.hxx"
 
 /**
  * Capture up to 8 kB of data from a pipe asynchronously.  This is
@@ -43,7 +43,7 @@
  */
 class PipeCaptureBuffer {
     UniqueFileDescriptor fd;
-    NewSocketEvent event;
+    SocketEvent event;
 
     CaptureBuffer buffer;
 
