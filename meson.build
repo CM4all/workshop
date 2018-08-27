@@ -94,31 +94,16 @@ gtest = declare_dependency(
   compile_args: gtest_compile_args,
 )
 
-boost = dependency('boost', modules: ['system', 'filesystem'], version: '>= 1.54')
-libcurl = dependency('libcurl', version: '>= 7.38')
-libsystemd = dependency('libsystemd')
-libdbus = dependency('dbus-1')
-libcap = dependency('libcap')
-libseccomp = dependency('libseccomp')
-libpq = dependency('libpq', version: '>= 8.4')
+inc = include_directories(
+  'src',
+  'libcommon/src',
 
-inc = include_directories('src', 'libcommon/src')
+  # This is for the BufferedSocket class which this project doesn't
+  # use
+  'libcommon/fake',
+)
 
-util = static_library('util',
-  'libcommon/src/util/AllocatedString.cxx',
-  'libcommon/src/util/Exception.cxx',
-  'libcommon/src/util/LeakDetector.cxx',
-  'libcommon/src/util/PrintException.cxx',
-  'libcommon/src/util/StringBuilder.cxx',
-  'libcommon/src/util/StringCompare.cxx',
-  'libcommon/src/util/StringParser.cxx',
-  'libcommon/src/util/StringStrip.cxx',
-  'libcommon/src/util/StringView.cxx',
-  'libcommon/src/util/djbhash.c',
-  include_directories: inc,
-  dependencies: [
-  ])
-util_dep = declare_dependency(link_with: util)
+subdir('libcommon/src/util')
 
 time = static_library('time',
   'libcommon/src/time/gmtime.c',
@@ -130,187 +115,44 @@ time = static_library('time',
   ])
 time_dep = declare_dependency(link_with: time)
 
-system = static_library('system',
+subdir('libcommon/src/io')
+subdir('libcommon/src/system')
+
+system2 = static_library(
+  'system2',
   'src/system/SetupProcess.cxx',
-  'libcommon/src/system/ProcessName.cxx',
-  'libcommon/src/system/BindMount.cxx',
-  'libcommon/src/system/CapabilityState.cxx',
-  'libcommon/src/system/LinuxFD.cxx',
-  'libcommon/src/system/EpollFD.cxx',
   include_directories: inc,
-  dependencies: [
-    libcap,
-  ])
-system_dep = declare_dependency(link_with: system)
-
-io = static_library('io',
-  'libcommon/src/io/FileDescriptor.cxx',
-  'libcommon/src/io/WriteFile.cxx',
-  'libcommon/src/io/MultiWriteBuffer.cxx',
-  'libcommon/src/io/LineParser.cxx',
-  'libcommon/src/io/FileLineParser.cxx',
-  'libcommon/src/io/ConfigParser.cxx',
-  'libcommon/src/io/Logger.cxx',
-  include_directories: inc,
-  dependencies: [
-    boost,
-    util_dep,
-  ])
-io_dep = declare_dependency(link_with: io)
-
-event = static_library('event',
-  'libcommon/src/event/Loop.cxx',
-  'libcommon/src/event/ShutdownListener.cxx',
-  'libcommon/src/event/CleanupTimer.cxx',
-  'libcommon/src/event/DeferEvent.cxx',
-  'libcommon/src/event/SocketEvent.cxx',
-  'libcommon/src/event/TimerEvent.cxx',
-  'libcommon/src/event/SignalEvent.cxx',
-  'libcommon/src/event/PipeLineReader.cxx',
-  include_directories: inc,
+)
+system_dep = declare_dependency(
+  link_with: system2,
   dependencies: [
     system_dep,
-    util_dep,
-  ])
-event_dep = declare_dependency(link_with: event)
+  ],
+)
 
-net = static_library('net',
-  'libcommon/src/net/SocketConfig.cxx',
-  'libcommon/src/net/SocketDescriptor.cxx',
-  'libcommon/src/net/SocketAddress.cxx',
-  'libcommon/src/net/AllocatedSocketAddress.cxx',
-  'libcommon/src/net/IPv4Address.cxx',
-  'libcommon/src/net/IPv6Address.cxx',
-  'libcommon/src/net/HostParser.cxx',
-  'libcommon/src/net/AddressInfo.cxx',
-  'libcommon/src/net/Parser.cxx',
-  'libcommon/src/net/Resolver.cxx',
-  'libcommon/src/net/RConnectSocket.cxx',
-  'libcommon/src/net/ConnectSocket.cxx',
-  'libcommon/src/net/ToString.cxx',
-  'libcommon/src/net/SendMessage.cxx',
-  'libcommon/src/net/djb/NetstringHeader.cxx',
-  'libcommon/src/net/djb/NetstringGenerator.cxx',
-  'libcommon/src/net/djb/NetstringInput.cxx',
-  'libcommon/src/net/log/Send.cxx',
-  include_directories: inc,
-  dependencies: [
-    event_dep,
-  ])
-net_dep = declare_dependency(link_with: net)
+subdir('libcommon/src/event')
+subdir('libcommon/src/net')
+subdir('libcommon/src/event/net')
+subdir('libcommon/src/curl')
+subdir('libcommon/src/pg')
+subdir('libcommon/src/adata')
+subdir('libcommon/src/odbus')
+subdir('libcommon/src/spawn')
+subdir('libcommon/src/translation')
 
-event_net = static_library('event_net',
-  'libcommon/src/event/net/ConnectSocket.cxx',
-  'libcommon/src/event/net/UdpListener.cxx',
-  'libcommon/src/event/net/djb/NetstringClient.cxx',
-  'libcommon/src/event/net/djb/QmqpClient.cxx',
-  include_directories: inc,
-  dependencies: [
-    event_dep,
-    net_dep,
-    util_dep,
-  ])
-event_net_dep = declare_dependency(link_with: event_net)
-
-curl = static_library('curl',
-  'libcommon/src/curl/Version.cxx',
-  'libcommon/src/curl/Request.cxx',
-  'libcommon/src/curl/Global.cxx',
-  'libcommon/src/curl/Init.cxx',
-  include_directories: inc,
-  dependencies: [
-    libcurl,
-    util_dep,
-    event_dep,
-  ])
-curl_dep = declare_dependency(link_with: curl)
-
-pg = static_library('pg',
-  'libcommon/src/pg/Array.cxx',
-  'libcommon/src/pg/Interval.cxx',
-  'libcommon/src/pg/Timestamp.cxx',
-  'libcommon/src/pg/Connection.cxx',
-  'libcommon/src/pg/AsyncConnection.cxx',
-  'libcommon/src/pg/Result.cxx',
-  'libcommon/src/pg/Reflection.cxx',
-  include_directories: inc,
-  dependencies: [
-    libpq,
-  ])
-pg_dep = declare_dependency(link_with: pg)
-
-adata = static_library('adata',
-  'libcommon/src/adata/ExpandableStringList.cxx',
-  include_directories: inc,
-  dependencies: [
-  ])
-adata_dep = declare_dependency(link_with: adata)
-
-translation = static_library('translation',
+translation2 = static_library(
+  'translation2',
   'src/translation/CronClient.cxx',
   'src/translation/CronGlue.cxx',
-  'libcommon/src/translation/PReader.cxx',
-  'libcommon/src/translation/Parser.cxx',
-  'libcommon/src/translation/Response.cxx',
   include_directories: inc,
-  dependencies: [
-    event_dep,
-    net_dep,
-    adata_dep,
-  ])
+)
 
-odbus = static_library('odbus',
-  'libcommon/src/odbus/Connection.cxx',
-  'libcommon/src/odbus/Message.cxx',
-  'libcommon/src/odbus/Error.cxx',
-  'libcommon/src/odbus/ScopeMatch.cxx',
-  include_directories: inc,
+translation_dep = declare_dependency(
+  link_with: translation2,
   dependencies: [
-    libdbus,
-  ])
-odbus_dep = declare_dependency(link_with: odbus)
-
-spawn = static_library('spawn',
-  'libcommon/src/spawn/SeccompFilter.cxx',
-  'libcommon/src/spawn/SyscallFilter.cxx',
-  'libcommon/src/spawn/Systemd.cxx',
-  'libcommon/src/spawn/Prepared.cxx',
-  'libcommon/src/spawn/Registry.cxx',
-  'libcommon/src/spawn/Direct.cxx',
-  'libcommon/src/spawn/Init.cxx',
-  'libcommon/src/spawn/Interface.cxx',
-  'libcommon/src/spawn/Local.cxx',
-  'libcommon/src/spawn/PidNamespace.cxx',
-  'libcommon/src/spawn/UserNamespace.cxx',
-  'libcommon/src/spawn/NetworkNamespace.cxx',
-  'libcommon/src/spawn/NamespaceOptions.cxx',
-  'libcommon/src/spawn/MountNamespaceOptions.cxx',
-  'libcommon/src/spawn/MountList.cxx',
-  'libcommon/src/spawn/JailConfig.cxx',
-  'libcommon/src/spawn/JailParams.cxx',
-  'libcommon/src/spawn/ChildOptions.cxx',
-  'libcommon/src/spawn/CgroupOptions.cxx',
-  'libcommon/src/spawn/UidGid.cxx',
-  'libcommon/src/spawn/ResourceLimits.cxx',
-  'libcommon/src/spawn/RefenceOptions.cxx',
-  'libcommon/src/spawn/Server.cxx',
-  'libcommon/src/spawn/Launch.cxx',
-  'libcommon/src/spawn/Client.cxx',
-  'libcommon/src/spawn/Glue.cxx',
-  'libcommon/src/spawn/ConfigParser.cxx',
-  'libcommon/src/spawn/daemon/Client.cxx',
-  include_directories: inc,
-  dependencies: [
-    libdbus,
-    libseccomp,
-    libsystemd,
-    system_dep,
-    adata_dep,
-    io_dep,
-    net_dep,
-    odbus_dep,
-  ])
-spawn_dep = declare_dependency(link_with: spawn)
+    translation_dep,
+  ],
+)
 
 executable('cm4all-workshop',
   'src/main.cxx',
@@ -350,13 +192,11 @@ executable('cm4all-workshop',
   'src/control/Server.cxx',
   include_directories: inc,
   dependencies: [
-    boost,
-    libsystemd,
     event_net_dep,
     time_dep,
     system_dep,
     io_dep,
-    declare_dependency(link_with: translation),
+    translation_dep,
     spawn_dep,
     pg_dep,
     curl_dep,
@@ -383,6 +223,7 @@ executable(
 
 subdir('t')
 subdir('libcommon/test/util')
+subdir('libcommon/test/net')
 subdir('libcommon/test/pg')
 subdir('libcommon/test/io')
 subdir('doc')
