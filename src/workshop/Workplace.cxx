@@ -49,6 +49,7 @@
 #include <list>
 
 #include <assert.h>
+#include <sys/socket.h>
 
 std::string
 WorkshopWorkplace::GetRunningPlanNames() const
