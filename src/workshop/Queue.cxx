@@ -300,17 +300,13 @@ WorkshopQueue::Run2()
            second */
         Reschedule();
     } else {
-        struct timeval tv;
-
         GetNextScheduled(&ret);
         if (ret >= 0)
             logger(3, "next scheduled job is in ", ret, " seconds");
         else
             ret = 600;
 
-        tv.tv_sec = ret;
-        tv.tv_usec = 0;
-        ScheduleTimer(tv);
+        ScheduleTimer(std::chrono::seconds(ret));
     }
 }
 

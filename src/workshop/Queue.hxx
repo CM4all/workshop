@@ -35,7 +35,6 @@
 
 #include "event/DeferEvent.hxx"
 #include "event/TimerEvent.hxx"
-#include "event/Duration.hxx"
 #include "pg/AsyncConnection.hxx"
 #include "io/Logger.hxx"
 #include "util/Compiler.h"
@@ -176,8 +175,8 @@ private:
 
     void OnTimer();
 
-    void ScheduleTimer(const struct timeval &tv) {
-        timer_event.Add(tv);
+    void ScheduleTimer(Event::Duration d) {
+        timer_event.Schedule(d);
     }
 
     /**
@@ -185,7 +184,7 @@ private:
      * milliseconds).
      */
     void Reschedule() {
-        ScheduleTimer(EventDuration<0, 10000>::value);
+        ScheduleTimer(std::chrono::milliseconds(10));
     }
 
     /**
