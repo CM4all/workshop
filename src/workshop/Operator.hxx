@@ -33,9 +33,9 @@
 #ifndef WORKSHOP_OPERATOR_HXX
 #define WORKSHOP_OPERATOR_HXX
 
+#include "ControlChannelListener.hxx"
 #include "spawn/ExitListener.hxx"
 #include "event/TimerEvent.hxx"
-#include "event/net/UdpHandler.hxx"
 #include "io/Logger.hxx"
 #include "Job.hxx"
 #include "LogBridge.hxx"
@@ -44,21 +44,22 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 #include <list>
 #include <chrono>
 
 struct Plan;
 class WorkshopWorkplace;
 class ProgressReader;
-class UdpListener;
+class WorkshopControlChannelServer;
 class UniqueFileDescriptor;
 class UniqueSocketDescriptor;
 
 /** an operator is a job being executed */
 class WorkshopOperator final
 	: public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>,
-	  public ExitListener, UdpHandler, LoggerDomainFactory
+	  public ExitListener,
+	WorkshopControlChannelListener,
+	LoggerDomainFactory
 {
 
 	EventLoop &event_loop;
@@ -84,7 +85,7 @@ class WorkshopOperator final
 
 	std::unique_ptr<ProgressReader> progress_reader;
 
-	std::unique_ptr<UdpListener> control_channel;
+	std::unique_ptr<WorkshopControlChannelServer> control_channel;
 
 	LogBridge log;
 
@@ -136,12 +137,13 @@ private:
 	/* virtual methods from LoggerDomainFactory */
 	std::string MakeLoggerDomain() const noexcept override;
 
-	/* virtual methods from UdpHandler */
-	bool OnUdpDatagram(const void *data, size_t length,
-			   SocketAddress address, int uid) override;
-	void OnUdpError(std::exception_ptr ep) noexcept override;
-
-	bool OnControl(std::vector<std::string> &&args) noexcept;
+	/* virtual methods from WorkshopControlChannelListener */
+	void OnControlProgress(unsigned progress) noexcept override;
+	void OnControlSetEnv(const char *s) noexcept override;
+	void OnControlAgain(std::chrono::seconds d) noexcept override;
+	void OnControlTemporaryError(std::exception_ptr e) noexcept override;
+	void OnControlPermanentError(std::exception_ptr e) noexcept override;
+	void OnControlClosed() noexcept override;
 };
 
 #endif

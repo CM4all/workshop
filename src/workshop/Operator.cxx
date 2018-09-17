@@ -32,18 +32,15 @@
 
 #include "Operator.hxx"
 #include "ProgressReader.hxx"
+#include "ControlChannelServer.hxx"
 #include "Expand.hxx"
 #include "Workplace.hxx"
 #include "Plan.hxx"
 #include "Job.hxx"
 #include "LogBridge.hxx"
 #include "event/net/UdpListener.hxx"
-#include "net/SocketAddress.hxx"
-#include "system/Error.hxx"
 #include "util/RuntimeError.hxx"
-#include "util/StringView.hxx"
 #include "util/StringFormat.hxx"
-#include "util/IterableSplitString.hxx"
 
 #include <map>
 
@@ -64,9 +61,9 @@ WorkshopOperator::WorkshopOperator(EventLoop &_event_loop,
 	 logger(*this),
 	 timeout_event(event_loop, BIND_THIS_METHOD(OnTimeout)),
 	 control_channel(control_socket.IsDefined()
-			 ? new UdpListener(event_loop,
-					   std::move(control_socket),
-					   *this)
+			 ? new WorkshopControlChannelServer(event_loop,
+							    std::move(control_socket),
+							    *this)
 			 : nullptr),
 	 log(event_loop, job.plan_name.c_str(), job.id.c_str(),
 	     std::move(stderr_read_pipe))
@@ -191,106 +188,43 @@ WorkshopOperator::MakeLoggerDomain() const noexcept
 	return StringFormat<64>("job %s pid=%d", job.id.c_str(), int(pid)).c_str();
 }
 
-gcc_pure
-static StringView
-FirstLine(StringView s) noexcept
+void
+WorkshopOperator::OnControlProgress(unsigned progress) noexcept
 {
-	const char *newline = s.Find('\n');
-	if (newline != nullptr)
-		s.SetEnd(newline);
-	return s;
-}
-
-gcc_pure
-static std::vector<std::string>
-SplitArgs(StringView s) noexcept
-{
-	std::vector<std::string> result;
-	for (StringView i : IterableSplitString(s, ' '))
-		result.emplace_back(i.data, i.size);
-	return result;
-}
-
-bool
-WorkshopOperator::OnUdpDatagram(const void *data, size_t length,
-				SocketAddress, int)
-{
-	if (length == 0) {
-		control_channel.reset();
-		return false;
-	}
-
-	const StringView payload((const char *)data, length);
-	return OnControl(SplitArgs(FirstLine(payload)));
+	OnProgress(progress);
 }
 
 void
-WorkshopOperator::OnUdpError(std::exception_ptr ep) noexcept
+WorkshopOperator::OnControlSetEnv(const char *s) noexcept
+{
+	try {
+		job.SetEnv(s);
+	} catch (...) {
+		logger(1, "Failed to 'setenv': ", std::current_exception());
+	}
+}
+
+void
+WorkshopOperator::OnControlAgain(std::chrono::seconds d) noexcept
+{
+	again = d;
+}
+
+void
+WorkshopOperator::OnControlTemporaryError(std::exception_ptr ep) noexcept
+{
+	logger(3, "error on control channel", ep);
+}
+
+void
+WorkshopOperator::OnControlPermanentError(std::exception_ptr ep) noexcept
 {
 	control_channel.reset();
 	logger(3, "error on control channel", ep);
 }
 
-bool
-WorkshopOperator::OnControl(std::vector<std::string> &&args) noexcept
+void
+WorkshopOperator::OnControlClosed() noexcept
 {
-	const auto &cmd = args.front();
-
-	if (cmd == "progress") {
-		if (args.size() != 2) {
-			logger(2, "malformed progress command on control channel");
-			return true;
-		}
-
-		char *endptr;
-		auto progress = strtoul(args[1].c_str(), &endptr, 10);
-		if (*endptr != 0 || progress > 100) {
-			logger(2, "malformed progress command on control channel");
-			return true;
-		}
-
-		OnProgress(progress);
-
-		return true;
-	} else if (cmd == "setenv") {
-		if (args.size() != 2) {
-			logger(2, "malformed 'setenv' command on control channel");
-			return true;
-		}
-
-		try {
-			job.SetEnv(args[1].c_str());
-		} catch (...) {
-			logger(1, "Failed to 'setenv': ", std::current_exception());
-		}
-
-		return true;
-	} else if (cmd == "again") {
-		if (args.size() > 2) {
-			logger(2, "malformed 'again' command on control channel");
-			return true;
-		}
-
-		if (args.size() >= 2) {
-			const char *s = args[1].c_str();
-			char *endptr;
-			auto value = strtoull(s, &endptr, 10);
-			if (endptr == s || *endptr != 0 || value > 3600 * 24) {
-				logger(2, "malformed 'again' parameter on control channel");
-				return true;
-			}
-
-			again = std::chrono::seconds(value);
-		} else
-			again = std::chrono::seconds();
-
-		return true;
-	} else if (cmd == "version") {
-		StringView payload("version " VERSION);
-		control_channel->GetSocket().Write(payload.data, payload.size);
-		return true;
-	} else {
-		logger(2, "unknown command on control channel: '", cmd, "'");
-		return true;
-	}
+	control_channel.reset();
 }
