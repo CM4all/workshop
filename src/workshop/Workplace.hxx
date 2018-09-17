@@ -50,74 +50,75 @@ class SpawnService;
 class ExitListener;
 
 class WorkshopWorkplace {
-    SpawnService &spawn_service;
-    ExitListener &exit_listener;
+	SpawnService &spawn_service;
+	ExitListener &exit_listener;
 
-    const ChildLogger logger;
+	const ChildLogger logger;
 
-    const std::string node_name;
+	const std::string node_name;
 
-    typedef boost::intrusive::list<WorkshopOperator,
-                                   boost::intrusive::constant_time_size<true>> OperatorList;
+	typedef boost::intrusive::list<WorkshopOperator,
+				       boost::intrusive::constant_time_size<true>> OperatorList;
 
-    OperatorList operators;
+	OperatorList operators;
 
-    const unsigned max_operators;
-    const bool enable_journal;
+	const unsigned max_operators;
+	const bool enable_journal;
 
 public:
-    WorkshopWorkplace(SpawnService &_spawn_service,
-                      ExitListener &_exit_listener,
-                      const Logger &parent_logger,
-                      const char *_node_name,
-                      unsigned _max_operators,
-                      bool _enable_journal)
-        :spawn_service(_spawn_service), exit_listener(_exit_listener),
-         logger(parent_logger, "workplace"),
-         node_name(_node_name),
-         max_operators(_max_operators),
-         enable_journal(_enable_journal) {
-        assert(max_operators > 0);
-    }
+	WorkshopWorkplace(SpawnService &_spawn_service,
+			  ExitListener &_exit_listener,
+			  const Logger &parent_logger,
+			  const char *_node_name,
+			  unsigned _max_operators,
+			  bool _enable_journal)
+		:spawn_service(_spawn_service), exit_listener(_exit_listener),
+		 logger(parent_logger, "workplace"),
+		 node_name(_node_name),
+		 max_operators(_max_operators),
+		 enable_journal(_enable_journal)
+	{
+		assert(max_operators > 0);
+	}
 
-    WorkshopWorkplace(const WorkshopWorkplace &other) = delete;
+	WorkshopWorkplace(const WorkshopWorkplace &other) = delete;
 
-    ~WorkshopWorkplace() {
-        assert(operators.empty());
-    }
+	~WorkshopWorkplace() {
+		assert(operators.empty());
+	}
 
-    gcc_pure
-    const char *GetNodeName() const {
-        return node_name.c_str();
-    }
+	gcc_pure
+	const char *GetNodeName() const {
+		return node_name.c_str();
+	}
 
-    bool IsEmpty() const {
-        return operators.empty();
-    }
+	bool IsEmpty() const {
+		return operators.empty();
+	}
 
-    bool IsFull() const {
-        return operators.size() == max_operators;
-    }
+	bool IsFull() const {
+		return operators.size() == max_operators;
+	}
 
-    gcc_pure
-    std::string GetRunningPlanNames() const;
+	gcc_pure
+	std::string GetRunningPlanNames() const;
 
-    /**
-     * Returns the plan names which have reached their concurrency
-     * limit.
-     */
-    gcc_pure
-    std::string GetFullPlanNames() const;
+	/**
+	 * Returns the plan names which have reached their concurrency
+	 * limit.
+	 */
+	gcc_pure
+	std::string GetFullPlanNames() const;
 
-    /**
-     * Throws std::runtime_error on error.
-     */
-    void Start(EventLoop &event_loop, const WorkshopJob &job,
-               std::shared_ptr<Plan> plan,
-               size_t max_log);
+	/**
+	 * Throws std::runtime_error on error.
+	 */
+	void Start(EventLoop &event_loop, const WorkshopJob &job,
+		   std::shared_ptr<Plan> plan,
+		   size_t max_log);
 
-    void OnExit(WorkshopOperator *o);
-    void OnTimeout(WorkshopOperator *o, int pid);
+	void OnExit(WorkshopOperator *o);
+	void OnTimeout(WorkshopOperator *o, int pid);
 };
 
 #endif

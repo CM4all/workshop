@@ -54,172 +54,172 @@
 std::string
 WorkshopWorkplace::GetRunningPlanNames() const
 {
-    std::set<std::string> list;
-    for (const auto &o : operators)
-        list.emplace(o.GetPlanName());
+	std::set<std::string> list;
+	for (const auto &o : operators)
+		list.emplace(o.GetPlanName());
 
-    return Pg::EncodeArray(list);
+	return Pg::EncodeArray(list);
 }
 
 std::string
 WorkshopWorkplace::GetFullPlanNames() const
 {
-    std::map<std::string, unsigned> counters;
-    std::set<std::string> list;
-    for (const auto &o : operators) {
-        const Plan &plan = o.GetPlan();
-        if (plan.concurrency == 0)
-            continue;
+	std::map<std::string, unsigned> counters;
+	std::set<std::string> list;
+	for (const auto &o : operators) {
+		const Plan &plan = o.GetPlan();
+		if (plan.concurrency == 0)
+			continue;
 
-        const std::string &plan_name = o.GetPlanName();
+		const std::string &plan_name = o.GetPlanName();
 
-        auto i = counters.emplace(plan_name, 0);
-        unsigned &n = i.first->second;
+		auto i = counters.emplace(plan_name, 0);
+		unsigned &n = i.first->second;
 
-        ++n;
+		++n;
 
-        assert(n <= plan.concurrency || list.find(plan_name) != list.end());
+		assert(n <= plan.concurrency || list.find(plan_name) != list.end());
 
-        if (n == plan.concurrency)
-            list.emplace(plan_name);
-    }
+		if (n == plan.concurrency)
+			list.emplace(plan_name);
+	}
 
-    return Pg::EncodeArray(list);
+	return Pg::EncodeArray(list);
 }
 
 void
 WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
-                         std::shared_ptr<Plan> plan,
-                         size_t max_log)
+			 std::shared_ptr<Plan> plan,
+			 size_t max_log)
 {
-    assert(!plan->args.empty());
+	assert(!plan->args.empty());
 
-    /* create stdout/stderr pipes */
+	/* create stdout/stderr pipes */
 
-    UniqueFileDescriptor stderr_r, stderr_w;
-    if (!UniqueFileDescriptor::CreatePipe(stderr_r, stderr_w))
-        throw MakeErrno("pipe() failed");
+	UniqueFileDescriptor stderr_r, stderr_w;
+	if (!UniqueFileDescriptor::CreatePipe(stderr_r, stderr_w))
+		throw MakeErrno("pipe() failed");
 
-    /* create control socket */
+	/* create control socket */
 
-    UniqueSocketDescriptor control_parent, control_child;
-    if (plan->control_channel) {
-        if (!UniqueSocketDescriptor::CreateSocketPair(AF_LOCAL, SOCK_SEQPACKET, 0,
-                                                      control_parent, control_child))
-            throw MakeErrno("socketpair() failed");
-    }
+	UniqueSocketDescriptor control_parent, control_child;
+	if (plan->control_channel) {
+		if (!UniqueSocketDescriptor::CreateSocketPair(AF_LOCAL, SOCK_SEQPACKET, 0,
+							      control_parent, control_child))
+			throw MakeErrno("socketpair() failed");
+	}
 
-    /* create operator object */
+	/* create operator object */
 
-    auto o = std::make_unique<WorkshopOperator>(event_loop, *this, job, plan,
-                                                std::move(stderr_r),
-                                                std::move(control_parent),
-                                                max_log,
-                                                enable_journal);
+	auto o = std::make_unique<WorkshopOperator>(event_loop, *this, job, plan,
+						    std::move(stderr_r),
+						    std::move(control_parent),
+						    max_log,
+						    enable_journal);
 
-    PreparedChildProcess p;
-    p.hook_info = job.plan_name.c_str();
-    p.SetStderr(std::move(stderr_w));
+	PreparedChildProcess p;
+	p.hook_info = job.plan_name.c_str();
+	p.SetStderr(std::move(stderr_w));
 
-    if (control_child.IsDefined())
-        p.SetControl(std::move(control_child));
+	if (control_child.IsDefined())
+		p.SetControl(std::move(control_child));
 
-    if (!debug_mode) {
-        p.uid_gid.uid = plan->uid;
-        p.uid_gid.gid = plan->gid;
+	if (!debug_mode) {
+		p.uid_gid.uid = plan->uid;
+		p.uid_gid.gid = plan->gid;
 
-        std::copy(plan->groups.begin(), plan->groups.end(),
-                  p.uid_gid.groups.begin());
-    }
+		std::copy(plan->groups.begin(), plan->groups.end(),
+			  p.uid_gid.groups.begin());
+	}
 
-    if (!plan->chroot.empty())
-        p.chroot = plan->chroot.c_str();
+	if (!plan->chroot.empty())
+		p.chroot = plan->chroot.c_str();
 
-    p.umask = plan->umask;
-    p.rlimits = plan->rlimits;
-    p.priority = plan->priority;
-    p.sched_idle = plan->sched_idle;
-    p.ioprio_idle = plan->ioprio_idle;
-    p.ns.enable_network = plan->private_network;
+	p.umask = plan->umask;
+	p.rlimits = plan->rlimits;
+	p.priority = plan->priority;
+	p.sched_idle = plan->sched_idle;
+	p.ioprio_idle = plan->ioprio_idle;
+	p.ns.enable_network = plan->private_network;
 
-    /* use a per-plan cgroup */
+	/* use a per-plan cgroup */
 
-    if (auto *client = dynamic_cast<SpawnServerClient *>(&spawn_service))
-        if (client->SupportsCgroups())
-            p.cgroup.name = job.plan_name.c_str();
+	if (auto *client = dynamic_cast<SpawnServerClient *>(&spawn_service))
+		if (client->SupportsCgroups())
+			p.cgroup.name = job.plan_name.c_str();
 
-    /* create stdout/stderr pipes */
+	/* create stdout/stderr pipes */
 
-    if (plan->control_channel) {
-        /* copy stdout to stderr into the "log" column */
-        p.SetStdout(p.stderr_fd);
-    } else {
-        /* if there is no control channel, read progress from the
-           stdout pipe */
-        UniqueFileDescriptor stdout_r, stdout_w;
-        if (!UniqueFileDescriptor::CreatePipe(stdout_r, stdout_w))
-            throw MakeErrno("pipe() failed");
+	if (plan->control_channel) {
+		/* copy stdout to stderr into the "log" column */
+		p.SetStdout(p.stderr_fd);
+	} else {
+		/* if there is no control channel, read progress from the
+		   stdout pipe */
+		UniqueFileDescriptor stdout_r, stdout_w;
+		if (!UniqueFileDescriptor::CreatePipe(stdout_r, stdout_w))
+			throw MakeErrno("pipe() failed");
 
-        o->SetOutput(std::move(stdout_r));
-        p.SetStdout(std::move(stdout_w));
-    }
+		o->SetOutput(std::move(stdout_r));
+		p.SetStdout(std::move(stdout_w));
+	}
 
-    if (!job.syslog_server.empty()) {
-        o->CreateSyslogClient(node_name.c_str(), 1,
-                              job.syslog_server.c_str());
-    }
+	if (!job.syslog_server.empty()) {
+		o->CreateSyslogClient(node_name.c_str(), 1,
+				      job.syslog_server.c_str());
+	}
 
-    /* build command line */
+	/* build command line */
 
-    std::list<std::string> args;
-    args.insert(args.end(), plan->args.begin(), plan->args.end());
-    args.insert(args.end(), job.args.begin(), job.args.end());
+	std::list<std::string> args;
+	args.insert(args.end(), plan->args.begin(), plan->args.end());
+	args.insert(args.end(), job.args.begin(), job.args.end());
 
-    o->Expand(args);
+	o->Expand(args);
 
-    for (const auto &i : args) {
-        if (p.args.size() >= 4096)
-            throw std::runtime_error("Too many command-line arguments");
+	for (const auto &i : args) {
+		if (p.args.size() >= 4096)
+			throw std::runtime_error("Too many command-line arguments");
 
-        p.args.push_back(i.c_str());
-    }
+		p.args.push_back(i.c_str());
+	}
 
-    for (const auto &i : job.env) {
-        if (p.env.size() >= 64)
-            throw std::runtime_error("Too many environment variables");
+	for (const auto &i : job.env) {
+		if (p.env.size() >= 64)
+			throw std::runtime_error("Too many environment variables");
 
-        if (StringStartsWith(i.c_str(), "LD_"))
-            /* reject - too dangerous */
-            continue;
+		if (StringStartsWith(i.c_str(), "LD_"))
+			/* reject - too dangerous */
+			continue;
 
-        p.env.push_back(i.c_str());
-    }
+		p.env.push_back(i.c_str());
+	}
 
-    /* fork */
+	/* fork */
 
-    const auto pid = spawn_service.SpawnChildProcess(job.id.c_str(),
-                                                     std::move(p),
-                                                     o.get());
-    o->SetPid(pid);
+	const auto pid = spawn_service.SpawnChildProcess(job.id.c_str(),
+							 std::move(p),
+							 o.get());
+	o->SetPid(pid);
 
-    logger(2, "job ", job.id, " (plan '", job.plan_name,
-           "') running as pid ", pid);
+	logger(2, "job ", job.id, " (plan '", job.plan_name,
+	       "') running as pid ", pid);
 
-    operators.push_back(*o.release());
+	operators.push_back(*o.release());
 }
 
 void
 WorkshopWorkplace::OnExit(WorkshopOperator *o)
 {
-    operators.erase(operators.iterator_to(*o));
-    delete o;
+	operators.erase(operators.iterator_to(*o));
+	delete o;
 
-    exit_listener.OnChildProcessExit(-1);
+	exit_listener.OnChildProcessExit(-1);
 }
 
 void
 WorkshopWorkplace::OnTimeout(WorkshopOperator *o, int pid)
 {
-    spawn_service.KillChildProcess(pid);
-    OnExit(o);
+	spawn_service.KillChildProcess(pid);
+	OnExit(o);
 }
