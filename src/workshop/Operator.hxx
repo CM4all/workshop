@@ -36,12 +36,11 @@
 #include "spawn/ExitListener.hxx"
 #include "event/TimerEvent.hxx"
 #include "event/net/UdpHandler.hxx"
-#include "io/UniqueFileDescriptor.hxx"
 #include "io/Logger.hxx"
 #include "Job.hxx"
 #include "LogBridge.hxx"
 
-#include <boost/intrusive/list.hpp>
+#include <boost/intrusive/list_hook.hpp>
 
 #include <memory>
 #include <string>
@@ -53,6 +52,7 @@ struct Plan;
 class WorkshopWorkplace;
 class ProgressReader;
 class UdpListener;
+class UniqueFileDescriptor;
 class UniqueSocketDescriptor;
 
 /** an operator is a job being executed */
