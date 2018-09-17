@@ -65,6 +65,10 @@ public:
                       const WorkshopPartitionConfig &config,
                       BoundMethod<void()> _idle_callback);
 
+    auto &GetEventLoop() const noexcept {
+        return queue.GetEventLoop();
+    }
+
     bool IsIdle() const {
         return workplace.IsEmpty();
     }

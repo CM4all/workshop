@@ -97,6 +97,10 @@ public:
                   Callback _callback);
     ~WorkshopQueue();
 
+    auto &GetEventLoop() const noexcept {
+        return timer_event.GetEventLoop();
+    }
+
     gcc_pure
     const char *GetNodeName() const {
         return node_name.c_str();
