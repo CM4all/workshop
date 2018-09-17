@@ -55,6 +55,16 @@ Description: Control client for Workshop
  .
  This package contains the control client.
 
+Package: cm4all-workshop-dev
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Development tools for Workshop
+ cm4all-workshop is a daemon which reads jobs from a database queue
+ (PostgreSQL) and executes them.  Multiple instances distributed over
+ a network can read the queue at the same time.
+ .
+ This package contains development tools.
+
 Package: cm4all-workshop-doc
 Section: non-free/doc
 Architecture: all

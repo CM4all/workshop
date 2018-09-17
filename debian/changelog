@@ -1,6 +1,7 @@
 cm4all-workshop (3.0.4) unstable; urgency=low
 
   * eliminate dependency on libevent
+  * add "-dev" package with command-line tool "cm4all-workshop-run-job"
 
  --   
 

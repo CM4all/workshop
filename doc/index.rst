@@ -277,6 +277,25 @@ During job execution, the columns `node_name` and `progress` are set.
 Upon completion, the columns `time_done` and `status` contain
 interesting data.
 
+Development
+^^^^^^^^^^^
+
+The package :file:`cm4all-workshop-dev` contains the tool
+:file:`cm4all-workshop-run-job` which allows running a job on the
+command line without a Workshopm daemon and without a database.  This
+may help during plan/job development.
+
+Example::
+
+  cm4all-workshop-run-job /usr/bin/my-plan --foo
+  cm4all-workshop-run-job --control-channel /usr/bin/my-plan --foo
+
+The option :option:`--control-channel` enables the control channel
+which behaves like the plan option :samp:`control_channel`; without
+it, the legacy protocol is enabled which reads progress values from a
+pipe connected to the child's ``stdout``.
+
+
 Using the systemd journal
 -------------------------
 

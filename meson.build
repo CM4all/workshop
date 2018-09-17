@@ -220,6 +220,19 @@ executable(
   ]
 )
 
+executable(
+  'cm4all-workshop-run-job',
+  'src/workshop/RunJob.cxx',
+  'src/workshop/ControlChannelServer.cxx',
+  'src/workshop/ProgressReader.cxx',
+  'src/AllocatorPtr.cxx',
+  include_directories: inc,
+  dependencies: [
+    spawn_dep,
+    event_net_dep,
+  ],
+)
+
 subdir('t')
 subdir('libcommon/test/util')
 subdir('libcommon/test/net')
