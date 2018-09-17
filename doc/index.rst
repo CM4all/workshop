@@ -342,6 +342,10 @@ The following commands are implemented:
 
 * :samp:`nop`: No-op, does nothing.
 
+.. note::
+
+   This feature is not to be confused with the `Control Channel`_,
+   which is a way for a job process to control its (re)execution.
 
 
 Reference
