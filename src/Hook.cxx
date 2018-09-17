@@ -56,10 +56,10 @@ bool
 Instance::Verify(const PreparedChildProcess &p)
 {
     if (p.hook_info != nullptr && library) {
-        library->Update(false);
+        library->Update(event_loop.SteadyNow(), false);
 
         const char *plan_name = p.hook_info;
-        auto plan = library->Get(plan_name);
+        auto plan = library->Get(event_loop.SteadyNow(), plan_name);
         if (!plan)
             throw FormatRuntimeError("No such plan: %s", plan_name);
 

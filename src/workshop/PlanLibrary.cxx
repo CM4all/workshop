@@ -67,10 +67,8 @@ is_valid_plan_name(const char *name)
 }
 
 bool
-Library::UpdatePlans()
+Library::UpdatePlans(std::chrono::steady_clock::time_point now)
 {
-    const auto now = std::chrono::steady_clock::now();
-
     struct dirent *ent;
 
     /* read list of plans from file system, update our list */
@@ -128,7 +126,7 @@ Library::UpdatePlans()
 }
 
 bool
-Library::Update(bool force)
+Library::Update(std::chrono::steady_clock::time_point now, bool force)
 {
     int ret;
     struct stat st;
@@ -146,13 +144,12 @@ Library::Update(bool force)
         return false;
     }
 
-    const auto now = std::chrono::steady_clock::now();
     if (!force && st.st_mtime == mtime && now < next_plans_check)
         return false;
 
     /* do it */
 
-    bool modified = UpdatePlans();
+    bool modified = UpdatePlans(now);
 
     /* update mtime */
 
@@ -163,15 +160,13 @@ Library::Update(bool force)
 }
 
 std::shared_ptr<Plan>
-Library::Get(const char *name)
+Library::Get(std::chrono::steady_clock::time_point now, const char *name)
 {
     auto i = plans.find(name);
     if (i == plans.end())
         return nullptr;
 
     PlanEntry &entry = i->second;
-
-    const auto now = std::chrono::steady_clock::now();
 
     UpdatePlan(name, entry, now);
     if (!entry.IsAvailable(now))

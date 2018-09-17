@@ -111,7 +111,7 @@ public:
      * @return true if the library was modified (at least one plan has
      * been added, modified or deleted)
      */
-    bool Update(bool force);
+    bool Update(std::chrono::steady_clock::time_point now, bool force);
 
     template<typename F>
     void VisitPlans(std::chrono::steady_clock::time_point now, F &&f) const {
@@ -124,7 +124,8 @@ public:
         }
     }
 
-    std::shared_ptr<Plan> Get(const char *name);
+    std::shared_ptr<Plan> Get(std::chrono::steady_clock::time_point now,
+                              const char *name);
 
 private:
     PlanEntry &MakePlanEntry(const char *name) {
@@ -162,7 +163,7 @@ private:
     /**
      * @return whether the plan was modified
      */
-    bool UpdatePlans();
+    bool UpdatePlans(std::chrono::steady_clock::time_point now);
 };
 
 #endif

@@ -49,10 +49,10 @@ public:
         libraries.emplace_front(std::move(_path));
     }
 
-    bool Update(bool force) {
+    bool Update(std::chrono::steady_clock::time_point now, bool force) {
         bool modified = false;
         for (auto &i : libraries)
-            if (i.Update(force))
+            if (i.Update(now, force))
                 modified = true;
         return modified;
     }
@@ -63,7 +63,8 @@ public:
             i.VisitPlans(now, f);
     }
 
-    std::shared_ptr<Plan> Get(const char *name);
+    std::shared_ptr<Plan> Get(std::chrono::steady_clock::time_point now,
+                              const char *name);
 };
 
 #endif

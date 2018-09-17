@@ -66,7 +66,7 @@ void
 WorkshopPartition::UpdateFilter()
 {
     std::set<std::string> available_plans;
-    library.VisitPlans(std::chrono::steady_clock::now(),
+    library.VisitPlans(GetEventLoop().SteadyNow(),
                        [&available_plans](const std::string &name, const Plan &){
                            available_plans.emplace(name);
                        });
@@ -85,7 +85,7 @@ WorkshopPartition::UpdateLibraryAndFilter(bool force)
 bool
 WorkshopPartition::StartJob(WorkshopJob &&job)
 {
-    auto plan = library.Get(job.plan_name.c_str());
+    auto plan = library.Get(GetEventLoop().SteadyNow(), job.plan_name.c_str());
     if (!plan) {
         logger(1, "library_get('", job.plan_name, "') failed");
         queue.RollbackJob(job);

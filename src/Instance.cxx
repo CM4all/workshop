@@ -101,7 +101,7 @@ Instance::UpdateLibraryAndFilter(bool force)
 {
     assert(library);
 
-    library->Update(force);
+    library->Update(event_loop.SteadyNow(), force);
     UpdateFilter();
 }
 
