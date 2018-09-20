@@ -12,6 +12,7 @@ Build-Depends: debhelper (>= 10), dh-systemd,
  libboost-filesystem-dev (>= 1.54),
  libpq-dev (>= 8.4),
  libcurl4-openssl-dev (>= 7.38),
+ libgtest-dev,
  python3-sphinx
 Standards-Version: 3.9.3
 Vcs-git: git@dev.intern.cm-ag:max/workshop.git
