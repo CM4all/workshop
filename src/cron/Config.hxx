@@ -38,31 +38,31 @@
 #include <string>
 
 struct CronPartitionConfig {
-    /**
-     * Partition name.  Empty when not specified.
-     */
-    std::string name;
+	/**
+	 * Partition name.  Empty when not specified.
+	 */
+	std::string name;
 
-    /**
-     * Partition tag for #TRANSLATE_LISTENER_TAG.  Empty when not
-     * specified.
-     */
-    std::string tag;
+	/**
+	 * Partition tag for #TRANSLATE_LISTENER_TAG.  Empty when not
+	 * specified.
+	 */
+	std::string tag;
 
-    std::string database, database_schema;
+	std::string database, database_schema;
 
-    std::string translation_socket;
+	std::string translation_socket;
 
-    AllocatedSocketAddress qmqp_server;
+	AllocatedSocketAddress qmqp_server;
 
-    /**
-     * The Pond server to receive the output of job processes.
-     */
-    AllocatedSocketAddress pond_server;
+	/**
+	 * The Pond server to receive the output of job processes.
+	 */
+	AllocatedSocketAddress pond_server;
 
-    explicit CronPartitionConfig(std::string &&_name):name(std::move(_name)) {}
+	explicit CronPartitionConfig(std::string &&_name):name(std::move(_name)) {}
 
-    void Check() const;
+	void Check() const;
 };
 
 #endif

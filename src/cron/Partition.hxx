@@ -49,59 +49,59 @@ class SpawnService;
 class EmailService;
 
 class CronPartition final : ExitListener {
-    const char *const name;
-    const char *const tag;
-    const char *const translation_socket;
+	const char *const name;
+	const char *const tag;
+	const char *const translation_socket;
 
-    Logger logger;
+	Logger logger;
 
-    std::unique_ptr<EmailService> email_service;
+	std::unique_ptr<EmailService> email_service;
 
-    const UniqueSocketDescriptor pond_socket;
+	const UniqueSocketDescriptor pond_socket;
 
-    CronQueue queue;
+	CronQueue queue;
 
-    CronWorkplace workplace;
+	CronWorkplace workplace;
 
-    BoundMethod<void()> idle_callback;
+	BoundMethod<void()> idle_callback;
 
 public:
-    CronPartition(EventLoop &event_loop,
-                  SpawnService &_spawn_service,
-                  CurlGlobal &_curl,
-                  const Config &root_config,
-                  const CronPartitionConfig &config,
-                  BoundMethod<void()> _idle_callback);
+	CronPartition(EventLoop &event_loop,
+		      SpawnService &_spawn_service,
+		      CurlGlobal &_curl,
+		      const Config &root_config,
+		      const CronPartitionConfig &config,
+		      BoundMethod<void()> _idle_callback);
 
-    ~CronPartition();
+	~CronPartition();
 
-    bool IsIdle() const {
-        return workplace.IsEmpty();
-    }
+	bool IsIdle() const {
+		return workplace.IsEmpty();
+	}
 
-    void Start() {
-        queue.Connect();
-    }
+	void Start() {
+		queue.Connect();
+	}
 
-    void Close() {
-        queue.Close();
-    }
+	void Close() {
+		queue.Close();
+	}
 
-    void BeginShutdown();
+	void BeginShutdown();
 
-    void DisableQueue() {
-        queue.DisableAdmin();
-    }
+	void DisableQueue() {
+		queue.DisableAdmin();
+	}
 
-    void EnableQueue() {
-        queue.EnableAdmin();
-    }
+	void EnableQueue() {
+		queue.EnableAdmin();
+	}
 
 private:
-    void OnJob(CronJob &&job);
+	void OnJob(CronJob &&job);
 
-    /* virtual methods from ExitListener */
-    void OnChildProcessExit(int status) override;
+	/* virtual methods from ExitListener */
+	void OnChildProcessExit(int status) override;
 };
 
 #endif

@@ -54,116 +54,116 @@
 static bool
 IsURL(const char *command)
 {
-    return StringStartsWith(command, "http://") ||
-        StringStartsWith(command, "https://");
+	return StringStartsWith(command, "http://") ||
+		StringStartsWith(command, "https://");
 }
 
 static std::unique_ptr<CronOperator>
 MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
-                  const char *translation_socket,
-                  const char *partition_name, const char *listener_tag,
-                  CronJob &&job, const char *command,
-                  std::string &&start_time)
+		  const char *translation_socket,
+		  const char *partition_name, const char *listener_tag,
+		  CronJob &&job, const char *command,
+		  std::string &&start_time)
 {
-    const char *uri = StringStartsWith(command, "urn:")
-        ? command
-        : nullptr;
+	const char *uri = StringStartsWith(command, "urn:")
+		? command
+		: nullptr;
 
-    /* prepare the child process */
+	/* prepare the child process */
 
-    PreparedChildProcess p;
+	PreparedChildProcess p;
 
-    if (uri == nullptr) {
-        p.args.push_back("/bin/sh");
-        p.args.push_back("-c");
-        p.args.push_back(command);
-    }
+	if (uri == nullptr) {
+		p.args.push_back("/bin/sh");
+		p.args.push_back("-c");
+		p.args.push_back(command);
+	}
 
-    Allocator alloc;
+	Allocator alloc;
 
-    try {
-        const auto response = TranslateCron(alloc, translation_socket,
-                                            partition_name, listener_tag,
-                                            job.account_id.c_str(),
-                                            uri,
-                                            job.translate_param.empty()
-                                            ? nullptr
-                                            : job.translate_param.c_str());
+	try {
+		const auto response = TranslateCron(alloc, translation_socket,
+						    partition_name, listener_tag,
+						    job.account_id.c_str(),
+						    uri,
+						    job.translate_param.empty()
+						    ? nullptr
+						    : job.translate_param.c_str());
 
-        if (uri != nullptr) {
-            if (response.execute == nullptr)
-                throw std::runtime_error("No EXECUTE from translation server");
+		if (uri != nullptr) {
+			if (response.execute == nullptr)
+				throw std::runtime_error("No EXECUTE from translation server");
 
-            p.args.push_back(alloc.Dup(response.execute));
+			p.args.push_back(alloc.Dup(response.execute));
 
-            for (const char *arg : response.args) {
-                if (p.args.size() >= 4096)
-                    throw std::runtime_error("Too many APPEND packets from translation server");
+			for (const char *arg : response.args) {
+				if (p.args.size() >= 4096)
+					throw std::runtime_error("Too many APPEND packets from translation server");
 
-                p.args.push_back(alloc.Dup(arg));
-            }
-        }
+				p.args.push_back(alloc.Dup(arg));
+			}
+		}
 
-        response.child_options.CopyTo(p);
-    } catch (const std::exception &e) {
-        queue.Finish(job);
-        queue.InsertResult(job, start_time.c_str(), -1, e.what());
-        std::throw_with_nested(FormatRuntimeError("Failed to translate job '%s'",
-                                                  job.id.c_str()));
-    }
+		response.child_options.CopyTo(p);
+	} catch (const std::exception &e) {
+		queue.Finish(job);
+		queue.InsertResult(job, start_time.c_str(), -1, e.what());
+		std::throw_with_nested(FormatRuntimeError("Failed to translate job '%s'",
+							  job.id.c_str()));
+	}
 
-    /* create operator object */
+	/* create operator object */
 
-    auto o = std::make_unique<CronSpawnOperator>(queue, workplace,
-                                                 workplace.GetSpawnService(),
-                                                 std::move(job),
-                                                 std::move(start_time));
-    o->Spawn(std::move(p), workplace.GetPondSocket());
-    return std::unique_ptr<CronOperator>(std::move(o));
+	auto o = std::make_unique<CronSpawnOperator>(queue, workplace,
+						     workplace.GetSpawnService(),
+						     std::move(job),
+						     std::move(start_time));
+	o->Spawn(std::move(p), workplace.GetPondSocket());
+	return std::unique_ptr<CronOperator>(std::move(o));
 }
 
 static std::unique_ptr<CronOperator>
 MakeCurlOperator(CronQueue &queue, CronWorkplace &workplace,
-                 CurlGlobal &curl_global,
-                 CronJob &&job, const char *url,
-                 std::string &&start_time)
+		 CurlGlobal &curl_global,
+		 CronJob &&job, const char *url,
+		 std::string &&start_time)
 {
-    auto o = std::make_unique<CronCurlOperator>(queue, workplace,
-                                                std::move(job),
-                                                std::move(start_time),
-                                                curl_global, url);
-    o->Start();
-    return std::unique_ptr<CronOperator>(std::move(o));
+	auto o = std::make_unique<CronCurlOperator>(queue, workplace,
+						    std::move(job),
+						    std::move(start_time),
+						    curl_global, url);
+	o->Start();
+	return std::unique_ptr<CronOperator>(std::move(o));
 }
 
 void
 CronWorkplace::Start(CronQueue &queue, const char *translation_socket,
-                     const char *partition_name, const char *listener_tag,
-                     CronJob &&job)
+		     const char *partition_name, const char *listener_tag,
+		     CronJob &&job)
 {
-    auto start_time = queue.GetNow();
+	auto start_time = queue.GetNow();
 
-    /* need a copy because the std::move(job) below may invalidate the
-       c_str() pointer */
-    const auto command = job.command;
+	/* need a copy because the std::move(job) below may invalidate the
+	   c_str() pointer */
+	const auto command = job.command;
 
-    auto o = IsURL(command.c_str())
-        ? MakeCurlOperator(queue, *this, curl,
-                           std::move(job), command.c_str(),
-                           std::move(start_time))
-        : MakeSpawnOperator(queue, *this, translation_socket,
-                            partition_name, listener_tag,
-                            std::move(job), command.c_str(),
-                            std::move(start_time));
+	auto o = IsURL(command.c_str())
+		? MakeCurlOperator(queue, *this, curl,
+				   std::move(job), command.c_str(),
+				   std::move(start_time))
+		: MakeSpawnOperator(queue, *this, translation_socket,
+				    partition_name, listener_tag,
+				    std::move(job), command.c_str(),
+				    std::move(start_time));
 
-    operators.push_back(*o.release());
+	operators.push_back(*o.release());
 }
 
 void
 CronWorkplace::OnExit(CronOperator *o)
 {
-    operators.erase(operators.iterator_to(*o));
-    delete o;
+	operators.erase(operators.iterator_to(*o));
+	delete o;
 
-    exit_listener.OnChildProcessExit(-1);
+	exit_listener.OnChildProcessExit(-1);
 }

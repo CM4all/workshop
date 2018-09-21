@@ -47,29 +47,28 @@ class SocketDescriptor;
  * A #CronJob being executed as a spawned child process.
  */
 class CronSpawnOperator final
-    : public CronOperator,
-    ExitListener {
+	: public CronOperator, ExitListener
+{
+	SpawnService &spawn_service;
 
-    SpawnService &spawn_service;
+	int pid = -1;
 
-    int pid = -1;
-
-    std::unique_ptr<PipeCaptureBuffer> output_capture;
-
-public:
-    CronSpawnOperator(CronQueue &_queue, CronWorkplace &_workplace,
-                      SpawnService &_spawn_service,
-                      CronJob &&_job,
-                      std::string &&_start_time) noexcept;
-    ~CronSpawnOperator() override;
-
-    void Spawn(PreparedChildProcess &&p, SocketDescriptor pond_socket);
-
-    void Cancel() override;
+	std::unique_ptr<PipeCaptureBuffer> output_capture;
 
 public:
-    /* virtual methods from ExitListener */
-    void OnChildProcessExit(int status) override;
+	CronSpawnOperator(CronQueue &_queue, CronWorkplace &_workplace,
+			  SpawnService &_spawn_service,
+			  CronJob &&_job,
+			  std::string &&_start_time) noexcept;
+	~CronSpawnOperator() override;
+
+	void Spawn(PreparedChildProcess &&p, SocketDescriptor pond_socket);
+
+	void Cancel() override;
+
+public:
+	/* virtual methods from ExitListener */
+	void OnChildProcessExit(int status) override;
 };
 
 #endif

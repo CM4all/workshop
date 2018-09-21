@@ -41,307 +41,307 @@
 #include <stdlib.h>
 
 CronQueue::CronQueue(const Logger &parent_logger,
-                     EventLoop &event_loop, const char *_node_name,
-                     const char *conninfo, const char *schema,
-                     Callback _callback)
-    :node_name(_node_name),
-     logger(parent_logger, "queue"),
-     db(event_loop, conninfo, schema, *this),
-     callback(_callback),
-     check_notify_event(event_loop, BIND_THIS_METHOD(CheckNotify)),
-     scheduler_timer(event_loop, BIND_THIS_METHOD(RunScheduler)),
-     claim_timer(event_loop, BIND_THIS_METHOD(RunClaim))
+		     EventLoop &event_loop, const char *_node_name,
+		     const char *conninfo, const char *schema,
+		     Callback _callback)
+	:node_name(_node_name),
+	 logger(parent_logger, "queue"),
+	 db(event_loop, conninfo, schema, *this),
+	 callback(_callback),
+	 check_notify_event(event_loop, BIND_THIS_METHOD(CheckNotify)),
+	 scheduler_timer(event_loop, BIND_THIS_METHOD(RunScheduler)),
+	 claim_timer(event_loop, BIND_THIS_METHOD(RunClaim))
 {
 }
 
 CronQueue::~CronQueue()
 {
-    Close();
+	Close();
 }
 
 void
 CronQueue::Close()
 {
-    db.Disconnect();
+	db.Disconnect();
 
-    check_notify_event.Cancel();
-    scheduler_timer.Cancel();
-    claim_timer.Cancel();
+	check_notify_event.Cancel();
+	scheduler_timer.Cancel();
+	claim_timer.Cancel();
 }
 
 void
 CronQueue::EnableAdmin()
 {
-    if (!disabled_admin)
-        return;
+	if (!disabled_admin)
+		return;
 
-    disabled_admin = false;
-    if (IsDisabled() || !db.IsReady())
-        return;
+	disabled_admin = false;
+	if (IsDisabled() || !db.IsReady())
+		return;
 
-    ScheduleClaim();
+	ScheduleClaim();
 }
 
 void
 CronQueue::EnableFull()
 {
-    if (!disabled_full)
-        return;
+	if (!disabled_full)
+		return;
 
-    disabled_full = false;
-    if (IsDisabled() || !db.IsReady())
-        return;
+	disabled_full = false;
+	if (IsDisabled() || !db.IsReady())
+		return;
 
-    ScheduleClaim();
+	ScheduleClaim();
 }
 
 void
 CronQueue::ReleaseStale()
 {
-    const auto result = CheckError(
-        db.ExecuteParams("UPDATE cronjobs "
-                         "SET node_name=NULL, node_timeout=NULL, next_run=NULL "
-                         "WHERE node_name=$1",
-                         node_name.c_str()));
+	const auto result = CheckError(
+				       db.ExecuteParams("UPDATE cronjobs "
+							"SET node_name=NULL, node_timeout=NULL, next_run=NULL "
+							"WHERE node_name=$1",
+							node_name.c_str()));
 
-    unsigned n = result.GetAffectedRows();
-    if (n > 0)
-        logger(3, "Released ", n, " stale cronjobs");
+	unsigned n = result.GetAffectedRows();
+	if (n > 0)
+		logger(3, "Released ", n, " stale cronjobs");
 }
 
 void
 CronQueue::RunScheduler()
 {
-    logger(4, "scheduler");
+	logger(4, "scheduler");
 
-    if (!CalculateNextRun(logger, db))
-        ScheduleScheduler(false);
+	if (!CalculateNextRun(logger, db))
+		ScheduleScheduler(false);
 
-    ScheduleCheckNotify();
+	ScheduleCheckNotify();
 }
 
 void
 CronQueue::ScheduleScheduler(bool immediately)
 {
-    Event::Duration d;
-    if (immediately) {
-        d = d.zero();
-    } else {
-        /* randomize the scheduler to reduce race conditions with
-           other nodes */
-        d = std::chrono::microseconds(random() % 5000000);
-    }
+	Event::Duration d;
+	if (immediately) {
+		d = d.zero();
+	} else {
+		/* randomize the scheduler to reduce race conditions with
+		   other nodes */
+		d = std::chrono::microseconds(random() % 5000000);
+	}
 
-    scheduler_timer.Schedule(d);
+	scheduler_timer.Schedule(d);
 }
 
 static std::chrono::seconds
 FindEarliestPending(Pg::Connection &db)
 {
-    const auto result =
-        db.Execute("SELECT EXTRACT(EPOCH FROM (MIN(next_run) - now())) FROM cronjobs "
-                   "WHERE enabled AND next_run IS NOT NULL AND next_run != 'infinity' AND node_name IS NULL");
-    if (!result.IsQuerySuccessful()) {
-        fprintf(stderr, "SELECT FROM cronjobs failed: %s\n",
-                result.GetErrorMessage());
-        return std::chrono::minutes(1);
-    }
+	const auto result =
+		db.Execute("SELECT EXTRACT(EPOCH FROM (MIN(next_run) - now())) FROM cronjobs "
+			   "WHERE enabled AND next_run IS NOT NULL AND next_run != 'infinity' AND node_name IS NULL");
+	if (!result.IsQuerySuccessful()) {
+		fprintf(stderr, "SELECT FROM cronjobs failed: %s\n",
+			result.GetErrorMessage());
+		return std::chrono::minutes(1);
+	}
 
-    if (result.IsEmpty() || result.IsValueNull(0, 0))
-        /* no matching cronjob; disable the timer, and wait for the
-           next PostgreSQL notify */
-        return std::chrono::seconds::max();
+	if (result.IsEmpty() || result.IsValueNull(0, 0))
+		/* no matching cronjob; disable the timer, and wait for the
+		   next PostgreSQL notify */
+		return std::chrono::seconds::max();
 
-    const char *s = result.GetValue(0, 0);
-    char *endptr;
-    long long value = strtoull(s, &endptr, 10);
-    if (endptr == s)
-        return std::chrono::minutes(1);
+	const char *s = result.GetValue(0, 0);
+	char *endptr;
+	long long value = strtoull(s, &endptr, 10);
+	if (endptr == s)
+		return std::chrono::minutes(1);
 
-    return std::min<std::chrono::seconds>(std::chrono::seconds(value),
-                                          std::chrono::hours(24));
+	return std::min<std::chrono::seconds>(std::chrono::seconds(value),
+					      std::chrono::hours(24));
 }
 
 void
 CronQueue::RunClaim()
 {
-    if (IsDisabled())
-        return;
+	if (IsDisabled())
+		return;
 
-    logger(4, "claim");
+	logger(4, "claim");
 
-    auto delta = FindEarliestPending(db);
-    if (delta == delta.max())
-        return;
+	auto delta = FindEarliestPending(db);
+	if (delta == delta.max())
+		return;
 
-    if (delta > delta.zero()) {
-        /* randomize the claim to reduce race conditions with
-           other nodes */
-        Event::Duration r = std::chrono::microseconds(random() % 30000000);
-        claim_timer.Schedule(Event::Duration(delta) + r);
-        return;
-    }
+	if (delta > delta.zero()) {
+		/* randomize the claim to reduce race conditions with
+		   other nodes */
+		Event::Duration r = std::chrono::microseconds(random() % 30000000);
+		claim_timer.Schedule(Event::Duration(delta) + r);
+		return;
+	}
 
-    CheckPending();
+	CheckPending();
 
-    ScheduleClaim();
-    ScheduleCheckNotify();
+	ScheduleClaim();
+	ScheduleCheckNotify();
 }
 
 void
 CronQueue::ScheduleClaim()
 {
-    claim_timer.Schedule(std::chrono::seconds(1));
+	claim_timer.Schedule(std::chrono::seconds(1));
 }
 
 bool
 CronQueue::Claim(const CronJob &job)
 {
-    const char *timeout = "5 minutes";
+	const char *timeout = "5 minutes";
 
-    const auto r =
-        db.ExecuteParams("UPDATE cronjobs "
-                         "SET node_name=$2, node_timeout=now()+$3::INTERVAL "
-                         "WHERE id=$1 AND enabled AND node_name IS NULL",
-                         job.id.c_str(),
-                         node_name.c_str(),
-                         timeout);
-    if (!r.IsCommandSuccessful()) {
-        fprintf(stderr, "UPDATE/claim on cronjobs failed: %s\n",
-                r.GetErrorMessage());
-        return false;
-    }
+	const auto r =
+		db.ExecuteParams("UPDATE cronjobs "
+				 "SET node_name=$2, node_timeout=now()+$3::INTERVAL "
+				 "WHERE id=$1 AND enabled AND node_name IS NULL",
+				 job.id.c_str(),
+				 node_name.c_str(),
+				 timeout);
+	if (!r.IsCommandSuccessful()) {
+		fprintf(stderr, "UPDATE/claim on cronjobs failed: %s\n",
+			r.GetErrorMessage());
+		return false;
+	}
 
-    if (r.GetAffectedRows() == 0) {
-        fprintf(stderr, "Lost race to run job '%s'\n", job.id.c_str());
-        return false;
-    }
+	if (r.GetAffectedRows() == 0) {
+		fprintf(stderr, "Lost race to run job '%s'\n", job.id.c_str());
+		return false;
+	}
 
-    return true;
+	return true;
 }
 
 void
 CronQueue::Finish(const CronJob &job)
 {
-    ScheduleCheckNotify();
+	ScheduleCheckNotify();
 
-    const auto r =
-        db.ExecuteParams("UPDATE cronjobs "
-                         "SET node_name=NULL, node_timeout=NULL, last_run=now(), next_run=NULL "
-                         "WHERE id=$1 AND node_name=$2",
-                         job.id.c_str(),
-                         node_name.c_str());
-    if (!r.IsCommandSuccessful()) {
-        fprintf(stderr, "UPDATE/finish on cronjobs failed: %s\n",
-                r.GetErrorMessage());
-        return;
-    }
+	const auto r =
+		db.ExecuteParams("UPDATE cronjobs "
+				 "SET node_name=NULL, node_timeout=NULL, last_run=now(), next_run=NULL "
+				 "WHERE id=$1 AND node_name=$2",
+				 job.id.c_str(),
+				 node_name.c_str());
+	if (!r.IsCommandSuccessful()) {
+		fprintf(stderr, "UPDATE/finish on cronjobs failed: %s\n",
+			r.GetErrorMessage());
+		return;
+	}
 
-    if (r.GetAffectedRows() == 0) {
-        fprintf(stderr, "Lost race to finish job '%s'\n", job.id.c_str());
-        return;
-    }
+	if (r.GetAffectedRows() == 0) {
+		fprintf(stderr, "Lost race to finish job '%s'\n", job.id.c_str());
+		return;
+	}
 }
 
 void
 CronQueue::InsertResult(const CronJob &job, const char *start_time,
-                        int exit_status, const char *log)
+			int exit_status, const char *log)
 {
-    ScheduleCheckNotify();
+	ScheduleCheckNotify();
 
-    const auto r =
-        db.ExecuteParams("INSERT INTO cronresults(cronjob_id, node_name, start_time, exit_status, log) "
-                         "VALUES($1, $2, $3, $4, $5)",
-                         job.id.c_str(),
-                         node_name.c_str(),
-                         start_time,
-                         exit_status,
-                         log);
-    if (!r.IsCommandSuccessful()) {
-        fprintf(stderr, "INSERT on cronresults failed: %s\n",
-                r.GetErrorMessage());
-        return;
-    }
+	const auto r =
+		db.ExecuteParams("INSERT INTO cronresults(cronjob_id, node_name, start_time, exit_status, log) "
+				 "VALUES($1, $2, $3, $4, $5)",
+				 job.id.c_str(),
+				 node_name.c_str(),
+				 start_time,
+				 exit_status,
+				 log);
+	if (!r.IsCommandSuccessful()) {
+		fprintf(stderr, "INSERT on cronresults failed: %s\n",
+			r.GetErrorMessage());
+		return;
+	}
 }
 
 bool
 CronQueue::CheckPending()
 {
-    if (IsDisabled())
-        return false;
+	if (IsDisabled())
+		return false;
 
-    const auto result =
-        db.Execute("SELECT id, account_id, command, translate_param, notification "
-                   "FROM cronjobs WHERE enabled AND next_run<=now() "
-                   "AND node_name IS NULL "
-                   "LIMIT 1");
-    if (!result.IsQuerySuccessful()) {
-        fprintf(stderr, "SELECT on cronjobs failed: %s\n",
-                result.GetErrorMessage());
-        return false;
-    }
+	const auto result =
+		db.Execute("SELECT id, account_id, command, translate_param, notification "
+			   "FROM cronjobs WHERE enabled AND next_run<=now() "
+			   "AND node_name IS NULL "
+			   "LIMIT 1");
+	if (!result.IsQuerySuccessful()) {
+		fprintf(stderr, "SELECT on cronjobs failed: %s\n",
+			result.GetErrorMessage());
+		return false;
+	}
 
-    if (result.IsEmpty())
-        return false;
+	if (result.IsEmpty())
+		return false;
 
-    for (const auto &row : result) {
-        CronJob job;
-        job.id = row.GetValue(0);
-        job.account_id = row.GetValue(1);
-        job.command = row.GetValue(2);
-        job.translate_param = row.GetValue(3);
-        job.notification = row.GetValue(4);
+	for (const auto &row : result) {
+		CronJob job;
+		job.id = row.GetValue(0);
+		job.account_id = row.GetValue(1);
+		job.command = row.GetValue(2);
+		job.translate_param = row.GetValue(3);
+		job.notification = row.GetValue(4);
 
-        callback(std::move(job));
+		callback(std::move(job));
 
-        if (IsDisabled())
-            return false;
-    }
+		if (IsDisabled())
+			return false;
+	}
 
-    return true;
+	return true;
 }
 
 void
 CronQueue::OnConnect()
 {
-    db.ExecuteOrThrow("LISTEN cronjobs_modified");
-    db.ExecuteOrThrow("LISTEN cronjobs_scheduled");
+	db.ExecuteOrThrow("LISTEN cronjobs_modified");
+	db.ExecuteOrThrow("LISTEN cronjobs_scheduled");
 
-    /* internally, all time stamps should be UTC, and PostgreSQL
-       should not mangle those time stamps to the time zone that our
-       process happens to be configured for */
-    auto result = db.Execute("SET timezone='UTC'");
-    if (!result.IsCommandSuccessful())
-        logger(1, "SET timezone failed: ", result.GetErrorMessage());
+	/* internally, all time stamps should be UTC, and PostgreSQL
+	   should not mangle those time stamps to the time zone that our
+	   process happens to be configured for */
+	auto result = db.Execute("SET timezone='UTC'");
+	if (!result.IsCommandSuccessful())
+		logger(1, "SET timezone failed: ", result.GetErrorMessage());
 
-    ReleaseStale();
+	ReleaseStale();
 
-    ScheduleScheduler(true);
-    ScheduleClaim();
-    ScheduleCheckNotify();
+	ScheduleScheduler(true);
+	ScheduleClaim();
+	ScheduleCheckNotify();
 }
 
 void
 CronQueue::OnDisconnect() noexcept
 {
-    logger(4, "disconnected from database");
+	logger(4, "disconnected from database");
 
-    check_notify_event.Cancel();
-    scheduler_timer.Cancel();
-    claim_timer.Cancel();
+	check_notify_event.Cancel();
+	scheduler_timer.Cancel();
+	claim_timer.Cancel();
 }
 
 void
 CronQueue::OnNotify(const char *name)
 {
-    if (strcmp(name, "cronjobs_modified") == 0)
-        ScheduleScheduler(false);
-    else if (strcmp(name, "cronjobs_scheduled") == 0)
-        ScheduleClaim();
+	if (strcmp(name, "cronjobs_modified") == 0)
+		ScheduleScheduler(false);
+	else if (strcmp(name, "cronjobs_scheduled") == 0)
+		ScheduleClaim();
 }
 
 void
 CronQueue::OnError(std::exception_ptr e) noexcept
 {
-    logger(1, e);
+	logger(1, e);
 }

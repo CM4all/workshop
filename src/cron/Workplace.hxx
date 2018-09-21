@@ -49,75 +49,75 @@ class CronQueue;
 class ExitListener;
 
 class CronWorkplace {
-    SpawnService &spawn_service;
-    EmailService *const email_service;
-    const SocketDescriptor pond_socket;
+	SpawnService &spawn_service;
+	EmailService *const email_service;
+	const SocketDescriptor pond_socket;
 
-    CurlGlobal &curl;
-    ExitListener &exit_listener;
+	CurlGlobal &curl;
+	ExitListener &exit_listener;
 
-    typedef boost::intrusive::list<CronOperator,
-                                   boost::intrusive::constant_time_size<true>> OperatorList;
+	typedef boost::intrusive::list<CronOperator,
+				       boost::intrusive::constant_time_size<true>> OperatorList;
 
-    OperatorList operators;
+	OperatorList operators;
 
-    const unsigned max_operators;
+	const unsigned max_operators;
 
 public:
-    CronWorkplace(SpawnService &_spawn_service,
-                  EmailService *_email_service,
-                  SocketDescriptor _pond_socket,
-                  CurlGlobal &_curl,
-                  ExitListener &_exit_listener,
-                  unsigned _max_operators)
-        :spawn_service(_spawn_service),
-         email_service(_email_service),
-         pond_socket(_pond_socket),
-         curl(_curl),
-         exit_listener(_exit_listener),
-         max_operators(_max_operators) {
-        assert(max_operators > 0);
-    }
+	CronWorkplace(SpawnService &_spawn_service,
+		      EmailService *_email_service,
+		      SocketDescriptor _pond_socket,
+		      CurlGlobal &_curl,
+		      ExitListener &_exit_listener,
+		      unsigned _max_operators)
+		:spawn_service(_spawn_service),
+		 email_service(_email_service),
+		 pond_socket(_pond_socket),
+		 curl(_curl),
+		 exit_listener(_exit_listener),
+		 max_operators(_max_operators) {
+		assert(max_operators > 0);
+	}
 
-    CronWorkplace(const CronWorkplace &other) = delete;
+	CronWorkplace(const CronWorkplace &other) = delete;
 
-    ~CronWorkplace() {
-        assert(operators.empty());
-    }
+	~CronWorkplace() {
+		assert(operators.empty());
+	}
 
-    SpawnService &GetSpawnService() {
-        return spawn_service;
-    }
+	SpawnService &GetSpawnService() {
+		return spawn_service;
+	}
 
-    EmailService *GetEmailService() {
-        return email_service;
-    }
+	EmailService *GetEmailService() {
+		return email_service;
+	}
 
-    SocketDescriptor GetPondSocket() const noexcept {
-        return pond_socket;
-    }
+	SocketDescriptor GetPondSocket() const noexcept {
+		return pond_socket;
+	}
 
-    bool IsEmpty() const {
-        return operators.empty();
-    }
+	bool IsEmpty() const {
+		return operators.empty();
+	}
 
-    bool IsFull() const {
-        return operators.size() == max_operators;
-    }
+	bool IsFull() const {
+		return operators.size() == max_operators;
+	}
 
-    /**
-     * Throws std::runtime_error on error.
-     */
-    void Start(CronQueue &queue, const char *translation_socket,
-               const char *partition_name, const char *listener_tag,
-               CronJob &&job);
+	/**
+	 * Throws std::runtime_error on error.
+	 */
+	void Start(CronQueue &queue, const char *translation_socket,
+		   const char *partition_name, const char *listener_tag,
+		   CronJob &&job);
 
-    void OnExit(CronOperator *o);
+	void OnExit(CronOperator *o);
 
-    void CancelAll() {
-        while (!operators.empty())
-            operators.front().Cancel();
-    }
+	void CancelAll() {
+		while (!operators.empty())
+			operators.front().Cancel();
+	}
 };
 
 #endif

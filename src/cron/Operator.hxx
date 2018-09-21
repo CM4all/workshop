@@ -49,48 +49,48 @@ class CronWorkplace;
  * A #CronJob being executed.
  */
 class CronOperator
-    : public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>,
-      LoggerDomainFactory {
-
+	: public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>,
+	  LoggerDomainFactory
+{
 protected:
-    CronQueue &queue;
-    CronWorkplace &workplace;
-    const CronJob job;
+	CronQueue &queue;
+	CronWorkplace &workplace;
+	const CronJob job;
 
-    LazyDomainLogger logger;
+	LazyDomainLogger logger;
 
-    const std::string start_time;
+	const std::string start_time;
 
-    TimerEvent timeout_event;
+	TimerEvent timeout_event;
 
 public:
-    CronOperator(CronQueue &_queue, CronWorkplace &_workplace, CronJob &&_job,
-                 std::string &&_start_time) noexcept;
+	CronOperator(CronQueue &_queue, CronWorkplace &_workplace, CronJob &&_job,
+		     std::string &&_start_time) noexcept;
 
-    virtual ~CronOperator() {}
+	virtual ~CronOperator() {}
 
-    CronOperator(const CronOperator &other) = delete;
-    CronOperator &operator=(const CronOperator &other) = delete;
+	CronOperator(const CronOperator &other) = delete;
+	CronOperator &operator=(const CronOperator &other) = delete;
 
-    EventLoop &GetEventLoop();
+	EventLoop &GetEventLoop();
 
-    /**
-     * Cancel job execution, e.g. by sending SIGTERM to the child
-     * process.  This also abandons the child process, i.e. after this
-     * method returns, cancellation can be considered complete, even
-     * if the child process continues to run (because it ignores the
-     * kill signal).
-     */
-    virtual void Cancel() = 0;
+	/**
+	 * Cancel job execution, e.g. by sending SIGTERM to the child
+	 * process.  This also abandons the child process, i.e. after this
+	 * method returns, cancellation can be considered complete, even
+	 * if the child process continues to run (because it ignores the
+	 * kill signal).
+	 */
+	virtual void Cancel() = 0;
 
 protected:
-    void Finish(int exit_status, const char *log);
+	void Finish(int exit_status, const char *log);
 
 private:
-    void OnTimeout();
+	void OnTimeout();
 
-    /* virtual methods from LoggerDomainFactory */
-    std::string MakeLoggerDomain() const noexcept;
+	/* virtual methods from LoggerDomainFactory */
+	std::string MakeLoggerDomain() const noexcept;
 };
 
 #endif
