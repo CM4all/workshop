@@ -58,6 +58,11 @@ struct Usage {};
 struct RunJobCommandLine {
 	bool control = false;
 	PreparedChildProcess child;
+
+	RunJobCommandLine() noexcept {
+		child.SetStdout(STDOUT_FILENO);
+		child.SetStderr(STDERR_FILENO);
+	}
 };
 
 static void
