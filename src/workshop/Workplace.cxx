@@ -36,6 +36,7 @@
 #include "Job.hxx"
 #include "pg/Array.hxx"
 #include "spawn/Prepared.hxx"
+#include "spawn/CgroupOptions.hxx"
 #include "spawn/Interface.hxx"
 #include "spawn/Client.hxx"
 #include "system/Error.hxx"
@@ -144,9 +145,12 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 
 	/* use a per-plan cgroup */
 
+	CgroupOptions cgroup;
+	p.cgroup = &cgroup;
+
 	if (auto *client = dynamic_cast<SpawnServerClient *>(&spawn_service))
 		if (client->SupportsCgroups())
-			p.cgroup.name = job.plan_name.c_str();
+			cgroup.name = job.plan_name.c_str();
 
 	/* create stdout/stderr pipes */
 
