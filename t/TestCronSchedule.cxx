@@ -41,7 +41,7 @@ TEST(CronSchedule, Parser)
 
     {
         const CronSchedule s("*/20 * * * *");
-        ASSERT_EQ(s.minutes.count(), 3);
+        ASSERT_EQ(s.minutes.count(), 3u);
         ASSERT_TRUE(s.minutes[0]);
         ASSERT_TRUE(s.minutes[20]);
         ASSERT_TRUE(s.minutes[40]);
@@ -54,7 +54,7 @@ TEST(CronSchedule, Parser)
 
     {
         const CronSchedule s("*/15 * * * *");
-        ASSERT_EQ(s.minutes.count(), 4);
+        ASSERT_EQ(s.minutes.count(), 4u);
         ASSERT_TRUE(s.minutes[0]);
         ASSERT_TRUE(s.minutes[15]);
         ASSERT_TRUE(s.minutes[30]);
@@ -68,7 +68,7 @@ TEST(CronSchedule, Parser)
 
     {
         const CronSchedule s("*/19 * * * *");
-        ASSERT_EQ(s.minutes.count(), 4);
+        ASSERT_EQ(s.minutes.count(), 4u);
         ASSERT_TRUE(s.minutes[0]);
         ASSERT_TRUE(s.minutes[19]);
         ASSERT_TRUE(s.minutes[38]);
@@ -87,7 +87,7 @@ TEST(CronSchedule, Parser)
         ASSERT_TRUE(s.minutes.all());
         ASSERT_TRUE(s.hours.all());
         ASSERT_TRUE(s.days_of_month.all());
-        ASSERT_EQ(s.months.count(), 1);
+        ASSERT_EQ(s.months.count(), 1u);
         ASSERT_TRUE(s.months[2]);
         ASSERT_TRUE(s.days_of_week.all());
         ASSERT_EQ(s.delay_range, std::chrono::minutes(1));
@@ -98,7 +98,7 @@ TEST(CronSchedule, Parser)
         ASSERT_TRUE(s.minutes.all());
         ASSERT_TRUE(s.hours.all());
         ASSERT_TRUE(s.days_of_month.all());
-        ASSERT_EQ(s.months.count(), 3);
+        ASSERT_EQ(s.months.count(), 3u);
         ASSERT_TRUE(s.months[1]);
         ASSERT_TRUE(s.months[6]);
         ASSERT_TRUE(s.months[12]);
@@ -114,7 +114,7 @@ TEST(CronSchedule, Parser)
         ASSERT_TRUE(s.hours.all());
         ASSERT_TRUE(s.days_of_month.all());
         ASSERT_TRUE(s.months.all());
-        ASSERT_EQ(s.days_of_week.count(), 1);
+        ASSERT_EQ(s.days_of_week.count(), 1u);
         ASSERT_TRUE(s.days_of_week[1]);
         ASSERT_EQ(s.delay_range, std::chrono::minutes(1));
     }
@@ -125,7 +125,7 @@ TEST(CronSchedule, Parser)
         ASSERT_TRUE(s.hours.all());
         ASSERT_TRUE(s.days_of_month.all());
         ASSERT_TRUE(s.months.all());
-        ASSERT_EQ(s.days_of_week.count(), 3);
+        ASSERT_EQ(s.days_of_week.count(), 3u);
         ASSERT_TRUE(s.days_of_week[1]);
         ASSERT_TRUE(s.days_of_week[3]);
         ASSERT_TRUE(s.days_of_week[6]);
@@ -137,7 +137,7 @@ TEST(CronSchedule, Parser)
         ASSERT_TRUE(s.minutes.all());
         ASSERT_TRUE(s.hours.all());
         ASSERT_TRUE(s.days_of_month.all());
-        ASSERT_EQ(s.months.count(), 3);
+        ASSERT_EQ(s.months.count(), 3u);
         ASSERT_TRUE(s.months[1]);
         ASSERT_TRUE(s.months[6]);
         ASSERT_TRUE(s.months[12]);
