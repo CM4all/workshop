@@ -6,7 +6,7 @@ cm4all-workshop (3.0.4) unstable; urgency=low
   * spawn: fix error "Failed to create systemd scope: Unit X not loaded"
   * debian: add missing build-dependency on GTest
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Mon, 15 Oct 2018 14:20:06 +0200
 
 cm4all-workshop (3.0.3) unstable; urgency=low
 
