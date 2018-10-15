@@ -1,6 +1,7 @@
 cm4all-workshop (3.0.6) unstable; urgency=low
 
   * cron: fix error "std::bad_alloc" due to uninitialized variable
+  * cron: fix warning "... died from signal 31"
 
  --   
 
