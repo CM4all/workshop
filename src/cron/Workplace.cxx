@@ -81,14 +81,15 @@ MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
 
 	Allocator alloc;
 
+	TranslateResponse response;
 	try {
-		const auto response = TranslateCron(alloc, translation_socket,
-						    partition_name, listener_tag,
-						    job.account_id.c_str(),
-						    uri,
-						    job.translate_param.empty()
-						    ? nullptr
-						    : job.translate_param.c_str());
+		response = TranslateCron(alloc, translation_socket,
+					 partition_name, listener_tag,
+					 job.account_id.c_str(),
+					 uri,
+					 job.translate_param.empty()
+					 ? nullptr
+					 : job.translate_param.c_str());
 
 		if (uri != nullptr) {
 			if (response.execute == nullptr)
