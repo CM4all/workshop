@@ -3,6 +3,7 @@ cm4all-workshop (3.0.4) unstable; urgency=low
   * eliminate dependency on libevent
   * add "-dev" package with command-line tool "cm4all-workshop-run-job"
   * spawn: add fallback PATH
+  * spawn: fix error "Failed to create systemd scope: Unit X not loaded"
   * debian: add missing build-dependency on GTest
 
  --   
