@@ -42,32 +42,32 @@
 #include <forward_list>
 
 struct Config {
-    UidGid user;
+	UidGid user;
 
-    std::string node_name;
-    unsigned concurrency = 2;
+	std::string node_name;
+	unsigned concurrency = 2;
 
-    SpawnConfig spawn;
+	SpawnConfig spawn;
 
-    std::forward_list<WorkshopPartitionConfig> partitions;
-    std::forward_list<CronPartitionConfig> cron_partitions;
+	std::forward_list<WorkshopPartitionConfig> partitions;
+	std::forward_list<CronPartitionConfig> cron_partitions;
 
-    struct ControlListener : SocketConfig {
-        ControlListener() {
-            pass_cred = true;
-        }
+	struct ControlListener : SocketConfig {
+		ControlListener() {
+			pass_cred = true;
+		}
 
-        explicit ControlListener(SocketAddress _bind_address)
-            :SocketConfig(_bind_address) {
-            pass_cred = true;
-        }
-    };
+		explicit ControlListener(SocketAddress _bind_address)
+			:SocketConfig(_bind_address) {
+			pass_cred = true;
+		}
+	};
 
-    std::forward_list<ControlListener> control_listen;
+	std::forward_list<ControlListener> control_listen;
 
-    Config();
+	Config();
 
-    void Check();
+	void Check();
 };
 
 /**
