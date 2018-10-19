@@ -48,48 +48,48 @@ class Error;
 
 /** a plan describes how to perform a specific job */
 struct Plan {
-    std::list<std::string> args;
+	std::list<std::string> args;
 
-    std::string timeout, chroot;
+	std::string timeout, chroot;
 
-    std::chrono::steady_clock::duration parsed_timeout =
-        std::chrono::seconds(0);
+	std::chrono::steady_clock::duration parsed_timeout =
+		std::chrono::seconds(0);
 
-    uid_t uid = 65534;
-    gid_t gid = 65534;
+	uid_t uid = 65534;
+	gid_t gid = 65534;
 
-    /** supplementary group ids */
-    std::vector<gid_t> groups;
+	/** supplementary group ids */
+	std::vector<gid_t> groups;
 
-    int umask = -1;
+	int umask = -1;
 
-    ResourceLimits rlimits;
+	ResourceLimits rlimits;
 
-    int priority = 10;
+	int priority = 10;
 
-    /** maximum concurrency for this plan */
-    unsigned concurrency = 0;
+	/** maximum concurrency for this plan */
+	unsigned concurrency = 0;
 
-    bool sched_idle = false, ioprio_idle = false;
+	bool sched_idle = false, ioprio_idle = false;
 
-    bool private_network = false;
+	bool private_network = false;
 
-    bool control_channel = false;
+	bool control_channel = false;
 
-    Plan() = default;
+	Plan() = default;
 
-    Plan(Plan &&) = default;
+	Plan(Plan &&) = default;
 
-    Plan(const Plan &other) = delete;
+	Plan(const Plan &other) = delete;
 
-    Plan &operator=(Plan &&other) = default;
-    Plan &operator=(const Plan &other) = delete;
+	Plan &operator=(Plan &&other) = default;
+	Plan &operator=(const Plan &other) = delete;
 
-    const std::string &GetExecutablePath() const {
-        assert(!args.empty());
+	const std::string &GetExecutablePath() const {
+		assert(!args.empty());
 
-        return args.front();
-    }
+		return args.front();
+	}
 };
 
 #endif

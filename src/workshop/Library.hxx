@@ -51,119 +51,119 @@ struct Plan;
  * files.
  */
 class Library {
-    struct PlanEntry {
-        std::shared_ptr<Plan> plan;
-        bool deinstalled = false;
-        time_t mtime = 0;
-        std::chrono::steady_clock::time_point disabled_until =
-            std::chrono::steady_clock::time_point::min();
+	struct PlanEntry {
+		std::shared_ptr<Plan> plan;
+		bool deinstalled = false;
+		time_t mtime = 0;
+		std::chrono::steady_clock::time_point disabled_until =
+			std::chrono::steady_clock::time_point::min();
 
-        void Clear() {
-            plan.reset();
-            mtime = 0;
-        }
+		void Clear() {
+			plan.reset();
+			mtime = 0;
+		}
 
-        bool IsDisabled(std::chrono::steady_clock::time_point now) const {
-            return now < disabled_until;
-        }
+		bool IsDisabled(std::chrono::steady_clock::time_point now) const {
+			return now < disabled_until;
+		}
 
-        bool IsAvailable(std::chrono::steady_clock::time_point now) const {
-            return !deinstalled && !IsDisabled(now);
-        }
+		bool IsAvailable(std::chrono::steady_clock::time_point now) const {
+			return !deinstalled && !IsDisabled(now);
+		}
 
-        void Disable(std::chrono::steady_clock::time_point now,
-                     std::chrono::steady_clock::duration duration) {
-            disabled_until = now + duration;
-        }
+		void Disable(std::chrono::steady_clock::time_point now,
+			     std::chrono::steady_clock::duration duration) {
+			disabled_until = now + duration;
+		}
 
-        void Enable() {
-            disabled_until = std::chrono::steady_clock::time_point::min();
-        }
-    };
+		void Enable() {
+			disabled_until = std::chrono::steady_clock::time_point::min();
+		}
+	};
 
-    const LLogger logger;
+	const LLogger logger;
 
-    const boost::filesystem::path path;
+	const boost::filesystem::path path;
 
-    std::map<std::string, PlanEntry> plans;
+	std::map<std::string, PlanEntry> plans;
 
-    std::chrono::steady_clock::time_point next_plans_check =
-        std::chrono::steady_clock::time_point::min();
+	std::chrono::steady_clock::time_point next_plans_check =
+		std::chrono::steady_clock::time_point::min();
 
-    time_t mtime = 0;
+	time_t mtime = 0;
 
 public:
-    explicit Library(boost::filesystem::path &&_path)
-        :logger("library"),
-         path(std::move(_path)) {}
+	explicit Library(boost::filesystem::path &&_path)
+		:logger("library"),
+		 path(std::move(_path)) {}
 
-    Library(const Library &other) = delete;
+	Library(const Library &other) = delete;
 
-    const boost::filesystem::path &GetPath() const {
-        return path;
-    }
+	const boost::filesystem::path &GetPath() const {
+		return path;
+	}
 
-    /**
-     * @param force if true, then update the list even if the plan
-     * directory time stamp hasn't changed and the #next_plans_check
-     * time stamp hasn't been reached yet
-     *
-     * @return true if the library was modified (at least one plan has
-     * been added, modified or deleted)
-     */
-    bool Update(std::chrono::steady_clock::time_point now, bool force);
+	/**
+	 * @param force if true, then update the list even if the plan
+	 * directory time stamp hasn't changed and the #next_plans_check
+	 * time stamp hasn't been reached yet
+	 *
+	 * @return true if the library was modified (at least one plan has
+	 * been added, modified or deleted)
+	 */
+	bool Update(std::chrono::steady_clock::time_point now, bool force);
 
-    template<typename F>
-    void VisitPlans(std::chrono::steady_clock::time_point now, F &&f) const {
-        for (const auto &i : plans) {
-            const std::string &name = i.first;
-            const PlanEntry &entry = i.second;
+	template<typename F>
+	void VisitPlans(std::chrono::steady_clock::time_point now, F &&f) const {
+		for (const auto &i : plans) {
+			const std::string &name = i.first;
+			const PlanEntry &entry = i.second;
 
-            if (entry.IsAvailable(now))
-                f(name, *entry.plan);
-        }
-    }
+			if (entry.IsAvailable(now))
+				f(name, *entry.plan);
+		}
+	}
 
-    std::shared_ptr<Plan> Get(std::chrono::steady_clock::time_point now,
-                              const char *name);
+	std::shared_ptr<Plan> Get(std::chrono::steady_clock::time_point now,
+				  const char *name);
 
 private:
-    PlanEntry &MakePlanEntry(const char *name) {
-        return plans.emplace(std::piecewise_construct,
-                             std::forward_as_tuple(name),
-                             std::forward_as_tuple())
-            .first->second;
-    }
+	PlanEntry &MakePlanEntry(const char *name) {
+		return plans.emplace(std::piecewise_construct,
+				     std::forward_as_tuple(name),
+				     std::forward_as_tuple())
+			.first->second;
+	}
 
-    void DisablePlan(PlanEntry &entry,
-                     std::chrono::steady_clock::time_point now,
-                     std::chrono::steady_clock::duration duration);
+	void DisablePlan(PlanEntry &entry,
+			 std::chrono::steady_clock::time_point now,
+			 std::chrono::steady_clock::duration duration);
 
-    /**
-     * @return true if the plan file was modified
-     */
-    bool CheckPlanModified(const char *name, PlanEntry &entry,
-                           std::chrono::steady_clock::time_point now);
+	/**
+	 * @return true if the plan file was modified
+	 */
+	bool CheckPlanModified(const char *name, PlanEntry &entry,
+			       std::chrono::steady_clock::time_point now);
 
-    /**
-     * Check whether the plan is available.
-     */
-    bool ValidatePlan(PlanEntry &entry,
-                      std::chrono::steady_clock::time_point now);
+	/**
+	 * Check whether the plan is available.
+	 */
+	bool ValidatePlan(PlanEntry &entry,
+			  std::chrono::steady_clock::time_point now);
 
-    bool LoadPlan(const char *name, PlanEntry &entry,
-                  std::chrono::steady_clock::time_point now);
+	bool LoadPlan(const char *name, PlanEntry &entry,
+		      std::chrono::steady_clock::time_point now);
 
-    /**
-     * @return whether the plan was modified
-     */
-    bool UpdatePlan(const char *name, PlanEntry &entry,
-                    std::chrono::steady_clock::time_point now);
+	/**
+	 * @return whether the plan was modified
+	 */
+	bool UpdatePlan(const char *name, PlanEntry &entry,
+			std::chrono::steady_clock::time_point now);
 
-    /**
-     * @return whether the plan was modified
-     */
-    bool UpdatePlans(std::chrono::steady_clock::time_point now);
+	/**
+	 * @return whether the plan was modified
+	 */
+	bool UpdatePlans(std::chrono::steady_clock::time_point now);
 };
 
 #endif

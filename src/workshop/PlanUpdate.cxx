@@ -45,119 +45,119 @@
 
 void
 Library::DisablePlan(PlanEntry &entry,
-                     std::chrono::steady_clock::time_point now,
-                     std::chrono::steady_clock::duration duration)
+		     std::chrono::steady_clock::time_point now,
+		     std::chrono::steady_clock::duration duration)
 {
-    entry.Disable(now, duration);
+	entry.Disable(now, duration);
 }
 
 bool
 Library::CheckPlanModified(const char *name, PlanEntry &entry,
-                           std::chrono::steady_clock::time_point now)
+			   std::chrono::steady_clock::time_point now)
 {
-    int ret;
-    struct stat st;
+	int ret;
+	struct stat st;
 
-    const auto plan_path = GetPath() / name;
+	const auto plan_path = GetPath() / name;
 
-    ret = stat(plan_path.c_str(), &st);
-    if (ret < 0) {
-        if (ret != ENOENT)
-            logger(2, "failed to stat '", plan_path.c_str(), "': ",
-                   strerror(errno));
+	ret = stat(plan_path.c_str(), &st);
+	if (ret < 0) {
+		if (ret != ENOENT)
+			logger(2, "failed to stat '", plan_path.c_str(), "': ",
+			       strerror(errno));
 
-        entry.Clear();
+		entry.Clear();
 
-        return false;
-    }
+		return false;
+	}
 
-    if (!S_ISREG(st.st_mode)) {
-        entry.Clear();
+	if (!S_ISREG(st.st_mode)) {
+		entry.Clear();
 
-        DisablePlan(entry, now, std::chrono::seconds(60));
-        return false;
-    }
+		DisablePlan(entry, now, std::chrono::seconds(60));
+		return false;
+	}
 
-    if (st.st_mtime != entry.mtime) {
-        entry.Enable();
-        entry.plan.reset();
+	if (st.st_mtime != entry.mtime) {
+		entry.Enable();
+		entry.plan.reset();
 
-        entry.mtime = st.st_mtime;
-    }
+		entry.mtime = st.st_mtime;
+	}
 
-    if (entry.IsDisabled(now))
-        /* this plan is temporarily disabled due to previous errors */
-        return false;
+	if (entry.IsDisabled(now))
+		/* this plan is temporarily disabled due to previous errors */
+		return false;
 
-    return true;
+	return true;
 }
 
 bool
 Library::ValidatePlan(PlanEntry &entry,
-                      std::chrono::steady_clock::time_point now)
+		      std::chrono::steady_clock::time_point now)
 {
-    const auto &plan = entry.plan;
-    int ret;
-    struct stat st;
+	const auto &plan = entry.plan;
+	int ret;
+	struct stat st;
 
-    assert(plan);
+	assert(plan);
 
-    /* check if the executable exists; it would not if the Debian
-       package has been deinstalled, but the plan's config file is
-       still there */
+	/* check if the executable exists; it would not if the Debian
+	   package has been deinstalled, but the plan's config file is
+	   still there */
 
-    ret = stat(plan->GetExecutablePath().c_str(), &st);
-    if (ret < 0) {
-        const int e = errno;
-        if (e != ENOENT || !entry.deinstalled)
-            logger(2, "failed to stat '", plan->GetExecutablePath().c_str(),
-                   "': ", strerror(e));
-        if (e == ENOENT)
-            entry.deinstalled = true;
-        else
-            DisablePlan(entry, now, std::chrono::seconds(60));
-        return false;
-    }
+	ret = stat(plan->GetExecutablePath().c_str(), &st);
+	if (ret < 0) {
+		const int e = errno;
+		if (e != ENOENT || !entry.deinstalled)
+			logger(2, "failed to stat '", plan->GetExecutablePath().c_str(),
+			       "': ", strerror(e));
+		if (e == ENOENT)
+			entry.deinstalled = true;
+		else
+			DisablePlan(entry, now, std::chrono::seconds(60));
+		return false;
+	}
 
-    entry.deinstalled = false;
+	entry.deinstalled = false;
 
-    return true;
+	return true;
 }
 
 bool
 Library::LoadPlan(const char *name, PlanEntry &entry,
-                  std::chrono::steady_clock::time_point now)
+		  std::chrono::steady_clock::time_point now)
 {
-    assert(entry.plan == nullptr);
-    assert(entry.mtime != 0);
+	assert(entry.plan == nullptr);
+	assert(entry.mtime != 0);
 
-    logger(6, "loading plan '", name, "'");
+	logger(6, "loading plan '", name, "'");
 
-    const auto plan_path = GetPath() / name;
+	const auto plan_path = GetPath() / name;
 
-    try {
-        entry.plan.reset(new Plan(LoadPlanFile(plan_path)));
-    } catch (...) {
-        logger(2, "failed to load plan '", name, "': ",
-               std::current_exception());
-        DisablePlan(entry, now, std::chrono::seconds(600));
-        return false;
-    }
+	try {
+		entry.plan.reset(new Plan(LoadPlanFile(plan_path)));
+	} catch (...) {
+		logger(2, "failed to load plan '", name, "': ",
+		       std::current_exception());
+		DisablePlan(entry, now, std::chrono::seconds(600));
+		return false;
+	}
 
-    return true;
+	return true;
 }
 
 bool
 Library::UpdatePlan(const char *name, PlanEntry &entry,
-                    std::chrono::steady_clock::time_point now)
+		    std::chrono::steady_clock::time_point now)
 {
-    const bool was_available = entry.IsAvailable(now);
+	const bool was_available = entry.IsAvailable(now);
 
-    if (!CheckPlanModified(name, entry, now))
-        return entry.IsAvailable(now) != was_available;
+	if (!CheckPlanModified(name, entry, now))
+		return entry.IsAvailable(now) != was_available;
 
-    if (entry.plan == nullptr && !LoadPlan(name, entry, now))
-        return false;
+	if (entry.plan == nullptr && !LoadPlan(name, entry, now))
+		return false;
 
-    return ValidatePlan(entry, now) != was_available;
+	return ValidatePlan(entry, now) != was_available;
 }

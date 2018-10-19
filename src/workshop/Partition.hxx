@@ -45,63 +45,63 @@ class Instance;
 class MultiLibrary;
 
 class WorkshopPartition final : ExitListener {
-    const Logger logger;
+	const Logger logger;
 
-    Instance &instance;
-    MultiLibrary &library;
+	Instance &instance;
+	MultiLibrary &library;
 
-    WorkshopQueue queue;
-    WorkshopWorkplace workplace;
+	WorkshopQueue queue;
+	WorkshopWorkplace workplace;
 
-    BoundMethod<void()> idle_callback;
+	BoundMethod<void()> idle_callback;
 
-    const size_t max_log;
+	const size_t max_log;
 
 public:
-    WorkshopPartition(Instance &instance,
-                      MultiLibrary &_library,
-                      SpawnService &_spawn_service,
-                      const Config &root_config,
-                      const WorkshopPartitionConfig &config,
-                      BoundMethod<void()> _idle_callback);
+	WorkshopPartition(Instance &instance,
+			  MultiLibrary &_library,
+			  SpawnService &_spawn_service,
+			  const Config &root_config,
+			  const WorkshopPartitionConfig &config,
+			  BoundMethod<void()> _idle_callback);
 
-    auto &GetEventLoop() const noexcept {
-        return queue.GetEventLoop();
-    }
+	auto &GetEventLoop() const noexcept {
+		return queue.GetEventLoop();
+	}
 
-    bool IsIdle() const {
-        return workplace.IsEmpty();
-    }
+	bool IsIdle() const {
+		return workplace.IsEmpty();
+	}
 
-    void Start() {
-        queue.Connect();
-    }
+	void Start() {
+		queue.Connect();
+	}
 
-    void Close() {
-        queue.Close();
-    }
+	void Close() {
+		queue.Close();
+	}
 
-    void BeginShutdown() {
-        queue.DisableAdmin();
-    }
+	void BeginShutdown() {
+		queue.DisableAdmin();
+	}
 
-    void DisableQueue() {
-        queue.DisableAdmin();
-    }
+	void DisableQueue() {
+		queue.DisableAdmin();
+	}
 
-    void EnableQueue() {
-        queue.EnableAdmin();
-    }
+	void EnableQueue() {
+		queue.EnableAdmin();
+	}
 
-    void UpdateFilter();
-    void UpdateLibraryAndFilter(bool force);
+	void UpdateFilter();
+	void UpdateLibraryAndFilter(bool force);
 
 private:
-    bool StartJob(WorkshopJob &&job);
-    void OnJob(WorkshopJob &&job);
+	bool StartJob(WorkshopJob &&job);
+	void OnJob(WorkshopJob &&job);
 
-    /* virtual methods from ExitListener */
-    void OnChildProcessExit(int status) override;
+	/* virtual methods from ExitListener */
+	void OnChildProcessExit(int status) override;
 };
 
 #endif

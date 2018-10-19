@@ -47,173 +47,173 @@ struct WorkshopJob;
 class EventLoop;
 
 class WorkshopQueue final : private Pg::AsyncConnectionHandler {
-    typedef std::function<void(WorkshopJob &&job)> Callback;
+	typedef std::function<void(WorkshopJob &&job)> Callback;
 
-    const ChildLogger logger;
+	const ChildLogger logger;
 
-    const std::string node_name;
+	const std::string node_name;
 
-    Pg::AsyncConnection db;
+	Pg::AsyncConnection db;
 
-    /**
-     * Was the queue disabled by the administrator?  Also used during
-     * shutdown.
-     */
-    bool disabled_admin = false;
+	/**
+	 * Was the queue disabled by the administrator?  Also used during
+	 * shutdown.
+	 */
+	bool disabled_admin = false;
 
-    /**
-     * Is the queue disabled because the node is busy and all slots
-     * are full?
-     */
-    bool disabled_full = false;
+	/**
+	 * Is the queue disabled because the node is busy and all slots
+	 * are full?
+	 */
+	bool disabled_full = false;
 
-    bool running = false;
+	bool running = false;
 
-    /** if set to true, the current queue run should be interrupted,
-        to be started again */
-    bool interrupt = false;
+	/** if set to true, the current queue run should be interrupted,
+	    to be started again */
+	bool interrupt = false;
 
-    /**
-     * Used to move CheckNotify() calls out of the current stack
-     * frame.
-     */
-    DeferEvent check_notify_event;
+	/**
+	 * Used to move CheckNotify() calls out of the current stack
+	 * frame.
+	 */
+	DeferEvent check_notify_event;
 
-    /**
-     * Timer event which runs the queue.
-     */
-    TimerEvent timer_event;
+	/**
+	 * Timer event which runs the queue.
+	 */
+	TimerEvent timer_event;
 
-    std::string plans_include, plans_exclude, plans_lowprio;
-    std::chrono::steady_clock::time_point next_expire_check =
-        std::chrono::steady_clock::time_point::min();
+	std::string plans_include, plans_exclude, plans_lowprio;
+	std::chrono::steady_clock::time_point next_expire_check =
+		std::chrono::steady_clock::time_point::min();
 
-    const Callback callback;
+	const Callback callback;
 
 public:
-    WorkshopQueue(const Logger &parent_logger, EventLoop &event_loop,
-                  const char *_node_name,
-                  const char *conninfo, const char *schema,
-                  Callback _callback);
-    ~WorkshopQueue();
+	WorkshopQueue(const Logger &parent_logger, EventLoop &event_loop,
+		      const char *_node_name,
+		      const char *conninfo, const char *schema,
+		      Callback _callback);
+	~WorkshopQueue();
 
-    auto &GetEventLoop() const noexcept {
-        return timer_event.GetEventLoop();
-    }
+	auto &GetEventLoop() const noexcept {
+		return timer_event.GetEventLoop();
+	}
 
-    gcc_pure
-    const char *GetNodeName() const {
-        return node_name.c_str();
-    }
+	gcc_pure
+	const char *GetNodeName() const {
+		return node_name.c_str();
+	}
 
-    void Connect() {
-        db.Connect();
-    }
+	void Connect() {
+		db.Connect();
+	}
 
-    void Close();
+	void Close();
 
-    /**
-     * Configure a "plan" filter.
-     */
-    void SetFilter(std::string &&plans_include, std::string &&plans_exclude,
-                   std::string &&plans_lowprio);
+	/**
+	 * Configure a "plan" filter.
+	 */
+	void SetFilter(std::string &&plans_include, std::string &&plans_exclude,
+		       std::string &&plans_lowprio);
 
-    bool IsDisabled() const {
-        return disabled_admin || disabled_full;
-    }
+	bool IsDisabled() const {
+		return disabled_admin || disabled_full;
+	}
 
-    /**
-     * Disable the queue as an administrative decision (e.g. daemon
-     * shutdown).
-     */
-    void DisableAdmin() {
-        disabled_admin = true;
-    }
+	/**
+	 * Disable the queue as an administrative decision (e.g. daemon
+	 * shutdown).
+	 */
+	void DisableAdmin() {
+		disabled_admin = true;
+	}
 
-    /**
-     * Enable the queue after it has been disabled with DisableAdmin().
-     */
-    void EnableAdmin();
+	/**
+	 * Enable the queue after it has been disabled with DisableAdmin().
+	 */
+	void EnableAdmin();
 
-    /**
-     * Disable the queue, e.g. when the node is busy.
-     */
-    void DisableFull() {
-        disabled_full = true;
-    }
+	/**
+	 * Disable the queue, e.g. when the node is busy.
+	 */
+	void DisableFull() {
+		disabled_full = true;
+	}
 
-    /**
-     * Enable the queue after it has been disabled with DisableFull().
-     */
-    void EnableFull();
+	/**
+	 * Enable the queue after it has been disabled with DisableFull().
+	 */
+	void EnableFull();
 
-    /**
-     * @return true on success
-     */
-    bool SetJobProgress(const WorkshopJob &job, unsigned progress,
-                        const char *timeout) noexcept;
+	/**
+	 * @return true on success
+	 */
+	bool SetJobProgress(const WorkshopJob &job, unsigned progress,
+			    const char *timeout) noexcept;
 
-    void SetJobEnv(const WorkshopJob &job, const char *more_env);
+	void SetJobEnv(const WorkshopJob &job, const char *more_env);
 
-    /**
-     * Disassociate from the job, act as if this node had never
-     * claimed it.  It will notify the other workshop nodes.
-     */
-    void RollbackJob(const WorkshopJob &job) noexcept;
+	/**
+	 * Disassociate from the job, act as if this node had never
+	 * claimed it.  It will notify the other workshop nodes.
+	 */
+	void RollbackJob(const WorkshopJob &job) noexcept;
 
-    /**
-     * Reschedule the given job after it has been executed already.
-     *
-     * @param delay don't execute this job until the given duration
-     * has passed
-     */
-    void AgainJob(const WorkshopJob &job, std::chrono::seconds delay) noexcept;
+	/**
+	 * Reschedule the given job after it has been executed already.
+	 *
+	 * @param delay don't execute this job until the given duration
+	 * has passed
+	 */
+	void AgainJob(const WorkshopJob &job, std::chrono::seconds delay) noexcept;
 
-    void SetJobDone(const WorkshopJob &job, int status,
-                    const char *log) noexcept;
+	void SetJobDone(const WorkshopJob &job, int status,
+			const char *log) noexcept;
 
 private:
-    void RunResult(const Pg::Result &result);
-    void Run2();
-    void Run();
+	void RunResult(const Pg::Result &result);
+	void Run2();
+	void Run();
 
-    void OnTimer();
+	void OnTimer();
 
-    void ScheduleTimer(Event::Duration d) {
-        timer_event.Schedule(d);
-    }
+	void ScheduleTimer(Event::Duration d) {
+		timer_event.Schedule(d);
+	}
 
-    /**
-     * Schedule a queue run.  It will occur "very soon" (in a few
-     * milliseconds).
-     */
-    void Reschedule() {
-        ScheduleTimer(std::chrono::milliseconds(10));
-    }
+	/**
+	 * Schedule a queue run.  It will occur "very soon" (in a few
+	 * milliseconds).
+	 */
+	void Reschedule() {
+		ScheduleTimer(std::chrono::milliseconds(10));
+	}
 
-    /**
-     * Checks everything asynchronously: if the connection has failed,
-     * schedule a reconnect.  If there are notifies, schedule a queue run.
-     *
-     * This is an extended version of queue_check_notify(), to be used by
-     * public functions that (unlike the internal functions) do not
-     * reschedule.
-     */
-    void CheckNotify() {
-        db.CheckNotify();
-    }
+	/**
+	 * Checks everything asynchronously: if the connection has failed,
+	 * schedule a reconnect.  If there are notifies, schedule a queue run.
+	 *
+	 * This is an extended version of queue_check_notify(), to be used by
+	 * public functions that (unlike the internal functions) do not
+	 * reschedule.
+	 */
+	void CheckNotify() {
+		db.CheckNotify();
+	}
 
-    void ScheduleCheckNotify() {
-        check_notify_event.Schedule();
-    }
+	void ScheduleCheckNotify() {
+		check_notify_event.Schedule();
+	}
 
-    int GetNextScheduled(int *span_r);
+	int GetNextScheduled(int *span_r);
 
-    /* virtual methods from Pg::AsyncConnectionHandler */
-    void OnConnect() override;
-    void OnDisconnect() noexcept override;
-    void OnNotify(const char *name) override;
-    void OnError(std::exception_ptr e) noexcept override;
+	/* virtual methods from Pg::AsyncConnectionHandler */
+	void OnConnect() override;
+	void OnDisconnect() noexcept override;
+	void OnNotify(const char *name) override;
+	void OnError(std::exception_ptr e) noexcept override;
 };
 
 #endif

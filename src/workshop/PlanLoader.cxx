@@ -50,144 +50,144 @@
 #include <grp.h>
 
 class PlanLoader final : public ConfigParser {
-    Plan plan;
+	Plan plan;
 
 public:
-    Plan &&Release() {
-        return std::move(plan);
-    }
+	Plan &&Release() {
+		return std::move(plan);
+	}
 
-    /* virtual methods from class ConfigParser */
-    void ParseLine(FileLineParser &line) final;
-    void Finish() override;
+	/* virtual methods from class ConfigParser */
+	void ParseLine(FileLineParser &line) final;
+	void Finish() override;
 };
 
 gcc_pure
 static std::vector<gid_t>
 get_user_groups(const char *user, gid_t gid)
 {
-    std::array<gid_t, 64> groups;
-    int ngroups = groups.size();
-    int result = getgrouplist(user, gid,
-                              &groups.front(), &ngroups);
-    if (result < 0)
-        throw std::runtime_error("getgrouplist() failed");
+	std::array<gid_t, 64> groups;
+	int ngroups = groups.size();
+	int result = getgrouplist(user, gid,
+				  &groups.front(), &ngroups);
+	if (result < 0)
+		throw std::runtime_error("getgrouplist() failed");
 
-    return std::vector<gid_t>(groups.begin(),
-                              std::next(groups.begin(), result));
+	return std::vector<gid_t>(groups.begin(),
+				  std::next(groups.begin(), result));
 }
 
 void
 PlanLoader::ParseLine(FileLineParser &line)
 {
-    const char *key = line.ExpectWord();
+	const char *key = line.ExpectWord();
 
-    if (strcmp(key, "exec") == 0) {
-        if (!plan.args.empty())
-            throw std::runtime_error("'exec' already specified");
+	if (strcmp(key, "exec") == 0) {
+		if (!plan.args.empty())
+			throw std::runtime_error("'exec' already specified");
 
-        const char *value = line.NextRelaxedValue();
-        if (value == nullptr || *value == 0)
-            throw std::runtime_error("empty executable");
+		const char *value = line.NextRelaxedValue();
+		if (value == nullptr || *value == 0)
+			throw std::runtime_error("empty executable");
 
-        do {
-            plan.args.push_back(value);
-            value = line.NextRelaxedValue();
-        } while (value != nullptr);
-    } else if (strcmp(key, "control_channel") == 0) {
-        /* previously, the "yes"/"no" parameter was mandatory, but
-           that's deprecated since 2.0.36 */
-        plan.control_channel = line.IsEnd() || line.NextBool();
-        line.ExpectEnd();
-    } else if (strcmp(key, "timeout") == 0) {
-        plan.timeout = line.ExpectValueAndEnd();
-        plan.parsed_timeout = Pg::ParseIntervalS(plan.timeout.c_str());
-    } else if (strcmp(key, "chroot") == 0) {
-        const char *value = line.ExpectValueAndEnd();
+		do {
+			plan.args.push_back(value);
+			value = line.NextRelaxedValue();
+		} while (value != nullptr);
+	} else if (strcmp(key, "control_channel") == 0) {
+		/* previously, the "yes"/"no" parameter was mandatory, but
+		   that's deprecated since 2.0.36 */
+		plan.control_channel = line.IsEnd() || line.NextBool();
+		line.ExpectEnd();
+	} else if (strcmp(key, "timeout") == 0) {
+		plan.timeout = line.ExpectValueAndEnd();
+		plan.parsed_timeout = Pg::ParseIntervalS(plan.timeout.c_str());
+	} else if (strcmp(key, "chroot") == 0) {
+		const char *value = line.ExpectValueAndEnd();
 
-        int ret;
-        struct stat st;
+		int ret;
+		struct stat st;
 
-        ret = stat(value, &st);
-        if (ret < 0)
-            throw FormatErrno("failed to stat '%s'", value);
+		ret = stat(value, &st);
+		if (ret < 0)
+			throw FormatErrno("failed to stat '%s'", value);
 
-        if (!S_ISDIR(st.st_mode))
-            throw FormatRuntimeError("not a directory: %s", value);
+		if (!S_ISDIR(st.st_mode))
+			throw FormatRuntimeError("not a directory: %s", value);
 
-        plan.chroot = value;
-    } else if (strcmp(key, "user") == 0) {
-        const char *value = line.ExpectValueAndEnd();
+		plan.chroot = value;
+	} else if (strcmp(key, "user") == 0) {
+		const char *value = line.ExpectValueAndEnd();
 
-        struct passwd *pw;
+		struct passwd *pw;
 
-        pw = getpwnam(value);
-        if (pw == nullptr)
-            throw FormatRuntimeError("no such user '%s'", value);
+		pw = getpwnam(value);
+		if (pw == nullptr)
+			throw FormatRuntimeError("no such user '%s'", value);
 
-        if (pw->pw_uid == 0)
-            throw std::runtime_error("user 'root' is forbidden");
+		if (pw->pw_uid == 0)
+			throw std::runtime_error("user 'root' is forbidden");
 
-        if (pw->pw_gid == 0)
-            throw std::runtime_error("group 'root' is forbidden");
+		if (pw->pw_gid == 0)
+			throw std::runtime_error("group 'root' is forbidden");
 
-        plan.uid = pw->pw_uid;
-        plan.gid = pw->pw_gid;
+		plan.uid = pw->pw_uid;
+		plan.gid = pw->pw_gid;
 
-        plan.groups = get_user_groups(value, plan.gid);
-    } else if (strcmp(key, "umask") == 0) {
-        const char *s = line.ExpectValueAndEnd();
-        if (*s != '0')
-            throw std::runtime_error("umask must be an octal value starting with '0'");
+		plan.groups = get_user_groups(value, plan.gid);
+	} else if (strcmp(key, "umask") == 0) {
+		const char *s = line.ExpectValueAndEnd();
+		if (*s != '0')
+			throw std::runtime_error("umask must be an octal value starting with '0'");
 
-        char *endptr;
-        auto value = strtoul(s, &endptr, 8);
-        if (endptr == s || *endptr != 0)
-            throw std::runtime_error("Failed to parse umask");
+		char *endptr;
+		auto value = strtoul(s, &endptr, 8);
+		if (endptr == s || *endptr != 0)
+			throw std::runtime_error("Failed to parse umask");
 
-        if (value & ~0777)
-            throw std::runtime_error("umask is too large");
+		if (value & ~0777)
+			throw std::runtime_error("umask is too large");
 
-        plan.umask = value;
-    } else if (strcmp(key, "nice") == 0) {
-        plan.priority = atoi(line.ExpectValueAndEnd());
-    } else if (strcmp(key, "sched_idle") == 0) {
-        plan.sched_idle = true;
-        line.ExpectEnd();
-    } else if (strcmp(key, "ioprio_idle") == 0) {
-        plan.ioprio_idle = true;
-        line.ExpectEnd();
-    } else if (strcmp(key, "idle") == 0) {
-        plan.sched_idle = plan.ioprio_idle = true;
-        line.ExpectEnd();
-    } else if (strcmp(key, "private_network") == 0) {
-        line.ExpectEnd();
-        plan.private_network = true;
-    } else if (strcmp(key, "rlimits") == 0) {
-        if (!plan.rlimits.Parse(line.ExpectValueAndEnd()))
-            throw std::runtime_error("Failed to parse rlimits");
-    } else if (strcmp(key, "concurrency") == 0) {
-        plan.concurrency = line.NextPositiveInteger();
-        line.ExpectEnd();
-    } else
-        throw FormatRuntimeError("unknown option '%s'", key);
+		plan.umask = value;
+	} else if (strcmp(key, "nice") == 0) {
+		plan.priority = atoi(line.ExpectValueAndEnd());
+	} else if (strcmp(key, "sched_idle") == 0) {
+		plan.sched_idle = true;
+		line.ExpectEnd();
+	} else if (strcmp(key, "ioprio_idle") == 0) {
+		plan.ioprio_idle = true;
+		line.ExpectEnd();
+	} else if (strcmp(key, "idle") == 0) {
+		plan.sched_idle = plan.ioprio_idle = true;
+		line.ExpectEnd();
+	} else if (strcmp(key, "private_network") == 0) {
+		line.ExpectEnd();
+		plan.private_network = true;
+	} else if (strcmp(key, "rlimits") == 0) {
+		if (!plan.rlimits.Parse(line.ExpectValueAndEnd()))
+			throw std::runtime_error("Failed to parse rlimits");
+	} else if (strcmp(key, "concurrency") == 0) {
+		plan.concurrency = line.NextPositiveInteger();
+		line.ExpectEnd();
+	} else
+		throw FormatRuntimeError("unknown option '%s'", key);
 }
 
 void
 PlanLoader::Finish()
 {
-    if (plan.args.empty())
-        throw std::runtime_error("no 'exec'");
+	if (plan.args.empty())
+		throw std::runtime_error("no 'exec'");
 
-    if (plan.timeout.empty())
-        plan.timeout = "10 minutes";
+	if (plan.timeout.empty())
+		plan.timeout = "10 minutes";
 }
 
 Plan
 LoadPlanFile(const boost::filesystem::path &path)
 {
-    PlanLoader loader;
-    CommentConfigParser comment_parser(loader);
-    ParseConfigFile(path, comment_parser);
-    return loader.Release();
+	PlanLoader loader;
+	CommentConfigParser comment_parser(loader);
+	ParseConfigFile(path, comment_parser);
+	return loader.Release();
 }

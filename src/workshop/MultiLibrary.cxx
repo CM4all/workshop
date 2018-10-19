@@ -35,11 +35,11 @@
 std::shared_ptr<Plan>
 MultiLibrary::Get(std::chrono::steady_clock::time_point now, const char *name)
 {
-    for (auto &i : libraries) {
-        auto p = i.Get(now, name);
-        if (p)
-            return p;
-    }
+	for (auto &i : libraries) {
+		auto p = i.Get(now, name);
+		if (p)
+			return p;
+	}
 
-    return nullptr;
+	return nullptr;
 }
