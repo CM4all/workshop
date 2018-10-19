@@ -1,6 +1,7 @@
 cm4all-workshop (3.1) unstable; urgency=low
 
   * feature freeze
+  * cron: log more context for "No uid/gid specified"
 
  --   
 
