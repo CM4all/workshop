@@ -109,8 +109,7 @@ MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
 	} catch (const std::exception &e) {
 		queue.Finish(job);
 		queue.InsertResult(job, start_time.c_str(), -1, e.what());
-		std::throw_with_nested(FormatRuntimeError("Failed to translate job '%s'",
-							  job.id.c_str()));
+		std::throw_with_nested(std::runtime_error("Translation failed"));
 	}
 
 	/* create operator object */
