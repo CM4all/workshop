@@ -1,4 +1,4 @@
-project('CM4all Workshop', ['c', 'cpp'], version: '3.0.7',
+project('CM4all Workshop', ['c', 'cpp'], version: '3.1',
   default_options: [
     'c_std=c99',
     'cpp_std=c++14'
