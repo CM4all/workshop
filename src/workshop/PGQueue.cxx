@@ -225,15 +225,17 @@ pg_rollback_job(Pg::Connection &db, const char *id)
 }
 
 void
-pg_again_job(Pg::Connection &db, const char *id, std::chrono::seconds delay)
+pg_again_job(Pg::Connection &db, const char *id, const char *log,
+	     std::chrono::seconds delay)
 {
 	const auto result = Pg::CheckError(
 		db.ExecuteParams("UPDATE jobs "
 				 "SET node_name=NULL, node_timeout=NULL, progress=0 "
+				 ", log=$3"
 				 ", scheduled_time=NOW() + $2 * '1 second'::interval "
 				 "WHERE id=$1 AND node_name IS NOT NULL "
 				 "AND time_done IS NULL",
-				 id, delay.count()));
+				 id, delay.count(), log));
 	if (result.GetAffectedRows() < 1)
 		throw std::runtime_error("No matching job");
 }

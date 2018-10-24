@@ -85,7 +85,7 @@ struct WorkshopJob {
 	 * @param delay don't execute this job until the given duration
 	 * has passed
 	 */
-	void SetAgain(std::chrono::seconds delay);
+	void SetAgain(std::chrono::seconds delay, const char *log);
 };
 
 #endif

@@ -54,7 +54,7 @@ WorkshopJob::SetDone(int status, const char *log)
 }
 
 void
-WorkshopJob::SetAgain(std::chrono::seconds delay)
+WorkshopJob::SetAgain(std::chrono::seconds delay, const char *log)
 {
-	queue.AgainJob(*this, delay);
+	queue.AgainJob(*this, log, delay);
 }

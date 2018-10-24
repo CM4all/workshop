@@ -175,7 +175,7 @@ WorkshopOperator::OnChildProcessExit(int status)
 		logger(2, "exited with status ", exit_status);
 
 	if (again >= std::chrono::seconds())
-		job.SetAgain(again);
+		job.SetAgain(again, log.GetBuffer());
 	else
 		job.SetDone(exit_status, log.GetBuffer());
 

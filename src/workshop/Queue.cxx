@@ -405,6 +405,7 @@ WorkshopQueue::RollbackJob(const WorkshopJob &job) noexcept
 
 void
 WorkshopQueue::AgainJob(const WorkshopJob &job,
+			const char *log,
 			std::chrono::seconds delay) noexcept
 {
 	assert(&job.queue == this);
@@ -413,7 +414,7 @@ WorkshopQueue::AgainJob(const WorkshopJob &job,
 
 	try {
 		if (delay > std::chrono::seconds())
-			pg_again_job(db, job.id.c_str(), delay);
+			pg_again_job(db, job.id.c_str(), log, delay);
 		else
 			pg_rollback_job(db, job.id.c_str());
 	} catch (...) {

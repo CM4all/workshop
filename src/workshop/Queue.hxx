@@ -167,7 +167,8 @@ public:
 	 * @param delay don't execute this job until the given duration
 	 * has passed
 	 */
-	void AgainJob(const WorkshopJob &job, std::chrono::seconds delay) noexcept;
+	void AgainJob(const WorkshopJob &job, const char *log,
+		      std::chrono::seconds delay) noexcept;
 
 	void SetJobDone(const WorkshopJob &job, int status,
 			const char *log) noexcept;
