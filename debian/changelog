@@ -2,7 +2,7 @@ cm4all-workshop (3.2) unstable; urgency=low
 
   * workshop: fill `log` column after `again`
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Thu, 25 Oct 2018 20:02:04 +0200
 
 cm4all-workshop (3.1) unstable; urgency=low
 
