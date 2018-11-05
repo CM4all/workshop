@@ -52,8 +52,7 @@ struct Plan {
 
 	std::string timeout, chroot;
 
-	std::chrono::steady_clock::duration parsed_timeout =
-		std::chrono::seconds(0);
+	std::chrono::steady_clock::duration parsed_timeout{};
 
 	uid_t uid = 65534;
 	gid_t gid = 65534;
