@@ -44,26 +44,48 @@ class Connection;
 class Result;
 }
 
-bool
+/**
+ * Throws on error.
+ */
+void
 pg_notify(Pg::Connection &db);
 
-int pg_release_jobs(Pg::Connection &db, const char *node_name);
+/**
+ * Throws on error.
+ */
+unsigned
+pg_release_jobs(Pg::Connection &db, const char *node_name);
 
-int
+/**
+ * Throws on error.
+ */
+unsigned
 pg_expire_jobs(Pg::Connection &db, const char *except_node_name);
 
-int
+/**
+ * Throws on error.
+ */
+bool
 pg_next_scheduled_job(Pg::Connection &db,
 		      const char *plans_include,
 		      long *span_r);
 
+/**
+ * Throws on error.
+ */
 Pg::Result
 pg_select_new_jobs(Pg::Connection &db,
 		   const char *plans_include, const char *plans_exclude,
 		   const char *plans_lowprio,
 		   unsigned limit);
 
-int
+/**
+ * Throws on error.
+ *
+ * @return true on success, false if another node has claimed the job
+ * earlier
+ */
+bool
 pg_claim_job(Pg::Connection &db,
 	     const char *job_id, const char *node_name,
 	     const char *timeout);
@@ -75,6 +97,9 @@ void
 pg_set_job_progress(Pg::Connection &db, const char *job_id, unsigned progress,
 		    const char *timeout);
 
+/**
+ * Throws on error.
+ */
 void
 PgSetEnv(Pg::Connection &db, const char *job_id, const char *more_env);
 

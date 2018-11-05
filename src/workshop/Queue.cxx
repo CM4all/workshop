@@ -84,39 +84,37 @@ WorkshopQueue::OnTimer() noexcept
 	Run();
 }
 
-int
-WorkshopQueue::GetNextScheduled(int *span_r) noexcept
+bool
+WorkshopQueue::GetNextScheduled(int *span_r)
 {
-	int ret;
 	long span;
 
 	if (plans_include.empty()) {
 		*span_r = -1;
-		return 0;
+		return false;
 	}
 
-	ret = pg_next_scheduled_job(db,
-				    plans_include.c_str(),
-				    &span);
-	if (ret > 0) {
-		if (span < 0)
-			span = 0;
-
-		/* try to avoid rounding errors: always add 2 seconds */
-		span += 2;
-
-		if (span > 600)
-			span = 600;
-
-		*span_r = (int)span;
-	} else {
+	if (!pg_next_scheduled_job(db,
+				   plans_include.c_str(),
+				   &span)) {
 		*span_r = -1;
+		return false;
 	}
 
-	return ret;
+	if (span < 0)
+		span = 0;
+
+	/* try to avoid rounding errors: always add 2 seconds */
+	span += 2;
+
+	if (span > 600)
+		span = 600;
+
+	*span_r = (int)span;
+	return true;
 }
 
-static bool
+static void
 get_job(WorkshopJob &job,
 	const Pg::Result &result, unsigned row)
 {
@@ -131,40 +129,31 @@ get_job(WorkshopJob &job,
 	if (!result.IsValueNull(row, 3))
 		job.syslog_server = result.GetValue(row, 3);
 
-	return !job.id.empty() && !job.plan_name.empty();
+	if (job.id.empty())
+		throw std::runtime_error("Job has no id");
+
+	if (job.plan_name.empty())
+		throw FormatRuntimeError("Job '%s' has no plan", job.id.c_str());
 }
 
-static int
+static bool
 get_and_claim_job(const ChildLogger &logger, WorkshopJob &job,
 		  const char *node_name,
 		  Pg::Connection &db,
 		  const Pg::Result &result, unsigned row,
-		  const char *timeout) noexcept
+		  const char *timeout)
 {
-	try {
-		if (!get_job(job, result, row))
-			return -1;
-	} catch (...) {
-		logger(1, "Failed to load job from database record",
-		       std::current_exception());
-		return -1;
-	}
-
-	int ret;
+	get_job(job, result, row);
 
 	logger(6, "attempting to claim job ", job.id);
 
-	ret = pg_claim_job(db, job.id.c_str(), node_name, timeout);
-	if (ret < 0)
-		return -1;
-
-	if (ret == 0) {
+	if (!pg_claim_job(db, job.id.c_str(), node_name, timeout)) {
 		logger(6, "job ", job.id, " was not claimed");
-		return 0;
+		return false;
 	}
 
 	logger(6, "job ", job.id, " claimed");
-	return 1;
+	return true;
 }
 
 /**
@@ -200,7 +189,7 @@ WorkshopQueue::SetFilter(std::string &&_plans_include,
 }
 
 void
-WorkshopQueue::RunResult(const Pg::Result &result) noexcept
+WorkshopQueue::RunResult(const Pg::Result &result)
 {
 	for (unsigned row = 0, end = result.GetRowCount();
 	     row != end && !IsDisabled() && !interrupt; ++row) {
@@ -216,7 +205,7 @@ WorkshopQueue::RunResult(const Pg::Result &result) noexcept
 }
 
 void
-WorkshopQueue::Run2() noexcept
+WorkshopQueue::Run2()
 {
 	int ret;
 	bool full = false;
@@ -235,12 +224,9 @@ WorkshopQueue::Run2() noexcept
 	if (now >= next_expire_check) {
 		next_expire_check = now + std::chrono::seconds(60);
 
-		ret = pg_expire_jobs(db, node_name.c_str());
-		if (ret < 0)
-			return;
-
-		if (ret > 0) {
-			logger(2, "released ", ret, " expired jobs");
+		unsigned n = pg_expire_jobs(db, node_name.c_str());
+		if (n > 0) {
+			logger(2, "released ", n, " expired jobs");
 			pg_notify(db);
 		}
 	}
@@ -260,7 +246,7 @@ WorkshopQueue::Run2() noexcept
 				   plans_include.c_str(), plans_exclude.c_str(),
 				   plans_lowprio.c_str(),
 				   MAX_JOBS);
-	if (result.IsQuerySuccessful() && !result.IsEmpty()) {
+	if (!result.IsEmpty()) {
 		RunResult(result);
 
 		if (result.GetRowCount() == MAX_JOBS)
@@ -323,7 +309,13 @@ WorkshopQueue::Run() noexcept
 	ScheduleCheckNotify();
 
 	running = true;
-	Run2();
+
+	try {
+		Run2();
+	} catch (...) {
+		logger(1, std::current_exception());
+	}
+
 	running = false;
 }
 
@@ -394,12 +386,11 @@ WorkshopQueue::RollbackJob(const WorkshopJob &job) noexcept
 
 	try {
 		pg_rollback_job(db, job.id.c_str());
+		pg_notify(db);
 	} catch (...) {
 		logger(1, "Failed to roll back job '", job.id, "': ",
 		       std::current_exception());
 	}
-
-	pg_notify(db);
 
 	ScheduleCheckNotify();
 }
@@ -418,12 +409,11 @@ WorkshopQueue::AgainJob(const WorkshopJob &job,
 			pg_again_job(db, job.id.c_str(), log, delay);
 		else
 			pg_rollback_job(db, job.id.c_str());
+		pg_notify(db);
 	} catch (...) {
 		logger(1, "Failed to reschedule job '", job.id, "': ",
 		       std::current_exception());
 	}
-
-	pg_notify(db);
 
 	ScheduleCheckNotify();
 }
@@ -471,7 +461,7 @@ WorkshopQueue::OnConnect()
 		db.ExecuteOrThrow(("LISTEN \"" + db.Escape(schema)
 				   + ":new_job\"").c_str());
 
-	int ret = pg_release_jobs(db, node_name.c_str());
+	unsigned ret = pg_release_jobs(db, node_name.c_str());
 	if (ret > 0) {
 		logger(2, "released ", ret, " stale jobs");
 		pg_notify(db);

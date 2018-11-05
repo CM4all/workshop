@@ -38,56 +38,37 @@
 #include <string.h>
 #include <stdlib.h>
 
-bool
+void
 pg_notify(Pg::Connection &db)
 {
-	const auto result = db.Execute("NOTIFY new_job");
-	if (!result.IsCommandSuccessful()) {
-		fprintf(stderr, "NOTIFY new_job failed: %s\n",
-			result.GetErrorMessage());
-		return false;
-	}
-
-	return true;
+	db.ExecuteOrThrow("NOTIFY new_job");
 }
 
-int
+unsigned
 pg_release_jobs(Pg::Connection &db, const char *node_name)
 {
-	const auto result =
+	const auto result = CheckError(
 		db.ExecuteParams("UPDATE jobs "
 				 "SET node_name=NULL, node_timeout=NULL, progress=0 "
 				 "WHERE node_name=$1 AND time_done IS NULL AND exit_status IS NULL",
-				 node_name);
-	if (!result.IsCommandSuccessful()) {
-		fprintf(stderr, "UPDATE/claim on jobs failed: %s\n",
-			result.GetErrorMessage());
-		return -1;
-	}
-
+				 node_name));
 	return result.GetAffectedRows();
 }
 
-int
+unsigned
 pg_expire_jobs(Pg::Connection &db, const char *except_node_name)
 {
-	const auto result =
+	const auto result = CheckError(
 		db.ExecuteParams("UPDATE jobs "
 				 "SET node_name=NULL, node_timeout=NULL, progress=0 "
 				 "WHERE time_done IS NULL AND exit_status IS NULL AND "
 				 "node_name IS NOT NULL AND node_name <> $1 AND "
 				 "node_timeout IS NOT NULL AND now() > node_timeout",
-				 except_node_name);
-	if (!result.IsCommandSuccessful()) {
-		fprintf(stderr, "UPDATE/expire on jobs failed: %s\n",
-			result.GetErrorMessage());
-		return -1;
-	}
-
+				 except_node_name));
 	return result.GetAffectedRows();
 }
 
-int
+bool
 pg_next_scheduled_job(Pg::Connection &db,
 		      const char *plans_include,
 		      long *span_r)
@@ -107,22 +88,16 @@ pg_next_scheduled_job(Pg::Connection &db,
 		"AND plan_name = ANY ($1::TEXT[]) "
 		"AND enabled";
 
-	const auto result = db.ExecuteParams(sql, plans_include);
-	if (!result.IsQuerySuccessful()) {
-		fprintf(stderr, "SELECT on jobs failed: %s\n",
-			result.GetErrorMessage());
-		return -1;
-	}
-
+	const auto result = CheckError(db.ExecuteParams(sql, plans_include));
 	if (result.IsEmpty())
-		return 0;
+		return false;
 
 	const char *value = result.GetValue(0, 0);
 	if (value == nullptr || *value == 0)
-		return 0;
+		return false;
 
 	*span_r = strtol(value, nullptr, 0);
-	return 1;
+	return true;
 }
 
 Pg::Result
@@ -146,17 +121,12 @@ pg_select_new_jobs(Pg::Connection &db,
 		"ORDER BY priority, time_created "
 		"LIMIT $4";
 
-	auto result =
+	return CheckError(
 		db.ExecuteParams(sql,
-				 plans_include, plans_exclude, plans_lowprio, limit);
-	if (!result.IsQuerySuccessful())
-		fprintf(stderr, "SELECT on jobs failed: %s\n",
-			result.GetErrorMessage());
-
-	return result;
+				 plans_include, plans_exclude, plans_lowprio, limit));
 }
 
-int
+bool
 pg_claim_job(Pg::Connection &db,
 	     const char *job_id, const char *node_name,
 	     const char *timeout)
@@ -166,15 +136,8 @@ pg_claim_job(Pg::Connection &db,
 		"WHERE id=$2 AND node_name IS NULL"
 		" AND enabled";
 
-	const auto result =
-		db.ExecuteParams(sql, node_name, job_id, timeout);
-	if (!result.IsCommandSuccessful()) {
-		fprintf(stderr, "UPDATE/claim on jobs failed: %s\n",
-			result.GetErrorMessage());
-		return -1;
-	}
-
-	return result.GetAffectedRows();
+	const auto result = CheckError(db.ExecuteParams(sql, node_name, job_id, timeout));
+	return result.GetAffectedRows() > 0;
 }
 
 void

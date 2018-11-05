@@ -174,8 +174,16 @@ public:
 			const char *log) noexcept;
 
 private:
-	void RunResult(const Pg::Result &result) noexcept;
-	void Run2() noexcept;
+	/**
+	 * Throws on error.
+	 */
+	void RunResult(const Pg::Result &result);
+
+	/**
+	 * Throws on error.
+	 */
+	void Run2();
+
 	void Run() noexcept;
 
 	void OnTimer() noexcept;
@@ -208,7 +216,10 @@ private:
 		check_notify_event.Schedule();
 	}
 
-	int GetNextScheduled(int *span_r) noexcept;
+	/**
+	 * Throws on error.
+	 */
+	bool GetNextScheduled(int *span_r);
 
 	/* virtual methods from Pg::AsyncConnectionHandler */
 	void OnConnect() override;
