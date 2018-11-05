@@ -1,11 +1,10 @@
 project('CM4all Workshop', ['c', 'cpp'], version: '4.0.1',
+  meson_version: '>= 0.47',
   default_options: [
     'c_std=c99',
     'cpp_std=c++14'
   ],
 )
-
-compiler = meson.get_compiler('cpp')
 
 # TODO: use get_option('b_ndebug'), but that doesn't work with Meson 0.37.1
 if get_option('buildtype') == 'debug'
@@ -18,7 +17,7 @@ compiler = meson.get_compiler('cpp')
 c_compiler = meson.get_compiler('c')
 
 common_flags = [
-  '-D_REENTRANT', '-D_GNU_SOURCE',
+  '-D_GNU_SOURCE',
   '-DPACKAGE="' + meson.project_name() + '"',
   '-DVERSION="' + meson.project_version() + '"',
   '-Wall',
@@ -38,6 +37,21 @@ endif
 test_common_flags = [
   '-fvisibility=hidden',
 ]
+
+if not debug
+  test_common_flags += [
+    '-ffunction-sections',
+    '-fdata-sections',
+  ]
+
+  add_global_link_arguments(
+    compiler.get_supported_link_arguments(
+      '-Wl,--gc-sections',
+      '-Wl,--icf=all',
+    ),
+    language: 'cpp'
+  )
+endif
 
 test_cxxflags = test_common_flags + [
   '-fno-threadsafe-statics',
@@ -62,17 +76,8 @@ test_cflags = test_common_flags + [
 add_global_arguments(common_flags, language: 'c')
 add_global_arguments(common_flags, language: 'cpp')
 
-foreach f: test_cxxflags
-  if compiler.has_argument(f)
-    add_global_arguments(f, language: 'cpp')
-  endif
-endforeach
-
-foreach f: test_cflags
-  if c_compiler.has_argument(f)
-    add_global_arguments(f, language: 'c')
-  endif
-endforeach
+add_global_arguments(compiler.get_supported_arguments(test_cxxflags), language: 'cpp')
+add_global_arguments(c_compiler.get_supported_arguments(test_cflags), language: 'c')
 
 gtest_compile_args = [
   '-Wno-undef',

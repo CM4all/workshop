@@ -47,135 +47,135 @@
 static void
 WriteHeader(void *&p, TranslationCommand command, size_t size)
 {
-    TranslationHeader header;
-    header.length = (uint16_t)size;
-    header.command = command;
+	TranslationHeader header;
+	header.length = (uint16_t)size;
+	header.command = command;
 
-    p = mempcpy(p, &header, sizeof(header));
+	p = mempcpy(p, &header, sizeof(header));
 }
 
 static void
 WritePacket(void *&p, TranslationCommand cmd)
 {
-    WriteHeader(p, cmd, 0);
+	WriteHeader(p, cmd, 0);
 }
 
 static void
 WritePacket(void *&p, TranslationCommand cmd,
-            ConstBuffer<void> payload)
+	    ConstBuffer<void> payload)
 {
-    WriteHeader(p, cmd, payload.size);
-    p = mempcpy(p, payload.data, payload.size);
+	WriteHeader(p, cmd, payload.size);
+	p = mempcpy(p, payload.data, payload.size);
 }
 
 static void
 WritePacket(void *&p, TranslationCommand cmd,
-            StringView payload)
+	    StringView payload)
 {
-    WritePacket(p, cmd, payload.ToVoid());
+	WritePacket(p, cmd, payload.ToVoid());
 }
 
 static void
 SendFull(int fd, ConstBuffer<void> buffer)
 {
-    ssize_t nbytes = send(fd, buffer.data, buffer.size, MSG_NOSIGNAL);
-    if (nbytes < 0)
-        throw MakeErrno("send() to translation server failed");
+	ssize_t nbytes = send(fd, buffer.data, buffer.size, MSG_NOSIGNAL);
+	if (nbytes < 0)
+		throw MakeErrno("send() to translation server failed");
 
-    if (size_t(nbytes) != buffer.size)
-        throw std::runtime_error("Short send() to translation server");
+	if (size_t(nbytes) != buffer.size)
+		throw std::runtime_error("Short send() to translation server");
 }
 
 static void
 SendTranslateCron(int fd, const char *partition_name, const char *listener_tag,
-                  const char *user, const char *uri, const char *param)
+		  const char *user, const char *uri, const char *param)
 {
-    assert(user != nullptr);
+	assert(user != nullptr);
 
-    if (strlen(user) > 256)
-        throw std::runtime_error("User name too long");
+	if (strlen(user) > 256)
+		throw std::runtime_error("User name too long");
 
-    if (param != nullptr && strlen(param) > 4096)
-        throw std::runtime_error("Translation parameter too long");
+	if (param != nullptr && strlen(param) > 4096)
+		throw std::runtime_error("Translation parameter too long");
 
-    char buffer[8192];
-    void *p = buffer;
+	char buffer[8192];
+	void *p = buffer;
 
-    WritePacket(p, TranslationCommand::BEGIN);
+	WritePacket(p, TranslationCommand::BEGIN);
 
-    size_t partition_name_size = partition_name != nullptr
-        ? strlen(partition_name)
-        : 0;
-    WritePacket(p, TranslationCommand::CRON,
-                StringView(partition_name, partition_name_size));
+	size_t partition_name_size = partition_name != nullptr
+		? strlen(partition_name)
+		: 0;
+	WritePacket(p, TranslationCommand::CRON,
+		    StringView(partition_name, partition_name_size));
 
-    if (listener_tag != nullptr)
-        WritePacket(p, TranslationCommand::LISTENER_TAG, listener_tag);
+	if (listener_tag != nullptr)
+		WritePacket(p, TranslationCommand::LISTENER_TAG, listener_tag);
 
-    WritePacket(p, TranslationCommand::USER, user);
-    if (uri != nullptr)
-        WritePacket(p, TranslationCommand::URI, uri);
-    if (param != nullptr)
-        WritePacket(p, TranslationCommand::PARAM, param);
-    WritePacket(p, TranslationCommand::END);
+	WritePacket(p, TranslationCommand::USER, user);
+	if (uri != nullptr)
+		WritePacket(p, TranslationCommand::URI, uri);
+	if (param != nullptr)
+		WritePacket(p, TranslationCommand::PARAM, param);
+	WritePacket(p, TranslationCommand::END);
 
-    const size_t size = (char *)p - buffer;
-    SendFull(fd, {buffer, size});
+	const size_t size = (char *)p - buffer;
+	SendFull(fd, {buffer, size});
 }
 
 static TranslateResponse
 ReceiveResponse(AllocatorPtr alloc, int fd)
 {
-    TranslateParser parser(alloc);
+	TranslateParser parser(alloc);
 
-    StaticFifoBuffer<uint8_t, 8192> buffer;
+	StaticFifoBuffer<uint8_t, 8192> buffer;
 
-    while (true) {
-        auto w = buffer.Write();
-        if (w.empty())
-            throw std::runtime_error("Translation receive buffer is full");
+	while (true) {
+		auto w = buffer.Write();
+		if (w.empty())
+			throw std::runtime_error("Translation receive buffer is full");
 
-        ssize_t nbytes = recv(fd, w.data, w.size, MSG_NOSIGNAL);
-        if (nbytes < 0)
-            throw MakeErrno("recv() from translation server failed");
+		ssize_t nbytes = recv(fd, w.data, w.size, MSG_NOSIGNAL);
+		if (nbytes < 0)
+			throw MakeErrno("recv() from translation server failed");
 
-        if (nbytes == 0)
-            throw std::runtime_error("Translation server hung up");
+		if (nbytes == 0)
+			throw std::runtime_error("Translation server hung up");
 
-        buffer.Append(nbytes);
+		buffer.Append(nbytes);
 
-        while (true) {
-            auto r = buffer.Read();
-            if (r.empty())
-                break;
+		while (true) {
+			auto r = buffer.Read();
+			if (r.empty())
+				break;
 
-            size_t consumed = parser.Feed(r.data, r.size);
-            if (consumed == 0)
-                break;
+			size_t consumed = parser.Feed(r.data, r.size);
+			if (consumed == 0)
+				break;
 
-            buffer.Consume(consumed);
+			buffer.Consume(consumed);
 
-            auto result = parser.Process();
-            switch (result) {
-            case TranslateParser::Result::MORE:
-                break;
+			auto result = parser.Process();
+			switch (result) {
+			case TranslateParser::Result::MORE:
+				break;
 
-            case TranslateParser::Result::DONE:
-                if (!buffer.empty())
-                    throw std::runtime_error("Excessive data from translation server");
+			case TranslateParser::Result::DONE:
+				if (!buffer.empty())
+					throw std::runtime_error("Excessive data from translation server");
 
-                return std::move(parser.GetResponse());
-            }
-        }
-    }
+				return std::move(parser.GetResponse());
+			}
+		}
+	}
 }
 
 TranslateResponse
 TranslateCron(AllocatorPtr alloc, int fd,
-              const char *partition_name, const char *listener_tag,
-              const char *user, const char *uri,
-              const char *param)
+	      const char *partition_name, const char *listener_tag,
+	      const char *user, const char *uri,
+	      const char *param)
 {
-    SendTranslateCron(fd, partition_name, listener_tag, user, uri, param);
-    return ReceiveResponse(alloc, fd);
+	SendTranslateCron(fd, partition_name, listener_tag, user, uri, param);
+	return ReceiveResponse(alloc, fd);
 }

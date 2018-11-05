@@ -42,7 +42,7 @@
   packet begins with a header and a variable-length payload.  The
   payloads are padded to the next multiple of 4 bytes.
 
- */
+*/
 
 static constexpr uint16_t WORKSHOP_CONTROL_DEFAULT_PORT = 5484;
 
@@ -52,32 +52,32 @@ static constexpr uint16_t WORKSHOP_CONTROL_DEFAULT_PORT = 5484;
 static const uint32_t WORKSHOP_CONTROL_MAGIC = 0x63046102;
 
 struct WorkshopControlDatagramHeader {
-    uint32_t magic;
-    uint32_t crc;
+	uint32_t magic;
+	uint32_t crc;
 };
 
 enum class WorkshopControlCommand : uint16_t {
-    NOP = 0,
+	NOP = 0,
 
-    /**
-     * Set the logger verbosity.  The payload is one byte: 0 means
-     * quiet, 1 is the default, and bigger values make the daemon more
-     * verbose.
-     */
-    VERBOSE = 1,
+	/**
+	 * Set the logger verbosity.  The payload is one byte: 0 means
+	 * quiet, 1 is the default, and bigger values make the daemon more
+	 * verbose.
+	 */
+	VERBOSE = 1,
 
-    /**
-     * Disable all queues, i.e. do not accept any new jobs.
-     */
-    DISABLE_QUEUE = 2,
+	/**
+	 * Disable all queues, i.e. do not accept any new jobs.
+	 */
+	DISABLE_QUEUE = 2,
 
-    /**
-     * Re-enable all queues, i.e. resume accepting new jobs.
-     */
-    ENABLE_QUEUE = 3,
+	/**
+	 * Re-enable all queues, i.e. resume accepting new jobs.
+	 */
+	ENABLE_QUEUE = 3,
 };
 
 struct WorkshopControlHeader {
-    uint16_t size;
-    uint16_t command;
+	uint16_t size;
+	uint16_t command;
 };

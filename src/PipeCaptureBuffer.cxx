@@ -33,38 +33,38 @@
 #include "PipeCaptureBuffer.hxx"
 
 PipeCaptureBuffer::PipeCaptureBuffer(EventLoop &event_loop,
-                                     UniqueFileDescriptor _fd,
-                                     size_t capacity)
-        :fd(std::move(_fd)),
-         event(event_loop, BIND_THIS_METHOD(OnSocket),
-               SocketDescriptor::FromFileDescriptor(fd)),
-         buffer(capacity)
+				     UniqueFileDescriptor _fd,
+				     size_t capacity)
+	:fd(std::move(_fd)),
+	 event(event_loop, BIND_THIS_METHOD(OnSocket),
+	       SocketDescriptor::FromFileDescriptor(fd)),
+	 buffer(capacity)
 {
-    event.ScheduleRead();
+	event.ScheduleRead();
 }
 
 void
 PipeCaptureBuffer::OnSocket(unsigned)
 {
-    auto w = buffer.Write();
-    if (!w.empty()) {
-        ssize_t nbytes = fd.Read(w.data, w.size);
-        if (nbytes <= 0) {
-            Close();
-            OnEnd();
-            return;
-        }
+	auto w = buffer.Write();
+	if (!w.empty()) {
+		ssize_t nbytes = fd.Read(w.data, w.size);
+		if (nbytes <= 0) {
+			Close();
+			OnEnd();
+			return;
+		}
 
-        buffer.Append(nbytes);
-        OnAppend();
+		buffer.Append(nbytes);
+		OnAppend();
 
-        if (IsFull())
-            OnEnd();
-    } else {
-        /* buffer is full: discard data to keep the pipe from blocking
-           the other end */
-        char discard[4096];
-        if (fd.Read(discard, sizeof(discard)) <= 0)
-            Close();
-    }
+		if (IsFull())
+			OnEnd();
+	} else {
+		/* buffer is full: discard data to keep the pipe from blocking
+		   the other end */
+		char discard[4096];
+		if (fd.Read(discard, sizeof(discard)) <= 0)
+			Close();
+	}
 }

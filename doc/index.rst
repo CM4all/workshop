@@ -213,7 +213,8 @@ The following options are available:
 
 * :samp:`timeout INTERVAL`: A timeout for this plan.  If the process
   does not finish or update its state within this time span, it is
-  assumed to be dead; the process will be killed and the job will be
+  assumed to be dead (the timer is reset after each update);
+  the process will be killed and the job will be
   released, to be executed by another node.  Example: :samp:`20
   minutes` or :samp:`2 hours`.
 

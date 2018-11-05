@@ -47,130 +47,130 @@
 static constexpr bool
 is_valid_plan_name_char(char ch)
 {
-    return IsAlphaNumericASCII(ch) ||
-        ch == '_' || ch == '-';
+	return IsAlphaNumericASCII(ch) ||
+		ch == '_' || ch == '-';
 }
 
 gcc_pure
 static bool
 is_valid_plan_name(const char *name)
 {
-    assert(name != nullptr);
+	assert(name != nullptr);
 
-    do {
-        if (!is_valid_plan_name_char(*name))
-            return false;
-        ++name;
-    } while (*name != 0);
+	do {
+		if (!is_valid_plan_name_char(*name))
+			return false;
+		++name;
+	} while (*name != 0);
 
-    return true;
+	return true;
 }
 
 bool
 Library::UpdatePlans(std::chrono::steady_clock::time_point now)
 {
-    struct dirent *ent;
+	struct dirent *ent;
 
-    /* read list of plans from file system, update our list */
+	/* read list of plans from file system, update our list */
 
-    DIR *dir = opendir(path.c_str());
-    if (dir == nullptr) {
-        logger(2, "failed to opendir '", path.c_str(), "': ", strerror(errno));
-        return false;
-    }
+	DIR *dir = opendir(path.c_str());
+	if (dir == nullptr) {
+		logger(2, "failed to opendir '", path.c_str(), "': ", strerror(errno));
+		return false;
+	}
 
-    auto old_plans = std::move(plans);
-    plans.clear();
+	auto old_plans = std::move(plans);
+	plans.clear();
 
-    bool modified = false;
+	bool modified = false;
 
-    while ((ent = readdir(dir)) != nullptr) {
-        if (!is_valid_plan_name(ent->d_name))
-            continue;
+	while ((ent = readdir(dir)) != nullptr) {
+		if (!is_valid_plan_name(ent->d_name))
+			continue;
 
-        std::string name(ent->d_name);
+		std::string name(ent->d_name);
 
-        auto old_i = old_plans.find(name);
-        decltype(old_i) i;
+		auto old_i = old_plans.find(name);
+		decltype(old_i) i;
 
-        if (old_i != old_plans.end()) {
-            i = plans.emplace(std::piecewise_construct,
-                              std::forward_as_tuple(std::move(name)),
-                              std::forward_as_tuple(std::move(old_i->second)))
-                .first;
-            old_plans.erase(old_i);
-        } else {
-            i = plans.emplace(std::piecewise_construct,
-                              std::forward_as_tuple(std::move(name)),
-                              std::forward_as_tuple())
-                .first;
-            modified = true;
-        }
+		if (old_i != old_plans.end()) {
+			i = plans.emplace(std::piecewise_construct,
+					  std::forward_as_tuple(std::move(name)),
+					  std::forward_as_tuple(std::move(old_i->second)))
+				.first;
+			old_plans.erase(old_i);
+		} else {
+			i = plans.emplace(std::piecewise_construct,
+					  std::forward_as_tuple(std::move(name)),
+					  std::forward_as_tuple())
+				.first;
+			modified = true;
+		}
 
-        if (UpdatePlan(ent->d_name, i->second, now))
-            modified = true;
-    }
+		if (UpdatePlan(ent->d_name, i->second, now))
+			modified = true;
+	}
 
-    closedir(dir);
+	closedir(dir);
 
-    /* remove all plans */
+	/* remove all plans */
 
-    for (const auto &i : old_plans)
-        logger(3, "removed plan '", i.first, "'");
+	for (const auto &i : old_plans)
+		logger(3, "removed plan '", i.first, "'");
 
-    if (!old_plans.empty()) {
-        modified = true;
-    }
+	if (!old_plans.empty()) {
+		modified = true;
+	}
 
-    return modified;
+	return modified;
 }
 
 bool
 Library::Update(std::chrono::steady_clock::time_point now, bool force)
 {
-    int ret;
-    struct stat st;
+	int ret;
+	struct stat st;
 
-    /* check directory time stamp */
+	/* check directory time stamp */
 
-    ret = stat(path.c_str(), &st);
-    if (ret < 0) {
-        logger(2, "failed to stat '", path.c_str(), "': ", strerror(errno));
-        return false;
-    }
+	ret = stat(path.c_str(), &st);
+	if (ret < 0) {
+		logger(2, "failed to stat '", path.c_str(), "': ", strerror(errno));
+		return false;
+	}
 
-    if (!S_ISDIR(st.st_mode)) {
-        logger(2, "not a directory: ", path.c_str());
-        return false;
-    }
+	if (!S_ISDIR(st.st_mode)) {
+		logger(2, "not a directory: ", path.c_str());
+		return false;
+	}
 
-    if (!force && st.st_mtime == mtime && now < next_plans_check)
-        return false;
+	if (!force && st.st_mtime == mtime && now < next_plans_check)
+		return false;
 
-    /* do it */
+	/* do it */
 
-    bool modified = UpdatePlans(now);
+	bool modified = UpdatePlans(now);
 
-    /* update mtime */
+	/* update mtime */
 
-    mtime = st.st_mtime;
-    next_plans_check = now + std::chrono::seconds(60);
+	mtime = st.st_mtime;
+	next_plans_check = now + std::chrono::seconds(60);
 
-    return modified;
+	return modified;
 }
 
 std::shared_ptr<Plan>
 Library::Get(std::chrono::steady_clock::time_point now, const char *name)
 {
-    auto i = plans.find(name);
-    if (i == plans.end())
-        return nullptr;
+	auto i = plans.find(name);
+	if (i == plans.end())
+		return nullptr;
 
-    PlanEntry &entry = i->second;
+	PlanEntry &entry = i->second;
 
-    UpdatePlan(name, entry, now);
-    if (!entry.IsAvailable(now))
-        return nullptr;
+	UpdatePlan(name, entry, now);
+	if (!entry.IsAvailable(now))
+		return nullptr;
 
-    return entry.plan;
+	return entry.plan;
 }

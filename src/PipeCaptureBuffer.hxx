@@ -30,8 +30,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PIPE_CAPTURE_BUFFER_HXX
-#define PIPE_CAPTURE_BUFFER_HXX
+#pragma once
 
 #include "CaptureBuffer.hxx"
 #include "io/UniqueFileDescriptor.hxx"
@@ -42,48 +41,46 @@
  * useful to capture the output of a child process.
  */
 class PipeCaptureBuffer {
-    UniqueFileDescriptor fd;
-    SocketEvent event;
+	UniqueFileDescriptor fd;
+	SocketEvent event;
 
-    CaptureBuffer buffer;
+	CaptureBuffer buffer;
 
 public:
-    explicit PipeCaptureBuffer(EventLoop &event_loop,
-                               UniqueFileDescriptor _fd,
-                               size_t capacity);
-    virtual ~PipeCaptureBuffer() noexcept = default;
+	explicit PipeCaptureBuffer(EventLoop &event_loop,
+				   UniqueFileDescriptor _fd,
+				   size_t capacity);
+	virtual ~PipeCaptureBuffer() noexcept = default;
 
-    bool IsFull() const noexcept {
-        return buffer.IsFull();
-    }
+	bool IsFull() const noexcept {
+		return buffer.IsFull();
+	}
 
-    WritableBuffer<char> GetData() {
-        return buffer.GetData();
-    }
+	WritableBuffer<char> GetData() {
+		return buffer.GetData();
+	}
 
-    char *NormalizeASCII() {
-        return buffer.NormalizeASCII();
-    }
+	char *NormalizeASCII() {
+		return buffer.NormalizeASCII();
+	}
 
 protected:
-    /**
-     * This method is called whenever new data was appended.
-     */
-    virtual void OnAppend() noexcept {};
+	/**
+	 * This method is called whenever new data was appended.
+	 */
+	virtual void OnAppend() noexcept {};
 
-    /**
-     * This method is called at the end of the pipe, or when the
-     * buffer has become full.
-     */
-    virtual void OnEnd() noexcept {};
+	/**
+	 * This method is called at the end of the pipe, or when the
+	 * buffer has become full.
+	 */
+	virtual void OnEnd() noexcept {};
 
 private:
-    void Close() {
-        event.Cancel();
-        fd.Close();
-    }
+	void Close() {
+		event.Cancel();
+		fd.Close();
+	}
 
-    void OnSocket(unsigned events);
+	void OnSocket(unsigned events);
 };
-
-#endif

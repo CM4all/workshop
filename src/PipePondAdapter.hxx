@@ -43,32 +43,32 @@ struct StringView;
  * A derivation from #PipeCaptureBuffer which adds Pond logging.
  */
 class PipePondAdapter : public PipeCaptureBuffer {
-    SocketDescriptor pond_socket;
+	SocketDescriptor pond_socket;
 
-    const std::string site;
+	const std::string site;
 
-    size_t position = 0;
+	size_t position = 0;
 
 public:
-    template<typename S>
-    explicit PipePondAdapter(EventLoop &event_loop,
-                             UniqueFileDescriptor &&_fd,
-                             size_t capacity,
-                             SocketDescriptor _pond_socket,
-                             S &&_site)
-        :PipeCaptureBuffer(event_loop, std::move(_fd), capacity),
-         pond_socket(_pond_socket), site(std::forward<S>(_site)) {}
+	template<typename S>
+	explicit PipePondAdapter(EventLoop &event_loop,
+				 UniqueFileDescriptor &&_fd,
+				 size_t capacity,
+				 SocketDescriptor _pond_socket,
+				 S &&_site)
+		:PipeCaptureBuffer(event_loop, std::move(_fd), capacity),
+		 pond_socket(_pond_socket), site(std::forward<S>(_site)) {}
 
 protected:
-    void OnAppend() noexcept override {
-        SendLines(false);
-    }
+	void OnAppend() noexcept override {
+		SendLines(false);
+	}
 
-    void OnEnd() noexcept override {
-        SendLines(true);
-    }
+	void OnEnd() noexcept override {
+		SendLines(true);
+	}
 
 private:
-    void OnLine(StringView line) noexcept;
-    void SendLines(bool flush) noexcept;
+	void OnLine(StringView line) noexcept;
+	void SendLines(bool flush) noexcept;
 };

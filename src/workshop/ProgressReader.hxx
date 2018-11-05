@@ -30,8 +30,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WORKSHOP_PROGRESS_READER_HXX
-#define WORKSHOP_PROGRESS_READER_HXX
+#pragma once
 
 #include "event/SocketEvent.hxx"
 #include "io/UniqueFileDescriptor.hxx"
@@ -39,21 +38,19 @@
 #include "util/StaticArray.hxx"
 
 class ProgressReader {
-    UniqueFileDescriptor fd;
-    SocketEvent event;
-    StaticArray<char, 64> stdout_buffer;
-    unsigned last_progress = 0;
+	UniqueFileDescriptor fd;
+	SocketEvent event;
+	StaticArray<char, 64> stdout_buffer;
+	unsigned last_progress = 0;
 
-    typedef BoundMethod<void(unsigned value)> Callback;
-    const Callback callback;
+	typedef BoundMethod<void(unsigned value)> Callback;
+	const Callback callback;
 
 public:
-    ProgressReader(EventLoop &event_loop,
-                   UniqueFileDescriptor _fd,
-                   Callback _callback);
+	ProgressReader(EventLoop &event_loop,
+		       UniqueFileDescriptor _fd,
+		       Callback _callback);
 
 private:
-    void PipeReady(unsigned);
+	void PipeReady(unsigned);
 };
-
-#endif

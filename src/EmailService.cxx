@@ -37,77 +37,77 @@
 #include <memory>
 
 EmailService::Job::Job(EmailService &_service, Email &&_email)
-    :service(_service),
-     email(std::move(_email)),
-     connect(service.event_loop, *this),
-     client(service.event_loop, *this)
+	:service(_service),
+	 email(std::move(_email)),
+	 connect(service.event_loop, *this),
+	 client(service.event_loop, *this)
 {
 }
 
 void
 EmailService::Job::Start()
 {
-    connect.Connect(service.address);
+	connect.Connect(service.address);
 }
 
 void
 EmailService::Job::OnSocketConnectSuccess(UniqueSocketDescriptor &&_fd) noexcept
 {
-    client.Begin({email.message.data(), email.message.length()},
-                 {email.sender.data(), email.sender.length()});
-    for (const auto &i : email.recipients)
-        client.AddRecipient({i.data(), i.length()});
+	client.Begin({email.message.data(), email.message.length()},
+		     {email.sender.data(), email.sender.length()});
+	for (const auto &i : email.recipients)
+		client.AddRecipient({i.data(), i.length()});
 
-    const int fd = _fd.Steal();
-    client.Commit(fd, fd);
+	const int fd = _fd.Steal();
+	client.Commit(fd, fd);
 }
 
 void
 EmailService::Job::OnSocketConnectError(std::exception_ptr error) noexcept
 {
-    // TODO add context to log message
-    PrintException(error);
-    service.DeleteJob(*this);
+	// TODO add context to log message
+	PrintException(error);
+	service.DeleteJob(*this);
 }
 
 void
 EmailService::Job::OnQmqpClientSuccess(StringView description) noexcept
 {
-    // TODO log?
-    (void)description;
+	// TODO log?
+	(void)description;
 
-    service.DeleteJob(*this);
+	service.DeleteJob(*this);
 }
 
 void
 EmailService::Job::OnQmqpClientError(std::exception_ptr error) noexcept
 {
-    // TODO add context to log message
-    PrintException(error);
-    service.DeleteJob(*this);
+	// TODO add context to log message
+	PrintException(error);
+	service.DeleteJob(*this);
 }
 
 EmailService::~EmailService()
 {
-    CancelAll();
+	CancelAll();
 }
 
 void
 EmailService::CancelAll()
 {
-    jobs.clear_and_dispose(DeleteDisposer());
+	jobs.clear_and_dispose(DeleteDisposer());
 }
 
 void
 EmailService::Submit(Email &&email)
 {
-    auto *job = new Job(*this, std::move(email));
-    jobs.push_front(*job);
-    job->Start();
+	auto *job = new Job(*this, std::move(email));
+	jobs.push_front(*job);
+	job->Start();
 }
 
 inline void
 EmailService::DeleteJob(Job &job)
 {
-    jobs.erase_and_dispose(jobs.iterator_to(job), DeleteDisposer());
+	jobs.erase_and_dispose(jobs.iterator_to(job), DeleteDisposer());
 }

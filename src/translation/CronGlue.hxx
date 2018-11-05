@@ -30,15 +30,12 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BENG_PROXY_TRANSLATE_CRON_GLUE_HXX
-#define BENG_PROXY_TRANSLATE_CRON_GLUE_HXX
+#pragma once
 
 struct TranslateResponse;
 class AllocatorPtr;
 
 TranslateResponse
 TranslateCron(AllocatorPtr alloc, const char *socket_path,
-              const char *partition_name, const char *listener_tag,
-              const char *user, const char *uri, const char *param);
-
-#endif
+	      const char *partition_name, const char *listener_tag,
+	      const char *user, const char *uri, const char *param);

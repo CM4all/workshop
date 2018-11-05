@@ -44,139 +44,139 @@
 #include <unistd.h>
 
 static void usage(void) {
-    puts("usage: cm4all-workshop [options]\n\n"
-         "valid options:\n"
-         " -h             help (this text)\n"
+	puts("usage: cm4all-workshop [options]\n\n"
+	     "valid options:\n"
+	     " -h             help (this text)\n"
 #ifdef __GLIBC__
-         " --version\n"
+	     " --version\n"
 #endif
-         " -V             show cm4all-workshop version\n"
+	     " -V             show cm4all-workshop version\n"
 #ifdef __GLIBC__
-         " --verbose\n"
+	     " --verbose\n"
 #endif
-         " -v             be more verbose\n"
+	     " -v             be more verbose\n"
 #ifdef __GLIBC__
-         " --quiet\n"
+	     " --quiet\n"
 #endif
-         " -q             be quiet\n"
+	     " -q             be quiet\n"
 #ifdef __GLIBC__
-         " --name NAME\n"
+	     " --name NAME\n"
 #endif
-         " -N NAME        set the node name\n"
+	     " -N NAME        set the node name\n"
 #ifdef __GLIBC__
-         " --concurrency NUM\n"
+	     " --concurrency NUM\n"
 #endif
-         " -c NUM         set the maximum number of concurrent operators (default: 2)\n"
+	     " -c NUM         set the maximum number of concurrent operators (default: 2)\n"
 #ifdef __GLIBC__
-         " --user name\n"
+	     " --user name\n"
 #endif
-         " -u name        switch to another user id\n"
-         "\n"
-         );
+	     " -u name        switch to another user id\n"
+	     "\n"
+	     );
 }
 
 static void arg_error(const char *argv0, const char *fmt, ...)
-     __attribute__ ((noreturn))
-     __attribute__((format(printf,2,3)));
+	__attribute__ ((noreturn))
+	__attribute__((format(printf,2,3)));
 static void arg_error(const char *argv0, const char *fmt, ...) {
-    if (fmt != nullptr) {
-        va_list ap;
+	if (fmt != nullptr) {
+		va_list ap;
 
-        fputs(argv0, stderr);
-        fputs(": ", stderr);
+		fputs(argv0, stderr);
+		fputs(": ", stderr);
 
-        va_start(ap, fmt);
-        vfprintf(stderr, fmt, ap);
-        va_end(ap);
+		va_start(ap, fmt);
+		vfprintf(stderr, fmt, ap);
+		va_end(ap);
 
-        putc('\n', stderr);
-    }
+		putc('\n', stderr);
+	}
 
-    fprintf(stderr, "Try '%s --help' for more information.\n",
-            argv0);
-    exit(EXIT_FAILURE);
+	fprintf(stderr, "Try '%s --help' for more information.\n",
+		argv0);
+	exit(EXIT_FAILURE);
 }
 
 /** read configuration options from the command line */
 void
 ParseCommandLine(Config &config, int argc, char **argv)
 {
-    int ret;
+	int ret;
 #ifdef __GLIBC__
-    static const struct option long_options[] = {
-        {"help", 0, 0, 'h'},
-        {"version", 0, 0, 'V'},
-        {"verbose", 0, 0, 'v'},
-        {"quiet", 0, 0, 'q'},
-        {"name", 1, 0, 'N'},
-        {"concurrency", 1, 0, 'c'},
-        {"user", 1, 0, 'u'},
-        {0,0,0,0}
-    };
+	static const struct option long_options[] = {
+		{"help", 0, 0, 'h'},
+		{"version", 0, 0, 'V'},
+		{"verbose", 0, 0, 'v'},
+		{"quiet", 0, 0, 'q'},
+		{"name", 1, 0, 'N'},
+		{"concurrency", 1, 0, 'c'},
+		{"user", 1, 0, 'u'},
+		{0,0,0,0}
+	};
 #endif
 
-    unsigned log_level = 1;
+	unsigned log_level = 1;
 
-    while (1) {
+	while (1) {
 #ifdef __GLIBC__
-        int option_index = 0;
+		int option_index = 0;
 
-        ret = getopt_long(argc, argv, "hVvqN:c:u:",
-                          long_options, &option_index);
+		ret = getopt_long(argc, argv, "hVvqN:c:u:",
+				  long_options, &option_index);
 #else
-        ret = getopt(argc, argv, "hVvqN:c:u:");
+		ret = getopt(argc, argv, "hVvqN:c:u:");
 #endif
-        if (ret == -1)
-            break;
+		if (ret == -1)
+			break;
 
-        switch (ret) {
-        case 'h':
-            usage();
-            exit(EXIT_SUCCESS);
+		switch (ret) {
+		case 'h':
+			usage();
+			exit(EXIT_SUCCESS);
 
-        case 'V':
-            printf("cm4all-workshop v%s\n", VERSION);
-            exit(EXIT_SUCCESS);
+		case 'V':
+			printf("cm4all-workshop v%s\n", VERSION);
+			exit(EXIT_SUCCESS);
 
-        case 'v':
-            ++log_level;
-            break;
+		case 'v':
+			++log_level;
+			break;
 
-        case 'q':
-            log_level = 0;
-            break;
+		case 'q':
+			log_level = 0;
+			break;
 
-        case 'N':
-            config.node_name = optarg;
-            break;
+		case 'N':
+			config.node_name = optarg;
+			break;
 
-        case 'c':
-            config.concurrency = (unsigned)strtoul(optarg, nullptr, 10);
-            if (config.concurrency == 0)
-                arg_error(argv[0], "invalid concurrency specification");
-            break;
+		case 'c':
+			config.concurrency = (unsigned)strtoul(optarg, nullptr, 10);
+			if (config.concurrency == 0)
+				arg_error(argv[0], "invalid concurrency specification");
+			break;
 
-        case 'u':
-            if (debug_mode)
-                arg_error(argv[0], "cannot specify a user in debug mode");
+		case 'u':
+			if (debug_mode)
+				arg_error(argv[0], "cannot specify a user in debug mode");
 
-            config.user.Lookup(optarg);
-            if (!config.user.IsComplete())
-                arg_error(argv[0], "refusing to run as root");
-            break;
+			config.user.Lookup(optarg);
+			if (!config.user.IsComplete())
+				arg_error(argv[0], "refusing to run as root");
+			break;
 
-        case '?':
-            arg_error(argv[0], nullptr);
+		case '?':
+			arg_error(argv[0], nullptr);
 
-        default:
-            exit(EXIT_FAILURE);
-        }
-    }
+		default:
+			exit(EXIT_FAILURE);
+		}
+	}
 
-    SetLogLevel(log_level);
+	SetLogLevel(log_level);
 
-    /* check non-option arguments */
+	/* check non-option arguments */
 
-    if (optind < argc)
-        arg_error(argv[0], "unrecognized argument: %s", argv[optind]);
+	if (optind < argc)
+		arg_error(argv[0], "unrecognized argument: %s", argv[optind]);
 }
