@@ -18,7 +18,7 @@ compiler = meson.get_compiler('cpp')
 c_compiler = meson.get_compiler('c')
 
 common_flags = [
-  '-D_REENTRANT', '-D_GNU_SOURCE',
+  '-D_GNU_SOURCE',
   '-DPACKAGE="' + meson.project_name() + '"',
   '-DVERSION="' + meson.project_version() + '"',
   '-Wall',
