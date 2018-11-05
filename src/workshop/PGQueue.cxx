@@ -125,6 +125,17 @@ pg_select_new_jobs(Pg::Connection &db,
 				limit);
 }
 
+unsigned
+PgCountRecentlyStartedJobs(Pg::Connection &db, const char *plan_name,
+			   std::chrono::seconds duration)
+{
+	const char *sql = "SELECT COUNT(*) FROM jobs "
+		" WHERE plan_name=$1 AND time_started >= now() - $2::interval";
+
+	const auto value = db.ExecuteParams(sql, plan_name, duration.count()).GetOnlyStringChecked();
+	return strtoul(value.c_str(), nullptr, 10);
+}
+
 bool
 pg_claim_job(Pg::Connection &db,
 	     const char *job_id, const char *node_name,

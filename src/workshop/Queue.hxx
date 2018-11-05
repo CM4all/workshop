@@ -161,6 +161,15 @@ public:
 	void EnableFull() noexcept;
 
 	/**
+	 * Returns the number of jobs with the given plan which were
+	 * started recently.
+	 *
+	 * Throws on error.
+	 */
+	unsigned CountRecentlyStartedJobs(const char *plan_name,
+					  std::chrono::seconds duration) noexcept;
+
+	/**
 	 * @return true on success
 	 */
 	bool SetJobProgress(const WorkshopJob &job, unsigned progress,

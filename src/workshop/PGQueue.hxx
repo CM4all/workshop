@@ -80,6 +80,16 @@ pg_select_new_jobs(Pg::Connection &db,
 		   unsigned limit);
 
 /**
+ * Returns the number of jobs with the given plan which were started
+ * recently.
+ *
+ * Throws on error.
+ */
+unsigned
+PgCountRecentlyStartedJobs(Pg::Connection &db, const char *plan_name,
+			   std::chrono::seconds duration);
+
+/**
  * Throws on error.
  *
  * @return true on success, false if another node has claimed the job

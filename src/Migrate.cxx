@@ -71,6 +71,7 @@ MigrateWorkshopDatabase(Pg::Connection &c, const char *schema)
 
 	/* since Workshop 4.0.1 */
 	c.Execute("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS time_started timestamp NULL");
+	c.Execute("CREATE INDEX IF NOT EXISTS jobs_rate_limit ON jobs(plan_name, time_started)");
 }
 
 static void

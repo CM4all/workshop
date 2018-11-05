@@ -350,6 +350,18 @@ WorkshopQueue::EnableFull() noexcept
 		Reschedule();
 }
 
+unsigned
+WorkshopQueue::CountRecentlyStartedJobs(const char *plan_name,
+					std::chrono::seconds duration) noexcept
+{
+	try {
+		return PgCountRecentlyStartedJobs(db, plan_name, duration);
+	} catch (...) {
+		db.Error(std::current_exception());
+		return false;
+	}
+}
+
 bool
 WorkshopQueue::SetJobProgress(const WorkshopJob &job, unsigned progress,
 			      const char *timeout) noexcept

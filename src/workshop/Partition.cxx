@@ -35,11 +35,16 @@
 #include "MultiLibrary.hxx"
 #include "Config.hxx"
 #include "Job.hxx"
+#include "Plan.hxx"
 #include "../Config.hxx"
 #include "pg/Array.hxx"
 #include "util/Exception.hxx"
 
 #include <set>
+
+/* TODO: find out when the rate limit expires and use that time stamp
+   instead of hard-coding this value */
+static constexpr auto RATE_LIMIT_TIMER_INTERVAL = std::chrono::minutes(1);
 
 WorkshopPartition::WorkshopPartition(Instance &_instance,
 				     MultiLibrary &_library,
@@ -49,6 +54,8 @@ WorkshopPartition::WorkshopPartition(Instance &_instance,
 				     BoundMethod<void()> _idle_callback)
 	:logger("workshop"), // TODO: add partition name
 	 instance(_instance), library(_library),
+	 rate_limit_timer(instance.GetEventLoop(),
+			  BIND_THIS_METHOD(OnRateLimitTimer)),
 	 queue(logger, instance.GetEventLoop(), root_config.node_name.c_str(),
 	       config.database.c_str(), config.database_schema.c_str(),
 	       *this),
@@ -62,6 +69,15 @@ WorkshopPartition::WorkshopPartition(Instance &_instance,
 }
 
 void
+WorkshopPartition::OnRateLimitTimer() noexcept
+{
+	UpdateFilter();
+
+	if (!rate_limited_plans.empty())
+		rate_limit_timer.Schedule(RATE_LIMIT_TIMER_INTERVAL);
+}
+
+void
 WorkshopPartition::UpdateFilter()
 {
 	std::set<std::string> available_plans;
@@ -69,6 +85,17 @@ WorkshopPartition::UpdateFilter()
 			   [&available_plans](const std::string &name, const Plan &){
 				   available_plans.emplace(name);
 			   });
+
+	/* remove the plans which have hit their rate limit */
+	rate_limited_plans.ForEach(GetEventLoop().SteadyNow(),
+				   [&available_plans](const std::string &name){
+					   auto i = available_plans.find(name);
+					   if (i != available_plans.end())
+						   available_plans.erase(i);
+				   });
+
+	if (rate_limited_plans.empty())
+		rate_limit_timer.Cancel();
 
 	queue.SetFilter(Pg::EncodeArray(available_plans),
 			workplace.GetFullPlanNames(),
@@ -108,11 +135,24 @@ bool
 WorkshopPartition::CheckWorkshopJob(const WorkshopJob &job,
 				    const Plan &plan) noexcept
 {
-	(void)job;
-	(void)plan;
-
 	if (workplace.IsFull()) {
 		queue.DisableFull();
+		return false;
+	}
+
+	/* check the rate limit */
+	if (plan.rate_limit.IsDefined() &&
+	    queue.CountRecentlyStartedJobs(job.plan_name.c_str(),
+					   plan.rate_limit.duration) >= plan.rate_limit.max_count) {
+		logger(4, "Rate limit of '", job.plan_name, "' hit");
+
+		rate_limited_plans.Set(job.plan_name,
+				       Expiry::Touched(GetEventLoop().SteadyNow(),
+						       RATE_LIMIT_TIMER_INTERVAL));
+
+		rate_limit_timer.Schedule(RATE_LIMIT_TIMER_INTERVAL);
+
+		UpdateFilter();
 		return false;
 	}
 

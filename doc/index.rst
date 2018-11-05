@@ -262,6 +262,11 @@ The following options are available:
 * :samp:`concurrency NUM`: Limit the number of processes of this
   plan.  The global concurrency setting is still obeyed.
 
+* :samp:`rate_limit "MAX/INTERVAL"`: Limit the rate in which this plan
+  is going to be executed.  This rate is cluster-global and the
+  interval is rolling.  Example: ":samp:`20 / 15 minutes`" allows no
+  more than 20 executions within 15 minutes.
+
 In the :samp:`exec` line, the following variables in the form
 :samp:`${NAME}` are expanded:
 

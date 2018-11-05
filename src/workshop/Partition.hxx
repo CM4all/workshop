@@ -36,8 +36,10 @@
 #include "Queue.hxx"
 #include "Workplace.hxx"
 #include "spawn/ExitListener.hxx"
+#include "event/TimerEvent.hxx"
 #include "io/Logger.hxx"
 #include "util/BindMethod.hxx"
+#include "util/ExpiryMap.hxx"
 
 struct Config;
 struct WorkshopPartitionConfig;
@@ -49,6 +51,16 @@ class WorkshopPartition final : WorkshopQueueHandler, ExitListener {
 
 	Instance &instance;
 	MultiLibrary &library;
+
+	ExpiryMap<std::string> rate_limited_plans;
+
+	/**
+	 * This timer is enabled when #rate_limited_plans is not
+	 * empty.  It updates the filter periodically to ensure that
+	 * jobs will be picked up again after the rate limit of a plan
+	 * expires.
+	 */
+	TimerEvent rate_limit_timer;
 
 	WorkshopQueue queue;
 	WorkshopWorkplace workplace;
@@ -97,6 +109,8 @@ public:
 	void UpdateLibraryAndFilter(bool force);
 
 private:
+	void OnRateLimitTimer() noexcept;
+
 	bool StartJob(WorkshopJob &&job,
 		      std::shared_ptr<Plan> plan);
 

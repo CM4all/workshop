@@ -66,6 +66,9 @@ CREATE INDEX jobs_release ON jobs(node_name, node_timeout)
 -- for finding a job by its name
 CREATE INDEX jobs_name ON jobs(name);
 
+-- find recently executed jobs, for checking rate limits
+CREATE INDEX IF NOT EXISTS jobs_rate_limit ON jobs(plan_name, time_started);
+
 -- notify all cm4all-workshop daemons when a new job is added
 CREATE RULE new_job AS ON INSERT TO jobs DO NOTIFY new_job;
 

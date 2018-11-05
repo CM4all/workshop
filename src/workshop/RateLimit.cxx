@@ -30,68 +30,30 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WORKSHOP_PLAN_HXX
-#define WORKSHOP_PLAN_HXX
-
 #include "RateLimit.hxx"
-#include "spawn/ResourceLimits.hxx"
+#include "pg/Interval.hxx"
+#include "util/StringStrip.hxx"
 
-#include <string>
-#include <list>
-#include <vector>
-#include <chrono>
+#include <stdexcept>
 
-#include <assert.h>
-#include <sys/types.h>
 #include <stdlib.h>
 
-class Error;
+RateLimit
+RateLimit::Parse(const char *s)
+{
+	s = StripLeft(s);
 
-/** a plan describes how to perform a specific job */
-struct Plan {
-	std::list<std::string> args;
+	char *endptr;
+	const unsigned max_count = strtoul(s, &endptr, 10);
+	if (endptr == s)
+		throw std::runtime_error("Failed to parse number");
 
-	std::string timeout, chroot;
+	s = StripLeft(endptr);
+	if (*s != '/')
+		throw std::runtime_error("'/' expected");
 
-	std::chrono::steady_clock::duration parsed_timeout{};
+	++s;
 
-	RateLimit rate_limit;
-
-	uid_t uid = 65534;
-	gid_t gid = 65534;
-
-	/** supplementary group ids */
-	std::vector<gid_t> groups;
-
-	int umask = -1;
-
-	ResourceLimits rlimits;
-
-	int priority = 10;
-
-	/** maximum concurrency for this plan */
-	unsigned concurrency = 0;
-
-	bool sched_idle = false, ioprio_idle = false;
-
-	bool private_network = false;
-
-	bool control_channel = false;
-
-	Plan() = default;
-
-	Plan(Plan &&) = default;
-
-	Plan(const Plan &other) = delete;
-
-	Plan &operator=(Plan &&other) = default;
-	Plan &operator=(const Plan &other) = delete;
-
-	const std::string &GetExecutablePath() const {
-		assert(!args.empty());
-
-		return args.front();
-	}
-};
-
-#endif
+	const auto duration = Pg::ParseIntervalS(StripLeft(s));
+	return {duration, max_count};
+}
