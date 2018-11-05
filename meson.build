@@ -6,8 +6,6 @@ project('CM4all Workshop', ['c', 'cpp'], version: '3.3',
   ],
 )
 
-compiler = meson.get_compiler('cpp')
-
 # TODO: use get_option('b_ndebug'), but that doesn't work with Meson 0.37.1
 if get_option('buildtype') == 'debug'
   debug = true
