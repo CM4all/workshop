@@ -1,4 +1,5 @@
 project('CM4all Workshop', ['c', 'cpp'], version: '3.3',
+  meson_version: '>= 0.47',
   default_options: [
     'c_std=c99',
     'cpp_std=c++14'
@@ -38,6 +39,21 @@ endif
 test_common_flags = [
   '-fvisibility=hidden',
 ]
+
+if not debug
+  test_common_flags += [
+    '-ffunction-sections',
+    '-fdata-sections',
+  ]
+
+  add_global_link_arguments(
+    compiler.get_supported_link_arguments(
+      '-Wl,--gc-sections',
+      '-Wl,--icf=all',
+    ),
+    language: 'cpp'
+  )
+endif
 
 test_cxxflags = test_common_flags + [
   '-fno-threadsafe-statics',
