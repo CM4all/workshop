@@ -30,23 +30,20 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WORKSHOP_CONFIG_HXX
-#define WORKSHOP_CONFIG_HXX
+#pragma once
 
 #include <string>
 
 struct WorkshopPartitionConfig {
-    std::string database, database_schema;
+	std::string database, database_schema;
 
-    size_t max_log = 8192;
+	size_t max_log = 8192;
 
-    bool enable_journal = false;
+	bool enable_journal = false;
 
-    WorkshopPartitionConfig() = default;
-    explicit WorkshopPartitionConfig(const char *_database)
-        :database(_database) {}
+	WorkshopPartitionConfig() = default;
+	explicit WorkshopPartitionConfig(const char *_database)
+		:database(_database) {}
 
-    void Check() const;
+	void Check() const;
 };
-
-#endif

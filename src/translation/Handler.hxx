@@ -30,16 +30,13 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BENG_PROXY_TRANSLATE_HANDLER_HXX
-#define BENG_PROXY_TRANSLATE_HANDLER_HXX
+#pragma once
 
 #include <exception>
 
 struct TranslateResponse;
 
 struct TranslateHandler {
-    void (*response)(TranslateResponse &response, void *ctx);
-    void (*error)(std::exception_ptr ep, void *ctx);
+	void (*response)(TranslateResponse &response, void *ctx);
+	void (*error)(std::exception_ptr ep, void *ctx);
 };
-
-#endif

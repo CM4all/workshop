@@ -46,156 +46,156 @@
 #include <stdio.h>
 
 struct Usage {
-    const char *msg = nullptr;
+	const char *msg = nullptr;
 
 #if GCC_OLDER_THAN(5,0)
-    constexpr Usage() = default;
-    constexpr Usage(const char *_msg):msg(_msg) {}
+	constexpr Usage() = default;
+	constexpr Usage(const char *_msg):msg(_msg) {}
 #endif
 };
 
 class WorkshopControlClient {
-    UniqueSocketDescriptor socket;
+	UniqueSocketDescriptor socket;
 
 public:
-    explicit WorkshopControlClient(UniqueSocketDescriptor _socket)
-        :socket(std::move(_socket)) {}
+	explicit WorkshopControlClient(UniqueSocketDescriptor _socket)
+		:socket(std::move(_socket)) {}
 
-    explicit WorkshopControlClient(const char *host_and_port)
-        :WorkshopControlClient(ResolveConnectDatagramSocket(host_and_port,
-                                                            WORKSHOP_CONTROL_DEFAULT_PORT)) {}
+	explicit WorkshopControlClient(const char *host_and_port)
+		:WorkshopControlClient(ResolveConnectDatagramSocket(host_and_port,
+								    WORKSHOP_CONTROL_DEFAULT_PORT)) {}
 
-    void Send(WorkshopControlCommand cmd, ConstBuffer<void> payload=nullptr);
+	void Send(WorkshopControlCommand cmd, ConstBuffer<void> payload=nullptr);
 };
 
 static constexpr size_t
 PaddingSize(size_t size)
 {
-    return (3 - ((size - 1) & 0x3));
+	return (3 - ((size - 1) & 0x3));
 }
 
 void
 WorkshopControlClient::Send(WorkshopControlCommand cmd,
-                            ConstBuffer<void> payload)
+			    ConstBuffer<void> payload)
 {
-    WorkshopControlHeader h{ToBE16(payload.size), ToBE16(uint16_t(cmd))};
-    WorkshopControlDatagramHeader dh{ToBE32(WORKSHOP_CONTROL_MAGIC), 0};
+	WorkshopControlHeader h{ToBE16(payload.size), ToBE16(uint16_t(cmd))};
+	WorkshopControlDatagramHeader dh{ToBE32(WORKSHOP_CONTROL_MAGIC), 0};
 
-    static constexpr uint8_t padding[3] = {0, 0, 0};
+	static constexpr uint8_t padding[3] = {0, 0, 0};
 
-    struct iovec v[] = {
-        { &dh, sizeof(dh) },
-        { &h, sizeof(h) },
-        { const_cast<void *>(payload.data), payload.size },
-        { const_cast<uint8_t *>(padding), PaddingSize(payload.size) },
-    };
+	struct iovec v[] = {
+		{ &dh, sizeof(dh) },
+		{ &h, sizeof(h) },
+		{ const_cast<void *>(payload.data), payload.size },
+		{ const_cast<uint8_t *>(padding), PaddingSize(payload.size) },
+	};
 
-    WorkshopControlCrc crc;
-    crc.reset();
-    for (size_t i = 1; i < ARRAY_SIZE(v); ++i)
-        crc.process_bytes(v[i].iov_base, v[i].iov_len);
+	WorkshopControlCrc crc;
+	crc.reset();
+	for (size_t i = 1; i < ARRAY_SIZE(v); ++i)
+		crc.process_bytes(v[i].iov_base, v[i].iov_len);
 
-    dh.crc = ToBE32(crc.checksum());
+	dh.crc = ToBE32(crc.checksum());
 
-    SendMessage(socket, ConstBuffer<struct iovec>(v), 0);
+	SendMessage(socket, ConstBuffer<struct iovec>(v), 0);
 }
 
 static void
 SimpleCommand(const char *server, ConstBuffer<const char *> args,
-              WorkshopControlCommand cmd)
+	      WorkshopControlCommand cmd)
 {
-    if (!args.empty())
-        throw Usage{"Too many arguments"};
+	if (!args.empty())
+		throw Usage{"Too many arguments"};
 
-    WorkshopControlClient client(server);
-    client.Send(cmd);
+	WorkshopControlClient client(server);
+	client.Send(cmd);
 }
 
 static void
 Nop(const char *server, ConstBuffer<const char *> args)
 {
-    SimpleCommand(server, args, WorkshopControlCommand::NOP);
+	SimpleCommand(server, args, WorkshopControlCommand::NOP);
 }
 
 static void
 Verbose(const char *server, ConstBuffer<const char *> args)
 {
-    if (args.empty())
-        throw Usage{"Log level missing"};
+	if (args.empty())
+		throw Usage{"Log level missing"};
 
-    const char *s = args.shift();
+	const char *s = args.shift();
 
-    if (!args.empty())
-        throw Usage{"Too many arguments"};
+	if (!args.empty())
+		throw Usage{"Too many arguments"};
 
-    uint8_t log_level = atoi(s);
+	uint8_t log_level = atoi(s);
 
-    WorkshopControlClient client(server);
-    client.Send(WorkshopControlCommand::VERBOSE,
-                {&log_level, sizeof(log_level)});
+	WorkshopControlClient client(server);
+	client.Send(WorkshopControlCommand::VERBOSE,
+		    {&log_level, sizeof(log_level)});
 }
 
 static void
 DisableQueue(const char *server, ConstBuffer<const char *> args)
 {
-    SimpleCommand(server, args, WorkshopControlCommand::DISABLE_QUEUE);
+	SimpleCommand(server, args, WorkshopControlCommand::DISABLE_QUEUE);
 }
 
 static void
 EnableQueue(const char *server, ConstBuffer<const char *> args)
 {
-    SimpleCommand(server, args, WorkshopControlCommand::ENABLE_QUEUE);
+	SimpleCommand(server, args, WorkshopControlCommand::ENABLE_QUEUE);
 }
 
 int
 main(int argc, char **argv)
-try {
-    ConstBuffer<const char *> args(argv + 1, argc - 1);
+	try {
+		ConstBuffer<const char *> args(argv + 1, argc - 1);
 
-    const char *server = "@cm4all-workshop.control";
+		const char *server = "@cm4all-workshop.control";
 
-    while (!args.empty() && args.front()[0] == '-') {
-        const char *option = args.shift();
-        if (const char *new_server = StringAfterPrefix(option, "--server=")) {
-            server = new_server;
-        } else
-            throw Usage{"Unknown option"};
-    }
+		while (!args.empty() && args.front()[0] == '-') {
+			const char *option = args.shift();
+			if (const char *new_server = StringAfterPrefix(option, "--server=")) {
+				server = new_server;
+			} else
+				throw Usage{"Unknown option"};
+		}
 
-    if (args.empty())
-        throw Usage();
+		if (args.empty())
+			throw Usage();
 
-    const char *const command = args.shift();
+		const char *const command = args.shift();
 
-    if (StringIsEqual(command, "nop")) {
-        Nop(server, args);
-        return EXIT_SUCCESS;
-    } else if (StringIsEqual(command, "verbose")) {
-        Verbose(server, args);
-        return EXIT_SUCCESS;
-    } else if (StringIsEqual(command, "disable-queue")) {
-        DisableQueue(server, args);
-    } else if (StringIsEqual(command, "enable-queue")) {
-        EnableQueue(server, args);
-    } else
-        throw Usage{"Unknown command"};
-} catch (const Usage &u) {
-    if (u.msg)
-        fprintf(stderr, "%s\n\n", u.msg);
+		if (StringIsEqual(command, "nop")) {
+			Nop(server, args);
+			return EXIT_SUCCESS;
+		} else if (StringIsEqual(command, "verbose")) {
+			Verbose(server, args);
+			return EXIT_SUCCESS;
+		} else if (StringIsEqual(command, "disable-queue")) {
+			DisableQueue(server, args);
+		} else if (StringIsEqual(command, "enable-queue")) {
+			EnableQueue(server, args);
+		} else
+			throw Usage{"Unknown command"};
+	} catch (const Usage &u) {
+		if (u.msg)
+			fprintf(stderr, "%s\n\n", u.msg);
 
-    fprintf(stderr, "Usage: %s [--server=SERVER[:PORT]] COMMAND ...\n"
-            "\n"
-            "Commands:\n"
-            "  verbose LEVEL\n"
-            "  disable-queue\n"
-            "  enable-queue\n"
-            "  nop\n",
-            argv[0]);
-    return EXIT_FAILURE;
-} catch (const char *msg) {
-    fprintf(stderr, "%s\n", msg);
-    return EXIT_FAILURE;
-} catch (...) {
-    PrintException(std::current_exception());
-    return EXIT_FAILURE;
-}
+		fprintf(stderr, "Usage: %s [--server=SERVER[:PORT]] COMMAND ...\n"
+			"\n"
+			"Commands:\n"
+			"  verbose LEVEL\n"
+			"  disable-queue\n"
+			"  enable-queue\n"
+			"  nop\n",
+			argv[0]);
+		return EXIT_FAILURE;
+	} catch (const char *msg) {
+		fprintf(stderr, "%s\n", msg);
+		return EXIT_FAILURE;
+	} catch (...) {
+		PrintException(std::current_exception());
+		return EXIT_FAILURE;
+	}

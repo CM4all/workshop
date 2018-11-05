@@ -46,17 +46,17 @@ struct SocketConfig;
  * Server side part of the "control" protocol.
  */
 class ControlServer final : UdpHandler {
-    ControlHandler &handler;
+	ControlHandler &handler;
 
-    UdpListener listener;
+	UdpListener listener;
 
 public:
-    ControlServer(EventLoop &event_loop, UniqueSocketDescriptor s,
-                  ControlHandler &_handler);
+	ControlServer(EventLoop &event_loop, UniqueSocketDescriptor s,
+		      ControlHandler &_handler);
 
 private:
-    /* virtual methods from class UdpHandler */
-    bool OnUdpDatagram(const void *data, size_t length,
-                       SocketAddress address, int uid) override;
-    void OnUdpError(std::exception_ptr ep) noexcept override;
+	/* virtual methods from class UdpHandler */
+	bool OnUdpDatagram(const void *data, size_t length,
+			   SocketAddress address, int uid) override;
+	void OnUdpError(std::exception_ptr ep) noexcept override;
 };

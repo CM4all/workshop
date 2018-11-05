@@ -30,8 +30,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WORKSHOP_INSTANCE_HXX
-#define WORKSHOP_INSTANCE_HXX
+#pragma once
 
 #include "control/Handler.hxx"
 #include "workshop/Partition.hxx"
@@ -55,72 +54,70 @@ class MultiLibrary;
 class ControlServer;
 
 class Instance final : SpawnHook, ControlHandler {
-    const RootLogger logger;
+	const RootLogger logger;
 
-    EventLoop event_loop;
+	EventLoop event_loop;
 
-    bool should_exit = false;
+	bool should_exit = false;
 
-    ShutdownListener shutdown_listener;
-    SignalEvent sighup_event;
-    DeferEvent defer_idle_check;
+	ShutdownListener shutdown_listener;
+	SignalEvent sighup_event;
+	DeferEvent defer_idle_check;
 
-    ChildProcessRegistry child_process_registry;
+	ChildProcessRegistry child_process_registry;
 
-    std::unique_ptr<SpawnServerClient> spawn_service;
+	std::unique_ptr<SpawnServerClient> spawn_service;
 
-    ScopeCurlInit curl_init;
-    std::unique_ptr<CurlGlobal> curl;
+	ScopeCurlInit curl_init;
+	std::unique_ptr<CurlGlobal> curl;
 
-    std::unique_ptr<MultiLibrary> library;
+	std::unique_ptr<MultiLibrary> library;
 
-    std::forward_list<WorkshopPartition> partitions;
+	std::forward_list<WorkshopPartition> partitions;
 
-    std::forward_list<CronPartition> cron_partitions;
+	std::forward_list<CronPartition> cron_partitions;
 
-    std::forward_list<ControlServer> control_servers;
+	std::forward_list<ControlServer> control_servers;
 
 public:
-    explicit Instance(const Config &config);
+	explicit Instance(const Config &config);
 
-    ~Instance();
+	~Instance();
 
-    EventLoop &GetEventLoop() {
-        return event_loop;
-    }
+	EventLoop &GetEventLoop() {
+		return event_loop;
+	}
 
-    CurlGlobal &GetCurl() {
-        return *curl;
-    }
+	CurlGlobal &GetCurl() {
+		return *curl;
+	}
 
-    void Start() {
-        for (auto &i : partitions)
-            i.Start();
-        for (auto &i : cron_partitions)
-            i.Start();
-    }
+	void Start() {
+		for (auto &i : partitions)
+			i.Start();
+		for (auto &i : cron_partitions)
+			i.Start();
+	}
 
-    void Dispatch() {
-        event_loop.Dispatch();
-    }
+	void Dispatch() {
+		event_loop.Dispatch();
+	}
 
-    void UpdateFilter();
-    void UpdateLibraryAndFilter(bool force);
+	void UpdateFilter();
+	void UpdateLibraryAndFilter(bool force);
 
 private:
-    void OnExit();
-    void OnReload(int);
+	void OnExit();
+	void OnReload(int);
 
-    void OnPartitionIdle();
-    void RemoveIdlePartitions();
+	void OnPartitionIdle();
+	void RemoveIdlePartitions();
 
-    /* virtual methods from SpawnHook */
-    bool Verify(const PreparedChildProcess &p) override;
+	/* virtual methods from SpawnHook */
+	bool Verify(const PreparedChildProcess &p) override;
 
-    /* virtual methods from ControlHandler */
-    void OnControlPacket(WorkshopControlCommand command,
-                         ConstBuffer<void> payload) override;
-    void OnControlError(std::exception_ptr ep) noexcept override;
+	/* virtual methods from ControlHandler */
+	void OnControlPacket(WorkshopControlCommand command,
+			     ConstBuffer<void> payload) override;
+	void OnControlError(std::exception_ptr ep) noexcept override;
 };
-
-#endif

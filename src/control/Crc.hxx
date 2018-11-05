@@ -43,8 +43,8 @@ gcc_pure
 inline uint32_t
 CalcWorkshopControlCrc(ConstBuffer<void> p) noexcept
 {
-    WorkshopControlCrc computer;
-    computer.reset();
-    computer.process_bytes(p.data, p.size);
-    return computer.checksum();
+	WorkshopControlCrc computer;
+	computer.reset();
+	computer.process_bytes(p.data, p.size);
+	return computer.checksum();
 }

@@ -30,8 +30,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CAPTURE_BUFFER_HXX
-#define CAPTURE_BUFFER_HXX
+#pragma once
 
 #include "util/WritableBuffer.hxx"
 
@@ -41,41 +40,39 @@
  * A buffer which helps capture up to 8 kB of data.
  */
 class CaptureBuffer final {
-    const size_t capacity;
+	const size_t capacity;
 
-    size_t size = 0;
+	size_t size = 0;
 
-    std::unique_ptr<char[]> data;
+	std::unique_ptr<char[]> data;
 
 public:
-    explicit CaptureBuffer(size_t _capacity)
-        :capacity(_capacity),
-         data(new char[capacity]) {}
+	explicit CaptureBuffer(size_t _capacity)
+		:capacity(_capacity),
+		 data(new char[capacity]) {}
 
-    bool IsFull() const noexcept {
-        return size == capacity;
-    }
+	bool IsFull() const noexcept {
+		return size == capacity;
+	}
 
-    WritableBuffer<char> Write() {
-        return { &data[size], capacity - size };
-    }
+	WritableBuffer<char> Write() {
+		return { &data[size], capacity - size };
+	}
 
-    void Append(size_t n) {
-        size += n;
-    }
+	void Append(size_t n) {
+		size += n;
+	}
 
-    WritableBuffer<char> GetData() {
-        return {data.get(), size};
-    }
+	WritableBuffer<char> GetData() {
+		return {data.get(), size};
+	}
 
-    /**
-     * Convert all non-printable and non-ASCII characters except for
-     * CR/LF and tab to a space and null-terminate the string.  This
-     * modifies this object's buffer.
-     *
-     * @return the null-terminated ASCII string
-     */
-    char *NormalizeASCII();
+	/**
+	 * Convert all non-printable and non-ASCII characters except for
+	 * CR/LF and tab to a space and null-terminate the string.  This
+	 * modifies this object's buffer.
+	 *
+	 * @return the null-terminated ASCII string
+	 */
+	char *NormalizeASCII();
 };
-
-#endif

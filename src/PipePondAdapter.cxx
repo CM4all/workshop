@@ -41,50 +41,50 @@
 void
 PipePondAdapter::OnLine(StringView line) noexcept
 {
-    if (line.empty())
-        return;
+	if (line.empty())
+		return;
 
-    Net::Log::Datagram d;
-    if (!site.empty())
-        d.site = site.c_str();
+	Net::Log::Datagram d;
+	if (!site.empty())
+		d.site = site.c_str();
 
-    d.message = line;
+	d.message = line;
 
-    try {
-        Net::Log::Send(pond_socket, d);
-    } catch (...) {
-        PrintException(std::current_exception());
-        pond_socket.SetUndefined();
-    }
+	try {
+		Net::Log::Send(pond_socket, d);
+	} catch (...) {
+		PrintException(std::current_exception());
+		pond_socket.SetUndefined();
+	}
 }
 
 void
 PipePondAdapter::SendLines(bool flush) noexcept
 {
-    if (!pond_socket.IsDefined())
-        return;
+	if (!pond_socket.IsDefined())
+		return;
 
-    auto r = GetData();
-    r.skip_front(position);
+	auto r = GetData();
+	r.skip_front(position);
 
-    while (!r.empty()) {
-        char *newline = (char *)memchr(r.data, '\n', r.size);
-        if (newline != nullptr) {
-            const StringView line((const char *)r.data, newline);
-            position += line.size + 1;
-            r.skip_front(line.size + 1);
-            OnLine(line);
+	while (!r.empty()) {
+		char *newline = (char *)memchr(r.data, '\n', r.size);
+		if (newline != nullptr) {
+			const StringView line((const char *)r.data, newline);
+			position += line.size + 1;
+			r.skip_front(line.size + 1);
+			OnLine(line);
 
-            /* check the socket again - it may have been closed by
-               OnLine() if an error occurred */
-            if (!pond_socket.IsDefined())
-                break;
-        } else if (flush) {
-            const StringView line((const char *)r.data, r.size);
-            position += r.size;
-            OnLine(line);
-            break;
-        } else
-            break;
-    }
+			/* check the socket again - it may have been closed by
+			   OnLine() if an error occurred */
+			if (!pond_socket.IsDefined())
+				break;
+		} else if (flush) {
+			const StringView line((const char *)r.data, r.size);
+			position += r.size;
+			OnLine(line);
+			break;
+		} else
+			break;
+	}
 }

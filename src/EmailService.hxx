@@ -30,8 +30,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EMAIL_SERVICE_HXX
-#define EMAIL_SERVICE_HXX
+#pragma once
 
 #include "net/AllocatedSocketAddress.hxx"
 #include "event/net/ConnectSocket.hxx"
@@ -43,62 +42,60 @@
 #include <forward_list>
 
 struct Email {
-    std::string sender;
-    std::forward_list<std::string> recipients;
-    std::string message;
+	std::string sender;
+	std::forward_list<std::string> recipients;
+	std::string message;
 
-    explicit Email(const char *_sender)
-        :sender(_sender) {}
+	explicit Email(const char *_sender)
+		:sender(_sender) {}
 
-    void AddRecipient(const char *recipient) {
-        recipients.emplace_front(recipient);
-    }
+	void AddRecipient(const char *recipient) {
+		recipients.emplace_front(recipient);
+	}
 };
 
 class EmailService {
-    EventLoop &event_loop;
-    const AllocatedSocketAddress address;
+	EventLoop &event_loop;
+	const AllocatedSocketAddress address;
 
-    class Job final
-        : public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>,
-          ConnectSocketHandler, QmqpClientHandler {
-        EmailService &service;
-        Email email;
+	class Job final
+		: public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>,
+		ConnectSocketHandler, QmqpClientHandler {
+		EmailService &service;
+		Email email;
 
-        ConnectSocket connect;
-        QmqpClient client;
+		ConnectSocket connect;
+		QmqpClient client;
 
-    public:
-        Job(EmailService &_service, Email &&_email);
-        void Start();
+	public:
+		Job(EmailService &_service, Email &&_email);
+		void Start();
 
-    private:
-        /* virtual methods from ConnectSocketHandler */
-        void OnSocketConnectSuccess(UniqueSocketDescriptor &&fd) noexcept override;
-        void OnSocketConnectError(std::exception_ptr error) noexcept override;
+	private:
+		/* virtual methods from ConnectSocketHandler */
+		void OnSocketConnectSuccess(UniqueSocketDescriptor &&fd) noexcept override;
+		void OnSocketConnectError(std::exception_ptr error) noexcept override;
 
-        /* virtual methods from QmqpClientHandler */
-        void OnQmqpClientSuccess(StringView description) noexcept override;
-        void OnQmqpClientError(std::exception_ptr error) noexcept override;
-    };
+		/* virtual methods from QmqpClientHandler */
+		void OnQmqpClientSuccess(StringView description) noexcept override;
+		void OnQmqpClientError(std::exception_ptr error) noexcept override;
+	};
 
-    typedef boost::intrusive::list<Job,
-                                   boost::intrusive::constant_time_size<false>> JobList;
+	typedef boost::intrusive::list<Job,
+				       boost::intrusive::constant_time_size<false>> JobList;
 
-    JobList jobs;
+	JobList jobs;
 
 public:
-    EmailService(EventLoop &_event_loop, SocketAddress _address)
-        :event_loop(_event_loop), address(_address) {}
+	EmailService(EventLoop &_event_loop, SocketAddress _address)
+		:event_loop(_event_loop), address(_address) {}
 
-    ~EmailService();
+	~EmailService();
 
-    void CancelAll();
+	void CancelAll();
 
-    void Submit(Email &&email);
+	void Submit(Email &&email);
 
 private:
-    void DeleteJob(Job &job);
+	void DeleteJob(Job &job);
 };
-
-#endif

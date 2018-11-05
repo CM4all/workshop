@@ -43,23 +43,23 @@
 
 TranslateResponse
 TranslateCron(AllocatorPtr alloc, const char *socket_path,
-              const char *partition_name, const char *listener_tag,
-              const char *user, const char *uri, const char *param)
+	      const char *partition_name, const char *listener_tag,
+	      const char *user, const char *uri, const char *param)
 {
-    int fd = socket(AF_UNIX, SOCK_STREAM|SOCK_CLOEXEC, 0);
-    if (fd < 0)
-        throw MakeErrno("Failed to create translation socket");
+	int fd = socket(AF_UNIX, SOCK_STREAM|SOCK_CLOEXEC, 0);
+	if (fd < 0)
+		throw MakeErrno("Failed to create translation socket");
 
-    AtScopeExit(fd) { close(fd); };
+	AtScopeExit(fd) { close(fd); };
 
-    {
-        AllocatedSocketAddress address;
-        address.SetLocal(socket_path);
+	{
+		AllocatedSocketAddress address;
+		address.SetLocal(socket_path);
 
-        if (connect(fd, address.GetAddress(), address.GetSize()) < 0)
-            throw MakeErrno("Failed to connect to translation server");
-    }
+		if (connect(fd, address.GetAddress(), address.GetSize()) < 0)
+			throw MakeErrno("Failed to connect to translation server");
+	}
 
-    return TranslateCron(alloc, fd, partition_name, listener_tag,
-                         user, uri, param);
+	return TranslateCron(alloc, fd, partition_name, listener_tag,
+			     user, uri, param);
 }

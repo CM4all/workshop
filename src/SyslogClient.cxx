@@ -48,67 +48,67 @@
 #include <fcntl.h>
 
 SyslogClient::SyslogClient(const char *host_and_port,
-                           const char *_me, const char *_ident,
-                           int _facility)
-    :SyslogClient(ResolveConnectDatagramSocket(host_and_port, 514),
-                  _me, _ident, _facility)
+			   const char *_me, const char *_ident,
+			   int _facility)
+	:SyslogClient(ResolveConnectDatagramSocket(host_and_port, 514),
+		      _me, _ident, _facility)
 {
 }
 
 static constexpr struct iovec
 MakeIovec(const void *data, size_t size)
 {
-    return { const_cast<void *>(data), size };
+	return { const_cast<void *>(data), size };
 }
 
 static constexpr struct iovec
 MakeIovec(StringView value)
 {
-    return MakeIovec(value.data, value.size);
+	return MakeIovec(value.data, value.size);
 }
 
 static struct iovec
 MakeIovec(const char *value)
 {
-    return MakeIovec(value, strlen(value));
+	return MakeIovec(value, strlen(value));
 }
 
 static struct iovec
 MakeIovec(const std::string &value)
 {
-    return MakeIovec(value.data(), value.length());
+	return MakeIovec(value.data(), value.length());
 }
 
 int
 SyslogClient::Log(int priority, StringView msg)
 {
-    static const char space = ' ';
-    static const char newline = '\n';
-    static const char colon[] = ": ";
-    char code[16];
-    struct iovec iovec[] = {
-        MakeIovec(code, 0),
-        MakeIovec(me),
-        MakeIovec(&space, sizeof(space)),
-        MakeIovec(ident),
-        MakeIovec(colon),
-        MakeIovec(msg),
-        MakeIovec(&newline, 1),
-    };
-    ssize_t nbytes;
+	static const char space = ' ';
+	static const char newline = '\n';
+	static const char colon[] = ": ";
+	char code[16];
+	struct iovec iovec[] = {
+		MakeIovec(code, 0),
+		MakeIovec(me),
+		MakeIovec(&space, sizeof(space)),
+		MakeIovec(ident),
+		MakeIovec(colon),
+		MakeIovec(msg),
+		MakeIovec(&newline, 1),
+	};
+	ssize_t nbytes;
 
-    assert(fd.IsDefined());
-    assert(priority >= 0 && priority < 8);
+	assert(fd.IsDefined());
+	assert(priority >= 0 && priority < 8);
 
-    snprintf(code, sizeof(code), "<%d>", facility * 8 + priority);
-    iovec[0].iov_len = strlen(code);
+	snprintf(code, sizeof(code), "<%d>", facility * 8 + priority);
+	iovec[0].iov_len = strlen(code);
 
-    nbytes = writev(fd.Get(), iovec, sizeof(iovec) / sizeof(iovec[0]));
-    if (nbytes < 0)
-        return errno;
+	nbytes = writev(fd.Get(), iovec, sizeof(iovec) / sizeof(iovec[0]));
+	if (nbytes < 0)
+		return errno;
 
-    if (nbytes == 0)
-        return -1;
+	if (nbytes == 0)
+		return -1;
 
-    return 0;
+	return 0;
 }
