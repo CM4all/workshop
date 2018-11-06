@@ -94,31 +94,31 @@ public:
 	WorkshopQueue(const Logger &parent_logger, EventLoop &event_loop,
 		      const char *_node_name,
 		      const char *conninfo, const char *schema,
-		      Callback _callback);
-	~WorkshopQueue();
+		      Callback _callback) noexcept;
+	~WorkshopQueue() noexcept;
 
 	auto &GetEventLoop() const noexcept {
 		return timer_event.GetEventLoop();
 	}
 
 	gcc_pure
-	const char *GetNodeName() const {
+	const char *GetNodeName() const noexcept {
 		return node_name.c_str();
 	}
 
-	void Connect() {
+	void Connect() noexcept {
 		db.Connect();
 	}
 
-	void Close();
+	void Close() noexcept;
 
 	/**
 	 * Configure a "plan" filter.
 	 */
 	void SetFilter(std::string &&plans_include, std::string &&plans_exclude,
-		       std::string &&plans_lowprio);
+		       std::string &&plans_lowprio) noexcept;
 
-	bool IsDisabled() const {
+	bool IsDisabled() const noexcept {
 		return disabled_admin || disabled_full;
 	}
 
@@ -126,26 +126,26 @@ public:
 	 * Disable the queue as an administrative decision (e.g. daemon
 	 * shutdown).
 	 */
-	void DisableAdmin() {
+	void DisableAdmin() noexcept {
 		disabled_admin = true;
 	}
 
 	/**
 	 * Enable the queue after it has been disabled with DisableAdmin().
 	 */
-	void EnableAdmin();
+	void EnableAdmin() noexcept;
 
 	/**
 	 * Disable the queue, e.g. when the node is busy.
 	 */
-	void DisableFull() {
+	void DisableFull() noexcept {
 		disabled_full = true;
 	}
 
 	/**
 	 * Enable the queue after it has been disabled with DisableFull().
 	 */
-	void EnableFull();
+	void EnableFull() noexcept;
 
 	/**
 	 * @return true on success
@@ -174,13 +174,13 @@ public:
 			const char *log) noexcept;
 
 private:
-	void RunResult(const Pg::Result &result);
-	void Run2();
-	void Run();
+	void RunResult(const Pg::Result &result) noexcept;
+	void Run2() noexcept;
+	void Run() noexcept;
 
-	void OnTimer();
+	void OnTimer() noexcept;
 
-	void ScheduleTimer(Event::Duration d) {
+	void ScheduleTimer(Event::Duration d) noexcept {
 		timer_event.Schedule(d);
 	}
 
@@ -188,7 +188,7 @@ private:
 	 * Schedule a queue run.  It will occur "very soon" (in a few
 	 * milliseconds).
 	 */
-	void Reschedule() {
+	void Reschedule() noexcept {
 		ScheduleTimer(std::chrono::milliseconds(10));
 	}
 
@@ -200,15 +200,15 @@ private:
 	 * public functions that (unlike the internal functions) do not
 	 * reschedule.
 	 */
-	void CheckNotify() {
+	void CheckNotify() noexcept {
 		db.CheckNotify();
 	}
 
-	void ScheduleCheckNotify() {
+	void ScheduleCheckNotify() noexcept {
 		check_notify_event.Schedule();
 	}
 
-	int GetNextScheduled(int *span_r);
+	int GetNextScheduled(int *span_r) noexcept;
 
 	/* virtual methods from Pg::AsyncConnectionHandler */
 	void OnConnect() override;

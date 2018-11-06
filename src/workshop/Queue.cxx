@@ -51,7 +51,7 @@ WorkshopQueue::WorkshopQueue(const Logger &parent_logger,
 			     EventLoop &event_loop,
 			     const char *_node_name,
 			     const char *conninfo, const char *schema,
-			     Callback _callback)
+			     Callback _callback) noexcept
 	:logger(parent_logger, "queue"), node_name(_node_name),
 	 db(event_loop, conninfo, schema, *this),
 	 check_notify_event(event_loop, BIND_THIS_METHOD(CheckNotify)),
@@ -60,7 +60,7 @@ WorkshopQueue::WorkshopQueue(const Logger &parent_logger,
 {
 }
 
-WorkshopQueue::~WorkshopQueue()
+WorkshopQueue::~WorkshopQueue() noexcept
 {
 	assert(!running);
 
@@ -68,7 +68,7 @@ WorkshopQueue::~WorkshopQueue()
 }
 
 void
-WorkshopQueue::Close()
+WorkshopQueue::Close() noexcept
 {
 	assert(!running);
 
@@ -79,13 +79,13 @@ WorkshopQueue::Close()
 }
 
 void
-WorkshopQueue::OnTimer()
+WorkshopQueue::OnTimer() noexcept
 {
 	Run();
 }
 
 int
-WorkshopQueue::GetNextScheduled(int *span_r)
+WorkshopQueue::GetNextScheduled(int *span_r) noexcept
 {
 	int ret;
 	long span;
@@ -139,7 +139,8 @@ get_and_claim_job(const ChildLogger &logger, WorkshopJob &job,
 		  const char *node_name,
 		  Pg::Connection &db,
 		  const Pg::Result &result, unsigned row,
-		  const char *timeout) {
+		  const char *timeout) noexcept
+{
 	try {
 		if (!get_job(job, result, row))
 			return -1;
@@ -172,7 +173,7 @@ get_and_claim_job(const ChildLogger &logger, WorkshopJob &job,
  * @return false if the string was not modified.
  */
 static bool
-copy_string(std::string &dest, std::string &&src)
+copy_string(std::string &dest, std::string &&src) noexcept
 {
 	if (dest == src)
 		return false;
@@ -184,7 +185,7 @@ copy_string(std::string &dest, std::string &&src)
 void
 WorkshopQueue::SetFilter(std::string &&_plans_include,
 			 std::string &&_plans_exclude,
-			 std::string &&_plans_lowprio)
+			 std::string &&_plans_lowprio) noexcept
 {
 	bool r1 = copy_string(plans_include, std::move(_plans_include));
 	bool r2 = copy_string(plans_exclude, std::move(_plans_exclude));
@@ -199,7 +200,7 @@ WorkshopQueue::SetFilter(std::string &&_plans_include,
 }
 
 void
-WorkshopQueue::RunResult(const Pg::Result &result)
+WorkshopQueue::RunResult(const Pg::Result &result) noexcept
 {
 	for (unsigned row = 0, end = result.GetRowCount();
 	     row != end && !IsDisabled() && !interrupt; ++row) {
@@ -215,7 +216,7 @@ WorkshopQueue::RunResult(const Pg::Result &result)
 }
 
 void
-WorkshopQueue::Run2()
+WorkshopQueue::Run2() noexcept
 {
 	int ret;
 	bool full = false;
@@ -312,7 +313,7 @@ WorkshopQueue::Run2()
 }
 
 void
-WorkshopQueue::Run()
+WorkshopQueue::Run() noexcept
 {
 	assert(!running);
 
@@ -327,7 +328,7 @@ WorkshopQueue::Run()
 }
 
 void
-WorkshopQueue::EnableAdmin()
+WorkshopQueue::EnableAdmin() noexcept
 {
 	assert(!running);
 
@@ -341,7 +342,7 @@ WorkshopQueue::EnableAdmin()
 }
 
 void
-WorkshopQueue::EnableFull()
+WorkshopQueue::EnableFull() noexcept
 {
 	assert(!running);
 
