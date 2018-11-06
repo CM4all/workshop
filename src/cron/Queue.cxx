@@ -207,13 +207,13 @@ CronQueue::Claim(const CronJob &job)
 				 node_name.c_str(),
 				 timeout);
 	if (!r.IsCommandSuccessful()) {
-		fprintf(stderr, "UPDATE/claim on cronjobs failed: %s\n",
-			r.GetErrorMessage());
+		logger(1, "UPDATE/claim on cronjobs failed: %s\n",
+		       r.GetErrorMessage());
 		return false;
 	}
 
 	if (r.GetAffectedRows() == 0) {
-		fprintf(stderr, "Lost race to run job '%s'\n", job.id.c_str());
+		logger(3, "Lost race to run job '%s'\n", job.id.c_str());
 		return false;
 	}
 
@@ -232,13 +232,13 @@ CronQueue::Finish(const CronJob &job)
 				 job.id.c_str(),
 				 node_name.c_str());
 	if (!r.IsCommandSuccessful()) {
-		fprintf(stderr, "UPDATE/finish on cronjobs failed: %s\n",
-			r.GetErrorMessage());
+		logger(1, "UPDATE/finish on cronjobs failed: %s\n",
+		       r.GetErrorMessage());
 		return;
 	}
 
 	if (r.GetAffectedRows() == 0) {
-		fprintf(stderr, "Lost race to finish job '%s'\n", job.id.c_str());
+		logger(3, "Lost race to finish job '%s'\n", job.id.c_str());
 		return;
 	}
 }
@@ -258,8 +258,8 @@ CronQueue::InsertResult(const CronJob &job, const char *start_time,
 				 exit_status,
 				 log);
 	if (!r.IsCommandSuccessful()) {
-		fprintf(stderr, "INSERT on cronresults failed: %s\n",
-			r.GetErrorMessage());
+		logger(1, "INSERT on cronresults failed: %s\n",
+		       r.GetErrorMessage());
 		return;
 	}
 }
@@ -276,8 +276,8 @@ CronQueue::CheckPending()
 			   "AND node_name IS NULL "
 			   "LIMIT 1");
 	if (!result.IsQuerySuccessful()) {
-		fprintf(stderr, "SELECT on cronjobs failed: %s\n",
-			result.GetErrorMessage());
+		logger(1, "SELECT on cronjobs failed: %s\n",
+		       result.GetErrorMessage());
 		return false;
 	}
 
