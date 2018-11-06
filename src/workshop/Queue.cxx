@@ -313,7 +313,7 @@ WorkshopQueue::Run() noexcept
 	try {
 		Run2();
 	} catch (...) {
-		logger(1, std::current_exception());
+		db.Error(std::current_exception());
 	}
 
 	running = false;
@@ -361,8 +361,7 @@ WorkshopQueue::SetJobProgress(const WorkshopJob &job, unsigned progress,
 		pg_set_job_progress(db, job.id.c_str(), progress, timeout);
 		return true;
 	} catch (...) {
-		logger(1, "Failed to update job '", job.id, "' progress: ",
-		       std::current_exception());
+		db.Error(std::current_exception());
 		return false;
 	}
 }
@@ -387,12 +386,10 @@ WorkshopQueue::RollbackJob(const WorkshopJob &job) noexcept
 	try {
 		pg_rollback_job(db, job.id.c_str());
 		pg_notify(db);
+		ScheduleCheckNotify();
 	} catch (...) {
-		logger(1, "Failed to roll back job '", job.id, "': ",
-		       std::current_exception());
+		db.Error(std::current_exception());
 	}
-
-	ScheduleCheckNotify();
 }
 
 void
@@ -410,12 +407,10 @@ WorkshopQueue::AgainJob(const WorkshopJob &job,
 		else
 			pg_rollback_job(db, job.id.c_str());
 		pg_notify(db);
+		ScheduleCheckNotify();
 	} catch (...) {
-		logger(1, "Failed to reschedule job '", job.id, "': ",
-		       std::current_exception());
+		db.Error(std::current_exception());
 	}
-
-	ScheduleCheckNotify();
 }
 
 void
@@ -428,12 +423,10 @@ WorkshopQueue::SetJobDone(const WorkshopJob &job, int status,
 
 	try {
 		pg_set_job_done(db, job.id.c_str(), status, log);
+		ScheduleCheckNotify();
 	} catch (...) {
-		logger(1, "Failed to mark job '", job.id, "' done: ",
-		       std::current_exception());
+		db.Error(std::current_exception());
 	}
-
-	ScheduleCheckNotify();
 }
 
 void
