@@ -117,7 +117,7 @@ try {
 
 	LogConcat(4, nullptr, "exiting");
 	return EXIT_SUCCESS;
-} catch (const std::exception &e) {
-	PrintException(e);
+} catch (...) {
+	PrintException(std::current_exception());
 	return EXIT_FAILURE;
 }

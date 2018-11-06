@@ -243,10 +243,7 @@ try {
 		throw "No table 'jobs' or 'cronjobs' - not a Workshop/Cron database";
 
 	return EXIT_SUCCESS;
-} catch (const char *msg) {
-	fprintf(stderr, "%s\n", msg);
-	return EXIT_FAILURE;
-} catch (const std::exception &e) {
-	PrintException(e);
+} catch (...) {
+	PrintException(std::current_exception());
 	return EXIT_FAILURE;
 }

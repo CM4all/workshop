@@ -192,9 +192,6 @@ main(int argc, char **argv)
 			"  nop\n",
 			argv[0]);
 		return EXIT_FAILURE;
-	} catch (const char *msg) {
-		fprintf(stderr, "%s\n", msg);
-		return EXIT_FAILURE;
 	} catch (...) {
 		PrintException(std::current_exception());
 		return EXIT_FAILURE;

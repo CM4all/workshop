@@ -41,6 +41,7 @@
 #include "spawn/Prepared.hxx"
 #include "spawn/Interface.hxx"
 #include "system/Error.hxx"
+#include "util/Exception.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
 
@@ -109,9 +110,9 @@ MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
 		}
 
 		response.child_options.CopyTo(p);
-	} catch (const std::exception &e) {
+	} catch (...) {
 		queue.Finish(job);
-		queue.InsertResult(job, start_time.c_str(), -1, e.what());
+		queue.InsertResult(job, start_time.c_str(), -1, GetFullMessage(std::current_exception()).c_str());
 		std::throw_with_nested(std::runtime_error("Translation failed"));
 	}
 

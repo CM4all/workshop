@@ -34,8 +34,8 @@ public:
     void OnError(std::exception_ptr ep) noexcept {
         try {
             std::rethrow_exception(ep);
-        } catch (const std::exception &e) {
-            PrintException(e);
+        } catch (...) {
+            PrintException(std::current_exception());
         }
     }
 };
@@ -59,7 +59,7 @@ try {
     event_loop.Dispatch();
 
     return EXIT_SUCCESS;
-} catch (const std::exception &e) {
-    PrintException(e);
+} catch (...) {
+    PrintException(std::current_exception());
     return EXIT_FAILURE;
 }

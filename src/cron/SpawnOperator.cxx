@@ -89,8 +89,8 @@ CronSpawnOperator::Spawn(PreparedChildProcess &&p,
 
 		/* kill after 5 minutes */
 		timeout_event.Schedule(std::chrono::minutes(5));
-	} catch (const std::exception &e) {
-		Finish(-1, GetFullMessage(e).c_str());
+	} catch (...) {
+		Finish(-1, GetFullMessage(std::current_exception()).c_str());
 		throw;
 	}
 

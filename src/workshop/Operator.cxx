@@ -132,9 +132,9 @@ WorkshopOperator::CreateSyslogClient(const char *me,
 				     int facility,
 				     const char *host_and_port)
 {
-	try{
+	try {
 		log.CreateSyslog(host_and_port, me, facility);
-	} catch (const std::runtime_error &e) {
+	} catch (...) {
 		std::throw_with_nested(FormatRuntimeError("syslog_open(%s) failed",
 							  host_and_port));
 	}

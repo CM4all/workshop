@@ -88,7 +88,7 @@ CronPartition::OnJob(CronJob &&job)
 		workplace.Start(queue, translation_socket,
 				name, tag,
 				std::move(job));
-	} catch (const std::runtime_error &e) {
+	} catch (...) {
 		logger(1, "failed to start cronjob '", job.id, "': ",
 		       std::current_exception());
 	}
