@@ -134,8 +134,8 @@ public:
 	 */
 	void EnableFull() noexcept;
 
-	bool Claim(const CronJob &job);
-	void Finish(const CronJob &job);
+	bool Claim(const CronJob &job) noexcept;
+	void Finish(const CronJob &job) noexcept;
 
 	/**
 	 * Insert a row into the "cronresults" table, describing the
@@ -143,7 +143,7 @@ public:
 	 */
 	void InsertResult(const CronJob &job, const char *start_time,
 			  int exit_status,
-			  const char *log);
+			  const char *log) noexcept;
 
 private:
 	/**

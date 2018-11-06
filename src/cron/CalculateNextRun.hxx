@@ -39,6 +39,8 @@ class ChildLogger;
 /**
  * Calculate the "next_run" column for all rows where it's missing.
  *
+ * Throws on error.
+ *
  * @return true if done, false if there are more records to be
  * calculated (or if there was an error)
  */

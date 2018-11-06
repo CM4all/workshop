@@ -32,7 +32,6 @@
 
 #include "PGQueue.hxx"
 #include "pg/Connection.hxx"
-#include "pg/CheckError.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -41,30 +40,30 @@
 void
 pg_notify(Pg::Connection &db)
 {
-	db.ExecuteOrThrow("NOTIFY new_job");
+	db.Execute("NOTIFY new_job");
 }
 
 unsigned
 pg_release_jobs(Pg::Connection &db, const char *node_name)
 {
-	const auto result = CheckError(
+	const auto result =
 		db.ExecuteParams("UPDATE jobs "
 				 "SET node_name=NULL, node_timeout=NULL, progress=0 "
 				 "WHERE node_name=$1 AND time_done IS NULL AND exit_status IS NULL",
-				 node_name));
+				 node_name);
 	return result.GetAffectedRows();
 }
 
 unsigned
 pg_expire_jobs(Pg::Connection &db, const char *except_node_name)
 {
-	const auto result = CheckError(
+	const auto result =
 		db.ExecuteParams("UPDATE jobs "
 				 "SET node_name=NULL, node_timeout=NULL, progress=0 "
 				 "WHERE time_done IS NULL AND exit_status IS NULL AND "
 				 "node_name IS NOT NULL AND node_name <> $1 AND "
 				 "node_timeout IS NOT NULL AND now() > node_timeout",
-				 except_node_name));
+				 except_node_name);
 	return result.GetAffectedRows();
 }
 
@@ -88,7 +87,7 @@ pg_next_scheduled_job(Pg::Connection &db,
 		"AND plan_name = ANY ($1::TEXT[]) "
 		"AND enabled";
 
-	const auto result = CheckError(db.ExecuteParams(sql, plans_include));
+	const auto result = db.ExecuteParams(sql, plans_include);
 	if (result.IsEmpty())
 		return false;
 
@@ -121,9 +120,9 @@ pg_select_new_jobs(Pg::Connection &db,
 		"ORDER BY priority, time_created "
 		"LIMIT $4";
 
-	return CheckError(
-		db.ExecuteParams(sql,
-				 plans_include, plans_exclude, plans_lowprio, limit));
+	return db.ExecuteParams(sql,
+				plans_include, plans_exclude, plans_lowprio,
+				limit);
 }
 
 bool
@@ -136,7 +135,7 @@ pg_claim_job(Pg::Connection &db,
 		"WHERE id=$2 AND node_name IS NULL"
 		" AND enabled";
 
-	const auto result = CheckError(db.ExecuteParams(sql, node_name, job_id, timeout));
+	const auto result = db.ExecuteParams(sql, node_name, job_id, timeout);
 	return result.GetAffectedRows() > 0;
 }
 
@@ -144,11 +143,11 @@ void
 pg_set_job_progress(Pg::Connection &db, const char *job_id,
 		    unsigned progress, const char *timeout)
 {
-	const auto result = Pg::CheckError(
+	const auto result =
 		db.ExecuteParams("UPDATE jobs "
 				 "SET progress=$2, node_timeout=now()+$3::INTERVAL "
 				 "WHERE id=$1",
-				 job_id, progress, timeout));
+				 job_id, progress, timeout);
 	if (result.GetAffectedRows() < 1)
 		throw std::runtime_error("No matching job");
 }
@@ -165,11 +164,11 @@ PgSetEnv(Pg::Connection &db, const char *job_id, const char *more_env)
 	std::string like(more_env, eq + 1);
 	like.push_back('%');
 
-	const auto result = Pg::CheckError(
+	const auto result =
 		db.ExecuteParams("UPDATE jobs "
 				 "SET env=ARRAY(SELECT x FROM (SELECT unnest(env) as x) AS y WHERE x NOT LIKE $3)||ARRAY[$2]::varchar[] "
 				 "WHERE id=$1",
-				 job_id, more_env, like.c_str()));
+				 job_id, more_env, like.c_str());
 	if (result.GetAffectedRows() < 1)
 		throw std::runtime_error("No matching job");
 }
@@ -177,12 +176,12 @@ PgSetEnv(Pg::Connection &db, const char *job_id, const char *more_env)
 void
 pg_rollback_job(Pg::Connection &db, const char *id)
 {
-	const auto result = Pg::CheckError(
+	const auto result =
 		db.ExecuteParams("UPDATE jobs "
 				 "SET node_name=NULL, node_timeout=NULL, progress=0 "
 				 "WHERE id=$1 AND node_name IS NOT NULL "
 				 "AND time_done IS NULL",
-				 id));
+				 id);
 	if (result.GetAffectedRows() < 1)
 		throw std::runtime_error("No matching job");
 }
@@ -191,14 +190,14 @@ void
 pg_again_job(Pg::Connection &db, const char *id, const char *log,
 	     std::chrono::seconds delay)
 {
-	const auto result = Pg::CheckError(
+	const auto result =
 		db.ExecuteParams("UPDATE jobs "
 				 "SET node_name=NULL, node_timeout=NULL, progress=0 "
 				 ", log=$3"
 				 ", scheduled_time=NOW() + $2 * '1 second'::interval "
 				 "WHERE id=$1 AND node_name IS NOT NULL "
 				 "AND time_done IS NULL",
-				 id, delay.count(), log));
+				 id, delay.count(), log);
 	if (result.GetAffectedRows() < 1)
 		throw std::runtime_error("No matching job");
 }
@@ -207,11 +206,11 @@ void
 pg_set_job_done(Pg::Connection &db, const char *id, int status,
 		const char *log)
 {
-	const auto result = Pg::CheckError(
+	const auto result =
 		db.ExecuteParams("UPDATE jobs "
 				 "SET time_done=now(), progress=100, exit_status=$2, log=$3 "
 				 "WHERE id=$1",
-				 id, status, log));
+				 id, status, log);
 	if (result.GetAffectedRows() < 1)
 		throw std::runtime_error("No matching job");
 }

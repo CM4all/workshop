@@ -33,7 +33,6 @@
 #include "CalculateNextRun.hxx"
 #include "Schedule.hxx"
 #include "pg/Connection.hxx"
-#include "pg/CheckError.hxx"
 #include "pg/Interval.hxx"
 #include "pg/Timestamp.hxx"
 #include "io/Logger.hxx"
@@ -87,11 +86,11 @@ MakeRandomDelay(Pg::Connection &db, const char *id, const char *schedule,
 	const auto delay = RandomSeconds(range);
 
 	const auto result =
-		Pg::CheckError(db.ExecuteParams("UPDATE cronjobs"
-						" SET delay=$3::interval, delay_range=$4::interval"
-						" WHERE id=$1 AND schedule=$2 AND enabled AND next_run IS NULL",
-						id, schedule,
-						delay.count(), range.count()));
+		db.ExecuteParams("UPDATE cronjobs"
+				 " SET delay=$3::interval, delay_range=$4::interval"
+				 " WHERE id=$1 AND schedule=$2 AND enabled AND next_run IS NULL",
+				 id, schedule,
+				 delay.count(), range.count());
 	if (result.GetAffectedRows() == 0)
 		throw std::runtime_error("Lost race to schedule job");
 
@@ -108,11 +107,6 @@ CalculateNextRun(const ChildLogger &logger, Pg::Connection &db)
 			   " NOW() AT TIME ZONE COALESCE(tz, 'UTC')"
 			   "FROM cronjobs WHERE enabled AND next_run IS NULL "
 			   "LIMIT 1000");
-	if (!result.IsQuerySuccessful()) {
-		logger(1, "SELECT on cronjobs failed: ", result.GetErrorMessage());
-		return false;
-	}
-
 	if (result.IsEmpty())
 		return true;
 
@@ -162,9 +156,6 @@ CalculateNextRun(const ChildLogger &logger, Pg::Connection &db)
 						  " next_run IS NULL",
 						  id, _schedule, _last_run,
 						  next_run_string);
-			if (!r.IsCommandSuccessful())
-				throw Pg::Error(std::move(r));
-
 			if (r.GetAffectedRows() == 0)
 				throw std::runtime_error("Lost race to schedule job");
 		} catch (...) {

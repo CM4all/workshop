@@ -33,7 +33,6 @@
 #include "Queue.hxx"
 #include "Job.hxx"
 #include "CalculateNextRun.hxx"
-#include "pg/CheckError.hxx"
 
 #include <chrono>
 
@@ -98,11 +97,10 @@ CronQueue::EnableFull() noexcept
 void
 CronQueue::ReleaseStale()
 {
-	const auto result = CheckError(
-				       db.ExecuteParams("UPDATE cronjobs "
-							"SET node_name=NULL, node_timeout=NULL, next_run=NULL "
-							"WHERE node_name=$1",
-							node_name.c_str()));
+	const auto result = db.ExecuteParams("UPDATE cronjobs "
+					     "SET node_name=NULL, node_timeout=NULL, next_run=NULL "
+					     "WHERE node_name=$1",
+					     node_name.c_str());
 
 	unsigned n = result.GetAffectedRows();
 	if (n > 0)
@@ -114,10 +112,14 @@ CronQueue::RunScheduler() noexcept
 {
 	logger(4, "scheduler");
 
-	if (!CalculateNextRun(logger, db))
-		ScheduleScheduler(false);
+	try {
+		if (!CalculateNextRun(logger, db))
+			ScheduleScheduler(false);
 
-	ScheduleCheckNotify();
+		ScheduleCheckNotify();
+	} catch (...) {
+		db.Error(std::current_exception());
+	}
 }
 
 void
@@ -141,11 +143,6 @@ FindEarliestPending(Pg::Connection &db)
 	const auto result =
 		db.Execute("SELECT EXTRACT(EPOCH FROM (MIN(next_run) - now())) FROM cronjobs "
 			   "WHERE enabled AND next_run IS NOT NULL AND next_run != 'infinity' AND node_name IS NULL");
-	if (!result.IsQuerySuccessful()) {
-		fprintf(stderr, "SELECT FROM cronjobs failed: %s\n",
-			result.GetErrorMessage());
-		return std::chrono::minutes(1);
-	}
 
 	if (result.IsEmpty() || result.IsValueNull(0, 0))
 		/* no matching cronjob; disable the timer, and wait for the
@@ -170,19 +167,24 @@ CronQueue::RunClaim() noexcept
 
 	logger(4, "claim");
 
-	auto delta = FindEarliestPending(db);
-	if (delta == delta.max())
-		return;
+	try {
+		auto delta = FindEarliestPending(db);
+		if (delta == delta.max())
+			return;
 
-	if (delta > delta.zero()) {
-		/* randomize the claim to reduce race conditions with
-		   other nodes */
-		Event::Duration r = std::chrono::microseconds(random() % 30000000);
-		claim_timer.Schedule(Event::Duration(delta) + r);
+		if (delta > delta.zero()) {
+			/* randomize the claim to reduce race conditions with
+			   other nodes */
+			Event::Duration r = std::chrono::microseconds(random() % 30000000);
+			claim_timer.Schedule(Event::Duration(delta) + r);
+			return;
+		}
+
+		CheckPending();
+	} catch (...) {
+		db.Error(std::current_exception());
 		return;
 	}
-
-	CheckPending();
 
 	ScheduleClaim();
 	ScheduleCheckNotify();
@@ -195,8 +197,8 @@ CronQueue::ScheduleClaim() noexcept
 }
 
 bool
-CronQueue::Claim(const CronJob &job)
-{
+CronQueue::Claim(const CronJob &job) noexcept
+try {
 	const char *timeout = "5 minutes";
 
 	const auto r =
@@ -206,23 +208,20 @@ CronQueue::Claim(const CronJob &job)
 				 job.id.c_str(),
 				 node_name.c_str(),
 				 timeout);
-	if (!r.IsCommandSuccessful()) {
-		logger(1, "UPDATE/claim on cronjobs failed: %s\n",
-		       r.GetErrorMessage());
-		return false;
-	}
-
 	if (r.GetAffectedRows() == 0) {
 		logger(3, "Lost race to run job '%s'\n", job.id.c_str());
 		return false;
 	}
 
 	return true;
+} catch (...) {
+	db.Error(std::current_exception());
+	return false;
 }
 
 void
-CronQueue::Finish(const CronJob &job)
-{
+CronQueue::Finish(const CronJob &job) noexcept
+try {
 	ScheduleCheckNotify();
 
 	const auto r =
@@ -231,37 +230,29 @@ CronQueue::Finish(const CronJob &job)
 				 "WHERE id=$1 AND node_name=$2",
 				 job.id.c_str(),
 				 node_name.c_str());
-	if (!r.IsCommandSuccessful()) {
-		logger(1, "UPDATE/finish on cronjobs failed: %s\n",
-		       r.GetErrorMessage());
-		return;
-	}
-
 	if (r.GetAffectedRows() == 0) {
 		logger(3, "Lost race to finish job '%s'\n", job.id.c_str());
 		return;
 	}
+} catch (...) {
+	db.Error(std::current_exception());
 }
 
 void
 CronQueue::InsertResult(const CronJob &job, const char *start_time,
-			int exit_status, const char *log)
-{
+			int exit_status, const char *log) noexcept
+try {
 	ScheduleCheckNotify();
 
-	const auto r =
-		db.ExecuteParams("INSERT INTO cronresults(cronjob_id, node_name, start_time, exit_status, log) "
-				 "VALUES($1, $2, $3, $4, $5)",
-				 job.id.c_str(),
-				 node_name.c_str(),
-				 start_time,
-				 exit_status,
-				 log);
-	if (!r.IsCommandSuccessful()) {
-		logger(1, "INSERT on cronresults failed: %s\n",
-		       r.GetErrorMessage());
-		return;
-	}
+	db.ExecuteParams("INSERT INTO cronresults(cronjob_id, node_name, start_time, exit_status, log) "
+			 "VALUES($1, $2, $3, $4, $5)",
+			 job.id.c_str(),
+			 node_name.c_str(),
+			 start_time,
+			 exit_status,
+			 log);
+} catch (...) {
+	db.Error(std::current_exception());
 }
 
 bool
@@ -275,12 +266,6 @@ CronQueue::CheckPending()
 			   "FROM cronjobs WHERE enabled AND next_run<=now() "
 			   "AND node_name IS NULL "
 			   "LIMIT 1");
-	if (!result.IsQuerySuccessful()) {
-		logger(1, "SELECT on cronjobs failed: %s\n",
-		       result.GetErrorMessage());
-		return false;
-	}
-
 	if (result.IsEmpty())
 		return false;
 
@@ -304,15 +289,17 @@ CronQueue::CheckPending()
 void
 CronQueue::OnConnect()
 {
-	db.ExecuteOrThrow("LISTEN cronjobs_modified");
-	db.ExecuteOrThrow("LISTEN cronjobs_scheduled");
+	db.Execute("LISTEN cronjobs_modified");
+	db.Execute("LISTEN cronjobs_scheduled");
 
 	/* internally, all time stamps should be UTC, and PostgreSQL
 	   should not mangle those time stamps to the time zone that our
 	   process happens to be configured for */
-	auto result = db.Execute("SET timezone='UTC'");
-	if (!result.IsCommandSuccessful())
-		logger(1, "SET timezone failed: ", result.GetErrorMessage());
+	try {
+		db.Execute("SET timezone='UTC'");
+	} catch (...) {
+		logger(1, "SET timezone failed: ", std::current_exception());
+	}
 
 	ReleaseStale();
 

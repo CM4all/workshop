@@ -265,7 +265,7 @@ WorkshopQueue::Run2()
 					    plans_exclude.c_str(),
 					    "{}",
 					    MAX_JOBS);
-		if (result.IsQuerySuccessful() && !result.IsEmpty()) {
+		if (!result.IsEmpty()) {
 			RunResult(result);
 
 			if (result.GetRowCount() == MAX_JOBS)
@@ -446,13 +446,13 @@ WorkshopQueue::OnConnect()
 			throw FormatRuntimeError("No column 'jobs.%s'; please migrate the database",
 						 name);
 
-	db.ExecuteOrThrow("LISTEN new_job");
+	db.Execute("LISTEN new_job");
 
 	if (strcmp(schema, "public") != 0)
 		/* for compatibility with future Workshop versions with
 		   improved schema support */
-		db.ExecuteOrThrow(("LISTEN \"" + db.Escape(schema)
-				   + ":new_job\"").c_str());
+		db.Execute(("LISTEN \"" + db.Escape(schema)
+			    + ":new_job\"").c_str());
 
 	unsigned ret = pg_release_jobs(db, node_name.c_str());
 	if (ret > 0) {
