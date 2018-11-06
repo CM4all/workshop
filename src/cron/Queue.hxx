@@ -80,23 +80,23 @@ public:
 	CronQueue(const Logger &parent_logger,
 		  EventLoop &event_loop, const char *_node_name,
 		  const char *conninfo, const char *schema,
-		  Callback _callback);
-	~CronQueue();
+		  Callback _callback) noexcept;
+	~CronQueue() noexcept;
 
-	EventLoop &GetEventLoop() {
+	EventLoop &GetEventLoop() noexcept {
 		return check_notify_event.GetEventLoop();
 	}
 
 	gcc_pure
-	const char *GetNodeName() const {
+	const char *GetNodeName() const noexcept {
 		return node_name.c_str();
 	}
 
-	void Connect() {
+	void Connect() noexcept {
 		db.Connect();
 	}
 
-	void Close();
+	void Close() noexcept;
 
 	gcc_pure
 	std::string GetNow() {
@@ -105,7 +105,7 @@ public:
 		return result.GetOnlyStringChecked();
 	}
 
-	bool IsDisabled() const {
+	bool IsDisabled() const noexcept {
 		return disabled_admin || disabled_full;
 	}
 
@@ -113,26 +113,26 @@ public:
 	 * Disable the queue as an administrative decision (e.g. daemon
 	 * shutdown).
 	 */
-	void DisableAdmin() {
+	void DisableAdmin() noexcept {
 		disabled_admin = true;
 	}
 
 	/**
 	 * Enable the queue after it has been disabled with DisableAdmin().
 	 */
-	void EnableAdmin();
+	void EnableAdmin() noexcept;
 
 	/**
 	 * Disable the queue, e.g. when the node is busy.
 	 */
-	void DisableFull() {
+	void DisableFull() noexcept {
 		disabled_full = true;
 	}
 
 	/**
 	 * Enable the queue after it has been disabled with DisableFull().
 	 */
-	void EnableFull();
+	void EnableFull() noexcept;
 
 	bool Claim(const CronJob &job);
 	void Finish(const CronJob &job);
@@ -154,21 +154,21 @@ private:
 	 * public functions that (unlike the internal functions) do not
 	 * reschedule.
 	 */
-	void CheckNotify() {
+	void CheckNotify() noexcept {
 		db.CheckNotify();
 	}
 
-	void ScheduleCheckNotify() {
+	void ScheduleCheckNotify() noexcept {
 		check_notify_event.Schedule();
 	}
 
 	void ReleaseStale();
 
-	void RunScheduler();
-	void ScheduleScheduler(bool immediately);
+	void RunScheduler() noexcept;
+	void ScheduleScheduler(bool immediately) noexcept;
 
-	void RunClaim();
-	void ScheduleClaim();
+	void RunClaim() noexcept;
+	void ScheduleClaim() noexcept;
 
 	/**
 	 * @return false if no pending job was found

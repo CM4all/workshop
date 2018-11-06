@@ -43,7 +43,7 @@
 CronQueue::CronQueue(const Logger &parent_logger,
 		     EventLoop &event_loop, const char *_node_name,
 		     const char *conninfo, const char *schema,
-		     Callback _callback)
+		     Callback _callback) noexcept
 	:node_name(_node_name),
 	 logger(parent_logger, "queue"),
 	 db(event_loop, conninfo, schema, *this),
@@ -54,13 +54,13 @@ CronQueue::CronQueue(const Logger &parent_logger,
 {
 }
 
-CronQueue::~CronQueue()
+CronQueue::~CronQueue() noexcept
 {
 	Close();
 }
 
 void
-CronQueue::Close()
+CronQueue::Close() noexcept
 {
 	db.Disconnect();
 
@@ -70,7 +70,7 @@ CronQueue::Close()
 }
 
 void
-CronQueue::EnableAdmin()
+CronQueue::EnableAdmin() noexcept
 {
 	if (!disabled_admin)
 		return;
@@ -83,7 +83,7 @@ CronQueue::EnableAdmin()
 }
 
 void
-CronQueue::EnableFull()
+CronQueue::EnableFull() noexcept
 {
 	if (!disabled_full)
 		return;
@@ -110,7 +110,7 @@ CronQueue::ReleaseStale()
 }
 
 void
-CronQueue::RunScheduler()
+CronQueue::RunScheduler() noexcept
 {
 	logger(4, "scheduler");
 
@@ -121,7 +121,7 @@ CronQueue::RunScheduler()
 }
 
 void
-CronQueue::ScheduleScheduler(bool immediately)
+CronQueue::ScheduleScheduler(bool immediately) noexcept
 {
 	Event::Duration d;
 	if (immediately) {
@@ -163,7 +163,7 @@ FindEarliestPending(Pg::Connection &db)
 }
 
 void
-CronQueue::RunClaim()
+CronQueue::RunClaim() noexcept
 {
 	if (IsDisabled())
 		return;
@@ -189,7 +189,7 @@ CronQueue::RunClaim()
 }
 
 void
-CronQueue::ScheduleClaim()
+CronQueue::ScheduleClaim() noexcept
 {
 	claim_timer.Schedule(std::chrono::seconds(1));
 }
