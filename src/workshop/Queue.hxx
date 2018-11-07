@@ -43,17 +43,22 @@
 #include <chrono>
 
 struct WorkshopJob;
+struct Plan;
 class EventLoop;
 
 class WorkshopQueueHandler {
 public:
+	virtual std::shared_ptr<Plan> GetWorkshopPlan(const char *name) noexcept = 0;
+
 	/**
 	 * Ask the handler whether it is willing to run the given job.
 	 * This will be called before the job is claimed.
 	 */
-	virtual bool CheckWorkshopJob(const WorkshopJob &job) noexcept = 0;
+	virtual bool CheckWorkshopJob(const WorkshopJob &job,
+				      const Plan &plan) noexcept = 0;
 
-	virtual void StartWorkshopJob(WorkshopJob &&job) noexcept = 0;
+	virtual void StartWorkshopJob(WorkshopJob &&job,
+				      std::shared_ptr<Plan> plan) noexcept = 0;
 };
 
 class WorkshopQueue final : private Pg::AsyncConnectionHandler {

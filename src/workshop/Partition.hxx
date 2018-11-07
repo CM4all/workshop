@@ -97,11 +97,15 @@ public:
 	void UpdateLibraryAndFilter(bool force);
 
 private:
-	bool StartJob(WorkshopJob &&job);
+	bool StartJob(WorkshopJob &&job,
+		      std::shared_ptr<Plan> plan);
 
 	/* virtual methods from WorkshopQueueHandler */
-	bool CheckWorkshopJob(const WorkshopJob &job) noexcept override;
-	void StartWorkshopJob(WorkshopJob &&job) noexcept override;
+	std::shared_ptr<Plan> GetWorkshopPlan(const char *name) noexcept override;
+	bool CheckWorkshopJob(const WorkshopJob &job,
+			      const Plan &plan) noexcept override;
+	void StartWorkshopJob(WorkshopJob &&job,
+			      std::shared_ptr<Plan> plan) noexcept override;
 
 	/* virtual methods from ExitListener */
 	void OnChildProcessExit(int status) override;

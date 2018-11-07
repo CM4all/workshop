@@ -194,12 +194,15 @@ WorkshopQueue::RunResult(const Pg::Result &result)
 	for (unsigned row = 0, end = result.GetRowCount();
 	     row != end && !IsDisabled() && !interrupt; ++row) {
 		auto job = MakeJob(*this, result, row);
+		auto plan = handler.GetWorkshopPlan(job.plan_name.c_str());
 
-		if (handler.CheckWorkshopJob(job) &&
+		if (plan &&
+		    handler.CheckWorkshopJob(job, *plan) &&
 		    get_and_claim_job(logger, job,
 				      GetNodeName(),
 				      db, "5 minutes"))
-			handler.StartWorkshopJob(std::move(job));
+			handler.StartWorkshopJob(std::move(job),
+						 std::move(plan));
 	}
 }
 

@@ -83,15 +83,9 @@ WorkshopPartition::UpdateLibraryAndFilter(bool force)
 }
 
 bool
-WorkshopPartition::StartJob(WorkshopJob &&job)
+WorkshopPartition::StartJob(WorkshopJob &&job,
+			    std::shared_ptr<Plan> plan)
 {
-	auto plan = library.Get(GetEventLoop().SteadyNow(), job.plan_name.c_str());
-	if (!plan) {
-		logger(1, "library_get('", job.plan_name, "') failed");
-		queue.RollbackJob(job);
-		return false;
-	}
-
 	if (!job.SetProgress(0, plan->timeout.c_str())){
 		queue.RollbackJob(job);
 		return false;
@@ -110,10 +104,18 @@ WorkshopPartition::StartJob(WorkshopJob &&job)
 	return true;
 }
 
+std::shared_ptr<Plan>
+WorkshopPartition::GetWorkshopPlan(const char *name) noexcept
+{
+	return library.Get(GetEventLoop().SteadyNow(), name);
+}
+
 bool
-WorkshopPartition::CheckWorkshopJob(const WorkshopJob &job) noexcept
+WorkshopPartition::CheckWorkshopJob(const WorkshopJob &job,
+				    const Plan &plan) noexcept
 {
 	(void)job;
+	(void)plan;
 
 	if (workplace.IsFull()) {
 		queue.DisableFull();
@@ -124,9 +126,10 @@ WorkshopPartition::CheckWorkshopJob(const WorkshopJob &job) noexcept
 }
 
 void
-WorkshopPartition::StartWorkshopJob(WorkshopJob &&job) noexcept
+WorkshopPartition::StartWorkshopJob(WorkshopJob &&job,
+				    std::shared_ptr<Plan> plan) noexcept
 {
-	if (!StartJob(std::move(job)) || workplace.IsFull())
+	if (!StartJob(std::move(job), std::move(plan)) || workplace.IsFull())
 		queue.DisableFull();
 
 	UpdateFilter();
