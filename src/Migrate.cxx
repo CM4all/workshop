@@ -43,18 +43,6 @@
 #include <stdlib.h>
 
 static void
-CheckCreateColumn(Pg::Connection &c, const char *schema,
-		  const char *table_name, const char *column_name,
-		  const char *alter_statement)
-{
-	if (Pg::ColumnExists(c, schema, table_name, column_name))
-		return;
-
-	printf("Creating column %s.%s\n", table_name, column_name);
-	c.Execute(alter_statement);
-}
-
-static void
 CheckCreateIndex(Pg::Connection &c, const char *schema,
 		 const char *table_name, const char *index_name,
 		 const char *create_statement)
@@ -82,12 +70,10 @@ static void
 MigrateWorkshopDatabase(Pg::Connection &c, const char *schema)
 {
 	/* since Workshop 2.0.13 */
-	CheckCreateColumn(c, schema, "jobs", "log",
-			  "ALTER TABLE jobs ADD COLUMN log text NULL");
+	c.Execute("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS log text NULL");
 
 	/* since Workshop 2.0.23 */
-	CheckCreateColumn(c, schema, "jobs", "enabled",
-			  "ALTER TABLE jobs ADD COLUMN enabled boolean NOT NULL DEFAULT TRUE");
+	c.Execute("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS enabled boolean NOT NULL DEFAULT TRUE");
 
 	c.Execute("DROP INDEX IF EXISTS jobs_sorted");
 	CheckCreateIndex(c, schema, "jobs", "jobs_sorted2",
@@ -106,8 +92,7 @@ MigrateWorkshopDatabase(Pg::Connection &c, const char *schema)
 			" DO SELECT pg_notify('new_job', NULL)");
 
 	/* since Workshop 2.0.37 */
-	CheckCreateColumn(c, schema, "jobs", "env",
-			  "ALTER TABLE jobs ADD COLUMN env varchar(4096)[] NULL");
+	c.Execute("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS env varchar(4096)[] NULL");
 }
 
 static void
