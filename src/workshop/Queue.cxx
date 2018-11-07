@@ -137,14 +137,11 @@ get_job(WorkshopJob &job,
 }
 
 static bool
-get_and_claim_job(const ChildLogger &logger, WorkshopJob &job,
+get_and_claim_job(const ChildLogger &logger, const WorkshopJob &job,
 		  const char *node_name,
 		  Pg::Connection &db,
-		  const Pg::Result &result, unsigned row,
 		  const char *timeout)
 {
-	get_job(job, result, row);
-
 	logger(6, "attempting to claim job ", job.id);
 
 	if (!pg_claim_job(db, job.id.c_str(), node_name, timeout)) {
@@ -194,9 +191,11 @@ WorkshopQueue::RunResult(const Pg::Result &result)
 	for (unsigned row = 0, end = result.GetRowCount();
 	     row != end && !IsDisabled() && !interrupt; ++row) {
 		WorkshopJob job(*this);
+		get_job(job, result, row);
+
 		if (get_and_claim_job(logger, job,
 				      GetNodeName(),
-				      db, result, row, "5 minutes"))
+				      db, "5 minutes"))
 			callback(std::move(job));
 	}
 }
