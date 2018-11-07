@@ -52,7 +52,7 @@ WorkshopPartition::WorkshopPartition(Instance &_instance,
 	 instance(_instance), library(_library),
 	 queue(logger, instance.GetEventLoop(), root_config.node_name.c_str(),
 	       config.database.c_str(), config.database_schema.c_str(),
-	       [this](WorkshopJob &&job){ OnJob(std::move(job)); }),
+	       *this),
 	 workplace(_spawn_service, *this, logger,
 		   root_config.node_name.c_str(),
 		   root_config.concurrency,
@@ -111,7 +111,7 @@ WorkshopPartition::StartJob(WorkshopJob &&job)
 }
 
 void
-WorkshopPartition::OnJob(WorkshopJob &&job)
+WorkshopPartition::StartWorkshopJob(WorkshopJob &&job) noexcept
 {
 	if (workplace.IsFull()) {
 		queue.RollbackJob(job);

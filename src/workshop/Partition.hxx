@@ -44,7 +44,7 @@ struct WorkshopPartitionConfig;
 class Instance;
 class MultiLibrary;
 
-class WorkshopPartition final : ExitListener {
+class WorkshopPartition final : WorkshopQueueHandler, ExitListener {
 	const Logger logger;
 
 	Instance &instance;
@@ -98,7 +98,9 @@ public:
 
 private:
 	bool StartJob(WorkshopJob &&job);
-	void OnJob(WorkshopJob &&job);
+
+	/* virtual methods from WorkshopQueueHandler */
+	void StartWorkshopJob(WorkshopJob &&job) noexcept override;
 
 	/* virtual methods from ExitListener */
 	void OnChildProcessExit(int status) override;

@@ -39,16 +39,18 @@
 #include "io/Logger.hxx"
 #include "util/Compiler.h"
 
-#include <functional>
 #include <string>
 #include <chrono>
 
 struct WorkshopJob;
 class EventLoop;
 
-class WorkshopQueue final : private Pg::AsyncConnectionHandler {
-	typedef std::function<void(WorkshopJob &&job)> Callback;
+class WorkshopQueueHandler {
+public:
+	virtual void StartWorkshopJob(WorkshopJob &&job) noexcept = 0;
+};
 
+class WorkshopQueue final : private Pg::AsyncConnectionHandler {
 	const ChildLogger logger;
 
 	const std::string node_name;
@@ -88,13 +90,13 @@ class WorkshopQueue final : private Pg::AsyncConnectionHandler {
 	std::chrono::steady_clock::time_point next_expire_check =
 		std::chrono::steady_clock::time_point::min();
 
-	const Callback callback;
+	WorkshopQueueHandler &handler;
 
 public:
 	WorkshopQueue(const Logger &parent_logger, EventLoop &event_loop,
 		      const char *_node_name,
 		      const char *conninfo, const char *schema,
-		      Callback _callback) noexcept;
+		      WorkshopQueueHandler &handler) noexcept;
 	~WorkshopQueue() noexcept;
 
 	auto &GetEventLoop() const noexcept {

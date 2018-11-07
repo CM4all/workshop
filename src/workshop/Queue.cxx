@@ -51,12 +51,12 @@ WorkshopQueue::WorkshopQueue(const Logger &parent_logger,
 			     EventLoop &event_loop,
 			     const char *_node_name,
 			     const char *conninfo, const char *schema,
-			     Callback _callback) noexcept
+			     WorkshopQueueHandler &_handler) noexcept
 	:logger(parent_logger, "queue"), node_name(_node_name),
 	 db(event_loop, conninfo, schema, *this),
 	 check_notify_event(event_loop, BIND_THIS_METHOD(CheckNotify)),
 	 timer_event(event_loop, BIND_THIS_METHOD(OnTimer)),
-	 callback(_callback)
+	 handler(_handler)
 {
 }
 
@@ -198,7 +198,7 @@ WorkshopQueue::RunResult(const Pg::Result &result)
 		if (get_and_claim_job(logger, job,
 				      GetNodeName(),
 				      db, "5 minutes"))
-			callback(std::move(job));
+			handler.StartWorkshopJob(std::move(job));
 	}
 }
 
