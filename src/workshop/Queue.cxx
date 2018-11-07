@@ -371,7 +371,7 @@ WorkshopQueue::SetJobEnv(const WorkshopJob &job, const char *more_env)
 
 	ScheduleCheckNotify();
 
-	return PgSetEnv(db, job.id.c_str(), more_env);
+	PgSetEnv(db, job.id.c_str(), more_env);
 }
 
 void
