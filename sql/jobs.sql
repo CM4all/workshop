@@ -41,6 +41,8 @@ CREATE TABLE jobs (
         -- how much is done? 0 to 100 percent
         progress int NOT NULL DEFAULT 0,
 
+        -- the time this job was most recently started
+        time_started timestamp NULL,
         -- the time this job was completed
         time_done timestamp NULL,
         -- the output logged by the process to stderr

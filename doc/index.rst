@@ -416,6 +416,8 @@ The `jobs` table
   and reassigned to another node.
 * :envvar:`progress`: Progress of job execution in percent.  Note that
   you cannot assume the job is done when this number reaches 100.
+* :envvar:`time_started`: Time stamp when the job has most recently
+  started execution.
 * :envvar:`time_done`: Time stamp when the job has completed
   execution.
 * :envvar:`log`: Log data written by the job to `stderr`.

@@ -68,6 +68,9 @@ MigrateWorkshopDatabase(Pg::Connection &c, const char *schema)
 
 	/* since Workshop 2.0.37 */
 	c.Execute("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS env varchar(4096)[] NULL");
+
+	/* since Workshop 4.0.1 */
+	c.Execute("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS time_started timestamp NULL");
 }
 
 static void

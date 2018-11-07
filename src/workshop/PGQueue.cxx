@@ -131,7 +131,7 @@ pg_claim_job(Pg::Connection &db,
 	     const char *timeout)
 {
 	const char *sql = "UPDATE jobs "
-		"SET node_name=$1, node_timeout=now()+$3::INTERVAL "
+		"SET node_name=$1, node_timeout=now()+$3::INTERVAL, time_started=now() "
 		"WHERE id=$2 AND node_name IS NULL"
 		" AND enabled";
 
