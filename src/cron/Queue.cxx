@@ -33,6 +33,7 @@
 #include "Queue.hxx"
 #include "Job.hxx"
 #include "CalculateNextRun.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <chrono>
 
@@ -289,6 +290,10 @@ CronQueue::CheckPending()
 void
 CronQueue::OnConnect()
 {
+	if (db.GetServerVersion() < 90600)
+		throw FormatRuntimeError("PostgreSQL version '%s' is too old, need at least 9.6",
+					 db.GetParameterStatus("server_version"));
+
 	db.Execute("LISTEN cronjobs_modified");
 	db.Execute("LISTEN cronjobs_scheduled");
 

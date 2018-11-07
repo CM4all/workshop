@@ -34,6 +34,7 @@
 #include "pg/Reflection.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/PrintException.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <stdexcept>
 
@@ -213,6 +214,10 @@ try {
 	assert(args.empty());
 
 	Pg::Connection c(conninfo);
+
+	if (c.GetServerVersion() < 90600)
+		throw FormatRuntimeError("PostgreSQL version '%s' is too old, need at least 9.6",
+					 c.GetParameterStatus("server_version"));
 
 	if (set_role != nullptr)
 		c.SetRole(set_role);

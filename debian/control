@@ -10,7 +10,7 @@ Build-Depends: debhelper (>= 10), dh-systemd,
  libboost-dev (>= 1.54),
  libboost-system-dev (>= 1.54),
  libboost-filesystem-dev (>= 1.54),
- libpq-dev (>= 8.4),
+ libpq-dev (>= 9.6),
  libcurl4-openssl-dev (>= 7.38),
  libgtest-dev,
  python3-sphinx

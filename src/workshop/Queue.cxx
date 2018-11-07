@@ -432,6 +432,10 @@ WorkshopQueue::SetJobDone(const WorkshopJob &job, int status,
 void
 WorkshopQueue::OnConnect()
 {
+	if (db.GetServerVersion() < 90600)
+		throw FormatRuntimeError("PostgreSQL version '%s' is too old, need at least 9.6",
+					 db.GetParameterStatus("server_version"));
+
 	static constexpr const char *const required_jobs_columns[] = {
 		"enabled",
 		"log",
