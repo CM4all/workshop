@@ -63,7 +63,7 @@ struct WorkshopJob {
 	 * string that is understood by PostgreSQL)
 	 * @return true on success
 	 */
-	bool SetProgress(unsigned progress, const char *timeout);
+	bool SetProgress(unsigned progress, const char *timeout) noexcept;
 
 	/**
 	 * Add more environment variables to the record in the "jobs"
@@ -77,7 +77,7 @@ struct WorkshopJob {
 	/**
 	 * Mark the job as "done".
 	 */
-	void SetDone(int status, const char *log);
+	void SetDone(int status, const char *log) noexcept;
 
 	/**
 	 * Mark the job as "execute again".
@@ -85,7 +85,7 @@ struct WorkshopJob {
 	 * @param delay don't execute this job until the given duration
 	 * has passed
 	 */
-	void SetAgain(std::chrono::seconds delay, const char *log);
+	void SetAgain(std::chrono::seconds delay, const char *log) noexcept;
 };
 
 #endif

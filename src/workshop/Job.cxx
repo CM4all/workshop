@@ -33,10 +33,8 @@
 #include "Job.hxx"
 #include "Queue.hxx"
 
-#include <assert.h>
-
 bool
-WorkshopJob::SetProgress(unsigned progress, const char *timeout)
+WorkshopJob::SetProgress(unsigned progress, const char *timeout) noexcept
 {
 	return queue.SetJobProgress(*this, progress, timeout);
 }
@@ -48,13 +46,13 @@ WorkshopJob::SetEnv(const char *more_env)
 }
 
 void
-WorkshopJob::SetDone(int status, const char *log)
+WorkshopJob::SetDone(int status, const char *log) noexcept
 {
 	queue.SetJobDone(*this, status, log);
 }
 
 void
-WorkshopJob::SetAgain(std::chrono::seconds delay, const char *log)
+WorkshopJob::SetAgain(std::chrono::seconds delay, const char *log) noexcept
 {
 	queue.AgainJob(*this, log, delay);
 }
