@@ -114,12 +114,13 @@ WorkshopQueue::GetNextScheduled(int *span_r)
 	return true;
 }
 
-static void
-get_job(WorkshopJob &job,
+static WorkshopJob
+MakeJob(WorkshopQueue &queue,
 	const Pg::Result &result, unsigned row)
 {
 	assert(row < result.GetRowCount());
 
+	WorkshopJob job(queue);
 	job.id = result.GetValue(row, 0);
 	job.plan_name = result.GetValue(row, 1);
 
@@ -134,6 +135,8 @@ get_job(WorkshopJob &job,
 
 	if (job.plan_name.empty())
 		throw FormatRuntimeError("Job '%s' has no plan", job.id.c_str());
+
+	return job;
 }
 
 static bool
@@ -190,8 +193,7 @@ WorkshopQueue::RunResult(const Pg::Result &result)
 {
 	for (unsigned row = 0, end = result.GetRowCount();
 	     row != end && !IsDisabled() && !interrupt; ++row) {
-		WorkshopJob job(*this);
-		get_job(job, result, row);
+		auto job = MakeJob(*this, result, row);
 
 		if (get_and_claim_job(logger, job,
 				      GetNodeName(),
