@@ -194,6 +194,9 @@ command line to be executed by the shell (:file:`/bin/sh`).
 Using Workshop
 --------------
 
+Plan Files
+^^^^^^^^^^
+
 The directory :file:`/usr/share/cm4all/workshop/plans/` contains a
 text file for each plan.  Example::
 
