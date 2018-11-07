@@ -33,6 +33,7 @@
 #include "Queue.hxx"
 #include "PGQueue.hxx"
 #include "Job.hxx"
+#include "Plan.hxx"
 #include "pg/Array.hxx"
 #include "pg/Reflection.hxx"
 #include "util/RuntimeError.hxx"
@@ -200,7 +201,7 @@ WorkshopQueue::RunResult(const Pg::Result &result)
 		    handler.CheckWorkshopJob(job, *plan) &&
 		    get_and_claim_job(logger, job,
 				      GetNodeName(),
-				      db, "5 minutes"))
+				      db, plan->timeout.c_str()))
 			handler.StartWorkshopJob(std::move(job),
 						 std::move(plan));
 	}

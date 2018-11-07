@@ -35,7 +35,6 @@
 #include "MultiLibrary.hxx"
 #include "Config.hxx"
 #include "Job.hxx"
-#include "Plan.hxx"
 #include "../Config.hxx"
 #include "pg/Array.hxx"
 #include "util/Exception.hxx"
@@ -86,11 +85,6 @@ bool
 WorkshopPartition::StartJob(WorkshopJob &&job,
 			    std::shared_ptr<Plan> plan)
 {
-	if (!job.SetProgress(0, plan->timeout.c_str())){
-		queue.RollbackJob(job);
-		return false;
-	}
-
 	try {
 		workplace.Start(instance.GetEventLoop(), job, std::move(plan),
 				max_log);
