@@ -194,13 +194,10 @@ WorkshopQueue::RunResult(const Pg::Result &result)
 	for (unsigned row = 0, end = result.GetRowCount();
 	     row != end && !IsDisabled() && !interrupt; ++row) {
 		WorkshopJob job(*this);
-		int ret = get_and_claim_job(logger, job,
-					    GetNodeName(),
-					    db, result, row, "5 minutes");
-		if (ret > 0)
+		if (get_and_claim_job(logger, job,
+				      GetNodeName(),
+				      db, result, row, "5 minutes"))
 			callback(std::move(job));
-		else if (ret < 0)
-			break;
 	}
 }
 
