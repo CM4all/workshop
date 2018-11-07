@@ -100,6 +100,7 @@ private:
 	bool StartJob(WorkshopJob &&job);
 
 	/* virtual methods from WorkshopQueueHandler */
+	bool CheckWorkshopJob(const WorkshopJob &job) noexcept override;
 	void StartWorkshopJob(WorkshopJob &&job) noexcept override;
 
 	/* virtual methods from ExitListener */

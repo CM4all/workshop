@@ -195,7 +195,8 @@ WorkshopQueue::RunResult(const Pg::Result &result)
 	     row != end && !IsDisabled() && !interrupt; ++row) {
 		auto job = MakeJob(*this, result, row);
 
-		if (get_and_claim_job(logger, job,
+		if (handler.CheckWorkshopJob(job) &&
+		    get_and_claim_job(logger, job,
 				      GetNodeName(),
 				      db, "5 minutes"))
 			handler.StartWorkshopJob(std::move(job));

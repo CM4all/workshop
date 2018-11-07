@@ -47,6 +47,12 @@ class EventLoop;
 
 class WorkshopQueueHandler {
 public:
+	/**
+	 * Ask the handler whether it is willing to run the given job.
+	 * This will be called before the job is claimed.
+	 */
+	virtual bool CheckWorkshopJob(const WorkshopJob &job) noexcept = 0;
+
 	virtual void StartWorkshopJob(WorkshopJob &&job) noexcept = 0;
 };
 

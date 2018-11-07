@@ -110,15 +110,22 @@ WorkshopPartition::StartJob(WorkshopJob &&job)
 	return true;
 }
 
+bool
+WorkshopPartition::CheckWorkshopJob(const WorkshopJob &job) noexcept
+{
+	(void)job;
+
+	if (workplace.IsFull()) {
+		queue.DisableFull();
+		return false;
+	}
+
+	return true;
+}
+
 void
 WorkshopPartition::StartWorkshopJob(WorkshopJob &&job) noexcept
 {
-	if (workplace.IsFull()) {
-		queue.RollbackJob(job);
-		queue.DisableFull();
-		return;
-	}
-
 	if (!StartJob(std::move(job)) || workplace.IsFull())
 		queue.DisableFull();
 
