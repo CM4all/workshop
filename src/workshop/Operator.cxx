@@ -160,6 +160,9 @@ WorkshopOperator::OnChildProcessExit(int status)
 {
 	exited = true;
 
+	if (control_channel)
+		control_channel->ReceiveAll();
+
 	log.Flush();
 
 	int exit_status = WEXITSTATUS(status);

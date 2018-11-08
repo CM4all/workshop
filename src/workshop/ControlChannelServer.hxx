@@ -57,6 +57,10 @@ public:
 		:socket(_event_loop, std::move(_socket), *this),
 		 listener(_listener) {}
 
+	bool ReceiveAll() {
+		return socket.ReceiveAll();
+	}
+
 private:
 	void InvokeTemporaryError(const char *msg) noexcept;
 
