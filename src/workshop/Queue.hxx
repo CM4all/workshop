@@ -161,13 +161,15 @@ public:
 	void EnableFull() noexcept;
 
 	/**
-	 * Returns the number of jobs with the given plan which were
-	 * started recently.
+	 * Checks if the given rate limit was reached/exceeded.
 	 *
-	 * Throws on error.
+	 * @return a positive duration we have to wait until the rate falls
+	 * below the limit and a new job can be started, or a non-positive
+	 * value if the rate limits is not yet reached
 	 */
-	unsigned CountRecentlyStartedJobs(const char *plan_name,
-					  std::chrono::seconds duration) noexcept;
+	std::chrono::seconds CheckRateLimit(const char *plan_name,
+					    std::chrono::seconds duration,
+					    unsigned max_count) noexcept;
 
 	/**
 	 * @return true on success

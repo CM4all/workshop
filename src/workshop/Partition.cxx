@@ -42,10 +42,6 @@
 
 #include <set>
 
-/* TODO: find out when the rate limit expires and use that time stamp
-   instead of hard-coding this value */
-static constexpr auto RATE_LIMIT_TIMER_INTERVAL = std::chrono::minutes(1);
-
 WorkshopPartition::WorkshopPartition(Instance &_instance,
 				     MultiLibrary &_library,
 				     SpawnService &_spawn_service,
@@ -131,19 +127,21 @@ WorkshopPartition::GetWorkshopPlan(const char *name) noexcept
 	return library.Get(GetEventLoop().SteadyNow(), name);
 }
 
-inline bool
+inline std::chrono::seconds
 WorkshopPartition::CheckRateLimit(const char *plan_name,
 				  const Plan &plan) noexcept
 {
 	for (const auto &rate_limit : plan.rate_limits) {
 		assert(rate_limit.IsDefined());
 
-		if (queue.CountRecentlyStartedJobs(plan_name,
-						   rate_limit.duration) >= rate_limit.max_count)
-			return false;
+		auto delta = queue.CheckRateLimit(plan_name,
+						  rate_limit.duration,
+						  rate_limit.max_count);
+		if (delta > std::chrono::seconds{})
+			return delta;
 	}
 
-	return true;
+	return {};
 }
 
 bool
@@ -155,12 +153,13 @@ WorkshopPartition::CheckWorkshopJob(const WorkshopJob &job,
 		return false;
 	}
 
-	if (!CheckRateLimit(job.plan_name.c_str(), plan)) {
+	auto delta = CheckRateLimit(job.plan_name.c_str(), plan);
+	if (delta > std::chrono::seconds{}) {
 		logger(4, "Rate limit of '", job.plan_name, "' hit");
 
 		rate_limited_plans.Set(job.plan_name,
 				       Expiry::Touched(GetEventLoop().SteadyNow(),
-						       RATE_LIMIT_TIMER_INTERVAL));
+						       delta));
 
 		UpdateFilter();
 		return false;

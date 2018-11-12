@@ -125,15 +125,22 @@ pg_select_new_jobs(Pg::Connection &db,
 				limit);
 }
 
-unsigned
-PgCountRecentlyStartedJobs(Pg::Connection &db, const char *plan_name,
-			   std::chrono::seconds duration)
+std::chrono::seconds
+PgCheckRateLimit(Pg::Connection &db, const char *plan_name,
+		 std::chrono::seconds duration, unsigned max_count)
 {
-	const char *sql = "SELECT COUNT(*) FROM jobs "
-		" WHERE plan_name=$1 AND time_started >= now() - $2::interval";
+	const char *sql = "SELECT EXTRACT(EPOCH FROM time_started + $2::interval - now()) FROM jobs "
+		" WHERE plan_name=$1 AND time_started >= now() - $2::interval"
+		" ORDER BY time_started DESC"
+		" LIMIT 1 OFFSET $3";
 
-	const auto value = db.ExecuteParams(sql, plan_name, duration.count()).GetOnlyStringChecked();
-	return strtoul(value.c_str(), nullptr, 10);
+	const auto value = db.ExecuteParams(sql, plan_name, duration.count(),
+					    max_count - 1)
+		.GetOnlyStringChecked();
+	if (value.empty())
+		return {};
+
+	return std::chrono::seconds(strtoul(value.c_str(), nullptr, 10));
 }
 
 bool
