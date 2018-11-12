@@ -131,6 +131,21 @@ WorkshopPartition::GetWorkshopPlan(const char *name) noexcept
 	return library.Get(GetEventLoop().SteadyNow(), name);
 }
 
+inline bool
+WorkshopPartition::CheckRateLimit(const char *plan_name,
+				  const Plan &plan) noexcept
+{
+	for (const auto &rate_limit : plan.rate_limits) {
+		assert(rate_limit.IsDefined());
+
+		if (queue.CountRecentlyStartedJobs(plan_name,
+						   rate_limit.duration) >= rate_limit.max_count)
+			return false;
+	}
+
+	return true;
+}
+
 bool
 WorkshopPartition::CheckWorkshopJob(const WorkshopJob &job,
 				    const Plan &plan) noexcept
@@ -140,14 +155,7 @@ WorkshopPartition::CheckWorkshopJob(const WorkshopJob &job,
 		return false;
 	}
 
-	/* check the rate limit */
-	for (const auto &rate_limit : plan.rate_limits) {
-		assert(rate_limit.IsDefined());
-
-		if (queue.CountRecentlyStartedJobs(job.plan_name.c_str(),
-						   rate_limit.duration) < rate_limit.max_count)
-			continue;
-
+	if (!CheckRateLimit(job.plan_name.c_str(), plan)) {
 		logger(4, "Rate limit of '", job.plan_name, "' hit");
 
 		rate_limited_plans.Set(job.plan_name,

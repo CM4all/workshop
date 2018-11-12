@@ -111,6 +111,9 @@ public:
 private:
 	void OnRateLimitTimer() noexcept;
 
+	bool CheckRateLimit(const char *plan_name,
+			    const Plan &plan) noexcept;
+
 	bool StartJob(WorkshopJob &&job,
 		      std::shared_ptr<Plan> plan);
 
