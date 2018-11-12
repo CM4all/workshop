@@ -45,7 +45,7 @@
 #include <time.h>
 
 static constexpr bool
-is_valid_plan_name_char(char ch)
+is_valid_plan_name_char(char ch) noexcept
 {
 	return IsAlphaNumericASCII(ch) ||
 		ch == '_' || ch == '-';
@@ -53,7 +53,7 @@ is_valid_plan_name_char(char ch)
 
 gcc_pure
 static bool
-is_valid_plan_name(const char *name)
+is_valid_plan_name(const char *name) noexcept
 {
 	assert(name != nullptr);
 
@@ -67,7 +67,7 @@ is_valid_plan_name(const char *name)
 }
 
 bool
-Library::UpdatePlans(std::chrono::steady_clock::time_point now)
+Library::UpdatePlans(std::chrono::steady_clock::time_point now) noexcept
 {
 	struct dirent *ent;
 
@@ -126,7 +126,7 @@ Library::UpdatePlans(std::chrono::steady_clock::time_point now)
 }
 
 bool
-Library::Update(std::chrono::steady_clock::time_point now, bool force)
+Library::Update(std::chrono::steady_clock::time_point now, bool force) noexcept
 {
 	int ret;
 	struct stat st;
@@ -160,7 +160,8 @@ Library::Update(std::chrono::steady_clock::time_point now, bool force)
 }
 
 std::shared_ptr<Plan>
-Library::Get(std::chrono::steady_clock::time_point now, const char *name)
+Library::Get(std::chrono::steady_clock::time_point now,
+	     const char *name) noexcept
 {
 	auto i = plans.find(name);
 	if (i == plans.end())

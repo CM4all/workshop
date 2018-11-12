@@ -46,14 +46,14 @@
 void
 Library::DisablePlan(PlanEntry &entry,
 		     std::chrono::steady_clock::time_point now,
-		     std::chrono::steady_clock::duration duration)
+		     std::chrono::steady_clock::duration duration) noexcept
 {
 	entry.Disable(now, duration);
 }
 
 bool
 Library::CheckPlanModified(const char *name, PlanEntry &entry,
-			   std::chrono::steady_clock::time_point now)
+			   std::chrono::steady_clock::time_point now) noexcept
 {
 	int ret;
 	struct stat st;
@@ -94,7 +94,7 @@ Library::CheckPlanModified(const char *name, PlanEntry &entry,
 
 bool
 Library::ValidatePlan(PlanEntry &entry,
-		      std::chrono::steady_clock::time_point now)
+		      std::chrono::steady_clock::time_point now) noexcept
 {
 	const auto &plan = entry.plan;
 	int ret;
@@ -126,7 +126,7 @@ Library::ValidatePlan(PlanEntry &entry,
 
 bool
 Library::LoadPlan(const char *name, PlanEntry &entry,
-		  std::chrono::steady_clock::time_point now)
+		  std::chrono::steady_clock::time_point now) noexcept
 {
 	assert(entry.plan == nullptr);
 	assert(entry.mtime != 0);
@@ -149,7 +149,7 @@ Library::LoadPlan(const char *name, PlanEntry &entry,
 
 bool
 Library::UpdatePlan(const char *name, PlanEntry &entry,
-		    std::chrono::steady_clock::time_point now)
+		    std::chrono::steady_clock::time_point now) noexcept
 {
 	const bool was_available = entry.IsAvailable(now);
 

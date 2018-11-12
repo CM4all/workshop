@@ -93,13 +93,13 @@ class Library {
 	time_t mtime = 0;
 
 public:
-	explicit Library(boost::filesystem::path &&_path)
+	explicit Library(boost::filesystem::path &&_path) noexcept
 		:logger("library"),
 		 path(std::move(_path)) {}
 
 	Library(const Library &other) = delete;
 
-	const boost::filesystem::path &GetPath() const {
+	const boost::filesystem::path &GetPath() const noexcept {
 		return path;
 	}
 
@@ -111,10 +111,11 @@ public:
 	 * @return true if the library was modified (at least one plan has
 	 * been added, modified or deleted)
 	 */
-	bool Update(std::chrono::steady_clock::time_point now, bool force);
+	bool Update(std::chrono::steady_clock::time_point now, bool force) noexcept;
 
 	template<typename F>
-	void VisitPlans(std::chrono::steady_clock::time_point now, F &&f) const {
+	void VisitPlans(std::chrono::steady_clock::time_point now,
+			F &&f) const noexcept {
 		for (const auto &i : plans) {
 			const std::string &name = i.first;
 			const PlanEntry &entry = i.second;
@@ -125,10 +126,10 @@ public:
 	}
 
 	std::shared_ptr<Plan> Get(std::chrono::steady_clock::time_point now,
-				  const char *name);
+				  const char *name) noexcept;
 
 private:
-	PlanEntry &MakePlanEntry(const char *name) {
+	PlanEntry &MakePlanEntry(const char *name) noexcept {
 		return plans.emplace(std::piecewise_construct,
 				     std::forward_as_tuple(name),
 				     std::forward_as_tuple())
@@ -137,33 +138,33 @@ private:
 
 	void DisablePlan(PlanEntry &entry,
 			 std::chrono::steady_clock::time_point now,
-			 std::chrono::steady_clock::duration duration);
+			 std::chrono::steady_clock::duration duration) noexcept;
 
 	/**
 	 * @return true if the plan file was modified
 	 */
 	bool CheckPlanModified(const char *name, PlanEntry &entry,
-			       std::chrono::steady_clock::time_point now);
+			       std::chrono::steady_clock::time_point now) noexcept;
 
 	/**
 	 * Check whether the plan is available.
 	 */
 	bool ValidatePlan(PlanEntry &entry,
-			  std::chrono::steady_clock::time_point now);
+			  std::chrono::steady_clock::time_point now) noexcept;
 
 	bool LoadPlan(const char *name, PlanEntry &entry,
-		      std::chrono::steady_clock::time_point now);
+		      std::chrono::steady_clock::time_point now) noexcept;
 
 	/**
 	 * @return whether the plan was modified
 	 */
 	bool UpdatePlan(const char *name, PlanEntry &entry,
-			std::chrono::steady_clock::time_point now);
+			std::chrono::steady_clock::time_point now) noexcept;
 
 	/**
 	 * @return whether the plan was modified
 	 */
-	bool UpdatePlans(std::chrono::steady_clock::time_point now);
+	bool UpdatePlans(std::chrono::steady_clock::time_point now) noexcept;
 };
 
 #endif
