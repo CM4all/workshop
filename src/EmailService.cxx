@@ -47,7 +47,7 @@ EmailService::Job::Job(EmailService &_service, Email &&_email)
 void
 EmailService::Job::Start()
 {
-	connect.Connect(service.address);
+	connect.Connect(service.address, std::chrono::seconds(20));
 }
 
 void
