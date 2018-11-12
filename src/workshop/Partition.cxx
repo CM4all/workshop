@@ -84,17 +84,18 @@ WorkshopPartition::UpdateFilter()
 			   });
 
 	/* remove the plans which have hit their rate limit */
-	rate_limited_plans.ForEach(GetEventLoop().SteadyNow(),
-				   [&available_plans](const std::string &name){
-					   auto i = available_plans.find(name);
-					   if (i != available_plans.end())
-						   available_plans.erase(i);
-				   });
-
-	if (rate_limited_plans.empty())
+	const auto now = GetEventLoop().SteadyNow();
+	const auto earliest_expiry =
+		rate_limited_plans.ForEach(now,
+			[&available_plans](const std::string &name){
+				auto i = available_plans.find(name);
+				if (i != available_plans.end())
+					available_plans.erase(i);
+			});
+	if (earliest_expiry.IsExpired(now))
 		rate_limit_timer.Cancel();
 	else
-		rate_limit_timer.Schedule(RATE_LIMIT_TIMER_INTERVAL);
+		rate_limit_timer.Schedule(earliest_expiry.GetRemainingDuration(now));
 
 	queue.SetFilter(Pg::EncodeArray(available_plans),
 			workplace.GetFullPlanNames(),
