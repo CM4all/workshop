@@ -35,13 +35,11 @@
 #include "util/CharUtil.hxx"
 
 #include <assert.h>
-#include <sys/stat.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include <dirent.h>
 #include <time.h>
 
 static constexpr bool
@@ -66,52 +64,41 @@ is_valid_plan_name(const char *name) noexcept
 	return true;
 }
 
-bool
-Library::UpdatePlans(std::chrono::steady_clock::time_point now) noexcept
+inline bool
+Library::UpdatePlans(std::chrono::steady_clock::time_point now)
 {
-	struct dirent *ent;
-
 	/* read list of plans from file system, update our list */
-
-	DIR *dir = opendir(path.c_str());
-	if (dir == nullptr) {
-		logger(2, "failed to opendir '", path.c_str(), "': ", strerror(errno));
-		return false;
-	}
 
 	auto old_plans = std::move(plans);
 	plans.clear();
 
 	bool modified = false;
 
-	while ((ent = readdir(dir)) != nullptr) {
-		if (!is_valid_plan_name(ent->d_name))
+	for (const auto &entry : boost::filesystem::directory_iterator(path)) {
+		const auto name = entry.path().filename();
+		if (!is_valid_plan_name(name.c_str()))
 			continue;
 
-		std::string name(ent->d_name);
-
-		auto old_i = old_plans.find(name);
+		auto old_i = old_plans.find(name.native());
 		decltype(old_i) i;
 
 		if (old_i != old_plans.end()) {
 			i = plans.emplace(std::piecewise_construct,
-					  std::forward_as_tuple(std::move(name)),
+					  std::forward_as_tuple(name.native()),
 					  std::forward_as_tuple(std::move(old_i->second)))
 				.first;
 			old_plans.erase(old_i);
 		} else {
 			i = plans.emplace(std::piecewise_construct,
-					  std::forward_as_tuple(std::move(name)),
+					  std::forward_as_tuple(name.native()),
 					  std::forward_as_tuple())
 				.first;
 			modified = true;
 		}
 
-		if (UpdatePlan(ent->d_name, i->second, now))
+		if (UpdatePlan(name.c_str(), i->second, now))
 			modified = true;
 	}
-
-	closedir(dir);
 
 	/* remove all plans */
 
@@ -127,24 +114,17 @@ Library::UpdatePlans(std::chrono::steady_clock::time_point now) noexcept
 
 bool
 Library::Update(std::chrono::steady_clock::time_point now, bool force) noexcept
-{
-	int ret;
-	struct stat st;
-
+try {
 	/* check directory time stamp */
 
-	ret = stat(path.c_str(), &st);
-	if (ret < 0) {
-		logger(2, "failed to stat '", path.c_str(), "': ", strerror(errno));
-		return false;
-	}
-
-	if (!S_ISDIR(st.st_mode)) {
+	if (!boost::filesystem::is_directory(path)) {
 		logger(2, "not a directory: ", path.c_str());
 		return false;
 	}
 
-	if (!force && st.st_mtime == mtime && now < next_plans_check)
+	const auto new_mtime = boost::filesystem::last_write_time(path);
+
+	if (!force && new_mtime == mtime && now < next_plans_check)
 		return false;
 
 	/* do it */
@@ -153,10 +133,14 @@ Library::Update(std::chrono::steady_clock::time_point now, bool force) noexcept
 
 	/* update mtime */
 
-	mtime = st.st_mtime;
+	mtime = new_mtime;
 	next_plans_check = now + std::chrono::seconds(60);
 
 	return modified;
+} catch (...) {
+	logger(2, "Failed to load plans from ", path.c_str(), ": ",
+	       std::current_exception());
+	return false;
 }
 
 std::shared_ptr<Plan>

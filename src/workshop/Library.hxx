@@ -164,7 +164,7 @@ private:
 	/**
 	 * @return whether the plan was modified
 	 */
-	bool UpdatePlans(std::chrono::steady_clock::time_point now) noexcept;
+	bool UpdatePlans(std::chrono::steady_clock::time_point now);
 };
 
 #endif
