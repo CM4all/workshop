@@ -141,9 +141,13 @@ WorkshopPartition::CheckWorkshopJob(const WorkshopJob &job,
 	}
 
 	/* check the rate limit */
-	if (plan.rate_limit.IsDefined() &&
-	    queue.CountRecentlyStartedJobs(job.plan_name.c_str(),
-					   plan.rate_limit.duration) >= plan.rate_limit.max_count) {
+	for (const auto &rate_limit : plan.rate_limits) {
+		assert(rate_limit.IsDefined());
+
+		if (queue.CountRecentlyStartedJobs(job.plan_name.c_str(),
+						   rate_limit.duration) < rate_limit.max_count)
+			continue;
+
 		logger(4, "Rate limit of '", job.plan_name, "' hit");
 
 		rate_limited_plans.Set(job.plan_name,

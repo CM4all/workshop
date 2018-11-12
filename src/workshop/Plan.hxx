@@ -38,6 +38,7 @@
 
 #include <string>
 #include <list>
+#include <forward_list>
 #include <vector>
 #include <chrono>
 
@@ -55,7 +56,7 @@ struct Plan {
 
 	std::chrono::steady_clock::duration parsed_timeout{};
 
-	RateLimit rate_limit;
+	std::forward_list<RateLimit> rate_limits;
 
 	uid_t uid = 65534;
 	gid_t gid = 65534;

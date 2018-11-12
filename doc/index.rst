@@ -265,7 +265,8 @@ The following options are available:
 * :samp:`rate_limit "MAX/INTERVAL"`: Limit the rate in which this plan
   is going to be executed.  This rate is cluster-global and the
   interval is rolling.  Example: ":samp:`20 / 15 minutes`" allows no
-  more than 20 executions within 15 minutes.
+  more than 20 executions within 15 minutes.  A plan may have multiple
+  rate limits.
 
 In the :samp:`exec` line, the following variables in the form
 :samp:`${NAME}` are expanded:

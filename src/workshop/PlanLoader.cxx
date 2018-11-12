@@ -170,7 +170,7 @@ PlanLoader::ParseLine(FileLineParser &line)
 		plan.concurrency = line.NextPositiveInteger();
 		line.ExpectEnd();
 	} else if (strcmp(key, "rate_limit") == 0) {
-		plan.rate_limit = RateLimit::Parse(line.ExpectValueAndEnd());
+		plan.rate_limits.emplace_front(RateLimit::Parse(line.ExpectValueAndEnd()));
 	} else
 		throw FormatRuntimeError("unknown option '%s'", key);
 }
