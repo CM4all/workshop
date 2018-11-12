@@ -72,9 +72,6 @@ void
 WorkshopPartition::OnRateLimitTimer() noexcept
 {
 	UpdateFilter();
-
-	if (!rate_limited_plans.empty())
-		rate_limit_timer.Schedule(RATE_LIMIT_TIMER_INTERVAL);
 }
 
 void
@@ -96,6 +93,8 @@ WorkshopPartition::UpdateFilter()
 
 	if (rate_limited_plans.empty())
 		rate_limit_timer.Cancel();
+	else
+		rate_limit_timer.Schedule(RATE_LIMIT_TIMER_INTERVAL);
 
 	queue.SetFilter(Pg::EncodeArray(available_plans),
 			workplace.GetFullPlanNames(),
@@ -153,8 +152,6 @@ WorkshopPartition::CheckWorkshopJob(const WorkshopJob &job,
 		rate_limited_plans.Set(job.plan_name,
 				       Expiry::Touched(GetEventLoop().SteadyNow(),
 						       RATE_LIMIT_TIMER_INTERVAL));
-
-		rate_limit_timer.Schedule(RATE_LIMIT_TIMER_INTERVAL);
 
 		UpdateFilter();
 		return false;
