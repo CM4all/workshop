@@ -5,7 +5,7 @@ cm4all-workshop (4.0.1) unstable; urgency=low
   * workshop: add column `time_started`
   * workshop: add rate limits
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Tue, 13 Nov 2018 13:24:25 +0100
 
 cm4all-workshop (3.3) unstable; urgency=low
 
