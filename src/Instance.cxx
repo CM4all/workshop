@@ -90,10 +90,10 @@ Instance::~Instance()
 }
 
 void
-Instance::UpdateFilter()
+Instance::UpdateFilter(bool library_modified)
 {
 	for (auto &i : partitions)
-		i.UpdateFilter();
+		i.UpdateFilter(library_modified);
 }
 
 void
@@ -101,8 +101,9 @@ Instance::UpdateLibraryAndFilter(bool force)
 {
 	assert(library);
 
-	library->Update(event_loop.SteadyNow(), force);
-	UpdateFilter();
+	const bool library_modified =
+		library->Update(event_loop.SteadyNow(), force);
+	UpdateFilter(library_modified);
 }
 
 void

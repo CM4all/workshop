@@ -105,7 +105,7 @@ public:
 		queue.EnableAdmin();
 	}
 
-	void UpdateFilter();
+	void UpdateFilter(bool library_modified=false);
 	void UpdateLibraryAndFilter(bool force);
 
 private:

@@ -103,7 +103,7 @@ public:
 		event_loop.Dispatch();
 	}
 
-	void UpdateFilter();
+	void UpdateFilter(bool library_modified);
 	void UpdateLibraryAndFilter(bool force);
 
 private:

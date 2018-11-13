@@ -71,13 +71,16 @@ WorkshopPartition::OnRateLimitTimer() noexcept
 }
 
 void
-WorkshopPartition::UpdateFilter()
+WorkshopPartition::UpdateFilter(bool library_modified)
 {
 	std::set<std::string> available_plans;
 	library.VisitPlans(GetEventLoop().SteadyNow(),
 			   [&available_plans](const std::string &name, const Plan &){
 				   available_plans.emplace(name);
 			   });
+
+	if (library_modified)
+		rate_limited_plans.clear();
 
 	/* remove the plans which have hit their rate limit */
 	const auto now = GetEventLoop().SteadyNow();
