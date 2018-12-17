@@ -55,7 +55,7 @@ WorkshopOperator::WorkshopOperator(EventLoop &_event_loop,
 				   UniqueFileDescriptor stderr_read_pipe,
 				   UniqueSocketDescriptor control_socket,
 				   size_t max_log_buffer,
-				   bool enable_journal)
+				   bool enable_journal) noexcept
 	:event_loop(_event_loop),
 	 workplace(_workplace), job(_job), plan(_plan),
 	 logger(*this),
@@ -77,13 +77,13 @@ WorkshopOperator::WorkshopOperator(EventLoop &_event_loop,
 		log.EnableJournal();
 }
 
-WorkshopOperator::~WorkshopOperator()
+WorkshopOperator::~WorkshopOperator() noexcept
 {
 	timeout_event.Cancel();
 }
 
 void
-WorkshopOperator::ScheduleTimeout()
+WorkshopOperator::ScheduleTimeout() noexcept
 {
 	const auto t = plan->parsed_timeout;
 	if (t > t.zero())
@@ -91,7 +91,7 @@ WorkshopOperator::ScheduleTimeout()
 }
 
 void
-WorkshopOperator::OnTimeout()
+WorkshopOperator::OnTimeout() noexcept
 {
 	logger(2, "timed out; sending SIGTERM");
 
@@ -101,7 +101,7 @@ WorkshopOperator::OnTimeout()
 }
 
 void
-WorkshopOperator::OnProgress(unsigned progress)
+WorkshopOperator::OnProgress(unsigned progress) noexcept
 {
 	if (exited)
 		/* after the child process has exited, it's pointless to
@@ -117,7 +117,7 @@ WorkshopOperator::OnProgress(unsigned progress)
 }
 
 void
-WorkshopOperator::SetOutput(UniqueFileDescriptor fd)
+WorkshopOperator::SetOutput(UniqueFileDescriptor fd) noexcept
 {
 	assert(fd.IsDefined());
 	assert(!progress_reader);
@@ -141,7 +141,7 @@ WorkshopOperator::CreateSyslogClient(const char *me,
 }
 
 void
-WorkshopOperator::Expand(std::list<std::string> &args) const
+WorkshopOperator::Expand(std::list<std::string> &args) const noexcept
 {
 	assert(!args.empty());
 

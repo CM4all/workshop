@@ -96,38 +96,38 @@ public:
 			 UniqueFileDescriptor stderr_read_pipe,
 			 UniqueSocketDescriptor control_socket,
 			 size_t max_log_buffer,
-			 bool enable_journal);
+			 bool enable_journal) noexcept;
 
 	WorkshopOperator(const WorkshopOperator &other) = delete;
 
-	~WorkshopOperator();
+	~WorkshopOperator() noexcept;
 
 	WorkshopOperator &operator=(const WorkshopOperator &other) = delete;
 
-	const Plan &GetPlan() const {
+	const Plan &GetPlan() const noexcept {
 		return *plan;
 	}
 
-	const std::string &GetPlanName() const {
+	const std::string &GetPlanName() const noexcept {
 		return job.plan_name;
 	}
 
-	void SetPid(int _pid) {
+	void SetPid(int _pid) noexcept {
 		pid = _pid;
 	}
 
-	void SetOutput(UniqueFileDescriptor fd);
+	void SetOutput(UniqueFileDescriptor fd) noexcept;
 
 	void CreateSyslogClient(const char *me,
 				int facility,
 				const char *host_and_port);
 
-	void Expand(std::list<std::string> &args) const;
+	void Expand(std::list<std::string> &args) const noexcept;
 
 private:
-	void ScheduleTimeout();
-	void OnTimeout();
-	void OnProgress(unsigned progress);
+	void ScheduleTimeout() noexcept;
+	void OnTimeout() noexcept;
+	void OnProgress(unsigned progress) noexcept;
 
 public:
 	/* virtual methods from ExitListener */
