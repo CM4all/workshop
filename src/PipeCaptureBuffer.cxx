@@ -34,7 +34,7 @@
 
 PipeCaptureBuffer::PipeCaptureBuffer(EventLoop &event_loop,
 				     UniqueFileDescriptor _fd,
-				     size_t capacity)
+				     size_t capacity) noexcept
 	:fd(std::move(_fd)),
 	 event(event_loop, BIND_THIS_METHOD(OnSocket),
 	       SocketDescriptor::FromFileDescriptor(fd)),
@@ -44,7 +44,7 @@ PipeCaptureBuffer::PipeCaptureBuffer(EventLoop &event_loop,
 }
 
 void
-PipeCaptureBuffer::OnSocket(unsigned)
+PipeCaptureBuffer::OnSocket(unsigned) noexcept
 {
 	auto w = buffer.Write();
 	if (!w.empty()) {

@@ -49,18 +49,18 @@ class PipeCaptureBuffer {
 public:
 	explicit PipeCaptureBuffer(EventLoop &event_loop,
 				   UniqueFileDescriptor _fd,
-				   size_t capacity);
+				   size_t capacity) noexcept;
 	virtual ~PipeCaptureBuffer() noexcept = default;
 
 	bool IsFull() const noexcept {
 		return buffer.IsFull();
 	}
 
-	WritableBuffer<char> GetData() {
+	WritableBuffer<char> GetData() noexcept {
 		return buffer.GetData();
 	}
 
-	char *NormalizeASCII() {
+	char *NormalizeASCII() noexcept {
 		return buffer.NormalizeASCII();
 	}
 
@@ -77,10 +77,10 @@ protected:
 	virtual void OnEnd() noexcept {};
 
 private:
-	void Close() {
+	void Close() noexcept {
 		event.Cancel();
 		fd.Close();
 	}
 
-	void OnSocket(unsigned events);
+	void OnSocket(unsigned events) noexcept;
 };
