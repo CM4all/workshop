@@ -47,13 +47,13 @@ CronOperator::CronOperator(CronQueue &_queue, CronWorkplace &_workplace,
 }
 
 EventLoop &
-CronOperator::GetEventLoop()
+CronOperator::GetEventLoop() noexcept
 {
 	return queue.GetEventLoop();
 }
 
 void
-CronOperator::Finish(int exit_status, const char *log)
+CronOperator::Finish(int exit_status, const char *log) noexcept
 {
 	queue.Finish(job);
 	queue.InsertResult(job, start_time.c_str(), exit_status, log);
@@ -92,7 +92,7 @@ CronOperator::Finish(int exit_status, const char *log)
 }
 
 void
-CronOperator::OnTimeout()
+CronOperator::OnTimeout() noexcept
 {
 	logger(2, "Timeout");
 

@@ -72,7 +72,7 @@ public:
 	CronOperator(const CronOperator &other) = delete;
 	CronOperator &operator=(const CronOperator &other) = delete;
 
-	EventLoop &GetEventLoop();
+	EventLoop &GetEventLoop() noexcept;
 
 	/**
 	 * Cancel job execution, e.g. by sending SIGTERM to the child
@@ -84,10 +84,10 @@ public:
 	virtual void Cancel() = 0;
 
 protected:
-	void Finish(int exit_status, const char *log);
+	void Finish(int exit_status, const char *log) noexcept;
 
 private:
-	void OnTimeout();
+	void OnTimeout() noexcept;
 
 	/* virtual methods from LoggerDomainFactory */
 	std::string MakeLoggerDomain() const noexcept;
