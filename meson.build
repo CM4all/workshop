@@ -2,7 +2,7 @@ project('CM4all Workshop', ['c', 'cpp'], version: '4.0.2',
   meson_version: '>= 0.47',
   default_options: [
     'c_std=c99',
-    'cpp_std=c++14'
+    'cpp_std=c++17'
   ],
 )
 

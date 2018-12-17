@@ -47,7 +47,7 @@ WorkshopPartition::WorkshopPartition(Instance &_instance,
 				     SpawnService &_spawn_service,
 				     const Config &root_config,
 				     const WorkshopPartitionConfig &config,
-				     BoundMethod<void()> _idle_callback)
+				     BoundMethod<void() noexcept> _idle_callback) noexcept
 	:logger("workshop"), // TODO: add partition name
 	 instance(_instance), library(_library),
 	 rate_limit_timer(instance.GetEventLoop(),

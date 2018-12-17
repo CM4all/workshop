@@ -63,7 +63,7 @@ class CronPartition final : ExitListener {
 
 	CronWorkplace workplace;
 
-	BoundMethod<void()> idle_callback;
+	BoundMethod<void() noexcept> idle_callback;
 
 public:
 	CronPartition(EventLoop &event_loop,
@@ -71,7 +71,7 @@ public:
 		      CurlGlobal &_curl,
 		      const Config &root_config,
 		      const CronPartitionConfig &config,
-		      BoundMethod<void()> _idle_callback);
+		      BoundMethod<void() noexcept> _idle_callback);
 
 	~CronPartition();
 

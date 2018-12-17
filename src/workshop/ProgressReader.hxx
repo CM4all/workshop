@@ -43,7 +43,7 @@ class ProgressReader {
 	StaticArray<char, 64> stdout_buffer;
 	unsigned last_progress = 0;
 
-	typedef BoundMethod<void(unsigned value)> Callback;
+	typedef BoundMethod<void(unsigned value) noexcept> Callback;
 	const Callback callback;
 
 public:

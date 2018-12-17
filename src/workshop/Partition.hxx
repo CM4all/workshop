@@ -65,7 +65,7 @@ class WorkshopPartition final : WorkshopQueueHandler, ExitListener {
 	WorkshopQueue queue;
 	WorkshopWorkplace workplace;
 
-	BoundMethod<void()> idle_callback;
+	BoundMethod<void() noexcept> idle_callback;
 
 	const size_t max_log;
 
@@ -75,7 +75,7 @@ public:
 			  SpawnService &_spawn_service,
 			  const Config &root_config,
 			  const WorkshopPartitionConfig &config,
-			  BoundMethod<void()> _idle_callback);
+			  BoundMethod<void() noexcept> _idle_callback) noexcept;
 
 	auto &GetEventLoop() const noexcept {
 		return queue.GetEventLoop();

@@ -41,7 +41,7 @@ CronPartition::CronPartition(EventLoop &event_loop,
 			     CurlGlobal &_curl,
 			     const Config &root_config,
 			     const CronPartitionConfig &config,
-			     BoundMethod<void()> _idle_callback)
+			     BoundMethod<void() noexcept> _idle_callback)
 	:name(config.name.empty() ? nullptr : config.name.c_str()),
 	 tag(config.tag.empty() ? nullptr : config.tag.c_str()),
 	 translation_socket(config.translation_socket.c_str()),

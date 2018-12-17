@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Max Kellermann <mk@cm4all.com>
 Build-Depends: debhelper (>= 10), dh-systemd,
  meson (>= 0.47),
- g++ (>= 4:4.9),
+ g++ (>= 4:6),
  libsystemd-dev, libdbus-1-dev,
  libcap-dev, libseccomp-dev,
  libboost-dev (>= 1.54),
