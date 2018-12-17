@@ -156,7 +156,7 @@ WorkshopOperator::Expand(std::list<std::string> &args) const
 }
 
 void
-WorkshopOperator::OnChildProcessExit(int status)
+WorkshopOperator::OnChildProcessExit(int status) noexcept
 {
 	exited = true;
 

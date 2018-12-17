@@ -131,7 +131,7 @@ private:
 
 public:
 	/* virtual methods from ExitListener */
-	void OnChildProcessExit(int status) override;
+	void OnChildProcessExit(int status) noexcept override;
 
 private:
 	/* virtual methods from LoggerDomainFactory */

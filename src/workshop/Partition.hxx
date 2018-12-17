@@ -125,7 +125,7 @@ private:
 			      std::shared_ptr<Plan> plan) noexcept override;
 
 	/* virtual methods from ExitListener */
-	void OnChildProcessExit(int status) override;
+	void OnChildProcessExit(int status) noexcept override;
 };
 
 #endif

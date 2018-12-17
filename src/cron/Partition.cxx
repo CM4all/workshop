@@ -98,7 +98,7 @@ CronPartition::OnJob(CronJob &&job)
 }
 
 void
-CronPartition::OnChildProcessExit(int)
+CronPartition::OnChildProcessExit(int) noexcept
 {
 	if (!workplace.IsFull())
 		queue.EnableFull();

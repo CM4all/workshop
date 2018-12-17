@@ -141,7 +141,7 @@ private:
 	}
 
 	/* virtual methods from ExitListener */
-	void OnChildProcessExit(int status) override {
+	void OnChildProcessExit(int status) noexcept override {
 		if (WIFSIGNALED(status)) {
 			fprintf(stderr, "died from signal %d%s",
 				WTERMSIG(status),

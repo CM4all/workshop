@@ -106,7 +106,7 @@ CronSpawnOperator::Cancel()
 }
 
 void
-CronSpawnOperator::OnChildProcessExit(int status)
+CronSpawnOperator::OnChildProcessExit(int status) noexcept
 {
 	int exit_status = WEXITSTATUS(status);
 

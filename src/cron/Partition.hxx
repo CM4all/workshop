@@ -101,7 +101,7 @@ private:
 	void OnJob(CronJob &&job);
 
 	/* virtual methods from ExitListener */
-	void OnChildProcessExit(int status) override;
+	void OnChildProcessExit(int status) noexcept override;
 };
 
 #endif

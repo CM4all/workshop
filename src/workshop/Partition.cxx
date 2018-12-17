@@ -182,7 +182,7 @@ WorkshopPartition::StartWorkshopJob(WorkshopJob &&job,
 }
 
 void
-WorkshopPartition::OnChildProcessExit(int)
+WorkshopPartition::OnChildProcessExit(int) noexcept
 {
 	UpdateLibraryAndFilter(false);
 
