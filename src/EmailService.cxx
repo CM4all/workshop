@@ -36,7 +36,7 @@
 
 #include <memory>
 
-EmailService::Job::Job(EmailService &_service, Email &&_email)
+EmailService::Job::Job(EmailService &_service, Email &&_email) noexcept
 	:service(_service),
 	 email(std::move(_email)),
 	 connect(service.event_loop, *this),
@@ -45,7 +45,7 @@ EmailService::Job::Job(EmailService &_service, Email &&_email)
 }
 
 void
-EmailService::Job::Start()
+EmailService::Job::Start() noexcept
 {
 	connect.Connect(service.address, std::chrono::seconds(20));
 }
@@ -87,19 +87,19 @@ EmailService::Job::OnQmqpClientError(std::exception_ptr error) noexcept
 	service.DeleteJob(*this);
 }
 
-EmailService::~EmailService()
+EmailService::~EmailService() noexcept
 {
 	CancelAll();
 }
 
 void
-EmailService::CancelAll()
+EmailService::CancelAll() noexcept
 {
 	jobs.clear_and_dispose(DeleteDisposer());
 }
 
 void
-EmailService::Submit(Email &&email)
+EmailService::Submit(Email &&email) noexcept
 {
 	auto *job = new Job(*this, std::move(email));
 	jobs.push_front(*job);
@@ -107,7 +107,7 @@ EmailService::Submit(Email &&email)
 }
 
 inline void
-EmailService::DeleteJob(Job &job)
+EmailService::DeleteJob(Job &job) noexcept
 {
 	jobs.erase_and_dispose(jobs.iterator_to(job), DeleteDisposer());
 }

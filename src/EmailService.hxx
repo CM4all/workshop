@@ -68,8 +68,8 @@ class EmailService {
 		QmqpClient client;
 
 	public:
-		Job(EmailService &_service, Email &&_email);
-		void Start();
+		Job(EmailService &_service, Email &&_email) noexcept;
+		void Start() noexcept;
 
 	private:
 		/* virtual methods from ConnectSocketHandler */
@@ -87,15 +87,15 @@ class EmailService {
 	JobList jobs;
 
 public:
-	EmailService(EventLoop &_event_loop, SocketAddress _address)
+	EmailService(EventLoop &_event_loop, SocketAddress _address) noexcept
 		:event_loop(_event_loop), address(_address) {}
 
-	~EmailService();
+	~EmailService() noexcept;
 
-	void CancelAll();
+	void CancelAll() noexcept;
 
-	void Submit(Email &&email);
+	void Submit(Email &&email) noexcept;
 
 private:
-	void DeleteJob(Job &job);
+	void DeleteJob(Job &job) noexcept;
 };
