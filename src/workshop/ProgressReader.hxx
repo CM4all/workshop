@@ -49,8 +49,8 @@ class ProgressReader {
 public:
 	ProgressReader(EventLoop &event_loop,
 		       UniqueFileDescriptor _fd,
-		       Callback _callback);
+		       Callback _callback) noexcept;
 
 private:
-	void PipeReady(unsigned);
+	void PipeReady(unsigned) noexcept;
 };

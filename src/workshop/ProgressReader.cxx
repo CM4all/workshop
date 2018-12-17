@@ -34,7 +34,7 @@
 
 ProgressReader::ProgressReader(EventLoop &event_loop,
 			       UniqueFileDescriptor _fd,
-			       Callback _callback)
+			       Callback _callback) noexcept
 	:fd(std::move(_fd)),
 	 event(event_loop, BIND_THIS_METHOD(PipeReady),
 	       SocketDescriptor::FromFileDescriptor(fd)),
@@ -44,7 +44,7 @@ ProgressReader::ProgressReader(EventLoop &event_loop,
 }
 
 void
-ProgressReader::PipeReady(unsigned)
+ProgressReader::PipeReady(unsigned) noexcept
 {
 	char buffer[512];
 	ssize_t nbytes, i;
