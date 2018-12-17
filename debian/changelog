@@ -1,6 +1,7 @@
 cm4all-workshop (4.0.2) unstable; urgency=low
 
   * cron: fix bogus error "malformed MOUNT_UTS_NAMESPACE packet"
+  * spawn: configurable resource limits CPUWeight, TasksMax, MemoryMax
 
  --   
 
