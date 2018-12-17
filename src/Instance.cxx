@@ -85,19 +85,17 @@ Instance::Instance(const Config &config)
 					      control_handler);
 }
 
-Instance::~Instance()
-{
-}
+Instance::~Instance() noexcept = default;
 
 void
-Instance::UpdateFilter(bool library_modified)
+Instance::UpdateFilter(bool library_modified) noexcept
 {
 	for (auto &i : partitions)
 		i.UpdateFilter(library_modified);
 }
 
 void
-Instance::UpdateLibraryAndFilter(bool force)
+Instance::UpdateLibraryAndFilter(bool force) noexcept
 {
 	assert(library);
 
@@ -107,7 +105,7 @@ Instance::UpdateLibraryAndFilter(bool force)
 }
 
 void
-Instance::OnExit()
+Instance::OnExit() noexcept
 {
 	if (should_exit)
 		return;
@@ -135,7 +133,7 @@ Instance::OnExit()
 }
 
 void
-Instance::OnReload(int)
+Instance::OnReload(int) noexcept
 {
 	logger(4, "reloading");
 
@@ -144,7 +142,7 @@ Instance::OnReload(int)
 }
 
 void
-Instance::OnPartitionIdle()
+Instance::OnPartitionIdle() noexcept
 {
 	if (should_exit)
 		/* defer the RemoveIdlePartitions() call to avoid deleting the
@@ -154,7 +152,7 @@ Instance::OnPartitionIdle()
 }
 
 void
-Instance::RemoveIdlePartitions()
+Instance::RemoveIdlePartitions() noexcept
 {
 	partitions.remove_if([](const WorkshopPartition &partition){
 			return partition.IsIdle();

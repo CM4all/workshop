@@ -82,13 +82,13 @@ class Instance final : SpawnHook, ControlHandler {
 public:
 	explicit Instance(const Config &config);
 
-	~Instance();
+	~Instance() noexcept;
 
-	EventLoop &GetEventLoop() {
+	EventLoop &GetEventLoop() noexcept {
 		return event_loop;
 	}
 
-	CurlGlobal &GetCurl() {
+	CurlGlobal &GetCurl() noexcept {
 		return *curl;
 	}
 
@@ -99,19 +99,19 @@ public:
 			i.Start();
 	}
 
-	void Dispatch() {
+	void Dispatch() noexcept {
 		event_loop.Dispatch();
 	}
 
-	void UpdateFilter(bool library_modified);
-	void UpdateLibraryAndFilter(bool force);
+	void UpdateFilter(bool library_modified) noexcept;
+	void UpdateLibraryAndFilter(bool force) noexcept;
 
 private:
-	void OnExit();
-	void OnReload(int);
+	void OnExit() noexcept;
+	void OnReload(int) noexcept;
 
-	void OnPartitionIdle();
-	void RemoveIdlePartitions();
+	void OnPartitionIdle() noexcept;
+	void RemoveIdlePartitions() noexcept;
 
 	/* virtual methods from SpawnHook */
 	bool Verify(const PreparedChildProcess &p) override;
