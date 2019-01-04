@@ -160,8 +160,14 @@ WorkshopOperator::OnChildProcessExit(int status)
 {
 	exited = true;
 
-	if (control_channel)
-		control_channel->ReceiveAll();
+	if (control_channel) {
+		try {
+			control_channel->ReceiveAll();
+		} catch (...) {
+			/* ignore control channel errors, the process
+			   is gone anyway */
+		}
+	}
 
 	log.Flush();
 

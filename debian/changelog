@@ -1,6 +1,6 @@
 cm4all-workshop (3.4) unstable; urgency=low
 
-  * 
+  * workshop: fix crash bug in control channel receiver
 
  --   
 
