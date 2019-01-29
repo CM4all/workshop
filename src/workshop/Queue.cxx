@@ -36,6 +36,7 @@
 #include "Plan.hxx"
 #include "pg/Array.hxx"
 #include "pg/Reflection.hxx"
+#include "event/Loop.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
 
@@ -223,7 +224,7 @@ WorkshopQueue::Run2()
 
 	/* check expired jobs from all other nodes except us */
 
-	const auto now = std::chrono::steady_clock::now();
+	const auto now = GetEventLoop().SteadyNow();
 	if (now >= next_expire_check) {
 		next_expire_check = now + std::chrono::seconds(60);
 
