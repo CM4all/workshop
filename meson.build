@@ -205,7 +205,10 @@ executable('cm4all-workshop',
     spawn_dep,
     pg_dep,
     curl_dep,
-  ])
+  ],
+  install: true,
+  install_dir: 'sbin',
+)
 
 executable('cm4all-workshop-migrate',
   'src/Migrate.cxx',
@@ -213,7 +216,9 @@ executable('cm4all-workshop-migrate',
   dependencies: [
     pg_dep,
     util_dep,
-  ])
+  ],
+  install: true,
+)
 
 executable(
   'cm4all-workshop-control',
@@ -223,7 +228,8 @@ executable(
     net_dep,
     io_dep,
     util_dep,
-  ]
+  ],
+  install: true,
 )
 
 executable(
@@ -237,6 +243,7 @@ executable(
     spawn_dep,
     event_net_dep,
   ],
+  install: true,
 )
 
 subdir('t')
