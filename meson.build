@@ -105,6 +105,7 @@ inc = include_directories(
 )
 
 libcommon_enable_DefaultFifoBuffer = false
+libcommon_enable_net_log = false
 
 subdir('libcommon/src/util')
 
@@ -135,6 +136,19 @@ system_dep = declare_dependency(
 
 subdir('libcommon/src/event')
 subdir('libcommon/src/net')
+
+net2 = static_library(
+  'net2',
+  'libcommon/src/net/log/Send.cxx',
+  include_directories: inc,
+)
+net_dep = declare_dependency(
+  link_with: net2,
+  dependencies: [
+    net_dep,
+  ],
+)
+
 subdir('libcommon/src/event/net')
 subdir('libcommon/src/curl')
 subdir('libcommon/src/pg')
