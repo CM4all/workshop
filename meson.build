@@ -109,15 +109,6 @@ libcommon_enable_net_log = false
 
 subdir('libcommon/src/util')
 subdir('libcommon/src/time')
-
-time2 = static_library('time2',
-  'src/time/Math.cxx',
-  include_directories: inc,
-  dependencies: [
-    time_dep,
-  ])
-time_dep = declare_dependency(link_with: time2)
-
 subdir('libcommon/src/io')
 subdir('libcommon/src/system')
 
