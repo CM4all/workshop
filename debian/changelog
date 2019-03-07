@@ -7,7 +7,7 @@ cm4all-workshop (4.1) unstable; urgency=low
   * debian: revoke world-read permissions from workshop.conf
   * debian: use debhelper 12
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Thu, 07 Mar 2019 09:37:29 +0100
 
 cm4all-workshop (4.0.3) unstable; urgency=low
 
