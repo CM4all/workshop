@@ -9,3 +9,9 @@ MESON_OPTIONS = \
 
 override_dh_auto_configure:
 	dh_auto_configure -- $(MESON_OPTIONS)
+
+# workshop.conf can contain database passwords, so it should not we
+# world-readable
+override_dh_fixperms:
+	dh_fixperms
+	chmod 600 debian/cm4all-workshop/etc/cm4all/workshop/workshop.conf
