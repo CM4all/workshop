@@ -36,7 +36,6 @@
 #include "workshop/MultiLibrary.hxx"
 #include "spawn/Client.hxx"
 #include "spawn/Glue.hxx"
-#include "curl/Global.hxx"
 
 #include <signal.h>
 
@@ -45,7 +44,7 @@ Instance::Instance(const Config &config)
 	 sighup_event(event_loop, SIGHUP, BIND_THIS_METHOD(OnReload)),
 	 defer_idle_check(event_loop, BIND_THIS_METHOD(RemoveIdlePartitions)),
 	 child_process_registry(event_loop),
-	 curl(new CurlGlobal(event_loop))
+	 curl(event_loop)
 {
 	/* the plan library must be initialized before starting the
 	   spawner, because it is required by Verify(), which runs inside
@@ -75,7 +74,7 @@ Instance::Instance(const Config &config)
 					 BIND_THIS_METHOD(OnPartitionIdle));
 
 	for (const auto &i : config.cron_partitions)
-		cron_partitions.emplace_front(event_loop, *spawn_service, *curl,
+		cron_partitions.emplace_front(event_loop, *spawn_service, curl,
 					      config, i,
 					      BIND_THIS_METHOD(OnPartitionIdle));
 

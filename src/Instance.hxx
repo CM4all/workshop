@@ -43,6 +43,7 @@
 #include "spawn/Registry.hxx"
 #include "spawn/Hook.hxx"
 #include "curl/Init.hxx"
+#include "curl/Global.hxx"
 #include "io/Logger.hxx"
 
 #include <forward_list>
@@ -69,7 +70,7 @@ class Instance final : SpawnHook, ControlHandler {
 	std::unique_ptr<SpawnServerClient> spawn_service;
 
 	ScopeCurlInit curl_init;
-	std::unique_ptr<CurlGlobal> curl;
+	CurlGlobal curl;
 
 	std::unique_ptr<MultiLibrary> library;
 
