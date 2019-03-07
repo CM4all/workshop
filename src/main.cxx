@@ -60,8 +60,6 @@ Run(const Config &config)
 
 	instance.Start();
 
-	LogConcat(1, nullptr, "cm4all-workshop v" VERSION);
-
 	instance.UpdateLibraryAndFilter(true);
 
 	/* tell systemd we're ready */
@@ -70,10 +68,6 @@ Run(const Config &config)
 	/* main loop */
 
 	instance.Dispatch();
-
-	/* cleanup */
-
-	LogConcat(5, nullptr, "cleaning up");
 }
 
 int
@@ -115,7 +109,6 @@ try {
 
 	Run(config);
 
-	LogConcat(4, nullptr, "exiting");
 	return EXIT_SUCCESS;
 } catch (...) {
 	PrintException(std::current_exception());
