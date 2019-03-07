@@ -91,7 +91,7 @@ PlanLoader::ParseLine(FileLineParser &line)
 			throw std::runtime_error("empty executable");
 
 		do {
-			plan.args.push_back(value);
+			plan.args.emplace_back(value);
 			value = line.NextRelaxedValue();
 		} while (value != nullptr);
 	} else if (strcmp(key, "control_channel") == 0) {
