@@ -88,10 +88,6 @@ public:
 		return event_loop;
 	}
 
-	CurlGlobal &GetCurl() noexcept {
-		return *curl;
-	}
-
 	void Start() {
 		for (auto &i : partitions)
 			i.Start();
