@@ -10,6 +10,10 @@ OPTIONS=""
 
 test -f /etc/default/cm4all-workshop && source /etc/default/cm4all-workshop
 
+if test -n "$DATABASE" -o "$CONCURRENCY" != "2"; then
+    echo "WARNING: the file /etc/default/cm4all-workshop is deprecated; please migrate to /etc/cm4all/workshop/workshop.conf" >&2
+fi
+
 export WORKSHOP_DATABASE=$DATABASE
 
 exec /usr/sbin/cm4all-workshop \
