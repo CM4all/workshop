@@ -135,7 +135,7 @@ ParseCommandLine(Config &config, int argc, char **argv)
 			exit(EXIT_SUCCESS);
 
 		case 'V':
-			printf("cm4all-workshop v%s\n", VERSION);
+			printf(PACKAGE " v%s\n", VERSION);
 			exit(EXIT_SUCCESS);
 
 		case 'v':
