@@ -15,7 +15,8 @@ Build-Depends: debhelper (>= 12~), dh-systemd,
  libgtest-dev,
  python3-sphinx
 Standards-Version: 3.9.3
-Vcs-git: git@dev.intern.cm-ag:max/workshop.git
+Vcs-Browser: https://github.com/CM4all/workshop
+Vcs-Git: git://github.com/CM4all/workshop
 
 Package: cm4all-workshop
 Architecture: any
