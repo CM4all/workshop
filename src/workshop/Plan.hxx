@@ -37,8 +37,6 @@
 #include "spawn/ResourceLimits.hxx"
 
 #include <string>
-#include <list>
-#include <forward_list>
 #include <vector>
 #include <chrono>
 
@@ -50,13 +48,13 @@ class Error;
 
 /** a plan describes how to perform a specific job */
 struct Plan {
-	std::list<std::string> args;
+	std::vector<std::string> args;
 
 	std::string timeout, chroot;
 
 	std::chrono::steady_clock::duration parsed_timeout{};
 
-	std::forward_list<RateLimit> rate_limits;
+	std::vector<RateLimit> rate_limits;
 
 	uid_t uid = 65534;
 	gid_t gid = 65534;
