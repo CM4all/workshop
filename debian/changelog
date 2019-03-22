@@ -1,6 +1,6 @@
 cm4all-workshop (4.2) unstable; urgency=low
 
-  * 
+  * debian/rules: use dh_sphinxdoc
 
  --   
 
