@@ -1,5 +1,6 @@
 cm4all-workshop (4.2) unstable; urgency=low
 
+  * merge release 3.5
   * fix assertion failure after database error
   * debian/rules: use dh_sphinxdoc
 
@@ -37,6 +38,12 @@ cm4all-workshop (4.0.1) unstable; urgency=low
   * workshop: add rate limits
 
  -- Max Kellermann <mk@cm4all.com>  Tue, 13 Nov 2018 13:24:25 +0100
+
+cm4all-workshop (3.5) unstable; urgency=low
+
+  * migrate: fix compatibility with older PostgreSQL versions
+
+ -- Max Kellermann <mk@cm4all.com>  Wed, 08 May 2019 17:56:28 +0200
 
 cm4all-workshop (3.4) unstable; urgency=low
 
