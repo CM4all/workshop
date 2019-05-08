@@ -122,15 +122,17 @@ MigrateCronDatabase(Pg::Connection &c, const char *schema)
 	(void)schema;
 
 	/* since Workshop 2.0.25 */
-	Execute(c, "ALTER TABLE cronjobs"
-		" ADD COLUMN IF NOT EXISTS delay interval SECOND(0) NULL,"
-		" ADD COLUMN IF NOT EXISTS delay_range interval SECOND(0) NULL");
+	CheckCreateColumn(c, schema, "cronjobs", "delay",
+			  "ALTER TABLE cronjobs"
+			  " ADD COLUMN delay interval SECOND(0) NULL,"
+			  " ADD COLUMN delay_range interval SECOND(0) NULL");
 
 	/* since Workshop 2.0.27: next_run can be 'infinity' for expired @once jobs */
 	Execute(c, "DROP INDEX IF EXISTS cronjobs_scheduled");
-	Execute(c, "CREATE INDEX IF NOT EXISTS cronjobs_scheduled2 ON cronjobs(next_run)"
-		" WHERE enabled AND node_name IS NULL"
-		" AND next_run IS NOT NULL AND next_run != 'infinity'");
+	CheckCreateIndex(c, schema, "cronjobs", "cronjobs_scheduled2",
+			 "CREATE INDEX cronjobs_scheduled2 ON cronjobs(next_run)"
+			 " WHERE enabled AND node_name IS NULL"
+			 " AND next_run IS NOT NULL AND next_run != 'infinity'");
 	Execute(c, "CREATE OR REPLACE RULE schedule_cronjob AS ON UPDATE TO cronjobs"
 		" WHERE NEW.enabled AND NEW.node_name IS NULL"
 		" AND NEW.next_run IS NOT NULL AND NEW.next_run != 'infinity' AND ("
@@ -183,8 +185,9 @@ MigrateCronDatabase(Pg::Connection &c, const char *schema)
 			" ALTER COLUMN finish_time TYPE timestamp with time zone");
 	}
 
-	Execute(c, "ALTER TABLE cronjobs"
-		" ADD COLUMN IF NOT EXISTS tz varchar(64) NULL");
+	CheckCreateColumn(c, schema, "cronjobs", "tz",
+			 "ALTER TABLE cronjobs"
+			 " ADD COLUMN tz varchar(64) NULL");
 }
 
 int
