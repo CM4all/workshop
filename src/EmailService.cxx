@@ -58,7 +58,7 @@ EmailService::Job::OnSocketConnectSuccess(UniqueSocketDescriptor &&_fd) noexcept
 	for (const auto &i : email.recipients)
 		client.AddRecipient({i.data(), i.length()});
 
-	const int fd = _fd.Steal();
+	const auto fd = _fd.Release().ToFileDescriptor();
 	client.Commit(fd, fd);
 }
 
