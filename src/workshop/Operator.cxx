@@ -231,14 +231,14 @@ WorkshopOperator::OnControlAgain(std::chrono::seconds d) noexcept
 void
 WorkshopOperator::OnControlTemporaryError(std::exception_ptr ep) noexcept
 {
-	logger(3, "error on control channel", ep);
+	logger(3, "error on control channel: ", ep);
 }
 
 void
 WorkshopOperator::OnControlPermanentError(std::exception_ptr ep) noexcept
 {
 	control_channel.reset();
-	logger(3, "error on control channel", ep);
+	logger(3, "error on control channel: ", ep);
 }
 
 void
