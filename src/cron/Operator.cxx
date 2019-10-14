@@ -102,5 +102,6 @@ CronOperator::OnTimeout() noexcept
 std::string
 CronOperator::MakeLoggerDomain() const noexcept
 {
-	return StringFormat<64>("cron job=%s", job.id.c_str()).c_str();
+	return StringFormat<64>("cron job=%s account=%s", job.id.c_str(),
+				job.account_id.c_str()).c_str();
 }
