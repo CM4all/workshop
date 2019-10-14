@@ -183,10 +183,12 @@ WorkshopOperator::OnChildProcessExit(int status) noexcept
 	else
 		logger(2, "exited with status ", exit_status);
 
+	const char *log_text = log.GetBuffer();
+
 	if (again >= std::chrono::seconds())
-		job.SetAgain(again, log.GetBuffer());
+		job.SetAgain(again, log_text);
 	else
-		job.SetDone(exit_status, log.GetBuffer());
+		job.SetDone(exit_status, log_text);
 
 	workplace.OnExit(this);
 }
