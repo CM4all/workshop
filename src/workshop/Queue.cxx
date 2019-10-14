@@ -317,7 +317,7 @@ WorkshopQueue::Run() noexcept
 	try {
 		Run2();
 	} catch (...) {
-		db.Error(std::current_exception());
+		db.CheckError(std::current_exception());
 	}
 
 	running = false;
@@ -359,7 +359,7 @@ WorkshopQueue::CheckRateLimit(const char *plan_name,
 	try {
 		return PgCheckRateLimit(db, plan_name, duration, max_count);
 	} catch (...) {
-		db.Error(std::current_exception());
+		db.CheckError(std::current_exception());
 		return {};
 	}
 }
@@ -378,7 +378,7 @@ WorkshopQueue::SetJobProgress(const WorkshopJob &job, unsigned progress,
 		pg_set_job_progress(db, job.id.c_str(), progress, timeout);
 		return true;
 	} catch (...) {
-		db.Error(std::current_exception());
+		db.CheckError(std::current_exception());
 		return false;
 	}
 }
@@ -405,7 +405,7 @@ WorkshopQueue::RollbackJob(const WorkshopJob &job) noexcept
 		pg_notify(db);
 		ScheduleCheckNotify();
 	} catch (...) {
-		db.Error(std::current_exception());
+		db.CheckError(std::current_exception());
 	}
 }
 
@@ -426,7 +426,7 @@ WorkshopQueue::AgainJob(const WorkshopJob &job,
 		pg_notify(db);
 		ScheduleCheckNotify();
 	} catch (...) {
-		db.Error(std::current_exception());
+		db.CheckError(std::current_exception());
 	}
 }
 
@@ -442,7 +442,7 @@ WorkshopQueue::SetJobDone(const WorkshopJob &job, int status,
 		pg_set_job_done(db, job.id.c_str(), status, log);
 		ScheduleCheckNotify();
 	} catch (...) {
-		db.Error(std::current_exception());
+		db.CheckError(std::current_exception());
 	}
 }
 

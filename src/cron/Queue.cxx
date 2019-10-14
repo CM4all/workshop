@@ -119,7 +119,7 @@ CronQueue::RunScheduler() noexcept
 
 		ScheduleCheckNotify();
 	} catch (...) {
-		db.Error(std::current_exception());
+		db.CheckError(std::current_exception());
 	}
 }
 
@@ -183,7 +183,7 @@ CronQueue::RunClaim() noexcept
 
 		CheckPending();
 	} catch (...) {
-		db.Error(std::current_exception());
+		db.CheckError(std::current_exception());
 		return;
 	}
 
@@ -216,7 +216,7 @@ try {
 
 	return true;
 } catch (...) {
-	db.Error(std::current_exception());
+	db.CheckError(std::current_exception());
 	return false;
 }
 
@@ -236,7 +236,7 @@ try {
 		return;
 	}
 } catch (...) {
-	db.Error(std::current_exception());
+	db.CheckError(std::current_exception());
 }
 
 void
@@ -253,7 +253,7 @@ try {
 			 exit_status,
 			 log);
 } catch (...) {
-	db.Error(std::current_exception());
+	db.CheckError(std::current_exception());
 }
 
 bool
