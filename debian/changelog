@@ -5,7 +5,7 @@ cm4all-workshop (4.3) unstable; urgency=low
   * workshop: show plan name in log messages
   * cron: show account id in log messages
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Mon, 14 Oct 2019 16:01:47 +0200
 
 cm4all-workshop (4.2) unstable; urgency=low
 
