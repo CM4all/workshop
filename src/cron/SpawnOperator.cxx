@@ -37,6 +37,7 @@
 #include "spawn/Prepared.hxx"
 #include "system/Error.hxx"
 #include "util/Exception.hxx"
+#include "util/UTF8.hxx"
 
 #include <unistd.h>
 #include <sys/wait.h>
@@ -123,6 +124,13 @@ CronSpawnOperator::OnChildProcessExit(int status) noexcept
 	const char *log = output_capture
 		? output_capture->NormalizeASCII()
 		: nullptr;
+
+	if (log != nullptr && !ValidateUTF8(log)) {
+		/* TODO: purge illegal UTF-8 sequences instead of
+		   replacing the log text? */
+		log = "Invalid UTF-8 output";
+		logger(2, log);
+	}
 
 	Finish(exit_status, log);
 	timeout_event.Cancel();

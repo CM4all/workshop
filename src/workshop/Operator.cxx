@@ -41,6 +41,7 @@
 #include "event/net/UdpListener.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringFormat.hxx"
+#include "util/UTF8.hxx"
 
 #include <map>
 
@@ -184,6 +185,12 @@ WorkshopOperator::OnChildProcessExit(int status) noexcept
 		logger(2, "exited with status ", exit_status);
 
 	const char *log_text = log.GetBuffer();
+	if (log_text != nullptr && !ValidateUTF8(log_text)) {
+		/* TODO: purge illegal UTF-8 sequences instead of
+		   replacing the log text? */
+		log_text = "Invalid UTF-8 output";
+		logger(2, log_text);
+	}
 
 	if (again >= std::chrono::seconds())
 		job.SetAgain(again, log_text);
