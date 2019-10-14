@@ -2,6 +2,7 @@ cm4all-workshop (4.3) unstable; urgency=low
 
   * don't reconnect to database after non-fatal error
   * reject invalid UTF-8 log output
+  * workshop: show plan name in log messages
 
  --   
 

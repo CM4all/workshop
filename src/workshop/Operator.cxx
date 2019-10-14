@@ -203,7 +203,8 @@ WorkshopOperator::OnChildProcessExit(int status) noexcept
 std::string
 WorkshopOperator::MakeLoggerDomain() const noexcept
 {
-	return StringFormat<64>("job %s pid=%d", job.id.c_str(), int(pid)).c_str();
+	return StringFormat<64>("job %s plan=%s pid=%d", job.id.c_str(),
+				job.plan_name.c_str(), (pid)).c_str();
 }
 
 void
