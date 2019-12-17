@@ -10,7 +10,7 @@ MESON_OPTIONS = \
 override_dh_auto_configure:
 	dh_auto_configure -- $(MESON_OPTIONS)
 
-# workshop.conf can contain database passwords, so it should not we
+# workshop.conf can contain database passwords, so it should not be
 # world-readable
 override_dh_fixperms:
 	dh_fixperms
