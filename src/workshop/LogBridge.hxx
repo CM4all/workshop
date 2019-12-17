@@ -35,6 +35,7 @@
 #include "event/PipeLineReader.hxx"
 
 #include <memory>
+#include <string>
 
 class SyslogClient;
 
