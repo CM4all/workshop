@@ -33,6 +33,7 @@
 #include "CronClient.hxx"
 #include "translation/Parser.hxx"
 #include "translation/Protocol.hxx"
+#include "translation/Response.hxx"
 #include "AllocatorPtr.hxx"
 #include "system/Error.hxx"
 #include "util/StaticFifoBuffer.hxx"
@@ -126,7 +127,8 @@ SendTranslateCron(int fd, const char *partition_name, const char *listener_tag,
 static TranslateResponse
 ReceiveResponse(AllocatorPtr alloc, int fd)
 {
-	TranslateParser parser(alloc);
+	TranslateResponse response;
+	TranslateParser parser(alloc, response);
 
 	StaticFifoBuffer<uint8_t, 8192> buffer;
 

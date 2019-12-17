@@ -76,6 +76,8 @@ The following settings are recognized:
     of all spawned processes.  Value is in bytes and may be postfixed
     with ``kB``, ``MB``, ``GB`` or ``TB``.  :program:`systemd` sets no
     limit by default.
+  * :envvar:`MemoryMin`, :envvar:`MemoryLow`, :envvar:`MemoryHigh`,
+    :envvar:`MemorySwapMax`: More memory limits.
   * :envvar:`IOWeight`: IO weight for all spawned processes combined
     (``1..10000``).  :program:`systemd`'s default is :samp:`100`.
 
