@@ -4,7 +4,7 @@ cm4all-workshop (4.4) unstable; urgency=low
   * queue: fix use-after-free bug after database disconnect
   * queue: schedule database reconnect after reconnect failure
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Tue, 17 Dec 2019 19:48:40 +0100
 
 cm4all-workshop (4.3) unstable; urgency=low
 
