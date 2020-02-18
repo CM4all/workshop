@@ -79,9 +79,7 @@ WorkshopWorkplace::GetFullPlanNames() const
 
 		++n;
 
-		assert(n <= plan.concurrency || list.find(plan_name) != list.end());
-
-		if (n == plan.concurrency)
+		if (n >= plan.concurrency)
 			list.emplace(plan_name);
 	}
 
