@@ -79,26 +79,6 @@ add_global_arguments(common_flags, language: 'cpp')
 add_global_arguments(compiler.get_supported_arguments(test_cxxflags), language: 'cpp')
 add_global_arguments(c_compiler.get_supported_arguments(test_cflags), language: 'c')
 
-gtest_compile_args = [
-  '-Wno-undef',
-]
-
-if compiler.get_id() == 'gcc'
-  gtest_compile_args += [
-    '-Wno-suggest-attribute=format',
-    '-Wno-suggest-attribute=noreturn',
-    '-Wno-missing-declarations',
-
-    # needed on Jessie for gtest's IsNullLiteralHelper
-    '-Wno-conversion-null',
-  ]
-endif
-
-gtest = declare_dependency(
-  dependencies: [dependency('gtest', main: true)],
-  compile_args: gtest_compile_args,
-)
-
 inc = include_directories(
   'src',
   'libcommon/src',
