@@ -166,7 +166,7 @@ ReceiveResponse(AllocatorPtr alloc, int fd)
 				if (!buffer.empty())
 					throw std::runtime_error("Excessive data from translation server");
 
-				return std::move(parser.GetResponse());
+				return response;
 			}
 		}
 	}
