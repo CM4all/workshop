@@ -54,9 +54,7 @@ CronSpawnOperator::CronSpawnOperator(CronQueue &_queue,
 {
 }
 
-CronSpawnOperator::~CronSpawnOperator()
-{
-}
+CronSpawnOperator::~CronSpawnOperator() noexcept = default;
 
 void
 CronSpawnOperator::Spawn(PreparedChildProcess &&p,

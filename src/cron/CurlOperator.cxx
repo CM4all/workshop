@@ -51,9 +51,7 @@ CronCurlOperator::CronCurlOperator(CronQueue &_queue,
 {
 }
 
-CronCurlOperator::~CronCurlOperator()
-{
-}
+CronCurlOperator::~CronCurlOperator() noexcept = default;
 
 void
 CronCurlOperator::Start()

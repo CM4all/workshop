@@ -59,7 +59,7 @@ public:
 			 std::string &&_start_time,
 			 CurlGlobal &_global,
 			 const char *url) noexcept;
-	~CronCurlOperator() override;
+	~CronCurlOperator() noexcept override;
 
 	void Start();
 

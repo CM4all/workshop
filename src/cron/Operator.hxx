@@ -67,7 +67,7 @@ public:
 	CronOperator(CronQueue &_queue, CronWorkplace &_workplace, CronJob &&_job,
 		     std::string &&_start_time) noexcept;
 
-	virtual ~CronOperator() {}
+	virtual ~CronOperator() noexcept = default;
 
 	CronOperator(const CronOperator &other) = delete;
 	CronOperator &operator=(const CronOperator &other) = delete;

@@ -60,7 +60,7 @@ public:
 			  SpawnService &_spawn_service,
 			  CronJob &&_job,
 			  std::string &&_start_time) noexcept;
-	~CronSpawnOperator() override;
+	~CronSpawnOperator() noexcept override;
 
 	void Spawn(PreparedChildProcess &&p, SocketDescriptor pond_socket);
 
