@@ -63,7 +63,7 @@ public:
 
 	void Start();
 
-	void Cancel() override;
+	void Cancel() noexcept override;
 
 private:
 	/* virtual methods from CurlResponseHandler */

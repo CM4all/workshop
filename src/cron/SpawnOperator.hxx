@@ -64,7 +64,7 @@ public:
 
 	void Spawn(PreparedChildProcess &&p, SocketDescriptor pond_socket);
 
-	void Cancel() override;
+	void Cancel() noexcept override;
 
 public:
 	/* virtual methods from ExitListener */

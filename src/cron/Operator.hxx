@@ -81,7 +81,7 @@ public:
 	 * if the child process continues to run (because it ignores the
 	 * kill signal).
 	 */
-	virtual void Cancel() = 0;
+	virtual void Cancel() noexcept = 0;
 
 protected:
 	void Finish(int exit_status, const char *log) noexcept;

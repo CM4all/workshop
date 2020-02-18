@@ -94,7 +94,7 @@ CronSpawnOperator::Spawn(PreparedChildProcess &&p,
 	}
 
 void
-CronSpawnOperator::Cancel()
+CronSpawnOperator::Cancel() noexcept
 {
 	output_capture.reset();
 	spawn_service.KillChildProcess(pid, SIGTERM);
