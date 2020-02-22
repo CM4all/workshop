@@ -3,7 +3,7 @@ cm4all-workshop (4.5) unstable; urgency=low
   * workshop: fix assertion failure
   * work around CURL bug causing crashes
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Sat, 22 Feb 2020 10:44:51 +0100
 
 cm4all-workshop (4.4) unstable; urgency=low
 
