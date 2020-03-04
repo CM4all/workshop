@@ -35,6 +35,7 @@ if debug
 endif
 
 test_common_flags = [
+  '-fno-omit-frame-pointer',
   '-fvisibility=hidden',
 ]
 
