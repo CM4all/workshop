@@ -35,6 +35,7 @@
 #include "net/SocketAddress.hxx"
 #include "util/IterableSplitString.hxx"
 #include "util/StringView.hxx"
+#include "version.h"
 
 #include <stdexcept>
 

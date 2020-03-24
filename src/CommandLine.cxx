@@ -33,6 +33,7 @@
 #include "CommandLine.hxx"
 #include "Config.hxx"
 #include "debug.h"
+#include "version.h"
 #include "io/Logger.hxx"
 
 #include <stdio.h>

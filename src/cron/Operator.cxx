@@ -34,6 +34,7 @@
 #include "Queue.hxx"
 #include "Workplace.hxx"
 #include "EmailService.hxx"
+#include "version.h"
 #include "util/StringFormat.hxx"
 
 CronOperator::CronOperator(CronQueue &_queue, CronWorkplace &_workplace,
