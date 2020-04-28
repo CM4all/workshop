@@ -56,14 +56,13 @@ Instance::Instance(const Config &config)
 		library->InsertPath("/usr/share/cm4all/workshop/plans");
 	}
 
-	auto *ss = StartSpawnServer(config.spawn, child_process_registry,
+	spawn_service = StartSpawnServer(config.spawn, child_process_registry,
 				    this,
 				    [this](){
 		event_loop.Reinit();
 		child_process_registry.~ChildProcessRegistry();
 		event_loop.~EventLoop();
 	});
-	spawn_service.reset(ss);
 
 	shutdown_listener.Enable();
 	sighup_event.Enable();
