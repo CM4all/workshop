@@ -3,7 +3,7 @@ cm4all-workshop (4.6) unstable; urgency=low
   * work around compiler bug causing crashes on database error
   * spawn: higher OOM score adjustment for jailed processes
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Tue, 28 Apr 2020 16:11:33 +0200
 
 cm4all-workshop (4.5) unstable; urgency=low
 
