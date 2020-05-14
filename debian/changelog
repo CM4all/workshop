@@ -1,6 +1,7 @@
 cm4all-workshop (4.7) unstable; urgency=low
 
   * workshop: higher log severity for plan loader errors
+  * workshop: fix rate limit bug which broke resuming after the interval expired
   * spawn: forbid the clone3() system call
 
  --   
