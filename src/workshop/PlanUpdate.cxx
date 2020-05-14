@@ -138,7 +138,7 @@ Library::LoadPlan(const char *name, PlanEntry &entry,
 	try {
 		entry.plan.reset(new Plan(LoadPlanFile(plan_path)));
 	} catch (...) {
-		logger(2, "failed to load plan '", name, "': ",
+		logger(1, "failed to load plan '", name, "': ",
 		       std::current_exception());
 		DisablePlan(entry, now, std::chrono::seconds(600));
 		return false;

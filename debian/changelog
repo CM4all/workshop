@@ -1,6 +1,6 @@
 cm4all-workshop (4.7) unstable; urgency=low
 
-  * 
+  * workshop: higher log severity for plan loader errors
 
  --   
 
