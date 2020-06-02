@@ -2,7 +2,8 @@ project('CM4all Workshop', ['c', 'cpp'], version: '4.8',
   meson_version: '>= 0.47',
   default_options: [
     'c_std=c99',
-    'cpp_std=c++17'
+    'cpp_std=c++17',
+    'warning_level=3',
   ],
 )
 
@@ -23,8 +24,6 @@ c_compiler = meson.get_compiler('c')
 
 common_flags = [
   '-D_GNU_SOURCE',
-  '-Wall',
-  '-Wextra',
   '-Wwrite-strings', '-Wcast-qual', '-Wcast-align', '-Wfloat-equal',
   '-Wshadow', '-Wpointer-arith', '-Wsign-compare',
   '-Wmissing-declarations', '-Wmissing-noreturn', '-Wmissing-format-attribute',
