@@ -82,7 +82,10 @@ CronSpawnOperator::Spawn(PreparedChildProcess &&p,
 		/* change to home directory (if one was set) */
 		p.chdir = p.ns.GetJailedHome();
 
-		pid = spawn_service.SpawnChildProcess(job.id.c_str(), std::move(p), this);
+		pid = spawn_service.SpawnChildProcess(job.id.c_str(),
+						      std::move(p),
+						      SocketDescriptor::Undefined(),
+						      this);
 
 		logger(2, "running");
 

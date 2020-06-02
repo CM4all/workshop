@@ -183,7 +183,8 @@ RunJobInstance::Start(RunJobCommandLine &&cmdline)
 								   BIND_THIS_METHOD(OnProgress));
 	}
 
-	const auto pid = SpawnChildProcess(std::move(p), {});
+	const auto pid = SpawnChildProcess(std::move(p), {},
+					   SocketDescriptor::Undefined());
 	child_process_registry.Add(pid, "job", this);
 	child_process_registry.SetVolatile();
 }
