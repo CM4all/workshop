@@ -64,8 +64,10 @@ The following settings are recognized:
 * :envvar:`spawn`: opens a block (with curly braces), which
   configures the process spawner:
 
-  * :envvar:`allow_user`: allow child processes to impersonate the
-    given user (not necessary for Workshop plans)
+  - ``allow_user``: allow child processes to impersonate the given
+    user.  This can be a user name (from :file:`/etc/passwd`), a
+    numeric user id or an open range (e.g. `2147483648-` which allows
+    all user ids from 2147483648 on).
   * :envvar:`allow_group`: allow child processes to impersonate the
     given group (not necessary for Workshop plans)
   * :envvar:`CPUWeight`: CPU weight for all spawned processes combined
