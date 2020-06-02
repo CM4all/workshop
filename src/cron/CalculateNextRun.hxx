@@ -33,7 +33,7 @@
 #ifndef WORKSHOP_CRON_CALCULATE_NEXT_RUN_HXX
 #define WORKSHOP_CRON_CALCULATE_NEXT_RUN_HXX
 
-namespace Pg { class Connection; };
+namespace Pg { class Connection; }
 class ChildLogger;
 
 /**
