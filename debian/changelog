@@ -3,7 +3,7 @@ cm4all-workshop (4.8) unstable; urgency=low
   * spawn: allow configuring an open-ended "allow_user" range
   * spawn: fix crash bug
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Wed, 03 Jun 2020 11:06:33 +0200
 
 cm4all-workshop (4.7) unstable; urgency=low
 
