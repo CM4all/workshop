@@ -93,6 +93,11 @@ MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
 					 : job.translate_param.c_str());
 
 		if (response.status != 0) {
+			if (response.message != nullptr)
+				throw FormatRuntimeError("Status %u from translation server: %s",
+							 response.status,
+							 response.message);
+
 			throw FormatRuntimeError("Status %u from translation server",
 						 response.status);
 		}

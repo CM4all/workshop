@@ -1,6 +1,7 @@
 cm4all-workshop (5.0.1) unstable; urgency=low
 
   * cron: translation packet STATUS indicates error
+  * cron: translation packet MESSAGE may contain error details
   * spawn: drop JailCGI/Refence support
   * spawn: allow multiple MOUNT_TMPFS
 
