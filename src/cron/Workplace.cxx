@@ -92,6 +92,11 @@ MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
 					 ? nullptr
 					 : job.translate_param.c_str());
 
+		if (response.status != 0) {
+			throw FormatRuntimeError("Status %u from translation server",
+						 response.status);
+		}
+
 		if (response.child_options.uid_gid.IsEmpty())
 			throw std::runtime_error("No UID_GID from translation server");
 
