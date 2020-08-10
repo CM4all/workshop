@@ -74,7 +74,7 @@ Library::UpdatePlans(std::chrono::steady_clock::time_point now)
 
 	bool modified = false;
 
-	for (const auto &entry : boost::filesystem::directory_iterator(path)) {
+	for (const auto &entry : std::filesystem::directory_iterator(path)) {
 		const auto name = entry.path().filename();
 		if (!is_valid_plan_name(name.c_str()))
 			continue;
@@ -117,12 +117,12 @@ Library::Update(std::chrono::steady_clock::time_point now, bool force) noexcept
 try {
 	/* check directory time stamp */
 
-	if (!boost::filesystem::is_directory(path)) {
+	if (!std::filesystem::is_directory(path)) {
 		logger(2, "not a directory: ", path.c_str());
 		return false;
 	}
 
-	const auto new_mtime = boost::filesystem::last_write_time(path);
+	const auto new_mtime = std::filesystem::last_write_time(path);
 
 	if (!force && new_mtime == mtime && now < next_plans_check)
 		return false;

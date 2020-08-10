@@ -78,11 +78,13 @@ Library::CheckPlanModified(const char *name, PlanEntry &entry,
 		return false;
 	}
 
-	if (st.st_mtime != entry.mtime) {
+	// TODO: use st.st_mtime instead of doing another stat()?
+	const auto new_mtime = std::filesystem::last_write_time(plan_path);
+	if (new_mtime != entry.mtime) {
 		entry.Enable();
 		entry.plan.reset();
 
-		entry.mtime = st.st_mtime;
+		entry.mtime = new_mtime;
 	}
 
 	if (entry.IsDisabled(now))
@@ -129,7 +131,6 @@ Library::LoadPlan(const char *name, PlanEntry &entry,
 		  std::chrono::steady_clock::time_point now) noexcept
 {
 	assert(entry.plan == nullptr);
-	assert(entry.mtime != 0);
 
 	logger(6, "loading plan '", name, "'");
 

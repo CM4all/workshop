@@ -186,7 +186,7 @@ PlanLoader::Finish()
 }
 
 Plan
-LoadPlanFile(const boost::filesystem::path &path)
+LoadPlanFile(const std::filesystem::path &path)
 {
 	PlanLoader loader;
 	CommentConfigParser comment_parser(loader);

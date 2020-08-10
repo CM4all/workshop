@@ -45,7 +45,7 @@ class MultiLibrary {
 	std::forward_list<Library> libraries;
 
 public:
-	void InsertPath(boost::filesystem::path &&_path) {
+	void InsertPath(std::filesystem::path &&_path) {
 		libraries.emplace_front(std::move(_path));
 	}
 

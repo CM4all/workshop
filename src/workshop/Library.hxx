@@ -35,9 +35,8 @@
 
 #include "io/Logger.hxx"
 
-#include <boost/filesystem.hpp>
-
 #include <chrono>
+#include <filesystem>
 #include <memory>
 #include <string>
 #include <map>
@@ -54,13 +53,13 @@ class Library {
 	struct PlanEntry {
 		std::shared_ptr<Plan> plan;
 		bool deinstalled = false;
-		time_t mtime = 0;
+		std::filesystem::file_time_type mtime{};
 		std::chrono::steady_clock::time_point disabled_until =
 			std::chrono::steady_clock::time_point::min();
 
 		void Clear() {
 			plan.reset();
-			mtime = 0;
+			mtime = {};
 		}
 
 		bool IsDisabled(std::chrono::steady_clock::time_point now) const {
@@ -83,23 +82,23 @@ class Library {
 
 	const LLogger logger;
 
-	const boost::filesystem::path path;
+	const std::filesystem::path path;
 
 	std::map<std::string, PlanEntry> plans;
 
 	std::chrono::steady_clock::time_point next_plans_check =
 		std::chrono::steady_clock::time_point::min();
 
-	time_t mtime = 0;
+	std::filesystem::file_time_type mtime{};
 
 public:
-	explicit Library(boost::filesystem::path &&_path) noexcept
+	explicit Library(std::filesystem::path &&_path) noexcept
 		:logger("library"),
 		 path(std::move(_path)) {}
 
 	Library(const Library &other) = delete;
 
-	const boost::filesystem::path &GetPath() const noexcept {
+	const std::filesystem::path &GetPath() const noexcept {
 		return path;
 	}
 
