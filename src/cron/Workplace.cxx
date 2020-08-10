@@ -84,36 +84,40 @@ MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
 
 	TranslateResponse response;
 	try {
-		response = TranslateCron(alloc, translation_socket,
-					 partition_name, listener_tag,
-					 job.account_id.c_str(),
-					 uri,
-					 job.translate_param.empty()
-					 ? nullptr
-					 : job.translate_param.c_str());
+		try {
+			response = TranslateCron(alloc, translation_socket,
+						 partition_name, listener_tag,
+						 job.account_id.c_str(),
+						 uri,
+						 job.translate_param.empty()
+						 ? nullptr
+						 : job.translate_param.c_str());
+		} catch (...) {
+			std::throw_with_nested(std::runtime_error("Translation failed"));
+		}
 
 		if (response.status != 0) {
 			if (response.message != nullptr)
-				throw FormatRuntimeError("Status %u: %s",
+				throw FormatRuntimeError("Status %u from translation server: %s",
 							 response.status,
 							 response.message);
 
-			throw FormatRuntimeError("Status %u",
+			throw FormatRuntimeError("Status %u from translation server",
 						 response.status);
 		}
 
 		if (response.child_options.uid_gid.IsEmpty())
-			throw std::runtime_error("No UID_GID");
+			throw std::runtime_error("No UID_GID from translation server");
 
 		if (uri != nullptr) {
 			if (response.execute == nullptr)
-				throw std::runtime_error("No EXECUTE");
+				throw std::runtime_error("No EXECUTE from translation server");
 
 			p.args.push_back(alloc.Dup(response.execute));
 
 			for (const char *arg : response.args) {
 				if (p.args.size() >= 4096)
-					throw std::runtime_error("Too many APPEND packets");
+					throw std::runtime_error("Too many APPEND packets from translation server");
 
 				p.args.push_back(alloc.Dup(arg));
 			}
@@ -123,7 +127,7 @@ MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
 	} catch (...) {
 		queue.Finish(job);
 		queue.InsertResult(job, start_time.c_str(), -1, GetFullMessage(std::current_exception()).c_str());
-		std::throw_with_nested(std::runtime_error("Translation failed"));
+		throw;
 	}
 
 	/* create operator object */
