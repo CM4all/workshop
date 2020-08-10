@@ -94,26 +94,26 @@ MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
 
 		if (response.status != 0) {
 			if (response.message != nullptr)
-				throw FormatRuntimeError("Status %u from translation server: %s",
+				throw FormatRuntimeError("Status %u: %s",
 							 response.status,
 							 response.message);
 
-			throw FormatRuntimeError("Status %u from translation server",
+			throw FormatRuntimeError("Status %u",
 						 response.status);
 		}
 
 		if (response.child_options.uid_gid.IsEmpty())
-			throw std::runtime_error("No UID_GID from translation server");
+			throw std::runtime_error("No UID_GID");
 
 		if (uri != nullptr) {
 			if (response.execute == nullptr)
-				throw std::runtime_error("No EXECUTE from translation server");
+				throw std::runtime_error("No EXECUTE");
 
 			p.args.push_back(alloc.Dup(response.execute));
 
 			for (const char *arg : response.args) {
 				if (p.args.size() >= 4096)
-					throw std::runtime_error("Too many APPEND packets from translation server");
+					throw std::runtime_error("Too many APPEND packets");
 
 				p.args.push_back(alloc.Dup(arg));
 			}
