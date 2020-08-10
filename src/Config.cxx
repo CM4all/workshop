@@ -43,6 +43,7 @@
 #include "util/StringParser.hxx"
 
 #include <string.h>
+#include <unistd.h> // for gethostname()
 
 Config::Config()
 {
