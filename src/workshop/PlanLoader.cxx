@@ -102,6 +102,12 @@ PlanLoader::ParseLine(FileLineParser &line)
 	} else if (strcmp(key, "timeout") == 0) {
 		plan.timeout = line.ExpectValueAndEnd();
 		plan.parsed_timeout = Pg::ParseIntervalS(plan.timeout.c_str());
+	} else if (strcmp(key, "reap_finished") == 0) {
+		plan.reap_finished = line.ExpectValueAndEnd();
+		auto d = Pg::ParseIntervalS(plan.reap_finished.c_str());
+		if (d.count() <= 0)
+			throw FormatRuntimeError("Not a positive duration: %s",
+						 plan.reap_finished.c_str());
 	} else if (strcmp(key, "chroot") == 0) {
 		const char *value = line.ExpectValueAndEnd();
 

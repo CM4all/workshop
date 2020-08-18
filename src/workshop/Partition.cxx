@@ -52,6 +52,7 @@ WorkshopPartition::WorkshopPartition(Instance &_instance,
 	 instance(_instance), library(_library),
 	 rate_limit_timer(instance.GetEventLoop(),
 			  BIND_THIS_METHOD(OnRateLimitTimer)),
+	 reap_timer(instance.GetEventLoop(), BIND_THIS_METHOD(OnReapTimer)),
 	 queue(logger, instance.GetEventLoop(), root_config.node_name.c_str(),
 	       config.database.c_str(), config.database_schema.c_str(),
 	       *this),
@@ -62,6 +63,7 @@ WorkshopPartition::WorkshopPartition(Instance &_instance,
 	 idle_callback(_idle_callback),
 	 max_log(config.max_log)
 {
+	ScheduleReapFinished();
 }
 
 void
@@ -99,6 +101,9 @@ WorkshopPartition::UpdateFilter(bool library_modified)
 	queue.SetFilter(Pg::EncodeArray(available_plans),
 			workplace.GetFullPlanNames(),
 			workplace.GetRunningPlanNames());
+
+	if (library_modified)
+		ScheduleReapFinished();
 }
 
 void
@@ -122,6 +127,44 @@ WorkshopPartition::StartJob(WorkshopJob &&job,
 	}
 
 	return true;
+}
+
+void
+WorkshopPartition::OnReapTimer() noexcept
+{
+	logger(6, "Reaping finished jobs");
+
+	try {
+		bool found = false;
+
+		library.VisitPlans(GetEventLoop().SteadyNow(), [this, &found](const std::string &name, const Plan &plan){
+			if (plan.reap_finished.empty())
+				return;
+
+			unsigned n = queue.ReapFinishedJobs(name.c_str(),
+							    plan.reap_finished.c_str());
+			if (n > 0) {
+				found = true;
+				logger(5, "Reaped ", n, " jobs of plan '",
+				       name.c_str(), "'");
+			}
+		});
+
+		ScheduleReapFinished();
+	} catch (...) {
+		logger(1, "Failed to reap finished jobs: ",
+		       std::current_exception());
+	}
+}
+
+void
+WorkshopPartition::ScheduleReapFinished() noexcept
+{
+	if (reap_timer.IsPending())
+		return;
+
+	// TODO: randomize?  per-plan timer?
+	reap_timer.Schedule(std::chrono::seconds(10));
 }
 
 std::shared_ptr<Plan>
@@ -184,6 +227,8 @@ WorkshopPartition::StartWorkshopJob(WorkshopJob &&job,
 void
 WorkshopPartition::OnChildProcessExit(int) noexcept
 {
+	ScheduleReapFinished();
+
 	UpdateLibraryAndFilter(false);
 
 	if (!workplace.IsFull())

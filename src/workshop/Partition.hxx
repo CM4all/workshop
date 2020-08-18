@@ -62,6 +62,11 @@ class WorkshopPartition final : WorkshopQueueHandler, ExitListener {
 	 */
 	TimerEvent rate_limit_timer;
 
+	/**
+	 * This timer reaps finished jobs.
+	 */
+	TimerEvent reap_timer;
+
 	WorkshopQueue queue;
 	WorkshopWorkplace workplace;
 
@@ -116,6 +121,9 @@ private:
 
 	bool StartJob(WorkshopJob &&job,
 		      std::shared_ptr<Plan> plan);
+
+	void OnReapTimer() noexcept;
+	void ScheduleReapFinished() noexcept;
 
 	/* virtual methods from WorkshopQueueHandler */
 	std::shared_ptr<Plan> GetWorkshopPlan(const char *name) noexcept override;

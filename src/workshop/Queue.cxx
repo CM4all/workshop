@@ -446,6 +446,13 @@ WorkshopQueue::SetJobDone(const WorkshopJob &job, int status,
 	}
 }
 
+unsigned
+WorkshopQueue::ReapFinishedJobs(const char *plan_name,
+				const char *reap_finished)
+{
+	return PgReapFinishedJobs(db, plan_name, reap_finished);
+}
+
 void
 WorkshopQueue::OnConnect()
 {

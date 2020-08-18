@@ -52,6 +52,8 @@ struct Plan {
 
 	std::string timeout, chroot;
 
+	std::string reap_finished;
+
 	std::chrono::steady_clock::duration parsed_timeout{};
 
 	std::vector<RateLimit> rate_limits;

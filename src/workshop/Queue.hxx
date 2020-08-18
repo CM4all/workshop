@@ -197,6 +197,9 @@ public:
 	void SetJobDone(const WorkshopJob &job, int status,
 			const char *log) noexcept;
 
+	unsigned ReapFinishedJobs(const char *plan_name,
+				  const char *reap_finished);
+
 private:
 	/**
 	 * Throws on error.

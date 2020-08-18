@@ -232,3 +232,17 @@ pg_set_job_done(Pg::Connection &db, const char *id, int status,
 	if (result.GetAffectedRows() < 1)
 		throw std::runtime_error("No matching job");
 }
+
+unsigned
+PgReapFinishedJobs(Pg::Connection &db, const char *plan_name,
+		   const char *reap_finished)
+{
+	const char *const sql = R"SQL(
+DELETE FROM jobs
+WHERE plan_name=$1
+ AND time_done IS NOT NULL AND time_done < now() - $2::interval
+)SQL";
+
+	return db.ExecuteParams(sql, plan_name, reap_finished)
+		.GetAffectedRows();
+}

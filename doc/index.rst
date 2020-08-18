@@ -236,6 +236,11 @@ The following options are available:
   released, to be executed by another node.  Example: :samp:`20
   minutes` or :samp:`2 hours`.
 
+* :samp:`reap_finished INTERVAL`: Finished jobs will be deleted by
+  Workshop after the specified duration (though there is no guarantee
+  when Workshop will actually do it).  By default, Workshop will never
+  delete finished jobs.  Example: :samp:`1 hour` or :samp:`2 days`.
+
 * :samp:`user USERNAME`: The name of the UNIX user which is
   impersonated by the process.  `root` is not allowed.
 

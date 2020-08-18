@@ -1,5 +1,6 @@
 cm4all-workshop (5.0.1) unstable; urgency=low
 
+  * workshop: add per-plan option to reap finished jobs
   * cron: translation packet STATUS indicates error
   * cron: translation packet MESSAGE may contain error details
   * cron: enable NO_NEW_PRIVS only if enabled by translation server
