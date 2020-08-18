@@ -62,6 +62,7 @@ struct RunJobCommandLine {
 	RunJobCommandLine() noexcept {
 		child.SetStdout(STDOUT_FILENO);
 		child.SetStderr(STDERR_FILENO);
+		child.no_new_privs = true;
 	}
 };
 

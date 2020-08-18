@@ -140,6 +140,7 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 	p.sched_idle = plan->sched_idle;
 	p.ioprio_idle = plan->ioprio_idle;
 	p.ns.enable_network = plan->private_network;
+	p.no_new_privs = true;
 
 	/* use a per-plan cgroup */
 
