@@ -76,10 +76,10 @@ void
 WorkshopPartition::UpdateFilter(bool library_modified)
 {
 	std::set<std::string> available_plans;
-	library.VisitPlans(GetEventLoop().SteadyNow(),
-			   [&available_plans](const std::string &name, const Plan &){
-				   available_plans.emplace(name);
-			   });
+	library.VisitAvailable(GetEventLoop().SteadyNow(),
+			       [&available_plans](const std::string &name, const Plan &){
+				       available_plans.emplace(name);
+			       });
 
 	if (library_modified)
 		rate_limited_plans.clear();
@@ -137,7 +137,7 @@ WorkshopPartition::OnReapTimer() noexcept
 	try {
 		bool found = false;
 
-		library.VisitPlans(GetEventLoop().SteadyNow(), [this, &found](const std::string &name, const Plan &plan){
+		library.VisitAvailable(GetEventLoop().SteadyNow(), [this, &found](const std::string &name, const Plan &plan){
 			if (plan.reap_finished.empty())
 				return;
 

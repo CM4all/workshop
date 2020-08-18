@@ -112,9 +112,12 @@ public:
 	 */
 	bool Update(std::chrono::steady_clock::time_point now, bool force) noexcept;
 
+	/**
+	 * Visit all plans that are available.
+	 */
 	template<typename F>
-	void VisitPlans(std::chrono::steady_clock::time_point now,
-			F &&f) const noexcept {
+	void VisitAvailable(std::chrono::steady_clock::time_point now,
+			    F &&f) const noexcept {
 		for (const auto &i : plans) {
 			const std::string &name = i.first;
 			const PlanEntry &entry = i.second;

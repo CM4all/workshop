@@ -58,9 +58,10 @@ public:
 	}
 
 	template<typename F>
-	void VisitPlans(std::chrono::steady_clock::time_point now, F &&f) const {
+	void VisitAvailable(std::chrono::steady_clock::time_point now,
+			    F &&f) const {
 		for (const auto &i : libraries)
-			i.VisitPlans(now, f);
+			i.VisitAvailable(now, f);
 	}
 
 	std::shared_ptr<Plan> Get(std::chrono::steady_clock::time_point now,
