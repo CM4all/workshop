@@ -150,7 +150,10 @@ WorkshopPartition::OnReapTimer() noexcept
 			}
 		});
 
-		ScheduleReapFinished();
+		if (found)
+			/* keep on watching for jobs to be reaped as
+			   long as we're busy */
+			ScheduleReapFinished();
 	} catch (...) {
 		logger(1, "Failed to reap finished jobs: ",
 		       std::current_exception());

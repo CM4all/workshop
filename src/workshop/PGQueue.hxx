@@ -135,8 +135,9 @@ pg_again_job(Pg::Connection &db, const char *id, const char *log,
 /**
  * Throws on error.
  */
-void pg_set_job_done(Pg::Connection &db, const char *id, int status,
-                     const char *log);
+void
+pg_set_job_done(Pg::Connection &db, const char *id, int status,
+		const char *log);
 
 unsigned
 PgReapFinishedJobs(Pg::Connection &db, const char *plan_name,
