@@ -2,7 +2,7 @@ cm4all-workshop (5.0.2) unstable; urgency=low
 
   * spawn: fix seccomp regression
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Wed, 21 Oct 2020 11:55:12 +0200
 
 cm4all-workshop (5.0.1) unstable; urgency=low
 
