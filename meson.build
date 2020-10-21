@@ -12,12 +12,7 @@ version_h.set_quoted('PACKAGE', meson.project_name())
 version_h.set_quoted('VERSION', meson.project_version())
 configure_file(output: 'version.h', configuration: version_h)
 
-# TODO: use get_option('b_ndebug'), but that doesn't work with Meson 0.37.1
-if get_option('buildtype') == 'debug'
-  debug = true
-else
-  debug = false
-endif
+debug = get_option('b_ndebug') != 'true'
 
 compiler = meson.get_compiler('cpp')
 c_compiler = meson.get_compiler('c')
