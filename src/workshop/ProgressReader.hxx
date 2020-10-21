@@ -33,12 +33,12 @@
 #pragma once
 
 #include "event/SocketEvent.hxx"
-#include "io/UniqueFileDescriptor.hxx"
 #include "util/BindMethod.hxx"
 #include "util/StaticArray.hxx"
 
+class UniqueFileDescriptor;
+
 class ProgressReader {
-	UniqueFileDescriptor fd;
 	SocketEvent event;
 	StaticArray<char, 64> stdout_buffer;
 	unsigned last_progress = 0;
@@ -50,6 +50,10 @@ public:
 	ProgressReader(EventLoop &event_loop,
 		       UniqueFileDescriptor _fd,
 		       Callback _callback) noexcept;
+
+	~ProgressReader() noexcept {
+		event.Close();
+	}
 
 private:
 	void PipeReady(unsigned) noexcept;

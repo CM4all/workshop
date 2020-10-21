@@ -36,6 +36,7 @@
 #include "spawn/Interface.hxx"
 #include "spawn/Prepared.hxx"
 #include "system/Error.hxx"
+#include "io/UniqueFileDescriptor.hxx"
 #include "util/Exception.hxx"
 #include "util/UTF8.hxx"
 

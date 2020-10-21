@@ -31,13 +31,13 @@
  */
 
 #include "PipeCaptureBuffer.hxx"
+#include "io/UniqueFileDescriptor.hxx"
 
 PipeCaptureBuffer::PipeCaptureBuffer(EventLoop &event_loop,
 				     UniqueFileDescriptor _fd,
 				     size_t capacity) noexcept
-	:fd(std::move(_fd)),
-	 event(event_loop, BIND_THIS_METHOD(OnSocket),
-	       SocketDescriptor::FromFileDescriptor(fd)),
+	:event(event_loop, BIND_THIS_METHOD(OnSocket),
+	       SocketDescriptor::FromFileDescriptor(_fd.Release())),
 	 buffer(capacity)
 {
 	event.ScheduleRead();
@@ -46,6 +46,8 @@ PipeCaptureBuffer::PipeCaptureBuffer(EventLoop &event_loop,
 void
 PipeCaptureBuffer::OnSocket(unsigned) noexcept
 {
+	FileDescriptor fd(event.GetSocket().ToFileDescriptor());
+
 	auto w = buffer.Write();
 	if (!w.empty()) {
 		ssize_t nbytes = fd.Read(w.data, w.size);

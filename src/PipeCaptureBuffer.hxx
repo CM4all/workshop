@@ -33,15 +33,15 @@
 #pragma once
 
 #include "CaptureBuffer.hxx"
-#include "io/UniqueFileDescriptor.hxx"
 #include "event/SocketEvent.hxx"
+
+class UniqueFileDescriptor;
 
 /**
  * Capture up to 8 kB of data from a pipe asynchronously.  This is
  * useful to capture the output of a child process.
  */
 class PipeCaptureBuffer {
-	UniqueFileDescriptor fd;
 	SocketEvent event;
 
 	CaptureBuffer buffer;
@@ -50,7 +50,9 @@ public:
 	explicit PipeCaptureBuffer(EventLoop &event_loop,
 				   UniqueFileDescriptor _fd,
 				   size_t capacity) noexcept;
-	virtual ~PipeCaptureBuffer() noexcept = default;
+	virtual ~PipeCaptureBuffer() noexcept {
+		Close();
+	}
 
 	bool IsFull() const noexcept {
 		return buffer.IsFull();
@@ -78,8 +80,7 @@ protected:
 
 private:
 	void Close() noexcept {
-		event.Cancel();
-		fd.Close();
+		event.Close();
 	}
 
 	void OnSocket(unsigned events) noexcept;

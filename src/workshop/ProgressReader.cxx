@@ -31,13 +31,13 @@
  */
 
 #include "ProgressReader.hxx"
+#include "io/UniqueFileDescriptor.hxx"
 
 ProgressReader::ProgressReader(EventLoop &event_loop,
 			       UniqueFileDescriptor _fd,
 			       Callback _callback) noexcept
-	:fd(std::move(_fd)),
-	 event(event_loop, BIND_THIS_METHOD(PipeReady),
-	       SocketDescriptor::FromFileDescriptor(fd)),
+	:event(event_loop, BIND_THIS_METHOD(PipeReady),
+	       SocketDescriptor::FromFileDescriptor(_fd.Release())),
 	 callback(_callback)
 {
 	event.ScheduleRead();
@@ -50,6 +50,7 @@ ProgressReader::PipeReady(unsigned) noexcept
 	ssize_t nbytes, i;
 	unsigned new_progress = 0, p;
 
+	FileDescriptor fd(event.GetSocket().ToFileDescriptor());
 	nbytes = fd.Read(buffer, sizeof(buffer));
 	if (nbytes <= 0) {
 		event.Cancel();
