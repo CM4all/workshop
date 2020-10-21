@@ -39,7 +39,7 @@
 
 class SyslogClient;
 
-class LogBridge {
+class LogBridge final : PipeLineReaderHandler {
 	const std::string plan_name, job_id;
 
 	PipeLineReader reader;
@@ -78,5 +78,6 @@ public:
 	}
 
 private:
-	bool OnStderrLine(WritableBuffer<char> line) noexcept;
+	bool OnPipeLine(WritableBuffer<char> line) noexcept override;
+	void OnPipeEnd() noexcept override {}
 };

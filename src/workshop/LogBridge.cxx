@@ -40,8 +40,7 @@ LogBridge::LogBridge(EventLoop &event_loop,
 		     const char *_plan_name, const char *_job_id,
 		     UniqueFileDescriptor read_pipe_fd)
 	:plan_name(_plan_name), job_id(_job_id),
-	 reader(event_loop, std::move(read_pipe_fd),
-		BIND_THIS_METHOD(OnStderrLine))
+	 reader(event_loop, std::move(read_pipe_fd), *this)
 {
 }
 
@@ -60,11 +59,8 @@ LogBridge::CreateSyslog(const char *host_and_port,
 }
 
 bool
-LogBridge::OnStderrLine(WritableBuffer<char> line) noexcept
+LogBridge::OnPipeLine(WritableBuffer<char> line) noexcept
 {
-	if (line.IsNull())
-		return false;
-
 	// TODO: strip non-ASCII characters
 
 	if (max_buffer_size > 0 && buffer.length() < max_buffer_size - 1) {
