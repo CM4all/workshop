@@ -1,6 +1,6 @@
 cm4all-workshop (5.0.3) unstable; urgency=low
 
-  * 
+  * spawn: fix stack overflow (disable ld.so lazy binding)
 
  --   
 
