@@ -34,6 +34,7 @@
 #include "net/RConnectSocket.hxx"
 #include "net/AddressInfo.hxx"
 #include "system/Error.hxx"
+#include "io/Iovec.hxx"
 #include "util/StringView.hxx"
 
 #include <assert.h>
@@ -56,27 +57,9 @@ SyslogClient::SyslogClient(const char *host_and_port,
 }
 
 static constexpr struct iovec
-MakeIovec(const void *data, size_t size)
+MakeIovec(const std::string_view value) noexcept
 {
-	return { const_cast<void *>(data), size };
-}
-
-static constexpr struct iovec
-MakeIovec(StringView value)
-{
-	return MakeIovec(value.data, value.size);
-}
-
-static struct iovec
-MakeIovec(const char *value)
-{
-	return MakeIovec(value, strlen(value));
-}
-
-static struct iovec
-MakeIovec(const std::string &value)
-{
-	return MakeIovec(value.data(), value.length());
+	return MakeIovec(StringView(value));
 }
 
 int
@@ -87,13 +70,13 @@ SyslogClient::Log(int priority, StringView msg)
 	static const char colon[] = ": ";
 	char code[16];
 	struct iovec iovec[] = {
-		MakeIovec(code, 0),
+		MakeIovec(ConstBuffer<char>(code, std::size_t(0))),
 		MakeIovec(me),
-		MakeIovec(&space, sizeof(space)),
+		MakeIovecT(space),
 		MakeIovec(ident),
 		MakeIovec(colon),
 		MakeIovec(msg),
-		MakeIovec(&newline, 1),
+		MakeIovecT(newline),
 	};
 	ssize_t nbytes;
 
