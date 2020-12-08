@@ -86,7 +86,7 @@ SyslogClient::Log(int priority, StringView msg)
 	snprintf(code, sizeof(code), "<%d>", facility * 8 + priority);
 	iovec[0].iov_len = strlen(code);
 
-	nbytes = writev(fd.Get(), iovec, sizeof(iovec) / sizeof(iovec[0]));
+	nbytes = writev(fd.Get(), iovec, std::size(iovec));
 	if (nbytes < 0)
 		return errno;
 
