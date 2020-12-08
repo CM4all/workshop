@@ -108,10 +108,7 @@ gcc_pure
 static StringView
 FirstLine(StringView s) noexcept
 {
-	const char *newline = s.Find('\n');
-	if (newline != nullptr)
-		s.SetEnd(newline);
-	return s;
+	return s.Split('\n').first;
 }
 
 gcc_pure
