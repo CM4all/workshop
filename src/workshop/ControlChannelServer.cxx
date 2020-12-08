@@ -119,8 +119,8 @@ static std::vector<std::string>
 SplitArgs(StringView s) noexcept
 {
 	std::vector<std::string> result;
-	for (StringView i : IterableSplitString(s, ' '))
-		result.emplace_back(i.data, i.size);
+	for (const std::string_view i : IterableSplitString(s, ' '))
+		result.emplace_back(i);
 	return result;
 }
 
