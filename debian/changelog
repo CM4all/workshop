@@ -2,7 +2,7 @@ cm4all-workshop (5.0.4) unstable; urgency=low
 
   * spawn: support MOUNT_EMPTY
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Tue, 08 Dec 2020 21:57:51 +0100
 
 cm4all-workshop (5.0.3) unstable; urgency=low
 
