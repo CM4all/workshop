@@ -1,0 +1,10 @@
+#! /bin/sh -e
+# Author: Max Kellermann <mk@cm4all.com>
+
+if [ "$1" = "triggered" ]; then
+    if systemctl --quiet is-active cm4all-workshop; then
+        systemctl reload cm4all-workshop
+    fi
+fi
+
+#DEBHELPER#

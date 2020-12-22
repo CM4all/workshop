@@ -295,6 +295,12 @@ In the :samp:`exec` line, the following variables in the form
 * :envvar:`JOB`: Id of the job database record.
 * :envvar:`PLAN`: Plan name.
 
+Debian packages which install Workshop plans shall trigger
+``cm4all-workshop-reload-plans``.  This can be done by writing the
+following line to the file :file:`debian/PACKAGENAME.triggers`::
+
+  activate cm4all-workshop-reload-plans
+
 Queueing a job
 ^^^^^^^^^^^^^^
 
