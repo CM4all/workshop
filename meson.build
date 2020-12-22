@@ -28,10 +28,6 @@ common_flags = [
   '-Wvla',
 ]
 
-if debug
-  common_flags += ['-DPOISON']
-endif
-
 test_common_flags = [
   '-fno-omit-frame-pointer',
   '-fvisibility=hidden',
