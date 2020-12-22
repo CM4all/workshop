@@ -2,10 +2,6 @@
 # Author: Max Kellermann <mk@cm4all.com>
 
 if [ "$1" = "configure" ]; then
-    if [ -f /etc/default/cm4all-workshop ]; then
-        chmod 0600 /etc/default/cm4all-workshop
-    fi
-
     if ! getent passwd cm4all-workshop >/dev/null; then
 	adduser --quiet --system --no-create-home \
             --home /var/lib/cm4all/workshop \
