@@ -34,6 +34,7 @@
 
 #include "PipeCaptureBuffer.hxx"
 #include "net/SocketDescriptor.hxx"
+#include "io/UniqueFileDescriptor.hxx"
 
 #include <string>
 
