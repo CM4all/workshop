@@ -11,6 +11,23 @@ KillMode=process
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=on-failure
 
+User=cm4all-workshop
+
+# Allow reading protected configuration files (with database
+# passwords).
+AmbientCapabilities=CAP_DAC_READ_SEARCH
+
+# Allow the spawner to write cgroup files
+AmbientCapabilities=CAP_DAC_OVERRIDE
+
+# Needed by the spawner
+AmbientCapabilities=CAP_SETUID CAP_SETGID CAP_KILL
+#TODO: check CAP_SYS_NICE CAP_SYS_PTRACE CAP_SYS_RESOURCE
+
+# The spawner needs this sledge hammer for setns() (and for other
+# things that could probably be fixed)
+AmbientCapabilities=CAP_SYS_ADMIN
+
 CPUSchedulingPolicy=batch
 RestrictRealtime=yes
 TimerSlackNSec=1s

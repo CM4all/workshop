@@ -19,6 +19,7 @@ Vcs-Git: git://github.com/CM4all/workshop
 Package: cm4all-workshop
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends},
+ policykit-1,
  systemd-sysv
 Recommends: cm4all-spawn (>= 0.5)
 Suggests: cm4all-workshop-database, cm4all-workshop-migrate

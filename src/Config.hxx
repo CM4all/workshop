@@ -42,8 +42,6 @@
 #include <forward_list>
 
 struct Config {
-	UidGid user;
-
 	std::string node_name;
 	unsigned concurrency = 2;
 

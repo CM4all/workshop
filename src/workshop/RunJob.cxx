@@ -39,6 +39,7 @@
 #include "spawn/Prepared.hxx"
 #include "spawn/Registry.hxx"
 #include "event/Loop.hxx"
+#include "system/CapabilityGlue.hxx"
 #include "system/Error.hxx"
 #include "system/SetupProcess.hxx"
 #include "util/ConstBuffer.hxx"
@@ -185,6 +186,7 @@ RunJobInstance::Start(RunJobCommandLine &&cmdline)
 	}
 
 	const auto pid = SpawnChildProcess(std::move(p), {},
+					   IsSysAdmin(),
 					   SocketDescriptor::Undefined());
 	child_process_registry.Add(pid, "job", this);
 	child_process_registry.SetVolatile();

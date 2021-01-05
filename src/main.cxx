@@ -36,6 +36,8 @@
 #include "Config.hxx"
 #include "system/SetupProcess.hxx"
 #include "system/ProcessName.hxx"
+#include "system/CapabilityGlue.hxx"
+#include "system/CapabilityState.hxx"
 #include "util/PrintException.hxx"
 
 #include <systemd/sd-daemon.h>
@@ -56,7 +58,9 @@ Run(const Config &config)
 
 	Instance instance(config);
 
-	config.user.Apply();
+	/* now that the spawner has been launched by the Instance
+	   constructor, drop all capabilities, we don't need any */
+	CapabilityState::Empty().Install();
 
 	instance.Start();
 
@@ -73,11 +77,13 @@ Run(const Config &config)
 int
 main(int argc, char **argv)
 try {
+	if (geteuid() == 0)
+		throw "Refusing to run as root";
+
 	InitProcessName(argc, argv);
 
 #ifndef NDEBUG
-	if (geteuid() != 0)
-		debug_mode = true;
+	debug_mode = !IsSysAdmin();
 #endif
 
 	Config config;

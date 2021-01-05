@@ -17,7 +17,6 @@ fi
 export WORKSHOP_DATABASE=$DATABASE
 
 exec /usr/sbin/cm4all-workshop \
-     --user cm4all-workshop \
      --name "$NODE_NAME" \
      --concurrency "$CONCURRENCY" \
      $OPTIONS

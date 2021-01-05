@@ -57,9 +57,6 @@ Config::Config()
 void
 Config::Check()
 {
-	if (!debug_mode && user.IsEmpty())
-		throw std::runtime_error("no user name specified (-u)");
-
 	if (node_name.empty()) {
 		char name[256];
 		if (gethostname(name, sizeof(name)) < 0)

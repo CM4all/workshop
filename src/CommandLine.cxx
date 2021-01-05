@@ -68,10 +68,6 @@ static void usage(void) {
 	     " --concurrency NUM\n"
 #endif
 	     " -c NUM         set the maximum number of concurrent operators (default: 2)\n"
-#ifdef __GLIBC__
-	     " --user name\n"
-#endif
-	     " -u name        switch to another user id\n"
 	     "\n"
 	     );
 }
@@ -111,7 +107,6 @@ ParseCommandLine(Config &config, int argc, char **argv)
 		{"quiet", 0, 0, 'q'},
 		{"name", 1, 0, 'N'},
 		{"concurrency", 1, 0, 'c'},
-		{"user", 1, 0, 'u'},
 		{0,0,0,0}
 	};
 #endif
@@ -122,10 +117,10 @@ ParseCommandLine(Config &config, int argc, char **argv)
 #ifdef __GLIBC__
 		int option_index = 0;
 
-		ret = getopt_long(argc, argv, "hVvqN:c:u:",
+		ret = getopt_long(argc, argv, "hVvqN:c:",
 				  long_options, &option_index);
 #else
-		ret = getopt(argc, argv, "hVvqN:c:u:");
+		ret = getopt(argc, argv, "hVvqN:c:");
 #endif
 		if (ret == -1)
 			break;
@@ -155,15 +150,6 @@ ParseCommandLine(Config &config, int argc, char **argv)
 			config.concurrency = (unsigned)strtoul(optarg, nullptr, 10);
 			if (config.concurrency == 0)
 				arg_error(argv[0], "invalid concurrency specification");
-			break;
-
-		case 'u':
-			if (debug_mode)
-				arg_error(argv[0], "cannot specify a user in debug mode");
-
-			config.user.Lookup(optarg);
-			if (!config.user.IsComplete())
-				arg_error(argv[0], "refusing to run as root");
 			break;
 
 		case '?':
