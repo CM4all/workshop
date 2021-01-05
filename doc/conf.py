@@ -50,7 +50,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Workshop'
-copyright = '2006-2018 Content Management AG'
+copyright = '2006-2021 CM4all GmbH'
 author = 'Max Kellermann'
 
 # The version info for the project you're documenting, acts as replacement for
