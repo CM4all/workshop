@@ -4,7 +4,7 @@ cm4all-workshop (5.0.6) unstable; urgency=low
   * spawn: always drop capabilities in pidns init
   * debian: restart after upgrade
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Wed, 06 Jan 2021 16:15:01 +0100
 
 cm4all-workshop (5.0.5) unstable; urgency=low
 
