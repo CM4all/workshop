@@ -47,6 +47,9 @@
 
 Config::Config()
 {
+	if (!debug_mode)
+		spawn.spawner_uid_gid.Lookup("cm4all-workshop-spawn");
+
 	if (debug_mode)
 		spawn.default_uid_gid.LoadEffective();
 
