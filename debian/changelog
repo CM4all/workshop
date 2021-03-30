@@ -1,6 +1,6 @@
 cm4all-workshop (5.0.7) unstable; urgency=low
 
-  * 
+  * spawn: initial cgroup2 support (work in progress)
 
  --   
 

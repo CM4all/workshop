@@ -31,6 +31,7 @@
  */
 
 #include "EmailService.hxx"
+#include "net/UniqueSocketDescriptor.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "util/PrintException.hxx"
 
@@ -51,7 +52,7 @@ EmailService::Job::Start() noexcept
 }
 
 void
-EmailService::Job::OnSocketConnectSuccess(UniqueSocketDescriptor &&_fd) noexcept
+EmailService::Job::OnSocketConnectSuccess(UniqueSocketDescriptor _fd) noexcept
 {
 	client.Begin({email.message.data(), email.message.length()},
 		     {email.sender.data(), email.sender.length()});

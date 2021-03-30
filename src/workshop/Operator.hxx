@@ -35,7 +35,7 @@
 
 #include "ControlChannelListener.hxx"
 #include "spawn/ExitListener.hxx"
-#include "event/TimerEvent.hxx"
+#include "event/FarTimerEvent.hxx"
 #include "io/Logger.hxx"
 #include "Job.hxx"
 #include "LogBridge.hxx"
@@ -81,7 +81,7 @@ class WorkshopOperator final
 
 	LazyDomainLogger logger;
 
-	TimerEvent timeout_event;
+	FarTimerEvent timeout_event;
 
 	std::unique_ptr<ProgressReader> progress_reader;
 

@@ -36,7 +36,8 @@
 #include "Queue.hxx"
 #include "Workplace.hxx"
 #include "spawn/ExitListener.hxx"
-#include "event/TimerEvent.hxx"
+#include "event/FineTimerEvent.hxx"
+#include "event/CoarseTimerEvent.hxx"
 #include "io/Logger.hxx"
 #include "util/BindMethod.hxx"
 #include "util/ExpiryMap.hxx"
@@ -60,12 +61,12 @@ class WorkshopPartition final : WorkshopQueueHandler, ExitListener {
 	 * jobs will be picked up again after the rate limit of a plan
 	 * expires.
 	 */
-	TimerEvent rate_limit_timer;
+	FineTimerEvent rate_limit_timer;
 
 	/**
 	 * This timer reaps finished jobs.
 	 */
-	TimerEvent reap_timer;
+	CoarseTimerEvent reap_timer;
 
 	WorkshopQueue queue;
 	WorkshopWorkplace workplace;

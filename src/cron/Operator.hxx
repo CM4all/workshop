@@ -34,7 +34,7 @@
 #define CRON_OPERATOR_HXX
 
 #include "Job.hxx"
-#include "event/TimerEvent.hxx"
+#include "event/FarTimerEvent.hxx"
 #include "io/Logger.hxx"
 
 #include <boost/intrusive/list.hpp>
@@ -61,7 +61,7 @@ protected:
 
 	const std::string start_time;
 
-	TimerEvent timeout_event;
+	FarTimerEvent timeout_event;
 
 public:
 	CronOperator(CronQueue &_queue, CronWorkplace &_workplace, CronJob &&_job,

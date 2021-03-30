@@ -34,7 +34,7 @@
 #define WORKSHOP_QUEUE_HXX
 
 #include "event/DeferEvent.hxx"
-#include "event/TimerEvent.hxx"
+#include "event/FineTimerEvent.hxx"
 #include "pg/AsyncConnection.hxx"
 #include "io/Logger.hxx"
 #include "util/Compiler.h"
@@ -95,7 +95,7 @@ class WorkshopQueue final : private Pg::AsyncConnectionHandler {
 	/**
 	 * Timer event which runs the queue.
 	 */
-	TimerEvent timer_event;
+	FineTimerEvent timer_event;
 
 	std::string plans_include, plans_exclude, plans_lowprio;
 	std::chrono::steady_clock::time_point next_expire_check =

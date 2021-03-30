@@ -34,7 +34,7 @@
 #define CRON_QUEUE_HXX
 
 #include "event/DeferEvent.hxx"
-#include "event/TimerEvent.hxx"
+#include "event/FineTimerEvent.hxx"
 #include "pg/AsyncConnection.hxx"
 #include "io/Logger.hxx"
 #include "util/Compiler.h"
@@ -62,7 +62,7 @@ class CronQueue final : private Pg::AsyncConnectionHandler {
 	 */
 	DeferEvent check_notify_event;
 
-	TimerEvent scheduler_timer, claim_timer;
+	FineTimerEvent scheduler_timer, claim_timer;
 
 	/**
 	 * Was the queue disabled by the administrator?  Also used during
