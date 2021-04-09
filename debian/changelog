@@ -3,7 +3,7 @@ cm4all-workshop (5.0.7) unstable; urgency=low
   * spawn: fix crash when memcg could not be opened
   * spawn: full cgroup2 support
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Fri, 09 Apr 2021 09:00:11 +0200
 
 cm4all-workshop (5.0.6) unstable; urgency=low
 
