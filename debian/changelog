@@ -1,6 +1,7 @@
 cm4all-workshop (5.0.7) unstable; urgency=low
 
-  * spawn: initial cgroup2 support (work in progress)
+  * spawn: fix crash when memcg could not be opened
+  * spawn: full cgroup2 support
 
  --   
 
