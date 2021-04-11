@@ -5,7 +5,7 @@ cm4all-workshop (5.0.8) unstable; urgency=low
   * spawn: disable CLONE_IO to fix EINVAL while creating the systemd scope
   * spawn: fix hanging spawner by resetting systemd scope unit failures
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Sun, 11 Apr 2021 06:10:09 +0200
 
 cm4all-workshop (5.0.7) unstable; urgency=low
 
