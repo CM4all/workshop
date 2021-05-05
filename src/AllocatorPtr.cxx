@@ -46,30 +46,3 @@ AllocatorPtr::Dup(ConstBuffer<void> src) const noexcept
 
 	return {Dup(src.data, src.size), src.size};
 }
-
-StringView
-AllocatorPtr::Dup(StringView src) const noexcept
-{
-	if (src.IsNull())
-		return nullptr;
-
-	if (src.empty())
-		return "";
-
-	return {(const char *)Dup(src.data, src.size), src.size};
-}
-
-const char *
-AllocatorPtr::DupZ(StringView src) const noexcept
-{
-	if (src.IsNull())
-		return nullptr;
-
-	if (src.empty())
-		return "";
-
-	char *p = NewArray<char>(src.size + 1);
-	*std::copy_n(src.data, src.size, p) = 0;
-	return p;
-}
-

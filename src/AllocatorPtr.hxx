@@ -100,6 +100,27 @@ public:
 		return p;
 	}
 
+	StringView Dup(StringView src) noexcept {
+		if (src.empty()) {
+			if (src != nullptr)
+				src.data = "";
+			return src;
+		}
+
+		auto data = NewArray<char>(src.size);
+		std::copy_n(src.data, src.size, data);
+		return {data, src.size};
+	}
+
+	const char *DupZ(StringView src) {
+		char *p = strndup(src.data, src.size);
+		if (p == nullptr)
+			throw std::bad_alloc();
+
+		cleanup.emplace_front([p](){ free(p); });
+		return p;
+	}
+
 private:
 	template<typename... Args>
 	static size_t ConcatLength(const char *s, Args... args) noexcept {
@@ -175,6 +196,11 @@ public:
 		return ConstBuffer<T>::FromVoid(Dup(src.ToVoid()));
 	}
 
-	StringView Dup(StringView src) const noexcept;
-	const char *DupZ(StringView src) const noexcept;
+	StringView Dup(StringView src) const noexcept {
+		return allocator.Dup(src);
+	}
+
+	const char *DupZ(StringView src) const noexcept {
+		return allocator.DupZ(src);
+	}
 };
