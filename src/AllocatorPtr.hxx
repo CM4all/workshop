@@ -46,10 +46,15 @@ class Allocator {
 	std::forward_list<std::function<void()>> cleanup;
 
 public:
+	Allocator() = default;
+	Allocator(Allocator &&src) = default;
+
 	~Allocator() noexcept {
 		for (auto &i : cleanup)
 			i();
 	}
+
+	Allocator &operator=(Allocator &&src) = delete;
 
 	void *Allocate(size_t size) {
 		void *p = malloc(size);
