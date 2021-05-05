@@ -36,7 +36,7 @@
 #include <algorithm>
 
 ConstBuffer<void>
-AllocatorPtr::Dup(ConstBuffer<void> src) noexcept
+AllocatorPtr::Dup(ConstBuffer<void> src) const noexcept
 {
 	if (src.IsNull())
 		return nullptr;
@@ -48,7 +48,7 @@ AllocatorPtr::Dup(ConstBuffer<void> src) noexcept
 }
 
 StringView
-AllocatorPtr::Dup(StringView src) noexcept
+AllocatorPtr::Dup(StringView src) const noexcept
 {
 	if (src.IsNull())
 		return nullptr;
@@ -60,7 +60,7 @@ AllocatorPtr::Dup(StringView src) noexcept
 }
 
 const char *
-AllocatorPtr::DupZ(StringView src) noexcept
+AllocatorPtr::DupZ(StringView src) const noexcept
 {
 	if (src.IsNull())
 		return nullptr;
