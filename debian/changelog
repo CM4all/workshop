@@ -2,7 +2,7 @@ cm4all-workshop (5.0.10) unstable; urgency=low
 
   * workshop/plan: add option "private_tmp"
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Mon, 13 Sep 2021 13:45:40 +0200
 
 cm4all-workshop (5.0.9) unstable; urgency=low
 
