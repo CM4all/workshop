@@ -77,6 +77,8 @@ struct Plan {
 
 	bool private_network = false;
 
+	bool private_tmp = false;
+
 	bool control_channel = false;
 
 	Plan() = default;

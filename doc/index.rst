@@ -272,6 +272,9 @@ The following options are available:
   has no network access to the outside world or even the regular
   loopback interface.
 
+* :samp:`private_tmp`: Mount an empty ``tmpfs`` on ``/tmp``.  Its
+  contents will be deleted automatically as soon as the process exits.
+
 * :samp:`rlimits L`: Configure resource limits.  The syntax is the
   same as the `beng-proxy` :envvar:`RLIMITS` translation packet.
   Check its documentation for details.
