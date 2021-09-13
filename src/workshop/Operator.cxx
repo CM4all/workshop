@@ -39,6 +39,7 @@
 #include "Job.hxx"
 #include "LogBridge.hxx"
 #include "event/net/UdpListener.hxx"
+#include "net/UniqueSocketDescriptor.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringFormat.hxx"
 #include "util/UTF8.hxx"

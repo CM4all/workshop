@@ -53,9 +53,7 @@ class WorkshopControlChannelServer final : UdpHandler {
 public:
 	WorkshopControlChannelServer(EventLoop &_event_loop,
 				     UniqueSocketDescriptor &&_socket,
-				     WorkshopControlChannelListener &_listener) noexcept
-		:socket(_event_loop, std::move(_socket), *this),
-		 listener(_listener) {}
+				     WorkshopControlChannelListener &_listener) noexcept;
 
 	bool ReceiveAll() {
 		return socket.ReceiveAll();

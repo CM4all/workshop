@@ -42,6 +42,7 @@
 #include "system/CapabilityGlue.hxx"
 #include "system/Error.hxx"
 #include "system/SetupProcess.hxx"
+#include "net/UniqueSocketDescriptor.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/PrintException.hxx"
 #include "util/RuntimeError.hxx"

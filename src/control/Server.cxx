@@ -34,6 +34,7 @@
 #include "Handler.hxx"
 #include "Crc.hxx"
 #include "net/SocketAddress.hxx"
+#include "net/UniqueSocketDescriptor.hxx"
 #include "util/ByteOrder.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/OffsetPointer.hxx"

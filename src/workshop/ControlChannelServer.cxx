@@ -33,12 +33,19 @@
 #include "ControlChannelServer.hxx"
 #include "ControlChannelListener.hxx"
 #include "net/SocketAddress.hxx"
+#include "net/UniqueSocketDescriptor.hxx"
 #include "util/IterableSplitString.hxx"
 #include "util/StringView.hxx"
 #include "util/WritableBuffer.hxx"
 #include "version.h"
 
 #include <stdexcept>
+
+WorkshopControlChannelServer::WorkshopControlChannelServer(EventLoop &_event_loop,
+							   UniqueSocketDescriptor &&_socket,
+							   WorkshopControlChannelListener &_listener) noexcept
+	:socket(_event_loop, std::move(_socket), *this),
+	 listener(_listener) {}
 
 void
 WorkshopControlChannelServer::InvokeTemporaryError(const char *msg) noexcept
