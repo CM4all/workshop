@@ -56,7 +56,8 @@ public:
 
 private:
 	/* virtual methods from class UdpHandler */
-	bool OnUdpDatagram(const void *data, size_t length,
+	bool OnUdpDatagram(ConstBuffer<void> payload,
+			   WritableBuffer<UniqueFileDescriptor> fds,
 			   SocketAddress address, int uid) override;
 	void OnUdpError(std::exception_ptr ep) noexcept override;
 };

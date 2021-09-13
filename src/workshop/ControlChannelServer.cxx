@@ -35,6 +35,7 @@
 #include "net/SocketAddress.hxx"
 #include "util/IterableSplitString.hxx"
 #include "util/StringView.hxx"
+#include "util/WritableBuffer.hxx"
 #include "version.h"
 
 #include <stdexcept>
@@ -122,15 +123,16 @@ SplitArgs(StringView s) noexcept
 }
 
 bool
-WorkshopControlChannelServer::OnUdpDatagram(const void *data, size_t length,
+WorkshopControlChannelServer::OnUdpDatagram(ConstBuffer<void> _payload,
+					    WritableBuffer<UniqueFileDescriptor>,
 					    SocketAddress, int)
 {
-	if (length == 0) {
+	if (_payload.empty() == 0) {
 		listener.OnControlClosed();
 		return false;
 	}
 
-	const StringView payload((const char *)data, length);
+	const StringView payload{ConstBuffer<char>::FromVoid(_payload)};
 	return OnControl(SplitArgs(FirstLine(payload)));
 }
 

@@ -37,6 +37,7 @@
 #include "util/ByteOrder.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/OffsetPointer.hxx"
+#include "util/WritableBuffer.hxx"
 
 #include <stdexcept>
 
@@ -104,14 +105,15 @@ DecodeControlDatagram(ConstBuffer<void> p, ControlHandler &handler)
 }
 
 bool
-ControlServer::OnUdpDatagram(const void *data, size_t length,
+ControlServer::OnUdpDatagram(ConstBuffer<void> payload,
+			     WritableBuffer<UniqueFileDescriptor>,
 			     SocketAddress, int uid)
 {
 	if (uid != 0 && uid != (int)geteuid())
 		/* ignore control packets from non-root users */
 		return true;
 
-	DecodeControlDatagram({data, length}, handler);
+	DecodeControlDatagram(payload, handler);
 	return true;
 }
 

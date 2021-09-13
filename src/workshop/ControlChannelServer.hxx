@@ -67,7 +67,8 @@ private:
 	bool OnControl(std::vector<std::string> &&args) noexcept;
 
 	/* virtual methods from UdpHandler */
-	bool OnUdpDatagram(const void *data, size_t length,
+	bool OnUdpDatagram(ConstBuffer<void> payload,
+			   WritableBuffer<UniqueFileDescriptor> fds,
 			   SocketAddress address, int uid) override;
 	void OnUdpError(std::exception_ptr e) noexcept override;
 };
