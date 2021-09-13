@@ -35,7 +35,6 @@
 
 #include "Operator.hxx"
 #include "io/Logger.hxx"
-#include "util/Compiler.h"
 
 #include <boost/intrusive/list.hpp>
 
@@ -87,7 +86,7 @@ public:
 		assert(operators.empty());
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	const char *GetNodeName() const {
 		return node_name.c_str();
 	}
@@ -100,14 +99,14 @@ public:
 		return operators.size() == max_operators;
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	std::string GetRunningPlanNames() const;
 
 	/**
 	 * Returns the plan names which have reached their concurrency
 	 * limit.
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	std::string GetFullPlanNames() const;
 
 	/**

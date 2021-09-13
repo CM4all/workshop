@@ -33,13 +33,12 @@
 #pragma once
 
 #include "util/ConstBuffer.hxx"
-#include "util/Compiler.h"
 
 #include <boost/crc.hpp>
 
 using WorkshopControlCrc = boost::crc_32_type;
 
-gcc_pure
+[[gnu::pure]]
 inline uint32_t
 CalcWorkshopControlCrc(ConstBuffer<void> p) noexcept
 {

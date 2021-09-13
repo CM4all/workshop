@@ -37,7 +37,6 @@
 #include "event/FineTimerEvent.hxx"
 #include "pg/AsyncConnection.hxx"
 #include "io/Logger.hxx"
-#include "util/Compiler.h"
 
 #include <string>
 #include <chrono>
@@ -114,7 +113,7 @@ public:
 		return timer_event.GetEventLoop();
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	const char *GetNodeName() const noexcept {
 		return node_name.c_str();
 	}

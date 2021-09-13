@@ -35,8 +35,6 @@
 
 #include "util/RangeBitSet.hxx"
 
-#include "util/Compiler.h"
-
 #include <chrono>
 
 struct tm;
@@ -84,7 +82,7 @@ struct CronSchedule {
 			months.none() && days_of_week.none();
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	bool CheckDate(const struct tm &tm) const noexcept;
 
 	/**
@@ -97,7 +95,7 @@ struct CronSchedule {
 	 * which means this job can be run immediately); returns max() if
 	 * the job shall never be executed again
 	 */
-	gcc_pure
+	[[gnu::pure]]
 	std::chrono::system_clock::time_point Next(std::chrono::system_clock::time_point last,
 						   std::chrono::system_clock::time_point now) const noexcept;
 };

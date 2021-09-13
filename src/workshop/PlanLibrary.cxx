@@ -49,7 +49,7 @@ is_valid_plan_name_char(char ch) noexcept
 		ch == '_' || ch == '-';
 }
 
-gcc_pure
+[[gnu::pure]]
 static bool
 is_valid_plan_name(const char *name) noexcept
 {

@@ -112,14 +112,14 @@ WorkshopControlChannelServer::OnControl(std::vector<std::string> &&args) noexcep
 	}
 }
 
-gcc_pure
+[[gnu::pure]]
 static StringView
 FirstLine(StringView s) noexcept
 {
 	return s.Split('\n').first;
 }
 
-gcc_pure
+[[gnu::pure]]
 static std::vector<std::string>
 SplitArgs(StringView s) noexcept
 {

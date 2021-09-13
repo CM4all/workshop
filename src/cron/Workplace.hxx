@@ -35,7 +35,6 @@
 
 #include "Operator.hxx"
 #include "net/SocketDescriptor.hxx"
-#include "util/Compiler.h"
 
 #include <boost/intrusive/list.hpp>
 

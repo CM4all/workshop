@@ -37,7 +37,6 @@
 #include "event/FineTimerEvent.hxx"
 #include "pg/AsyncConnection.hxx"
 #include "io/Logger.hxx"
-#include "util/Compiler.h"
 
 #include <string>
 #include <functional>
@@ -87,7 +86,7 @@ public:
 		return check_notify_event.GetEventLoop();
 	}
 
-	gcc_pure
+	[[gnu::pure]]
 	const char *GetNodeName() const noexcept {
 		return node_name.c_str();
 	}
@@ -98,7 +97,7 @@ public:
 
 	void Close() noexcept;
 
-	gcc_pure
+	[[gnu::pure]]
 	std::string GetNow() {
 		ScheduleCheckNotify();
 		const auto result = db.Execute("SELECT now()");

@@ -265,7 +265,7 @@ CronSchedule::CheckDate(const struct tm &tm) const noexcept
 }
 
 template<size_t MIN, size_t MAX>
-gcc_const
+[[gnu::const]]
 static size_t
 NextBit(const RangeBitSet<MIN, MAX> b, size_t pos) noexcept
 {

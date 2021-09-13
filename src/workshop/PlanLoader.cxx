@@ -38,8 +38,6 @@
 #include "io/ConfigParser.hxx"
 #include "util/RuntimeError.hxx"
 
-#include "util/Compiler.h"
-
 #include <array>
 
 #include <assert.h>
@@ -62,7 +60,7 @@ public:
 	void Finish() override;
 };
 
-gcc_pure
+[[gnu::pure]]
 static std::vector<gid_t>
 get_user_groups(const char *user, gid_t gid)
 {
