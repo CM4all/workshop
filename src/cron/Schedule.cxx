@@ -118,10 +118,8 @@ ParseNumber(const char *&s,
 		throw std::runtime_error("Failed to parse number");
 	}
 
-#if !GCC_OLDER_THAN(8,0)
 	/* the numeric_limits check suppresses -Wtype-limits if MIN==0 */
 	if constexpr (MIN > std::numeric_limits<decltype(value)>::min())
-#endif
 		if (value < MIN)
 			throw std::runtime_error("Number is too small");
 

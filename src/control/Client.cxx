@@ -47,11 +47,6 @@
 
 struct Usage {
 	const char *msg = nullptr;
-
-#if GCC_OLDER_THAN(5,0)
-	constexpr Usage() = default;
-	constexpr Usage(const char *_msg):msg(_msg) {}
-#endif
 };
 
 class WorkshopControlClient {
