@@ -99,6 +99,8 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 	if (!UniqueFileDescriptor::CreatePipe(stderr_r, stderr_w))
 		throw MakeErrno("pipe() failed");
 
+	stderr_r.SetNonBlocking();
+
 	/* create control socket */
 
 	UniqueSocketDescriptor control_parent, control_child;
@@ -106,6 +108,8 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 		if (!UniqueSocketDescriptor::CreateSocketPair(AF_LOCAL, SOCK_SEQPACKET, 0,
 							      control_parent, control_child))
 			throw MakeErrno("socketpair() failed");
+
+		control_parent.SetNonBlocking();
 	}
 
 	/* create operator object */
