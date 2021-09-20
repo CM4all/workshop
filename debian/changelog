@@ -1,3 +1,9 @@
+cm4all-workshop (5.1) unstable; urgency=low
+
+  * feature freeze
+
+ --   
+
 cm4all-workshop (5.0.11) unstable; urgency=low
 
   * workshop: fix hanging process due to blocking read from pipe
