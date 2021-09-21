@@ -2,7 +2,7 @@ cm4all-workshop (5.2) unstable; urgency=low
 
   * workshop: fix double close bug
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Tue, 21 Sep 2021 21:07:20 +0200
 
 cm4all-workshop (5.1) unstable; urgency=low
 
