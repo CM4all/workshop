@@ -1,6 +1,6 @@
 cm4all-workshop (5.2) unstable; urgency=low
 
-  * 
+  * workshop: fix double close bug
 
  --   
 

@@ -53,8 +53,7 @@ ProgressReader::PipeReady(unsigned) noexcept
 	FileDescriptor fd(event.GetSocket().ToFileDescriptor());
 	nbytes = fd.Read(buffer, sizeof(buffer));
 	if (nbytes <= 0) {
-		event.Cancel();
-		fd.Close();
+		event.Close();
 		return;
 	}
 
