@@ -210,7 +210,6 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 
 	const auto pid = spawn_service.SpawnChildProcess(job.id.c_str(),
 							 std::move(p),
-							 SocketDescriptor::Undefined(),
 							 o.get());
 	o->SetPid(pid);
 

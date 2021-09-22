@@ -187,8 +187,7 @@ RunJobInstance::Start(RunJobCommandLine &&cmdline)
 	}
 
 	const auto pid = SpawnChildProcess(std::move(p), {},
-					   IsSysAdmin(),
-					   SocketDescriptor::Undefined());
+					   IsSysAdmin());
 	child_process_registry.Add(pid, "job", this);
 	child_process_registry.SetVolatile();
 }

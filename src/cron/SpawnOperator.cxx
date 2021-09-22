@@ -85,7 +85,6 @@ CronSpawnOperator::Spawn(PreparedChildProcess &&p,
 
 		pid = spawn_service.SpawnChildProcess(job.id.c_str(),
 						      std::move(p),
-						      SocketDescriptor::Undefined(),
 						      this);
 
 		logger(2, "running");
