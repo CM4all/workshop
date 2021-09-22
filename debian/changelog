@@ -1,6 +1,7 @@
 cm4all-workshop (5.3) unstable; urgency=low
 
   * cron: enable core scheduling to avoid cross-HT attacks
+  * enable systemd watchdog
 
  --   
 

@@ -126,6 +126,7 @@ net_dep = declare_dependency(
 )
 
 subdir('libcommon/src/event/net')
+subdir('libcommon/src/event/systemd')
 subdir('libcommon/src/curl')
 subdir('libcommon/src/pg')
 subdir('libcommon/src/adata')
@@ -188,6 +189,7 @@ executable('cm4all-workshop',
   include_directories: inc,
   dependencies: [
     event_net_dep,
+    event_systemd_dep,
     time_dep,
     system_dep,
     io_dep,

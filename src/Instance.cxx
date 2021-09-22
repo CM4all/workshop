@@ -61,6 +61,7 @@ Instance::Instance(const Config &config)
 				    [this](){
 		event_loop.Reinit();
 		child_process_registry.~ChildProcessRegistry();
+		systemd_watchdog.Disable();
 		event_loop.~EventLoop();
 	});
 
@@ -110,6 +111,7 @@ Instance::OnExit() noexcept
 
 	should_exit = true;
 
+	systemd_watchdog.Disable();
 	shutdown_listener.Disable();
 	sighup_event.Disable();
 	child_process_registry.SetVolatile();

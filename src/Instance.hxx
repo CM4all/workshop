@@ -40,6 +40,7 @@
 #include "event/ShutdownListener.hxx"
 #include "event/SignalEvent.hxx"
 #include "event/DeferEvent.hxx"
+#include "event/systemd/Watchdog.hxx"
 #include "spawn/Registry.hxx"
 #include "spawn/Hook.hxx"
 #include "curl/Init.hxx"
@@ -58,6 +59,8 @@ class Instance final : SpawnHook, ControlHandler {
 	const RootLogger logger;
 
 	EventLoop event_loop;
+
+	Systemd::Watchdog systemd_watchdog{event_loop};
 
 	bool should_exit = false;
 
