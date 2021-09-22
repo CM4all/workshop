@@ -3,7 +3,7 @@ cm4all-workshop (5.3) unstable; urgency=low
   * cron: enable core scheduling to avoid cross-HT attacks
   * enable systemd watchdog
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Wed, 22 Sep 2021 10:46:33 +0200
 
 cm4all-workshop (5.2) unstable; urgency=low
 
