@@ -61,7 +61,7 @@ void
 CronSpawnOperator::Spawn(PreparedChildProcess &&p,
 			 SocketDescriptor pond_socket)
 	try {
-		if (p.stderr_fd < 0) {
+		if (!p.stderr_fd.IsDefined()) {
 			/* no STDERR destination configured: the default is to capture
 			   it and save in the cronresults table */
 			UniqueFileDescriptor r, w;
@@ -69,7 +69,7 @@ CronSpawnOperator::Spawn(PreparedChildProcess &&p,
 				throw MakeErrno("pipe() failed");
 
 			p.SetStderr(std::move(w));
-			if (p.stdout_fd < 0)
+			if (!p.stdout_fd.IsDefined())
 				/* capture STDOUT as well */
 				p.stdout_fd = p.stderr_fd;
 

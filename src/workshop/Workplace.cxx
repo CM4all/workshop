@@ -163,7 +163,7 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 
 	if (plan->control_channel) {
 		/* copy stdout to stderr into the "log" column */
-		p.SetStdout(p.stderr_fd);
+		p.stdout_fd = p.stderr_fd;
 	} else {
 		/* if there is no control channel, read progress from the
 		   stdout pipe */
