@@ -134,7 +134,7 @@ WorkshopControlChannelServer::OnUdpDatagram(ConstBuffer<void> _payload,
 					    WritableBuffer<UniqueFileDescriptor>,
 					    SocketAddress, int)
 {
-	if (_payload.empty() == 0) {
+	if (_payload.empty()) {
 		listener.OnControlClosed();
 		return false;
 	}
