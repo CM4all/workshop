@@ -2,7 +2,7 @@ cm4all-workshop (5.4) unstable; urgency=low
 
   * workshop: fix crash after control channel was closed by job
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Tue, 12 Oct 2021 10:54:48 +0200
 
 cm4all-workshop (5.3) unstable; urgency=low
 
