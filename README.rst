@@ -13,7 +13,7 @@ Building Workshop
 
 You need:
 
-- a C++17 compliant compiler (e.g. gcc or clang)
+- a C++20 compliant compiler (e.g. gcc or clang)
 - `libcap2 <https://sites.google.com/site/fullycapable/>`__
 - `libpq <https://www.postgresql.org/>`__
 - `Boost <http://www.boost.org/>`__
