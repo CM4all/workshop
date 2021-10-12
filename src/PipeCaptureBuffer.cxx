@@ -36,8 +36,7 @@
 PipeCaptureBuffer::PipeCaptureBuffer(EventLoop &event_loop,
 				     UniqueFileDescriptor _fd,
 				     size_t capacity) noexcept
-	:event(event_loop, BIND_THIS_METHOD(OnSocket),
-	       SocketDescriptor::FromFileDescriptor(_fd.Release())),
+	:event(event_loop, BIND_THIS_METHOD(OnSocket), _fd.Release()),
 	 buffer(capacity)
 {
 	event.ScheduleRead();
@@ -46,7 +45,7 @@ PipeCaptureBuffer::PipeCaptureBuffer(EventLoop &event_loop,
 void
 PipeCaptureBuffer::OnSocket(unsigned) noexcept
 {
-	FileDescriptor fd(event.GetSocket().ToFileDescriptor());
+	FileDescriptor fd(event.GetFileDescriptor());
 
 	auto w = buffer.Write();
 	if (!w.empty()) {

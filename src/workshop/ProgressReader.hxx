@@ -32,14 +32,14 @@
 
 #pragma once
 
-#include "event/SocketEvent.hxx"
+#include "event/PipeEvent.hxx"
 #include "util/BindMethod.hxx"
 #include "util/StaticArray.hxx"
 
 class UniqueFileDescriptor;
 
 class ProgressReader {
-	SocketEvent event;
+	PipeEvent event;
 	StaticArray<char, 64> stdout_buffer;
 	unsigned last_progress = 0;
 

@@ -36,8 +36,7 @@
 ProgressReader::ProgressReader(EventLoop &event_loop,
 			       UniqueFileDescriptor _fd,
 			       Callback _callback) noexcept
-	:event(event_loop, BIND_THIS_METHOD(PipeReady),
-	       SocketDescriptor::FromFileDescriptor(_fd.Release())),
+	:event(event_loop, BIND_THIS_METHOD(PipeReady), _fd.Release()),
 	 callback(_callback)
 {
 	event.ScheduleRead();
@@ -50,7 +49,7 @@ ProgressReader::PipeReady(unsigned) noexcept
 	ssize_t nbytes, i;
 	unsigned new_progress = 0, p;
 
-	FileDescriptor fd(event.GetSocket().ToFileDescriptor());
+	FileDescriptor fd(event.GetFileDescriptor());
 	nbytes = fd.Read(buffer, sizeof(buffer));
 	if (nbytes <= 0) {
 		event.Close();

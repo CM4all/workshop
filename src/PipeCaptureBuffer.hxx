@@ -33,7 +33,7 @@
 #pragma once
 
 #include "CaptureBuffer.hxx"
-#include "event/SocketEvent.hxx"
+#include "event/PipeEvent.hxx"
 
 class UniqueFileDescriptor;
 
@@ -42,7 +42,7 @@ class UniqueFileDescriptor;
  * useful to capture the output of a child process.
  */
 class PipeCaptureBuffer {
-	SocketEvent event;
+	PipeEvent event;
 
 	CaptureBuffer buffer;
 
