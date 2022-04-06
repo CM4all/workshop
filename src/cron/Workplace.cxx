@@ -53,7 +53,7 @@ CronWorkplace::CronWorkplace(SpawnService &_spawn_service,
 			     SocketDescriptor _pond_socket,
 			     CurlGlobal &_curl,
 			     ExitListener &_exit_listener,
-			     unsigned _max_operators)
+			     std::size_t _max_operators)
 	:spawn_service(_spawn_service),
 	 email_service(_email_service),
 	 pond_socket(_pond_socket),

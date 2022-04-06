@@ -59,7 +59,7 @@ class CronWorkplace {
 
 	OperatorList operators;
 
-	const unsigned max_operators;
+	const std::size_t max_operators;
 
 public:
 	CronWorkplace(SpawnService &_spawn_service,
@@ -67,7 +67,7 @@ public:
 		      SocketDescriptor _pond_socket,
 		      CurlGlobal &_curl,
 		      ExitListener &_exit_listener,
-		      unsigned _max_operators);
+		      std::size_t _max_operators);
 
 	CronWorkplace(const CronWorkplace &other) = delete;
 	CronWorkplace &operator=(const CronWorkplace &other) = delete;
