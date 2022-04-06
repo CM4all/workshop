@@ -35,6 +35,7 @@
 
 #include "ControlChannelListener.hxx"
 #include "spawn/ExitListener.hxx"
+#include "spawn/ProcessHandle.hxx"
 #include "event/FarTimerEvent.hxx"
 #include "io/Logger.hxx"
 #include "Job.hxx"
@@ -61,13 +62,12 @@ class WorkshopOperator final
 	WorkshopControlChannelListener,
 	LoggerDomainFactory
 {
-
 	EventLoop &event_loop;
 
 	WorkshopWorkplace &workplace;
 	WorkshopJob job;
 	std::shared_ptr<Plan> plan;
-	int pid = -1;
+	std::unique_ptr<ChildProcessHandle> pid;
 
 	bool exited = false;
 
@@ -112,8 +112,9 @@ public:
 		return job.plan_name;
 	}
 
-	void SetPid(int _pid) noexcept {
-		pid = _pid;
+	void SetPid(std::unique_ptr<ChildProcessHandle> &&_pid) noexcept {
+		pid = std::move(_pid);
+		pid->SetExitListener(*this);
 	}
 
 	void SetOutput(UniqueFileDescriptor fd) noexcept;

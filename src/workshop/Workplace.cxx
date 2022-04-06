@@ -208,13 +208,11 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 
 	/* fork */
 
-	const auto pid = spawn_service.SpawnChildProcess(job.id.c_str(),
-							 std::move(p),
-							 o.get());
-	o->SetPid(pid);
+	o->SetPid(spawn_service.SpawnChildProcess(job.id.c_str(),
+						  std::move(p)));
 
 	logger(2, "job ", job.id, " (plan '", job.plan_name,
-	       "') running as pid ", pid);
+	       "') started");
 
 	operators.push_back(*o.release());
 }
@@ -229,8 +227,7 @@ WorkshopWorkplace::OnExit(WorkshopOperator *o)
 }
 
 void
-WorkshopWorkplace::OnTimeout(WorkshopOperator *o, int pid)
+WorkshopWorkplace::OnTimeout(WorkshopOperator *o)
 {
-	spawn_service.KillChildProcess(pid);
 	OnExit(o);
 }

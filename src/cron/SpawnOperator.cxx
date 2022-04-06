@@ -35,6 +35,7 @@
 #include "PipePondAdapter.hxx"
 #include "spawn/Interface.hxx"
 #include "spawn/Prepared.hxx"
+#include "spawn/ProcessHandle.hxx"
 #include "system/Error.hxx"
 #include "io/UniqueFileDescriptor.hxx"
 #include "util/Exception.hxx"
@@ -84,8 +85,8 @@ CronSpawnOperator::Spawn(PreparedChildProcess &&p,
 		p.chdir = p.ns.GetJailedHome();
 
 		pid = spawn_service.SpawnChildProcess(job.id.c_str(),
-						      std::move(p),
-						      this);
+						      std::move(p));
+		pid->SetExitListener(*this);
 
 		logger(2, "running");
 
@@ -99,8 +100,10 @@ CronSpawnOperator::Spawn(PreparedChildProcess &&p,
 void
 CronSpawnOperator::Cancel() noexcept
 {
+	assert(pid);
+
 	output_capture.reset();
-	spawn_service.KillChildProcess(pid, SIGTERM);
+	pid->Kill(SIGTERM);
 
 	Finish(-1, "Canceled");
 	timeout_event.Cancel();

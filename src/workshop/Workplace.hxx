@@ -117,7 +117,7 @@ public:
 		   size_t max_log);
 
 	void OnExit(WorkshopOperator *o);
-	void OnTimeout(WorkshopOperator *o, int pid);
+	void OnTimeout(WorkshopOperator *o);
 };
 
 #endif

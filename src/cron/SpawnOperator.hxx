@@ -42,6 +42,7 @@ struct PreparedChildProcess;
 class SpawnService;
 class PipeCaptureBuffer;
 class SocketDescriptor;
+class ChildProcessHandle;
 
 /**
  * A #CronJob being executed as a spawned child process.
@@ -51,7 +52,7 @@ class CronSpawnOperator final
 {
 	SpawnService &spawn_service;
 
-	int pid = -1;
+	std::unique_ptr<ChildProcessHandle> pid;
 
 	std::unique_ptr<PipeCaptureBuffer> output_capture;
 
