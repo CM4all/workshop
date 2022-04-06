@@ -30,10 +30,8 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WORKSHOP_WORKPLACE_HXX
-#define WORKSHOP_WORKPLACE_HXX
+#pragma once
 
-#include "Operator.hxx"
 #include "io/Logger.hxx"
 
 #include <boost/intrusive/list.hpp>
@@ -41,10 +39,10 @@
 #include <memory>
 #include <string>
 
-#include <assert.h>
-
 struct Plan;
 struct WorkshopJob;
+class WorkshopOperator;
+class EventLoop;
 class SpawnService;
 class ExitListener;
 
@@ -56,8 +54,10 @@ class WorkshopWorkplace {
 
 	const std::string node_name;
 
-	typedef boost::intrusive::list<WorkshopOperator,
-				       boost::intrusive::constant_time_size<true>> OperatorList;
+	using OperatorList =
+		boost::intrusive::list<WorkshopOperator,
+				       boost::intrusive::base_hook<boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>>,
+				       boost::intrusive::constant_time_size<true>>;
 
 	OperatorList operators;
 
@@ -70,21 +70,12 @@ public:
 			  const Logger &parent_logger,
 			  const char *_node_name,
 			  unsigned _max_operators,
-			  bool _enable_journal) noexcept
-		:spawn_service(_spawn_service), exit_listener(_exit_listener),
-		 logger(parent_logger, "workplace"),
-		 node_name(_node_name),
-		 max_operators(_max_operators),
-		 enable_journal(_enable_journal)
-	{
-		assert(max_operators > 0);
-	}
+			  bool _enable_journal) noexcept;
 
 	WorkshopWorkplace(const WorkshopWorkplace &other) = delete;
+	WorkshopWorkplace &operator=(const WorkshopWorkplace &other) = delete;
 
-	~WorkshopWorkplace() noexcept {
-		assert(operators.empty());
-	}
+	~WorkshopWorkplace() noexcept;
 
 	[[gnu::pure]]
 	const char *GetNodeName() const noexcept {
@@ -119,5 +110,3 @@ public:
 	void OnExit(WorkshopOperator *o) noexcept;
 	void OnTimeout(WorkshopOperator *o) noexcept;
 };
-
-#endif

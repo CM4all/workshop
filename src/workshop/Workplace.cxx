@@ -31,6 +31,7 @@
  */
 
 #include "Workplace.hxx"
+#include "Operator.hxx"
 #include "debug.h"
 #include "Plan.hxx"
 #include "Job.hxx"
@@ -44,13 +45,33 @@
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
 
+#include <cassert>
 #include <string>
 #include <map>
 #include <set>
 #include <list>
 
-#include <assert.h>
 #include <sys/socket.h>
+
+WorkshopWorkplace::WorkshopWorkplace(SpawnService &_spawn_service,
+				     ExitListener &_exit_listener,
+				     const Logger &parent_logger,
+				     const char *_node_name,
+				     unsigned _max_operators,
+				     bool _enable_journal) noexcept
+	:spawn_service(_spawn_service), exit_listener(_exit_listener),
+	 logger(parent_logger, "workplace"),
+	 node_name(_node_name),
+	 max_operators(_max_operators),
+	 enable_journal(_enable_journal)
+{
+	assert(max_operators > 0);
+}
+
+WorkshopWorkplace::~WorkshopWorkplace() noexcept
+{
+	assert(operators.empty());
+}
 
 std::string
 WorkshopWorkplace::GetRunningPlanNames() const noexcept
