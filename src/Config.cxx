@@ -185,10 +185,8 @@ ResolveStreamConnect(const char *host, int default_port)
 		result.SetLocal(host);
 		return result;
 	} else {
-		struct addrinfo hints;
-		memset(&hints, 0, sizeof(hints));
-		hints.ai_flags = AI_ADDRCONFIG;
-		hints.ai_socktype = SOCK_STREAM;
+		static constexpr auto hints =
+			MakeAddrInfo(AI_ADDRCONFIG, AF_UNSPEC, SOCK_STREAM);
 
 		return AllocatedSocketAddress(Resolve(host, default_port,
 						      &hints).GetBest());
