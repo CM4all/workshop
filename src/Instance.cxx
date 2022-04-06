@@ -34,6 +34,8 @@
 #include "Config.hxx"
 #include "control/Server.hxx"
 #include "workshop/MultiLibrary.hxx"
+#include "workshop/Partition.hxx"
+#include "cron/Partition.hxx"
 #include "spawn/Client.hxx"
 #include "spawn/Glue.hxx"
 
@@ -84,6 +86,15 @@ Instance::Instance(const Config &config)
 }
 
 Instance::~Instance() noexcept = default;
+
+void
+Instance::Start()
+{
+	for (auto &i : partitions)
+		i.Start();
+	for (auto &i : cron_partitions)
+		i.Start();
+}
 
 void
 Instance::UpdateFilter(bool library_modified) noexcept

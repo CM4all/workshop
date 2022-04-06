@@ -33,9 +33,6 @@
 #pragma once
 
 #include "control/Handler.hxx"
-#include "workshop/Partition.hxx"
-#include "workshop/MultiLibrary.hxx"
-#include "cron/Partition.hxx"
 #include "event/Loop.hxx"
 #include "event/ShutdownListener.hxx"
 #include "event/SignalEvent.hxx"
@@ -54,6 +51,8 @@ class SpawnServerClient;
 class CurlGlobal;
 class MultiLibrary;
 class ControlServer;
+class WorkshopPartition;
+class CronPartition;
 
 class Instance final : SpawnHook, ControlHandler {
 	const RootLogger logger;
@@ -92,12 +91,7 @@ public:
 		return event_loop;
 	}
 
-	void Start() {
-		for (auto &i : partitions)
-			i.Start();
-		for (auto &i : cron_partitions)
-			i.Start();
-	}
+	void Start();
 
 	void Dispatch() noexcept {
 		event_loop.Dispatch();
