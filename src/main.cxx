@@ -64,8 +64,6 @@ Run(const Config &config)
 
 	instance.Start();
 
-	instance.UpdateLibraryAndFilter(true);
-
 	/* tell systemd we're ready */
 	sd_notify(0, "READY=1");
 

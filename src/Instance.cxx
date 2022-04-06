@@ -94,6 +94,9 @@ Instance::Start()
 		i.Start();
 	for (auto &i : cron_partitions)
 		i.Start();
+
+	if (library)
+		UpdateLibraryAndFilter(true);
 }
 
 void

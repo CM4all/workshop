@@ -1,5 +1,6 @@
 cm4all-workshop (6.0.1) unstable; urgency=low
 
+  * fix crash if no "workshop" partition is configured
   * spawn: use pidfd
   * spawn: allow path components to exist already
   * spawn: drop unnecessary capabilities
