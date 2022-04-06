@@ -71,8 +71,7 @@ CronCurlOperator::Cancel() noexcept
 }
 
 void
-CronCurlOperator::OnHeaders(unsigned _status,
-			    std::multimap<std::string, std::string> &&headers)
+CronCurlOperator::OnHeaders(unsigned _status, Curl::Headers &&headers)
 {
 	status = _status;
 	(void)headers;

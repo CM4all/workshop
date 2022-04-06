@@ -67,8 +67,7 @@ public:
 
 private:
 	/* virtual methods from CurlResponseHandler */
-	void OnHeaders(unsigned status,
-		       std::multimap<std::string, std::string> &&headers) override;
+	void OnHeaders(unsigned status, Curl::Headers &&headers) override;
 	void OnData(ConstBuffer<void> data) override;
 	void OnEnd() override;
 	void OnError(std::exception_ptr ep) noexcept override;

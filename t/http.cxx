@@ -16,8 +16,7 @@
 
 class MyResponseHandler final : public CurlResponseHandler {
 public:
-    void OnHeaders(unsigned status,
-                   std::multimap<std::string, std::string> &&headers) {
+    void OnHeaders(unsigned status, Curl::Headers &&headers) {
         printf("Status: %u\n", status);
         for (const auto &i : headers)
             printf("%s: %s\n", i.first.c_str(), i.second.c_str());
