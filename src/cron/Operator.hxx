@@ -37,7 +37,7 @@
 #include "event/FarTimerEvent.hxx"
 #include "io/Logger.hxx"
 
-#include <boost/intrusive/list.hpp>
+#include <boost/intrusive/list_hook.hpp>
 
 #include <string>
 
