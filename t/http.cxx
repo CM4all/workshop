@@ -2,10 +2,10 @@
  * author: Max Kellermann <mk@cm4all.com>
  */
 
-#include "curl/Request.hxx"
-#include "curl/Handler.hxx"
-#include "curl/Global.hxx"
-#include "curl/Init.hxx"
+#include "lib/curl/Request.hxx"
+#include "lib/curl/Handler.hxx"
+#include "lib/curl/Global.hxx"
+#include "lib/curl/Init.hxx"
 #include "event/Loop.hxx"
 #include "util/PrintException.hxx"
 

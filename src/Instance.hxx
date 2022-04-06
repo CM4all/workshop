@@ -43,8 +43,8 @@
 #include "event/systemd/Watchdog.hxx"
 #include "spawn/Registry.hxx"
 #include "spawn/Hook.hxx"
-#include "curl/Init.hxx"
-#include "curl/Global.hxx"
+#include "lib/curl/Init.hxx"
+#include "lib/curl/Global.hxx"
 #include "io/Logger.hxx"
 
 #include <forward_list>

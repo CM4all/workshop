@@ -127,10 +127,10 @@ net_dep = declare_dependency(
 
 subdir('libcommon/src/event/net')
 subdir('libcommon/src/event/systemd')
-subdir('libcommon/src/curl')
+subdir('libcommon/src/lib/curl')
+subdir('libcommon/src/lib/dbus')
 subdir('libcommon/src/pg')
 subdir('libcommon/src/adata')
-subdir('libcommon/src/odbus')
 subdir('libcommon/src/spawn')
 subdir('libcommon/src/translation')
 

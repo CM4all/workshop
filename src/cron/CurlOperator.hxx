@@ -34,8 +34,8 @@
 #define CRON_CURL_OPERATOR_HXX
 
 #include "Operator.hxx"
-#include "curl/Handler.hxx"
-#include "curl/Request.hxx"
+#include "lib/curl/Handler.hxx"
+#include "lib/curl/Request.hxx"
 
 #include <memory>
 
