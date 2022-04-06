@@ -70,7 +70,7 @@ public:
 			  const Logger &parent_logger,
 			  const char *_node_name,
 			  unsigned _max_operators,
-			  bool _enable_journal)
+			  bool _enable_journal) noexcept
 		:spawn_service(_spawn_service), exit_listener(_exit_listener),
 		 logger(parent_logger, "workplace"),
 		 node_name(_node_name),
@@ -82,32 +82,32 @@ public:
 
 	WorkshopWorkplace(const WorkshopWorkplace &other) = delete;
 
-	~WorkshopWorkplace() {
+	~WorkshopWorkplace() noexcept {
 		assert(operators.empty());
 	}
 
 	[[gnu::pure]]
-	const char *GetNodeName() const {
+	const char *GetNodeName() const noexcept {
 		return node_name.c_str();
 	}
 
-	bool IsEmpty() const {
+	bool IsEmpty() const noexcept {
 		return operators.empty();
 	}
 
-	bool IsFull() const {
+	bool IsFull() const noexcept {
 		return operators.size() == max_operators;
 	}
 
 	[[gnu::pure]]
-	std::string GetRunningPlanNames() const;
+	std::string GetRunningPlanNames() const noexcept;
 
 	/**
 	 * Returns the plan names which have reached their concurrency
 	 * limit.
 	 */
 	[[gnu::pure]]
-	std::string GetFullPlanNames() const;
+	std::string GetFullPlanNames() const noexcept;
 
 	/**
 	 * Throws std::runtime_error on error.
@@ -116,8 +116,8 @@ public:
 		   std::shared_ptr<Plan> plan,
 		   size_t max_log);
 
-	void OnExit(WorkshopOperator *o);
-	void OnTimeout(WorkshopOperator *o);
+	void OnExit(WorkshopOperator *o) noexcept;
+	void OnTimeout(WorkshopOperator *o) noexcept;
 };
 
 #endif

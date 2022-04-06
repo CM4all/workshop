@@ -53,7 +53,7 @@
 #include <sys/socket.h>
 
 std::string
-WorkshopWorkplace::GetRunningPlanNames() const
+WorkshopWorkplace::GetRunningPlanNames() const noexcept
 {
 	std::set<std::string> list;
 	for (const auto &o : operators)
@@ -63,7 +63,7 @@ WorkshopWorkplace::GetRunningPlanNames() const
 }
 
 std::string
-WorkshopWorkplace::GetFullPlanNames() const
+WorkshopWorkplace::GetFullPlanNames() const noexcept
 {
 	std::map<std::string, unsigned> counters;
 	std::set<std::string> list;
@@ -218,7 +218,7 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 }
 
 void
-WorkshopWorkplace::OnExit(WorkshopOperator *o)
+WorkshopWorkplace::OnExit(WorkshopOperator *o) noexcept
 {
 	operators.erase(operators.iterator_to(*o));
 	delete o;
@@ -227,7 +227,7 @@ WorkshopWorkplace::OnExit(WorkshopOperator *o)
 }
 
 void
-WorkshopWorkplace::OnTimeout(WorkshopOperator *o)
+WorkshopWorkplace::OnTimeout(WorkshopOperator *o) noexcept
 {
 	OnExit(o);
 }
