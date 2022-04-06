@@ -30,17 +30,14 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CRON_WORKPLACE_HXX
-#define CRON_WORKPLACE_HXX
+#pragma once
 
-#include "Operator.hxx"
 #include "net/SocketDescriptor.hxx"
 
 #include <boost/intrusive/list.hpp>
 
-#include <assert.h>
-
 struct CronJob;
+class CronOperator;
 class SpawnService;
 class EmailService;
 class CurlGlobal;
@@ -55,8 +52,10 @@ class CronWorkplace {
 	CurlGlobal &curl;
 	ExitListener &exit_listener;
 
-	typedef boost::intrusive::list<CronOperator,
-				       boost::intrusive::constant_time_size<true>> OperatorList;
+	using OperatorList =
+		boost::intrusive::list<CronOperator,
+				       boost::intrusive::base_hook<boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>>,
+				       boost::intrusive::constant_time_size<true>>;
 
 	OperatorList operators;
 
@@ -68,21 +67,12 @@ public:
 		      SocketDescriptor _pond_socket,
 		      CurlGlobal &_curl,
 		      ExitListener &_exit_listener,
-		      unsigned _max_operators)
-		:spawn_service(_spawn_service),
-		 email_service(_email_service),
-		 pond_socket(_pond_socket),
-		 curl(_curl),
-		 exit_listener(_exit_listener),
-		 max_operators(_max_operators) {
-		assert(max_operators > 0);
-	}
+		      unsigned _max_operators);
 
 	CronWorkplace(const CronWorkplace &other) = delete;
+	CronWorkplace &operator=(const CronWorkplace &other) = delete;
 
-	~CronWorkplace() {
-		assert(operators.empty());
-	}
+	~CronWorkplace() noexcept;
 
 	SpawnService &GetSpawnService() {
 		return spawn_service;
@@ -113,10 +103,5 @@ public:
 
 	void OnExit(CronOperator *o);
 
-	void CancelAll() {
-		while (!operators.empty())
-			operators.front().Cancel();
-	}
+	void CancelAll() noexcept;
 };
-
-#endif

@@ -45,12 +45,29 @@
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
 
+#include <cassert>
 #include <string>
-#include <map>
-#include <set>
-#include <list>
 
-#include <assert.h>
+CronWorkplace::CronWorkplace(SpawnService &_spawn_service,
+			     EmailService *_email_service,
+			     SocketDescriptor _pond_socket,
+			     CurlGlobal &_curl,
+			     ExitListener &_exit_listener,
+			     unsigned _max_operators)
+	:spawn_service(_spawn_service),
+	 email_service(_email_service),
+	 pond_socket(_pond_socket),
+	 curl(_curl),
+	 exit_listener(_exit_listener),
+	 max_operators(_max_operators)
+{
+	assert(max_operators > 0);
+}
+
+CronWorkplace::~CronWorkplace() noexcept
+{
+	assert(operators.empty());
+}
 
 static bool
 IsURL(const char *command)
@@ -184,4 +201,11 @@ CronWorkplace::OnExit(CronOperator *o)
 	delete o;
 
 	exit_listener.OnChildProcessExit(-1);
+}
+
+void
+CronWorkplace::CancelAll() noexcept
+{
+	while (!operators.empty())
+		operators.front().Cancel();
 }
