@@ -2,6 +2,7 @@ cm4all-workshop (6.0.1) unstable; urgency=low
 
   * spawn: use pidfd
   * spawn: allow path components to exist already
+  * spawn: drop unnecessary capabilities
   * translation: add packets MOUNT_DEV, BIND_MOUNT_FILE
 
  --   
