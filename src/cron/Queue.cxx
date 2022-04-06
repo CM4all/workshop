@@ -210,7 +210,7 @@ try {
 				 node_name.c_str(),
 				 timeout);
 	if (r.GetAffectedRows() == 0) {
-		logger(3, "Lost race to run job '%s'\n", job.id.c_str());
+		logger(3, "Lost race to run job '", job.id, "'");
 		return false;
 	}
 
@@ -232,7 +232,7 @@ try {
 				 job.id.c_str(),
 				 node_name.c_str());
 	if (r.GetAffectedRows() == 0) {
-		logger(3, "Lost race to finish job '%s'\n", job.id.c_str());
+		logger(3, "Lost race to finish job '", job.id, "'");
 		return;
 	}
 } catch (...) {
