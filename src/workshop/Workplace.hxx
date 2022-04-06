@@ -61,7 +61,7 @@ class WorkshopWorkplace {
 
 	OperatorList operators;
 
-	const unsigned max_operators;
+	const std::size_t max_operators;
 	const bool enable_journal;
 
 public:
@@ -69,7 +69,7 @@ public:
 			  ExitListener &_exit_listener,
 			  const Logger &parent_logger,
 			  const char *_node_name,
-			  unsigned _max_operators,
+			  std::size_t _max_operators,
 			  bool _enable_journal) noexcept;
 
 	WorkshopWorkplace(const WorkshopWorkplace &other) = delete;

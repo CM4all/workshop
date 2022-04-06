@@ -57,7 +57,7 @@ WorkshopWorkplace::WorkshopWorkplace(SpawnService &_spawn_service,
 				     ExitListener &_exit_listener,
 				     const Logger &parent_logger,
 				     const char *_node_name,
-				     unsigned _max_operators,
+				     std::size_t _max_operators,
 				     bool _enable_journal) noexcept
 	:spawn_service(_spawn_service), exit_listener(_exit_listener),
 	 logger(parent_logger, "workplace"),
@@ -86,7 +86,7 @@ WorkshopWorkplace::GetRunningPlanNames() const noexcept
 std::string
 WorkshopWorkplace::GetFullPlanNames() const noexcept
 {
-	std::map<std::string, unsigned> counters;
+	std::map<std::string, std::size_t> counters;
 	std::set<std::string> list;
 	for (const auto &o : operators) {
 		const Plan &plan = o.GetPlan();
@@ -96,7 +96,7 @@ WorkshopWorkplace::GetFullPlanNames() const noexcept
 		const std::string &plan_name = o.GetPlanName();
 
 		auto i = counters.emplace(plan_name, 0);
-		unsigned &n = i.first->second;
+		std::size_t &n = i.first->second;
 
 		++n;
 
