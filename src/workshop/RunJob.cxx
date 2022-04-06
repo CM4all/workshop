@@ -38,6 +38,7 @@
 #include "spawn/ExitListener.hxx"
 #include "spawn/Prepared.hxx"
 #include "spawn/Registry.hxx"
+#include "spawn/PidfdEvent.hxx"
 #include "event/Loop.hxx"
 #include "system/CapabilityGlue.hxx"
 #include "system/Error.hxx"
@@ -49,6 +50,7 @@
 #include "util/StringCompare.hxx"
 
 #include <memory>
+#include <optional>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -98,12 +100,11 @@ class RunJobInstance final
 	std::unique_ptr<ProgressReader> progress_reader;
 	std::unique_ptr<WorkshopControlChannelServer> control_channel;
 
+	std::optional<PidfdEvent> pid;
+
 	int exit_status = EXIT_FAILURE;
 
 public:
-	RunJobInstance()
-		:child_process_registry(event_loop) {}
-
 	void Start(RunJobCommandLine &&cmdline);
 
 	int Run() {
@@ -186,10 +187,10 @@ RunJobInstance::Start(RunJobCommandLine &&cmdline)
 								   BIND_THIS_METHOD(OnProgress));
 	}
 
-	const auto pid = SpawnChildProcess(std::move(p), {},
-					   IsSysAdmin());
-	child_process_registry.Add(pid, "job", this);
-	child_process_registry.SetVolatile();
+	ExitListener &exit_listener = *this;
+	pid.emplace(event_loop,
+		    SpawnChildProcess(std::move(p), {}, IsSysAdmin()),
+		    "foo", exit_listener);
 }
 
 int

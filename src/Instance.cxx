@@ -43,7 +43,6 @@ Instance::Instance(const Config &config)
 	:shutdown_listener(event_loop, BIND_THIS_METHOD(OnExit)),
 	 sighup_event(event_loop, SIGHUP, BIND_THIS_METHOD(OnReload)),
 	 defer_idle_check(event_loop, BIND_THIS_METHOD(RemoveIdlePartitions)),
-	 child_process_registry(event_loop),
 	 curl(event_loop)
 {
 	/* the plan library must be initialized before starting the
@@ -56,7 +55,7 @@ Instance::Instance(const Config &config)
 		library->InsertPath("/usr/share/cm4all/workshop/plans");
 	}
 
-	spawn_service = StartSpawnServer(config.spawn, child_process_registry,
+	spawn_service = StartSpawnServer(config.spawn, event_loop,
 				    this,
 				    [this](){
 		event_loop.Reinit();
@@ -114,7 +113,6 @@ Instance::OnExit() noexcept
 	systemd_watchdog.Disable();
 	shutdown_listener.Disable();
 	sighup_event.Disable();
-	child_process_registry.SetVolatile();
 
 	spawn_service->Shutdown();
 
