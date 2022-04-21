@@ -19,6 +19,9 @@ c_compiler = meson.get_compiler('c')
 
 common_flags = [
   '-D_GNU_SOURCE',
+]
+
+test_common_flags = [
   '-Wwrite-strings', '-Wcast-qual', '-Wcast-align', '-Wfloat-equal',
   '-Wshadow', '-Wpointer-arith', '-Wsign-compare',
   '-Wmissing-declarations', '-Wmissing-noreturn', '-Wmissing-format-attribute',
@@ -26,9 +29,7 @@ common_flags = [
   '-Wunused',
   '-Wundef',
   '-Wvla',
-]
 
-test_common_flags = [
   '-fno-omit-frame-pointer',
   '-fvisibility=hidden',
 ]
