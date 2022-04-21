@@ -36,7 +36,9 @@ test_common_flags = [
   '-Wunused',
   '-Wvla',
   '-Wwrite-strings',
+]
 
+test_global_common_flags = [
   '-fno-omit-frame-pointer',
   '-fvisibility=hidden',
 ]
@@ -67,6 +69,12 @@ if not debug
   )
 endif
 
+test_global_cxxflags = test_global_common_flags + [
+]
+
+test_global_cflags = test_global_common_flags + [
+]
+
 test_cxxflags = test_common_flags + [
   '-fno-threadsafe-statics',
   '-fmerge-all-constants',
@@ -94,8 +102,10 @@ test_cflags = test_common_flags + [
 add_global_arguments(common_flags, language: 'c')
 add_global_arguments(common_flags, language: 'cpp')
 
-add_global_arguments(compiler.get_supported_arguments(test_cxxflags), language: 'cpp')
-add_global_arguments(c_compiler.get_supported_arguments(test_cflags), language: 'c')
+add_global_arguments(compiler.get_supported_arguments(test_global_cxxflags), language: 'cpp')
+add_global_arguments(c_compiler.get_supported_arguments(test_global_cflags), language: 'c')
+add_project_arguments(compiler.get_supported_arguments(test_cxxflags), language: 'cpp')
+add_project_arguments(c_compiler.get_supported_arguments(test_cflags), language: 'c')
 
 inc = include_directories(
   'src',
