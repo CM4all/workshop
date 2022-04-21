@@ -68,9 +68,10 @@ SyslogClient::Log(int priority, StringView msg)
 	static const char space = ' ';
 	static const char newline = '\n';
 	static const char colon[] = ": ";
-	char code[16];
+
+	std::array<char, 16> code;
 	struct iovec iovec[] = {
-		MakeIovec(ConstBuffer<char>(code, std::size_t(0))),
+		MakeIovec(ConstBuffer<char>{code.data(), std::size_t(0)}),
 		MakeIovec(me),
 		MakeIovecT(space),
 		MakeIovec(ident),
@@ -83,8 +84,9 @@ SyslogClient::Log(int priority, StringView msg)
 	assert(fd.IsDefined());
 	assert(priority >= 0 && priority < 8);
 
-	snprintf(code, sizeof(code), "<%d>", facility * 8 + priority);
-	iovec[0].iov_len = strlen(code);
+	snprintf(code.data(), sizeof(code.size()), "<%d>",
+		 facility * 8 + priority);
+	iovec[0].iov_len = strlen(code.data());
 
 	nbytes = writev(fd.Get(), iovec, std::size(iovec));
 	if (nbytes < 0)
