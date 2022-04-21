@@ -24,6 +24,7 @@ common_flags = [
 test_common_flags = [
   '-Wcast-align',
   '-Wcast-qual',
+  '-Wdouble-promotion',
   '-Wfloat-equal',
   '-Wmissing-declarations',
   '-Wmissing-format-attribute',
@@ -36,6 +37,10 @@ test_common_flags = [
   '-Wunused',
   '-Wvla',
   '-Wwrite-strings',
+
+  # clang specific warning options:
+  '-Wunreachable-code-aggressive',
+  '-Wused-but-marked-unused',
 ]
 
 test_global_common_flags = [
@@ -79,12 +84,27 @@ test_cxxflags = test_common_flags + [
   '-fno-threadsafe-statics',
   '-fmerge-all-constants',
 
+  '-Wcomma-subscript',
+  '-Wextra-semi',
+  '-Wmismatched-tags',
+  '-Woverloaded-virtual',
+  '-Wsign-promo',
+  '-Wvolatile',
+  '-Wvirtual-inheritance',
+
   '-Wno-missing-field-initializers',
+
+  # a vtable without a dtor is just fine
   '-Wno-non-virtual-dtor',
 
   # the only warnings we got from this are from formatted error
   # messages, and their truncation is harmless
   '-Wno-format-truncation',
+
+  # clang specific warning options:
+  '-Wcomma',
+  '-Wheader-hygiene',
+  '-Winconsistent-missing-destructor-override',
 ]
 
 if compiler.get_id() == 'gcc' and compiler.version().version_compare('>=11')
