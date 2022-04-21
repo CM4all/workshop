@@ -22,13 +22,20 @@ common_flags = [
 ]
 
 test_common_flags = [
-  '-Wwrite-strings', '-Wcast-qual', '-Wcast-align', '-Wfloat-equal',
-  '-Wshadow', '-Wpointer-arith', '-Wsign-compare',
-  '-Wmissing-declarations', '-Wmissing-noreturn', '-Wmissing-format-attribute',
+  '-Wcast-align',
+  '-Wcast-qual',
+  '-Wfloat-equal',
+  '-Wmissing-declarations',
+  '-Wmissing-format-attribute',
+  '-Wmissing-noreturn',
+  '-Wpointer-arith',
   '-Wredundant-decls',
-  '-Wunused',
+  '-Wshadow',
+  '-Wsign-compare',
   '-Wundef',
+  '-Wunused',
   '-Wvla',
+  '-Wwrite-strings',
 
   '-fno-omit-frame-pointer',
   '-fvisibility=hidden',
