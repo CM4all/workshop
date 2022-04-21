@@ -70,13 +70,13 @@ protected:
 	/**
 	 * This method is called whenever new data was appended.
 	 */
-	virtual void OnAppend() noexcept {};
+	virtual void OnAppend() noexcept {}
 
 	/**
 	 * This method is called at the end of the pipe, or when the
 	 * buffer has become full.
 	 */
-	virtual void OnEnd() noexcept {};
+	virtual void OnEnd() noexcept {}
 
 private:
 	void Close() noexcept {
