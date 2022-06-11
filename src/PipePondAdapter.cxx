@@ -33,13 +33,12 @@
 #include "PipePondAdapter.hxx"
 #include "net/log/Send.hxx"
 #include "net/log/Datagram.hxx"
-#include "util/StringView.hxx"
 #include "util/PrintException.hxx"
 
 #include <string.h>
 
 void
-PipePondAdapter::OnLine(StringView line) noexcept
+PipePondAdapter::OnLine(std::string_view line) noexcept
 {
 	if (line.empty())
 		return;
@@ -69,9 +68,9 @@ PipePondAdapter::SendLines(bool flush) noexcept
 	while (!r.empty()) {
 		char *newline = (char *)memchr(r.data(), '\n', r.size());
 		if (newline != nullptr) {
-			const StringView line((const char *)r.data(), newline);
-			position += line.size + 1;
-			r = r.subspan(line.size + 1);
+			const std::string_view line{(const char *)r.data(), newline};
+			position += line.size() + 1;
+			r = r.subspan(line.size() + 1);
 			OnLine(line);
 
 			/* check the socket again - it may have been closed by
@@ -79,7 +78,7 @@ PipePondAdapter::SendLines(bool flush) noexcept
 			if (!pond_socket.IsDefined())
 				break;
 		} else if (flush) {
-			const StringView line((const char *)r.data(), r.size());
+			const std::string_view line{(const char *)r.data(), r.size()};
 			position += r.size();
 			OnLine(line);
 			break;

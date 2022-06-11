@@ -37,8 +37,7 @@
 #include "io/UniqueFileDescriptor.hxx"
 
 #include <string>
-
-struct StringView;
+#include <string_view>
 
 /**
  * A derivation from #PipeCaptureBuffer which adds Pond logging.
@@ -70,6 +69,6 @@ protected:
 	}
 
 private:
-	void OnLine(StringView line) noexcept;
+	void OnLine(std::string_view line) noexcept;
 	void SendLines(bool flush) noexcept;
 };
