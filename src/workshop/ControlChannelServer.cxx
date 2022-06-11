@@ -130,8 +130,8 @@ SplitArgs(StringView s) noexcept
 }
 
 bool
-WorkshopControlChannelServer::OnUdpDatagram(ConstBuffer<void> _payload,
-					    WritableBuffer<UniqueFileDescriptor>,
+WorkshopControlChannelServer::OnUdpDatagram(std::span<const std::byte> _payload,
+					    std::span<UniqueFileDescriptor>,
 					    SocketAddress, int)
 {
 	if (_payload.empty()) {

@@ -112,6 +112,6 @@ private:
 
 	/* virtual methods from ControlHandler */
 	void OnControlPacket(WorkshopControlCommand command,
-			     ConstBuffer<void> payload) override;
+			     std::span<const std::byte> payload) override;
 	void OnControlError(std::exception_ptr ep) noexcept override;
 };

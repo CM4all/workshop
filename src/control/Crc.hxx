@@ -32,18 +32,19 @@
 
 #pragma once
 
-#include "util/ConstBuffer.hxx"
-
 #include <boost/crc.hpp>
+
+#include <cstddef>
+#include <span>
 
 using WorkshopControlCrc = boost::crc_32_type;
 
 [[gnu::pure]]
 inline uint32_t
-CalcWorkshopControlCrc(ConstBuffer<void> p) noexcept
+CalcWorkshopControlCrc(std::span<const std::byte> p) noexcept
 {
 	WorkshopControlCrc computer;
 	computer.reset();
-	computer.process_bytes(p.data, p.size);
+	computer.process_bytes(p.data(), p.size());
 	return computer.checksum();
 }

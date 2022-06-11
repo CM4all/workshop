@@ -34,15 +34,16 @@
 
 #include "Protocol.hxx"
 
+#include <cstddef>
 #include <exception>
+#include <span>
 
 class SocketAddress;
-template<typename T> struct ConstBuffer;
 
 class ControlHandler {
 public:
 	virtual void OnControlPacket(WorkshopControlCommand command,
-				     ConstBuffer<void> payload) = 0;
+				     std::span<const std::byte> payload) = 0;
 
 	virtual void OnControlError(std::exception_ptr ep) noexcept = 0;
 };

@@ -177,18 +177,16 @@ Instance::RemoveIdlePartitions() noexcept
 
 void
 Instance::OnControlPacket(WorkshopControlCommand command,
-			  ConstBuffer<void> payload)
+			  std::span<const std::byte> payload)
 {
-	(void)payload;
-
 	switch (command) {
 	case WorkshopControlCommand::NOP:
 		break;
 
 	case WorkshopControlCommand::VERBOSE:
 		{
-			const auto *log_level = (const uint8_t *)payload.data;
-			if (payload.size != sizeof(*log_level))
+			const auto *log_level = (const uint8_t *)payload.data();
+			if (payload.size() != sizeof(*log_level))
 				throw std::runtime_error("Malformed VERBOSE packet");
 
 			SetLogLevel(*log_level);

@@ -36,9 +36,6 @@
 #include "net/SocketAddress.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "util/ByteOrder.hxx"
-#include "util/ConstBuffer.hxx"
-#include "util/OffsetPointer.hxx"
-#include "util/WritableBuffer.hxx"
 
 #include <stdexcept>
 
@@ -48,17 +45,17 @@ ControlServer::ControlServer(EventLoop &event_loop, UniqueSocketDescriptor s,
 {
 }
 
-static ConstBuffer<void>
-CheckDatagramHeader(ConstBuffer<void> p)
+static std::span<const std::byte>
+CheckDatagramHeader(std::span<const std::byte> p)
 {
-	if (p.size % 4 != 0)
+	if (p.size() % 4 != 0)
 		throw std::runtime_error("Odd control datagram size");
 
-	const auto *header = (const WorkshopControlDatagramHeader *)p.data;
-	if (p.size < sizeof(*header))
+	const auto *header = (const WorkshopControlDatagramHeader *)(const void *)p.data();
+	if (p.size() < sizeof(*header))
 		throw std::runtime_error("Wrong control datagram size");
 
-	p = {header + 1, p.size - sizeof(*header)};
+	p = p.subspan(sizeof(*header));
 
 	if (FromBE32(header->magic) != WORKSHOP_CONTROL_MAGIC)
 		throw std::runtime_error("Wrong magic");
@@ -70,44 +67,38 @@ CheckDatagramHeader(ConstBuffer<void> p)
 }
 
 static void
-DecodeControlDatagram(ConstBuffer<void> p, ControlHandler &handler)
+DecodeControlDatagram(std::span<const std::byte> p, ControlHandler &handler)
 {
 	p = CheckDatagramHeader(p);
 
 	/* now decode all commands */
 
 	while (!p.empty()) {
-		const auto *header = (const WorkshopControlHeader *)p.data;
-		if (p.size < sizeof(*header))
+		const auto *header = (const WorkshopControlHeader *)(const void *)p.data();
+		if (p.size() < sizeof(*header))
 			throw std::runtime_error("Incomplete control command header");
 
 		size_t payload_size = FromBE16(header->size);
 		const auto command = (WorkshopControlCommand)FromBE16(header->command);
 
-		p.data = header + 1;
-		p.size -= sizeof(*header);
+		p = p.subspan(sizeof(*header));
 
-		const void *payload = p.data;
-		if (p.size < payload_size)
+		if (p.size() < payload_size)
 			throw std::runtime_error("Partial control command payload");
 
 		/* this command is ok, pass it to the callback */
 
-		handler.OnControlPacket(command,
-					payload_size > 0
-					? ConstBuffer<void>(payload, payload_size)
-					: nullptr);
+		handler.OnControlPacket(command, p.first(payload_size));
 
 		payload_size = ((payload_size + 3) | 3) - 3; /* apply padding */
 
-		p.data = OffsetPointer(payload, payload_size);
-		p.size -= payload_size;
+		p = p.subspan(payload_size);
 	}
 }
 
 bool
-ControlServer::OnUdpDatagram(ConstBuffer<void> payload,
-			     WritableBuffer<UniqueFileDescriptor>,
+ControlServer::OnUdpDatagram(std::span<const std::byte> payload,
+			     std::span<UniqueFileDescriptor>,
 			     SocketAddress, int uid)
 {
 	if (uid != 0 && uid != (int)geteuid())
