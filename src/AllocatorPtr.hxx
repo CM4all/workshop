@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2021 CM4all GmbH
+ * Copyright 2017-2021 CM4all GmbH
  * All rights reserved.
  *
  * author: Max Kellermann <mk@cm4all.com>
@@ -32,12 +32,12 @@
 
 #pragma once
 
-#include "util/ConstBuffer.hxx"
 #include "util/StringView.hxx"
 
 #include <forward_list>
 #include <functional>
 #include <new>
+#include <span>
 
 #include <stdlib.h>
 #include <string.h>
@@ -99,14 +99,14 @@ public:
 	}
 
 	template<typename T, typename... Args>
-	T *New(Args&&... args) {
+	T *New(Args&&... args) noexcept {
 		auto p = new T(std::forward<Args>(args)...);
 		cleanup.emplace_front([p](){ delete p; });
 		return p;
 	}
 
 	template<typename T>
-	T *NewArray(size_t n) {
+	T *NewArray(size_t n) noexcept {
 		auto p = new T[n];
 		cleanup.emplace_front([p](){ delete[] p; });
 		return p;
@@ -142,7 +142,7 @@ private:
 		return sv.size();
 	}
 
-	static constexpr size_t ConcatLength(ConstBuffer<StringView> s) noexcept {
+	static constexpr size_t ConcatLength(std::span<const StringView> s) noexcept {
 		size_t length = 0;
 		for (const auto &i : s)
 			length += i.size;
@@ -162,7 +162,7 @@ private:
 		return (char *)mempcpy(p, sv.data(), sv.size());
 	}
 
-	static char *ConcatCopy(char *p, ConstBuffer<StringView> s) noexcept {
+	static char *ConcatCopy(char *p, std::span<const StringView> s) noexcept {
 		for (const auto &i : s)
 			p = ConcatCopy(p, i);
 		return p;
@@ -201,12 +201,12 @@ public:
 	}
 
 	template<typename T, typename... Args>
-	T *New(Args&&... args) const {
+	T *New(Args&&... args) const noexcept {
 		return allocator.New<T>(std::forward<Args>(args)...);
 	}
 
 	template<typename T>
-	T *NewArray(size_t n) const {
+	T *NewArray(size_t n) const noexcept {
 		return allocator.NewArray<T>(n);
 	}
 
@@ -216,11 +216,15 @@ public:
 		return p;
 	}
 
-	ConstBuffer<void> Dup(ConstBuffer<void> src) const noexcept;
+	std::span<const std::byte> Dup(std::span<const std::byte> src) const noexcept;
 
 	template<typename T>
-	ConstBuffer<T> Dup(ConstBuffer<T> src) const noexcept {
-		return ConstBuffer<T>::FromVoid(Dup(src.ToVoid()));
+	std::span<const T> Dup(std::span<const T> src) const noexcept {
+		auto dest = Dup(std::as_bytes(src));
+		return {
+			(const T *)(const void *)(dest.data()),
+			dest.size() / sizeof(T),
+		};
 	}
 
 	StringView Dup(StringView src) const noexcept {

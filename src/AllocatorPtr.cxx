@@ -35,14 +35,14 @@
 
 #include <algorithm>
 
-ConstBuffer<void>
-AllocatorPtr::Dup(ConstBuffer<void> src) const noexcept
+std::span<const std::byte>
+AllocatorPtr::Dup(std::span<const std::byte> src) const noexcept
 {
-	if (src.IsNull())
-		return nullptr;
+	if (src.data() == nullptr)
+		return {};
 
 	if (src.empty())
-		return {"", 0};
+		return {(const std::byte *)"", 0};
 
-	return {Dup(src.data, src.size), src.size};
+	return {(const std::byte *)Dup(src.data(), src.size()), src.size()};
 }
