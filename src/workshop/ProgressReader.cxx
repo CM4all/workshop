@@ -60,7 +60,7 @@ ProgressReader::PipeReady(unsigned) noexcept
 		char ch = buffer[i];
 
 		if (ch >= '0' && ch <= '9' &&
-		    stdout_buffer.size() < stdout_buffer.capacity() - 1) {
+		    stdout_buffer.size() < stdout_buffer.max_size() - 1) {
 			stdout_buffer.push_back(ch);
 		} else {
 			if (!stdout_buffer.empty()) {

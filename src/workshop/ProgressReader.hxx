@@ -34,13 +34,13 @@
 
 #include "event/PipeEvent.hxx"
 #include "util/BindMethod.hxx"
-#include "util/StaticArray.hxx"
+#include "util/StaticVector.hxx"
 
 class UniqueFileDescriptor;
 
 class ProgressReader {
 	PipeEvent event;
-	StaticArray<char, 64> stdout_buffer;
+	StaticVector<char, 64> stdout_buffer;
 	unsigned last_progress = 0;
 
 	typedef BoundMethod<void(unsigned value) noexcept> Callback;
