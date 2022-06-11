@@ -276,6 +276,7 @@ executable(
   include_directories: inc,
   dependencies: [
     spawn_dep,
+    time_dep,
     event_net_dep,
   ],
   install: true,
