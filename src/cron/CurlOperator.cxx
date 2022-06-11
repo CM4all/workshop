@@ -90,8 +90,8 @@ CronCurlOperator::OnData(ConstBuffer<void> data)
 {
 	if (output_capture) {
 		auto w = output_capture->Write();
-		size_t nbytes = std::min(w.size, data.size);
-		memcpy(w.data, data.data, nbytes);
+		size_t nbytes = std::min(w.size(), data.size);
+		memcpy(w.data(), data.data, nbytes);
 		output_capture->Append(nbytes);
 	}
 }

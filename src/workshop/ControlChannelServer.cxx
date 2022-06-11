@@ -36,7 +36,6 @@
 #include "net/UniqueSocketDescriptor.hxx"
 #include "util/IterableSplitString.hxx"
 #include "util/StringView.hxx"
-#include "util/WritableBuffer.hxx"
 #include "version.h"
 
 #include <stdexcept>

@@ -32,9 +32,8 @@
 
 #pragma once
 
-#include "util/WritableBuffer.hxx"
-
 #include <memory>
+#include <span>
 
 /**
  * A buffer which helps capture up to 8 kB of data.
@@ -55,7 +54,7 @@ public:
 		return size == capacity;
 	}
 
-	WritableBuffer<char> Write() {
+	std::span<char> Write() {
 		return { &data[size], capacity - size };
 	}
 
@@ -63,7 +62,7 @@ public:
 		size += n;
 	}
 
-	WritableBuffer<char> GetData() {
+	std::span<char> GetData() {
 		return {data.get(), size};
 	}
 

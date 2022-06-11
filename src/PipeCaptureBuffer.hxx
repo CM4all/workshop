@@ -58,7 +58,7 @@ public:
 		return buffer.IsFull();
 	}
 
-	WritableBuffer<char> GetData() noexcept {
+	std::span<char> GetData() noexcept {
 		return buffer.GetData();
 	}
 

@@ -49,7 +49,7 @@ PipeCaptureBuffer::OnSocket(unsigned) noexcept
 
 	auto w = buffer.Write();
 	if (!w.empty()) {
-		ssize_t nbytes = fd.Read(w.data, w.size);
+		ssize_t nbytes = fd.Read(w.data(), w.size());
 		if (nbytes <= 0) {
 			Close();
 			OnEnd();

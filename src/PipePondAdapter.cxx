@@ -64,15 +64,14 @@ PipePondAdapter::SendLines(bool flush) noexcept
 	if (!pond_socket.IsDefined())
 		return;
 
-	auto r = GetData();
-	r.skip_front(position);
+	auto r = GetData().subspan(position);
 
 	while (!r.empty()) {
-		char *newline = (char *)memchr(r.data, '\n', r.size);
+		char *newline = (char *)memchr(r.data(), '\n', r.size());
 		if (newline != nullptr) {
-			const StringView line((const char *)r.data, newline);
+			const StringView line((const char *)r.data(), newline);
 			position += line.size + 1;
-			r.skip_front(line.size + 1);
+			r = r.subspan(line.size + 1);
 			OnLine(line);
 
 			/* check the socket again - it may have been closed by
@@ -80,8 +79,8 @@ PipePondAdapter::SendLines(bool flush) noexcept
 			if (!pond_socket.IsDefined())
 				break;
 		} else if (flush) {
-			const StringView line((const char *)r.data, r.size);
-			position += r.size;
+			const StringView line((const char *)r.data(), r.size());
+			position += r.size();
 			OnLine(line);
 			break;
 		} else
