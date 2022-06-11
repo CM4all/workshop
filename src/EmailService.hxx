@@ -77,7 +77,7 @@ class EmailService {
 		void OnSocketConnectError(std::exception_ptr error) noexcept override;
 
 		/* virtual methods from QmqpClientHandler */
-		void OnQmqpClientSuccess(StringView description) noexcept override;
+		void OnQmqpClientSuccess(std::string_view description) noexcept override;
 		void OnQmqpClientError(std::exception_ptr error) noexcept override;
 	};
 

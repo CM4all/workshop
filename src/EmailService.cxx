@@ -72,7 +72,7 @@ EmailService::Job::OnSocketConnectError(std::exception_ptr error) noexcept
 }
 
 void
-EmailService::Job::OnQmqpClientSuccess(StringView description) noexcept
+EmailService::Job::OnQmqpClientSuccess(std::string_view description) noexcept
 {
 	// TODO log?
 	(void)description;
