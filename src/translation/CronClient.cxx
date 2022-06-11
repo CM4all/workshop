@@ -37,8 +37,7 @@
 #include "AllocatorPtr.hxx"
 #include "system/Error.hxx"
 #include "util/StaticFifoBuffer.hxx"
-#include "util/ConstBuffer.hxx"
-#include "util/StringView.hxx"
+#include "util/SpanCast.hxx"
 
 #include <stdexcept>
 
@@ -46,44 +45,50 @@
 #include <sys/socket.h>
 
 static void
-WriteHeader(void *&p, TranslationCommand command, size_t size)
+Copy(std::byte *&p, std::span<const std::byte> src) noexcept
+{
+	p = std::copy(src.begin(), src.end(), p);
+}
+
+static void
+WriteHeader(std::byte *&p, TranslationCommand command, size_t size)
 {
 	TranslationHeader header;
 	header.length = (uint16_t)size;
 	header.command = command;
 
-	p = mempcpy(p, &header, sizeof(header));
+	Copy(p, std::as_bytes(std::span{&header, 1}));
 }
 
 static void
-WritePacket(void *&p, TranslationCommand cmd)
+WritePacket(std::byte *&p, TranslationCommand cmd)
 {
 	WriteHeader(p, cmd, 0);
 }
 
 static void
-WritePacket(void *&p, TranslationCommand cmd,
-	    ConstBuffer<void> payload)
+WritePacket(std::byte *&p, TranslationCommand cmd,
+	    std::span<const std::byte> payload)
 {
-	WriteHeader(p, cmd, payload.size);
-	p = mempcpy(p, payload.data, payload.size);
+	WriteHeader(p, cmd, payload.size());
+	Copy(p, payload);
 }
 
 static void
-WritePacket(void *&p, TranslationCommand cmd,
-	    StringView payload)
+WritePacket(std::byte *&p, TranslationCommand cmd,
+	    std::string_view payload)
 {
-	WritePacket(p, cmd, payload.ToVoid());
+	WritePacket(p, cmd, AsBytes(payload));
 }
 
 static void
-SendFull(int fd, ConstBuffer<void> buffer)
+SendFull(int fd, std::span<const std::byte> buffer)
 {
-	ssize_t nbytes = send(fd, buffer.data, buffer.size, MSG_NOSIGNAL);
+	ssize_t nbytes = send(fd, buffer.data(), buffer.size(), MSG_NOSIGNAL);
 	if (nbytes < 0)
 		throw MakeErrno("send() to translation server failed");
 
-	if (size_t(nbytes) != buffer.size)
+	if (size_t(nbytes) != buffer.size())
 		throw std::runtime_error("Short send() to translation server");
 }
 
@@ -99,8 +104,8 @@ SendTranslateCron(int fd, const char *partition_name, const char *listener_tag,
 	if (param != nullptr && strlen(param) > 4096)
 		throw std::runtime_error("Translation parameter too long");
 
-	char buffer[8192];
-	void *p = buffer;
+	std::byte buffer[8192];
+	std::byte *p = buffer;
 
 	WritePacket(p, TranslationCommand::BEGIN);
 
@@ -108,7 +113,7 @@ SendTranslateCron(int fd, const char *partition_name, const char *listener_tag,
 		? strlen(partition_name)
 		: 0;
 	WritePacket(p, TranslationCommand::CRON,
-		    StringView(partition_name, partition_name_size));
+		    std::string_view{partition_name, partition_name_size});
 
 	if (listener_tag != nullptr)
 		WritePacket(p, TranslationCommand::LISTENER_TAG, listener_tag);
@@ -120,7 +125,7 @@ SendTranslateCron(int fd, const char *partition_name, const char *listener_tag,
 		WritePacket(p, TranslationCommand::PARAM, param);
 	WritePacket(p, TranslationCommand::END);
 
-	const size_t size = (char *)p - buffer;
+	const size_t size = p - buffer;
 	SendFull(fd, {buffer, size});
 }
 
