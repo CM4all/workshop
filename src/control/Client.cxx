@@ -33,6 +33,7 @@
 #include "Protocol.hxx"
 #include "Crc.hxx"
 #include "system/Error.hxx"
+#include "io/Iovec.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "net/RConnectSocket.hxx"
 #include "net/SendMessage.hxx"
@@ -76,13 +77,13 @@ WorkshopControlClient::Send(WorkshopControlCommand cmd,
 	WorkshopControlHeader h{ToBE16(payload.size), ToBE16(uint16_t(cmd))};
 	WorkshopControlDatagramHeader dh{ToBE32(WORKSHOP_CONTROL_MAGIC), 0};
 
-	static constexpr uint8_t padding[3] = {0, 0, 0};
+	static constexpr std::byte padding[3]{};
 
 	const struct iovec v[] = {
-		{ &dh, sizeof(dh) },
-		{ &h, sizeof(h) },
-		{ const_cast<void *>(payload.data), payload.size },
-		{ const_cast<uint8_t *>(padding), PaddingSize(payload.size) },
+		MakeIovecT(dh),
+		MakeIovecT(h),
+		MakeIovec(payload),
+		MakeIovec(std::span{padding, PaddingSize(payload.size)}),
 	};
 
 	WorkshopControlCrc crc;
