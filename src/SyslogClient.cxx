@@ -62,7 +62,7 @@ MakeIovec(const std::string_view value) noexcept
 }
 
 int
-SyslogClient::Log(int priority, std::string_view msg)
+SyslogClient::Log(int priority, std::string_view msg) noexcept
 {
 	static const char space = ' ';
 	static const char newline = '\n';

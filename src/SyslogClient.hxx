@@ -55,5 +55,5 @@ public:
 
 	SyslogClient(SyslogClient &&src) = default;
 
-	int Log(int priority, std::string_view msg);
+	int Log(int priority, std::string_view msg) noexcept;
 };
