@@ -35,8 +35,7 @@
 #include "net/AllocatedSocketAddress.hxx"
 #include "event/net/ConnectSocket.hxx"
 #include "event/net/djb/QmqpClient.hxx"
-
-#include <boost/intrusive/list.hpp>
+#include "util/IntrusiveList.hxx"
 
 #include <string>
 #include <forward_list>
@@ -59,8 +58,9 @@ class EmailService {
 	const AllocatedSocketAddress address;
 
 	class Job final
-		: public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>,
-		ConnectSocketHandler, QmqpClientHandler {
+		: public IntrusiveListHook,
+		  ConnectSocketHandler, QmqpClientHandler
+	{
 		EmailService &service;
 		Email email;
 
@@ -81,8 +81,7 @@ class EmailService {
 		void OnQmqpClientError(std::exception_ptr error) noexcept override;
 	};
 
-	typedef boost::intrusive::list<Job,
-				       boost::intrusive::constant_time_size<false>> JobList;
+	using JobList = IntrusiveList<Job>;
 
 	JobList jobs;
 

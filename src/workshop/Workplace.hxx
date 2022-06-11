@@ -33,8 +33,7 @@
 #pragma once
 
 #include "io/Logger.hxx"
-
-#include <boost/intrusive/list.hpp>
+#include "util/IntrusiveList.hxx"
 
 #include <memory>
 #include <string>
@@ -55,9 +54,9 @@ class WorkshopWorkplace {
 	const std::string node_name;
 
 	using OperatorList =
-		boost::intrusive::list<WorkshopOperator,
-				       boost::intrusive::base_hook<boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>>,
-				       boost::intrusive::constant_time_size<true>>;
+		IntrusiveList<WorkshopOperator,
+			      IntrusiveListBaseHookTraits<WorkshopOperator>,
+			      true>;
 
 	OperatorList operators;
 

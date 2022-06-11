@@ -36,8 +36,7 @@
 #include "Job.hxx"
 #include "event/FarTimerEvent.hxx"
 #include "io/Logger.hxx"
-
-#include <boost/intrusive/list_hook.hpp>
+#include "util/IntrusiveList.hxx"
 
 #include <string>
 
@@ -49,7 +48,7 @@ class CronWorkplace;
  * A #CronJob being executed.
  */
 class CronOperator
-	: public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>,
+	: public IntrusiveListHook,
 	  LoggerDomainFactory
 {
 protected:

@@ -33,15 +33,14 @@
 #ifndef WORKSHOP_OPERATOR_HXX
 #define WORKSHOP_OPERATOR_HXX
 
+#include "Job.hxx"
+#include "LogBridge.hxx"
 #include "ControlChannelListener.hxx"
 #include "spawn/ExitListener.hxx"
 #include "spawn/ProcessHandle.hxx"
 #include "event/FarTimerEvent.hxx"
 #include "io/Logger.hxx"
-#include "Job.hxx"
-#include "LogBridge.hxx"
-
-#include <boost/intrusive/list_hook.hpp>
+#include "util/IntrusiveList.hxx"
 
 #include <memory>
 #include <string>
@@ -57,7 +56,7 @@ class UniqueSocketDescriptor;
 
 /** an operator is a job being executed */
 class WorkshopOperator final
-	: public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>,
+	: public IntrusiveListHook,
 	  public ExitListener,
 	WorkshopControlChannelListener,
 	LoggerDomainFactory

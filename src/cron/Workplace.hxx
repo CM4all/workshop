@@ -33,8 +33,7 @@
 #pragma once
 
 #include "net/SocketDescriptor.hxx"
-
-#include <boost/intrusive/list.hpp>
+#include "util/IntrusiveList.hxx"
 
 struct CronJob;
 class CronOperator;
@@ -53,9 +52,9 @@ class CronWorkplace {
 	ExitListener &exit_listener;
 
 	using OperatorList =
-		boost::intrusive::list<CronOperator,
-				       boost::intrusive::base_hook<boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>>,
-				       boost::intrusive::constant_time_size<true>>;
+		IntrusiveList<CronOperator,
+			      IntrusiveListBaseHookTraits<CronOperator>,
+			      true>;
 
 	OperatorList operators;
 
