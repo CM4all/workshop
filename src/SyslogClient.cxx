@@ -59,7 +59,7 @@ SyslogClient::SyslogClient(const char *host_and_port,
 static constexpr struct iovec
 MakeIovec(const std::string_view value) noexcept
 {
-	return MakeIovec(StringView(value));
+	return MakeIovec(std::span{value});
 }
 
 int
@@ -71,7 +71,7 @@ SyslogClient::Log(int priority, StringView msg)
 
 	std::array<char, 16> code;
 	struct iovec iovec[] = {
-		MakeIovec(ConstBuffer<char>{code.data(), std::size_t(0)}),
+		MakeIovec(std::span{code.data(), std::size_t(0)}),
 		MakeIovec(me),
 		MakeIovecT(space),
 		MakeIovec(ident),
