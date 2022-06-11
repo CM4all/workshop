@@ -78,7 +78,7 @@ WorkshopControlClient::Send(WorkshopControlCommand cmd,
 
 	static constexpr uint8_t padding[3] = {0, 0, 0};
 
-	struct iovec v[] = {
+	const struct iovec v[] = {
 		{ &dh, sizeof(dh) },
 		{ &h, sizeof(h) },
 		{ const_cast<void *>(payload.data), payload.size },
@@ -92,7 +92,7 @@ WorkshopControlClient::Send(WorkshopControlCommand cmd,
 
 	dh.crc = ToBE32(crc.checksum());
 
-	SendMessage(socket, ConstBuffer<struct iovec>(v), 0);
+	SendMessage(socket, MessageHeader{v}, 0);
 }
 
 static void
