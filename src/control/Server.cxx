@@ -32,7 +32,7 @@
 
 #include "Server.hxx"
 #include "Handler.hxx"
-#include "Crc.hxx"
+#include "util/CRC32.hxx"
 #include "net/SocketAddress.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "util/ByteOrder.hxx"
@@ -60,7 +60,10 @@ CheckDatagramHeader(std::span<const std::byte> p)
 	if (FromBE32(header->magic) != WORKSHOP_CONTROL_MAGIC)
 		throw std::runtime_error("Wrong magic");
 
-	if (FromBE32(header->crc) != CalcWorkshopControlCrc(p))
+	CRC32 crc;
+	crc.Update(p);
+
+	if (FromBE32(header->crc) != crc.Finish())
 		throw std::runtime_error("CRC error");
 
 	return p;

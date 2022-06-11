@@ -31,7 +31,6 @@
  */
 
 #include "Protocol.hxx"
-#include "Crc.hxx"
 #include "system/Error.hxx"
 #include "io/Iovec.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
@@ -39,6 +38,7 @@
 #include "net/SendMessage.hxx"
 #include "util/ByteOrder.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/CRC32.hxx"
 #include "util/Macros.hxx"
 #include "util/StringCompare.hxx"
 #include "util/PrintException.hxx"
@@ -87,12 +87,11 @@ WorkshopControlClient::Send(WorkshopControlCommand cmd,
 		MakeIovec(std::span{padding, PaddingSize(payload.size())}),
 	};
 
-	WorkshopControlCrc crc;
-	crc.reset();
+	CRC32 crc;
 	for (size_t i = 1; i < ARRAY_SIZE(v); ++i)
-		crc.process_bytes(v[i].iov_base, v[i].iov_len);
+		crc.Update({(const std::byte *)v[i].iov_base, v[i].iov_len});
 
-	dh.crc = ToBE32(crc.checksum());
+	dh.crc = ToBE32(crc.Finish());
 
 	SendMessage(socket, MessageHeader{v}, 0);
 }
