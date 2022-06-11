@@ -58,7 +58,7 @@ CheckDatagramHeader(ConstBuffer<void> p)
 	if (p.size < sizeof(*header))
 		throw std::runtime_error("Wrong control datagram size");
 
-	p = {header + 1, p.size - sizeof(header)};
+	p = {header + 1, p.size - sizeof(*header)};
 
 	if (FromBE32(header->magic) != WORKSHOP_CONTROL_MAGIC)
 		throw std::runtime_error("Wrong magic");
