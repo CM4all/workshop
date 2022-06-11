@@ -59,28 +59,28 @@ LogBridge::CreateSyslog(const char *host_and_port,
 }
 
 bool
-LogBridge::OnPipeLine(WritableBuffer<char> line) noexcept
+LogBridge::OnPipeLine(std::span<char> line) noexcept
 {
 	// TODO: strip non-ASCII characters
 
 	if (max_buffer_size > 0 && buffer.length() < max_buffer_size - 1) {
-		buffer.append(line.data,
-			      std::min(line.size, max_buffer_size - 1 - buffer.length()));
+		buffer.append(line.data(),
+			      std::min(line.size(), max_buffer_size - 1 - buffer.length()));
 		buffer.push_back('\n');
 	}
 
 	if (syslog)
-		syslog->Log(6, {line.data, line.size});
+		syslog->Log(6, {line.data(), line.size()});
 
 	if (enable_journal)
-		sd_journal_send("MESSAGE=%.*s", int(line.size), line.data,
+		sd_journal_send("MESSAGE=%.*s", int(line.size()), line.data(),
 				"WORKSHOP_PLAN=%s", plan_name.c_str(),
 				"WORKSHOP_JOB=%s", job_id.c_str(),
 				nullptr);
 
 	if (max_buffer_size == 0 && !syslog && !enable_journal)
 		fprintf(stderr, "[%s:%s] %.*s\n", plan_name.c_str(), job_id.c_str(),
-			int(line.size), line.data);
+			int(line.size()), line.data());
 
 	return true;
 }

@@ -78,6 +78,6 @@ public:
 	}
 
 private:
-	bool OnPipeLine(WritableBuffer<char> line) noexcept override;
+	bool OnPipeLine(std::span<char> line) noexcept override;
 	void OnPipeEnd() noexcept override {}
 };
