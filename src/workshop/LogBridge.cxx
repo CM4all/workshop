@@ -32,7 +32,6 @@
 
 #include "LogBridge.hxx"
 #include "SyslogClient.hxx"
-#include "util/StringView.hxx"
 
 #include <systemd/sd-journal.h>
 

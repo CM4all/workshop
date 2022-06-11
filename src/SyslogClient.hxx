@@ -35,8 +35,7 @@
 #include "net/UniqueSocketDescriptor.hxx"
 
 #include <string>
-
-struct StringView;
+#include <string_view>
 
 class SyslogClient {
 	UniqueSocketDescriptor fd;
@@ -56,5 +55,5 @@ public:
 
 	SyslogClient(SyslogClient &&src) = default;
 
-	int Log(int priority, StringView msg);
+	int Log(int priority, std::string_view msg);
 };

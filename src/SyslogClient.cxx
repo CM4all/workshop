@@ -35,7 +35,6 @@
 #include "net/AddressInfo.hxx"
 #include "system/Error.hxx"
 #include "io/Iovec.hxx"
-#include "util/StringView.hxx"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -63,7 +62,7 @@ MakeIovec(const std::string_view value) noexcept
 }
 
 int
-SyslogClient::Log(int priority, StringView msg)
+SyslogClient::Log(int priority, std::string_view msg)
 {
 	static const char space = ' ';
 	static const char newline = '\n';
