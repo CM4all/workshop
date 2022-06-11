@@ -38,6 +38,7 @@
 #include "net/RConnectSocket.hxx"
 #include "net/SendMessage.hxx"
 #include "util/ByteOrder.hxx"
+#include "util/ConstBuffer.hxx"
 #include "util/Macros.hxx"
 #include "util/StringCompare.hxx"
 #include "util/PrintException.hxx"
@@ -61,7 +62,7 @@ public:
 		:WorkshopControlClient(ResolveConnectDatagramSocket(host_and_port,
 								    WORKSHOP_CONTROL_DEFAULT_PORT)) {}
 
-	void Send(WorkshopControlCommand cmd, ConstBuffer<void> payload=nullptr);
+	void Send(WorkshopControlCommand cmd, std::span<const std::byte> payload={});
 };
 
 static constexpr size_t
@@ -72,9 +73,9 @@ PaddingSize(size_t size)
 
 void
 WorkshopControlClient::Send(WorkshopControlCommand cmd,
-			    ConstBuffer<void> payload)
+			    std::span<const std::byte> payload)
 {
-	WorkshopControlHeader h{ToBE16(payload.size), ToBE16(uint16_t(cmd))};
+	WorkshopControlHeader h{ToBE16(payload.size()), ToBE16(uint16_t(cmd))};
 	WorkshopControlDatagramHeader dh{ToBE32(WORKSHOP_CONTROL_MAGIC), 0};
 
 	static constexpr std::byte padding[3]{};
@@ -83,7 +84,7 @@ WorkshopControlClient::Send(WorkshopControlCommand cmd,
 		MakeIovecT(dh),
 		MakeIovecT(h),
 		MakeIovec(payload),
-		MakeIovec(std::span{padding, PaddingSize(payload.size)}),
+		MakeIovec(std::span{padding, PaddingSize(payload.size())}),
 	};
 
 	WorkshopControlCrc crc;
@@ -128,7 +129,7 @@ Verbose(const char *server, ConstBuffer<const char *> args)
 
 	WorkshopControlClient client(server);
 	client.Send(WorkshopControlCommand::VERBOSE,
-		    {&log_level, sizeof(log_level)});
+		    std::as_bytes(std::span{&log_level, 1}));
 }
 
 static void
