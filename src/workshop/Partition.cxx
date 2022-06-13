@@ -75,9 +75,9 @@ WorkshopPartition::OnRateLimitTimer() noexcept
 void
 WorkshopPartition::UpdateFilter(bool library_modified)
 {
-	std::set<std::string> available_plans;
+	std::set<std::string_view, std::less<>> available_plans;
 	library.VisitAvailable(GetEventLoop().SteadyNow(),
-			       [&available_plans](const std::string &name, const Plan &){
+			       [&available_plans](const std::string_view name, const Plan &){
 				       available_plans.emplace(name);
 			       });
 
@@ -88,7 +88,7 @@ WorkshopPartition::UpdateFilter(bool library_modified)
 	const auto now = GetEventLoop().SteadyNow();
 	const auto earliest_expiry =
 		rate_limited_plans.ForEach(now,
-			[&available_plans](const std::string &name){
+			[&available_plans](const std::string_view name){
 				auto i = available_plans.find(name);
 				if (i != available_plans.end())
 					available_plans.erase(i);
