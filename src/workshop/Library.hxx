@@ -131,13 +131,6 @@ public:
 				  const char *name) noexcept;
 
 private:
-	PlanEntry &MakePlanEntry(const char *name) noexcept {
-		return plans.emplace(std::piecewise_construct,
-				     std::forward_as_tuple(name),
-				     std::forward_as_tuple())
-			.first->second;
-	}
-
 	void DisablePlan(PlanEntry &entry,
 			 std::chrono::steady_clock::time_point now,
 			 std::chrono::steady_clock::duration duration) noexcept;
