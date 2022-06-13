@@ -36,7 +36,7 @@
 #include <map>
 #include <string>
 
-typedef std::map<std::string, std::string> StringMap;
+using StringMap = std::map<std::string_view, std::string_view, std::less<>>;
 
 void
 Expand(std::string &p, const StringMap &vars);

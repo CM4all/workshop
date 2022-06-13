@@ -46,7 +46,7 @@ Expand(std::string &p, const StringMap &vars)
 
 		p.append(src.begin() + start, src.begin() + pos);
 
-		const std::string key(src.begin() + start + 2, src.begin() + end);
+		const std::string_view key(src.begin() + start + 2, src.begin() + end);
 		auto i = vars.find(key);
 		if (i != vars.end())
 			p.append(i->second);

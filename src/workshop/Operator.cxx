@@ -50,6 +50,8 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
+using std::string_view_literals::operator""sv;
+
 WorkshopOperator::WorkshopOperator(EventLoop &_event_loop,
 				   WorkshopWorkplace &_workplace,
 				   const WorkshopJob &_job,
@@ -148,10 +150,10 @@ WorkshopOperator::Expand(std::list<std::string> &args) const noexcept
 	assert(!args.empty());
 
 	StringMap vars;
-	vars.emplace("0", args.front());
-	vars.emplace("NODE", workplace.GetNodeName());
-	vars.emplace("JOB", job.id);
-	vars.emplace("PLAN", job.plan_name);
+	vars.emplace("0"sv, args.front());
+	vars.emplace("NODE"sv, workplace.GetNodeName());
+	vars.emplace("JOB"sv, job.id);
+	vars.emplace("PLAN"sv, job.plan_name);
 
 	for (auto &i : args)
 		::Expand(i, vars);
