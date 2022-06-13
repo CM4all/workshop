@@ -84,7 +84,7 @@ class Library {
 
 	const std::filesystem::path path;
 
-	std::map<std::string, PlanEntry> plans;
+	std::map<std::string, PlanEntry, std::less<>> plans;
 
 	std::chrono::steady_clock::time_point next_plans_check =
 		std::chrono::steady_clock::time_point::min();
