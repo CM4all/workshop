@@ -87,7 +87,7 @@ WorkshopControlClient::Send(WorkshopControlCommand cmd,
 		MakeIovec(std::span{padding, PaddingSize(payload.size())}),
 	};
 
-	CRC32 crc;
+	CRC32State crc;
 	for (size_t i = 1; i < ARRAY_SIZE(v); ++i)
 		crc.Update({(const std::byte *)v[i].iov_base, v[i].iov_len});
 

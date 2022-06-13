@@ -60,7 +60,7 @@ CheckDatagramHeader(std::span<const std::byte> p)
 	if (FromBE32(header->magic) != WORKSHOP_CONTROL_MAGIC)
 		throw std::runtime_error("Wrong magic");
 
-	CRC32 crc;
+	CRC32State crc;
 	crc.Update(p);
 
 	if (FromBE32(header->crc) != crc.Finish())
