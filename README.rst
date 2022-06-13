@@ -17,7 +17,6 @@ You need:
 - `libcap2 <https://sites.google.com/site/fullycapable/>`__
 - `libfmt <https://fmt.dev/>`__
 - `libpq <https://www.postgresql.org/>`__
-- `Boost <http://www.boost.org/>`__
 - `CURL <https://curl.haxx.se/>`__
 - `D-Bus <https://www.freedesktop.org/wiki/Software/dbus/>`__
 - `systemd <https://www.freedesktop.org/wiki/Software/systemd/>`__

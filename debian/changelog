@@ -3,6 +3,7 @@ cm4all-workshop (6.0.10) unstable; urgency=low
   * spawn: support MOUNT_HOME inside MOUNT_EMPTY
   * ping: set type=JOB
   * drop support for /etc/default/cm4all-workshop (deprecated since v4)
+  * drop Boost dependency
 
  --   
 

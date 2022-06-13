@@ -38,7 +38,6 @@ jobs:
             libsystemd-dev \
             libdbus-1-dev \
             libseccomp-dev \
-            libboost-dev \
             libfmt-dev \
             libcurl4-openssl-dev \
             libcap-dev \
