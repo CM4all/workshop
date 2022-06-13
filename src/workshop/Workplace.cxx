@@ -76,7 +76,7 @@ WorkshopWorkplace::~WorkshopWorkplace() noexcept
 std::string
 WorkshopWorkplace::GetRunningPlanNames() const noexcept
 {
-	std::set<std::string> list;
+	std::set<std::string_view, std::less<>> list;
 	for (const auto &o : operators)
 		list.emplace(o.GetPlanName());
 
@@ -86,8 +86,8 @@ WorkshopWorkplace::GetRunningPlanNames() const noexcept
 std::string
 WorkshopWorkplace::GetFullPlanNames() const noexcept
 {
-	std::map<std::string, std::size_t> counters;
-	std::set<std::string> list;
+	std::map<std::string_view, std::size_t, std::less<>> counters;
+	std::set<std::string_view, std::less<>> list;
 	for (const auto &o : operators) {
 		const Plan &plan = o.GetPlan();
 		if (plan.concurrency == 0)
