@@ -56,8 +56,8 @@ CronPartition::CronPartition(EventLoop &event_loop,
 		       config.database.c_str(), config.database_schema.c_str(),
 		       [this](CronJob &&job){ OnJob(std::move(job)); }),
 	 workplace(_spawn_service, email_service.get(), pond_socket,
-			   _curl, *this,
-			   root_config.concurrency),
+		   _curl, *this,
+		   root_config.concurrency),
 	 idle_callback(_idle_callback)
 {
 }
