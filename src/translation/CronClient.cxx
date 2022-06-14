@@ -31,55 +31,17 @@
  */
 
 #include "CronClient.hxx"
+#include "Marshal.hxx"
 #include "Receive.hxx"
 #include "translation/Protocol.hxx"
 #include "translation/Response.hxx"
 #include "AllocatorPtr.hxx"
 #include "system/Error.hxx"
 #include "net/SocketDescriptor.hxx"
-#include "util/SpanCast.hxx"
 
-#include <algorithm>
 #include <stdexcept>
 
 #include <sys/socket.h>
-
-static void
-Copy(std::byte *&p, std::span<const std::byte> src) noexcept
-{
-	p = std::copy(src.begin(), src.end(), p);
-}
-
-static void
-WriteHeader(std::byte *&p, TranslationCommand command, size_t size)
-{
-	TranslationHeader header;
-	header.length = (uint16_t)size;
-	header.command = command;
-
-	Copy(p, std::as_bytes(std::span{&header, 1}));
-}
-
-static void
-WritePacket(std::byte *&p, TranslationCommand cmd)
-{
-	WriteHeader(p, cmd, 0);
-}
-
-static void
-WritePacket(std::byte *&p, TranslationCommand cmd,
-	    std::span<const std::byte> payload)
-{
-	WriteHeader(p, cmd, payload.size());
-	Copy(p, payload);
-}
-
-static void
-WritePacket(std::byte *&p, TranslationCommand cmd,
-	    std::string_view payload)
-{
-	WritePacket(p, cmd, AsBytes(payload));
-}
 
 static void
 SendFull(SocketDescriptor s, std::span<const std::byte> buffer)
@@ -105,29 +67,27 @@ SendTranslateCron(SocketDescriptor s, const char *partition_name, const char *li
 	if (param != nullptr && strlen(param) > 4096)
 		throw std::runtime_error("Translation parameter too long");
 
-	std::byte buffer[8192];
-	std::byte *p = buffer;
+	TranslationMarshaller m;
 
-	WritePacket(p, TranslationCommand::BEGIN);
+	m.Write(TranslationCommand::BEGIN);
 
 	size_t partition_name_size = partition_name != nullptr
 		? strlen(partition_name)
 		: 0;
-	WritePacket(p, TranslationCommand::CRON,
-		    std::string_view{partition_name, partition_name_size});
+	m.Write(TranslationCommand::CRON,
+		std::string_view{partition_name, partition_name_size});
 
 	if (listener_tag != nullptr)
-		WritePacket(p, TranslationCommand::LISTENER_TAG, listener_tag);
+		m.Write(TranslationCommand::LISTENER_TAG, listener_tag);
 
-	WritePacket(p, TranslationCommand::USER, user);
+	m.Write(TranslationCommand::USER, user);
 	if (uri != nullptr)
-		WritePacket(p, TranslationCommand::URI, uri);
+		m.Write(TranslationCommand::URI, uri);
 	if (param != nullptr)
-		WritePacket(p, TranslationCommand::PARAM, param);
-	WritePacket(p, TranslationCommand::END);
+		m.Write(TranslationCommand::PARAM, param);
+	m.Write(TranslationCommand::END);
 
-	const size_t size = p - buffer;
-	SendFull(s, {buffer, size});
+	SendFull(s, m.Commit());
 }
 
 TranslateResponse
