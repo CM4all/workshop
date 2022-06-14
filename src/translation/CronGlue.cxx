@@ -34,26 +34,16 @@
 #include "CronClient.hxx"
 #include "translation/Response.hxx"
 #include "AllocatorPtr.hxx"
-#include "net/AllocatedSocketAddress.hxx"
+#include "net/ConnectSocket.hxx"
+#include "net/SocketAddress.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
-#include "system/Error.hxx"
 
 TranslateResponse
-TranslateCron(AllocatorPtr alloc, const char *socket_path,
+TranslateCron(AllocatorPtr alloc, SocketAddress address,
 	      const char *partition_name, const char *listener_tag,
 	      const char *user, const char *uri, const char *param)
 {
-	UniqueSocketDescriptor s;
-	if (!s.Create(AF_UNIX, SOCK_STREAM, 0))
-		throw MakeErrno("Failed to create translation socket");
-
-	{
-		AllocatedSocketAddress address;
-		address.SetLocal(socket_path);
-
-		if (!s.Connect(address))
-			throw MakeErrno("Failed to connect to translation server");
-	}
+	auto s = CreateConnectSocket(address, SOCK_STREAM);
 
 	return TranslateCron(alloc, s, partition_name, listener_tag,
 			     user, uri, param);

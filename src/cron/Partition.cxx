@@ -44,7 +44,7 @@ CronPartition::CronPartition(EventLoop &event_loop,
 			     BoundMethod<void() noexcept> _idle_callback)
 	:name(config.name.empty() ? nullptr : config.name.c_str()),
 	 tag(config.tag.empty() ? nullptr : config.tag.c_str()),
-	 translation_socket(config.translation_socket.c_str()),
+	 translation_socket(config.translation_socket),
 	 logger("cron/" + config.name),
 	 email_service(config.qmqp_server.IsNull()
 		       ? nullptr

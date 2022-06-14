@@ -36,6 +36,7 @@
 #include "Queue.hxx"
 #include "Workplace.hxx"
 #include "spawn/ExitListener.hxx"
+#include "net/SocketAddress.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "io/Logger.hxx"
 #include "util/BindMethod.hxx"
@@ -51,7 +52,8 @@ class EmailService;
 class CronPartition final : ExitListener {
 	const char *const name;
 	const char *const tag;
-	const char *const translation_socket;
+
+	const SocketAddress translation_socket;
 
 	Logger logger;
 

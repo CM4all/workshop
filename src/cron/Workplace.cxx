@@ -41,6 +41,7 @@
 #include "spawn/Prepared.hxx"
 #include "spawn/Interface.hxx"
 #include "system/Error.hxx"
+#include "net/SocketAddress.hxx"
 #include "util/Exception.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
@@ -78,7 +79,7 @@ IsURL(const char *command)
 
 static std::unique_ptr<CronOperator>
 MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
-		  const char *translation_socket,
+		  SocketAddress translation_socket,
 		  const char *partition_name, const char *listener_tag,
 		  CronJob &&job, const char *command,
 		  std::string &&start_time)
@@ -172,7 +173,7 @@ MakeCurlOperator(CronQueue &queue, CronWorkplace &workplace,
 }
 
 void
-CronWorkplace::Start(CronQueue &queue, const char *translation_socket,
+CronWorkplace::Start(CronQueue &queue, SocketAddress translation_socket,
 		     const char *partition_name, const char *listener_tag,
 		     CronJob &&job)
 {

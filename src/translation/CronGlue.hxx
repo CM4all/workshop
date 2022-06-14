@@ -33,9 +33,10 @@
 #pragma once
 
 struct TranslateResponse;
+class SocketAddress;
 class AllocatorPtr;
 
 TranslateResponse
-TranslateCron(AllocatorPtr alloc, const char *socket_path,
+TranslateCron(AllocatorPtr alloc, SocketAddress socket_path,
 	      const char *partition_name, const char *listener_tag,
 	      const char *user, const char *uri, const char *param);

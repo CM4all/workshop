@@ -203,7 +203,7 @@ WorkshopConfigParser::CronPartition::ParseLine(FileLineParser &line)
 	} else if (strcmp(word, "database_schema") == 0) {
 		config.database_schema = line.ExpectValueAndEnd();
 	} else if (strcmp(word, "translation_server") == 0) {
-		config.translation_socket = line.ExpectValueAndEnd();
+		config.translation_socket.SetLocal(line.ExpectValueAndEnd());
 	} else if (strcmp(word, "qmqp_server") == 0) {
 		config.qmqp_server = ResolveStreamConnect(line.ExpectValueAndEnd(),
 							  628);

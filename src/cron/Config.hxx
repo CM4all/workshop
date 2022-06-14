@@ -51,7 +51,7 @@ struct CronPartitionConfig {
 
 	std::string database, database_schema;
 
-	std::string translation_socket;
+	AllocatedSocketAddress translation_socket;
 
 	AllocatedSocketAddress qmqp_server;
 
