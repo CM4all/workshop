@@ -39,7 +39,7 @@
 #include <vector>
 
 class UniqueSocketDescriptor;
-class WorkshopControlChannelListener;
+class WorkshopControlChannelHandler;
 
 /**
  * The control channel through which Workshop job processes can send
@@ -48,12 +48,12 @@ class WorkshopControlChannelListener;
 class WorkshopControlChannelServer final : UdpHandler {
 	UdpListener socket;
 
-	WorkshopControlChannelListener &listener;
+	WorkshopControlChannelHandler &handler;
 
 public:
 	WorkshopControlChannelServer(EventLoop &_event_loop,
 				     UniqueSocketDescriptor &&_socket,
-				     WorkshopControlChannelListener &_listener) noexcept;
+				     WorkshopControlChannelHandler &_handler) noexcept;
 
 	bool ReceiveAll() {
 		return socket.ReceiveAll();

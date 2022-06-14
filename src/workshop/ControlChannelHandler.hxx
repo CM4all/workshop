@@ -35,7 +35,7 @@
 #include <chrono>
 #include <exception>
 
-class WorkshopControlChannelListener {
+class WorkshopControlChannelHandler {
 public:
 	virtual void OnControlProgress(unsigned progress) noexcept = 0;
 	virtual void OnControlSetEnv(const char *s) noexcept = 0;

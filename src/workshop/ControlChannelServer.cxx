@@ -31,7 +31,7 @@
  */
 
 #include "ControlChannelServer.hxx"
-#include "ControlChannelListener.hxx"
+#include "ControlChannelHandler.hxx"
 #include "net/SocketAddress.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "util/IterableSplitString.hxx"
@@ -42,14 +42,14 @@
 
 WorkshopControlChannelServer::WorkshopControlChannelServer(EventLoop &_event_loop,
 							   UniqueSocketDescriptor &&_socket,
-							   WorkshopControlChannelListener &_listener) noexcept
+							   WorkshopControlChannelHandler &_handler) noexcept
 	:socket(_event_loop, std::move(_socket), *this),
-	 listener(_listener) {}
+	 handler(_handler) {}
 
 void
 WorkshopControlChannelServer::InvokeTemporaryError(const char *msg) noexcept
 {
-	listener.OnControlTemporaryError(std::make_exception_ptr(std::runtime_error(msg)));
+	handler.OnControlTemporaryError(std::make_exception_ptr(std::runtime_error(msg)));
 }
 
 bool
@@ -70,7 +70,7 @@ WorkshopControlChannelServer::OnControl(std::vector<std::string> &&args) noexcep
 			return true;
 		}
 
-		listener.OnControlProgress(progress);
+		handler.OnControlProgress(progress);
 		return true;
 	} else if (cmd == "setenv") {
 		if (args.size() != 2) {
@@ -78,7 +78,7 @@ WorkshopControlChannelServer::OnControl(std::vector<std::string> &&args) noexcep
 			return true;
 		}
 
-		listener.OnControlSetEnv(args[1].c_str());
+		handler.OnControlSetEnv(args[1].c_str());
 		return true;
 	} else if (cmd == "again") {
 		if (args.size() > 2) {
@@ -99,7 +99,7 @@ WorkshopControlChannelServer::OnControl(std::vector<std::string> &&args) noexcep
 			d = std::chrono::seconds(value);
 		}
 
-		listener.OnControlAgain(d);
+		handler.OnControlAgain(d);
 		return true;
 	} else if (cmd == "version") {
 		StringView payload("version " VERSION);
@@ -134,7 +134,7 @@ WorkshopControlChannelServer::OnUdpDatagram(std::span<const std::byte> _payload,
 					    SocketAddress, int)
 {
 	if (_payload.empty()) {
-		listener.OnControlClosed();
+		handler.OnControlClosed();
 		return false;
 	}
 
@@ -145,5 +145,5 @@ WorkshopControlChannelServer::OnUdpDatagram(std::span<const std::byte> _payload,
 void
 WorkshopControlChannelServer::OnUdpError(std::exception_ptr e) noexcept
 {
-	listener.OnControlPermanentError(e);
+	handler.OnControlPermanentError(e);
 }

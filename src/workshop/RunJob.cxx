@@ -31,7 +31,7 @@
  */
 
 #include "ProgressReader.hxx"
-#include "ControlChannelListener.hxx"
+#include "ControlChannelHandler.hxx"
 #include "ControlChannelServer.hxx"
 #include "spawn/CgroupState.hxx"
 #include "spawn/Direct.hxx"
@@ -92,7 +92,7 @@ ParseCommandLine(RunJobCommandLine &cmdline, ConstBuffer<const char *> args)
 }
 
 class RunJobInstance final
-	: WorkshopControlChannelListener, ExitListener
+	: WorkshopControlChannelHandler, ExitListener
 {
 	EventLoop event_loop;
 	ChildProcessRegistry child_process_registry;
@@ -117,7 +117,7 @@ private:
 		fprintf(stderr, "received PROGRESS %u\n", progress);
 	}
 
-	/* virtual methods from WorkshopControlChannelListener */
+	/* virtual methods from WorkshopControlChannelHandler */
 	void OnControlProgress(unsigned progress) noexcept override {
 		OnProgress(progress);
 	}
@@ -170,7 +170,7 @@ RunJobInstance::Start(RunJobCommandLine &&cmdline)
 
 		p.SetControl(std::move(control_child));
 
-		WorkshopControlChannelListener &listener = *this;
+		WorkshopControlChannelHandler &listener = *this;
 		control_channel = std::make_unique<WorkshopControlChannelServer>(event_loop,
 										 std::move(control_parent),
 										 listener);

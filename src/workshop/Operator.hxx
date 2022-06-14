@@ -35,7 +35,7 @@
 
 #include "Job.hxx"
 #include "LogBridge.hxx"
-#include "ControlChannelListener.hxx"
+#include "ControlChannelHandler.hxx"
 #include "spawn/ExitListener.hxx"
 #include "spawn/ProcessHandle.hxx"
 #include "event/FarTimerEvent.hxx"
@@ -58,7 +58,7 @@ class UniqueSocketDescriptor;
 class WorkshopOperator final
 	: public IntrusiveListHook,
 	  public ExitListener,
-	WorkshopControlChannelListener,
+	WorkshopControlChannelHandler,
 	LoggerDomainFactory
 {
 	EventLoop &event_loop;
@@ -137,7 +137,7 @@ private:
 	/* virtual methods from LoggerDomainFactory */
 	std::string MakeLoggerDomain() const noexcept override;
 
-	/* virtual methods from WorkshopControlChannelListener */
+	/* virtual methods from WorkshopControlChannelHandler */
 	void OnControlProgress(unsigned progress) noexcept override;
 	void OnControlSetEnv(const char *s) noexcept override;
 	void OnControlAgain(std::chrono::seconds d) noexcept override;
