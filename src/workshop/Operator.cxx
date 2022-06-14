@@ -65,9 +65,9 @@ class WorkshopOperator::SpawnedProcess final
 public:
 	SpawnedProcess(std::unique_ptr<ChildProcessHandle> &&_handle) noexcept
 		:handle(std::move(_handle))
-		{
-			handle->SetExitListener(*this);
-		}
+	{
+		handle->SetExitListener(*this);
+	}
 
 	~SpawnedProcess() noexcept {
 		if (handle)
