@@ -44,6 +44,7 @@ TranslateCron(AllocatorPtr alloc, SocketAddress address,
 	      const char *user, const char *uri, const char *param)
 {
 	auto s = CreateConnectSocket(address, SOCK_STREAM);
+	s.SetBlocking();
 
 	return TranslateCron(alloc, s, partition_name, listener_tag,
 			     user, uri, param);
