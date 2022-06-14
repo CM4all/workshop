@@ -94,6 +94,10 @@ The following settings are recognized:
     captured for the `log` column (units such as `kB` may be used)
   * :envvar:`journal`: set to :samp:`yes` to send structured log
     messages to the systemd journal
+  * :envvar:`translation_server`: address the translation server is
+    listening to; must start with :file:`/` (absolute path) or
+    :file:`@` (abstract socket)
+
 * :envvar:`cron`: opens a block (with curly braces), which
   configures a cron database ("partition"):
 

@@ -159,6 +159,8 @@ WorkshopConfigParser::Partition::ParseLine(FileLineParser &line)
 		config.database = line.ExpectValueAndEnd();
 	} else if (strcmp(word, "database_schema") == 0) {
 		config.database_schema = line.ExpectValueAndEnd();
+	} else if (strcmp(word, "translation_server") == 0) {
+		config.translation_socket.SetLocal(line.ExpectValueAndEnd());
 	} else if (strcmp(word, "max_log") == 0) {
 		config.max_log = ParseSize(line.ExpectValueAndEnd());
 	} else if (strcmp(word, "journal") == 0) {

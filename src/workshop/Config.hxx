@@ -32,10 +32,14 @@
 
 #pragma once
 
+#include "net/AllocatedSocketAddress.hxx"
+
 #include <string>
 
 struct WorkshopPartitionConfig {
 	std::string database, database_schema;
+
+	AllocatedSocketAddress translation_socket;
 
 	size_t max_log = 8192;
 
