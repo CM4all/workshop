@@ -44,6 +44,8 @@
 #include "spawn/Prepared.hxx"
 #include "spawn/ProcessHandle.hxx"
 #include "net/ConnectSocket.hxx"
+#include "net/EasyMessage.hxx"
+#include "net/SocketError.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "util/RuntimeError.hxx"
@@ -268,7 +270,7 @@ CreateConnectBlockingSocket(const SocketAddress address, int type)
 	return s;
 }
 
-static std::unique_ptr<ChildProcessHandle>
+static std::pair<std::unique_ptr<ChildProcessHandle>, UniqueSocketDescriptor>
 DoSpawn(SpawnService &service, AllocatorPtr alloc,
 	const char *token,
 	const TranslateResponse &response)
@@ -292,6 +294,12 @@ DoSpawn(SpawnService &service, AllocatorPtr alloc,
 	PreparedChildProcess p;
 	p.args.push_back(alloc.Dup(response.execute));
 
+	UniqueSocketDescriptor return_pidfd;
+	if (!UniqueSocketDescriptor::CreateSocketPair(AF_LOCAL, SOCK_DGRAM, 0,
+						      return_pidfd,
+						      p.return_pidfd))
+		throw MakeSocketError("socketpair() failed");
+
 	for (const char *arg : response.args) {
 		if (p.args.size() >= 4096)
 			throw std::runtime_error("Too many APPEND packets from translation server");
@@ -303,7 +311,10 @@ DoSpawn(SpawnService &service, AllocatorPtr alloc,
 
 	// TODO put in the same cgroup as this operator
 
-	return service.SpawnChildProcess(token, std::move(p));
+	return {
+		service.SpawnChildProcess(token, std::move(p)),
+		std::move(return_pidfd),
+	};
 }
 
 UniqueFileDescriptor
@@ -327,13 +338,13 @@ WorkshopOperator::OnControlSpawn(const char *token, const char *param)
 			       token, param);
 
 
-	auto handle = DoSpawn(workplace.GetSpawnService(), alloc,
-			      token, response);
+	auto [handle, return_pidfd] =
+		DoSpawn(workplace.GetSpawnService(), alloc,
+			token, response);
 
 	children.push_front(*new SpawnedProcess(std::move(handle)));
 
-	// TODO return pidfd
-	return {};
+	return EasyReceiveMessageWithOneFD(return_pidfd);
 }
 
 void

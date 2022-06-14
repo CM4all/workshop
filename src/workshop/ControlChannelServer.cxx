@@ -126,13 +126,13 @@ WorkshopControlChannelServer::OnControl(std::vector<std::string> &&args) noexcep
 
 		try {
 			auto pidfd = handler.OnControlSpawn(token, param);
+			assert(pidfd.IsDefined());
+
 			const struct iovec v[]{MakeIovec(AsBytes("ok"sv))};
 			MessageHeader msg{std::span{v}};
 			ScmRightsBuilder<1> b(msg);
 
-			// TODO assert that there is a pidfd
-			if (pidfd.IsDefined())
-				b.push_back(pidfd.Get());
+			b.push_back(pidfd.Get());
 
 			b.Finish(msg);
 			SendMessage(socket.GetSocket(), msg, MSG_NOSIGNAL);
