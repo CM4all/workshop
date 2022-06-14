@@ -131,6 +131,10 @@ private:
 			(unsigned long)d.count());
 	}
 
+	UniqueFileDescriptor OnControlSpawn(const char *, const char *) override {
+		throw std::runtime_error{"spawn not implemented"};
+	}
+
 	void OnControlTemporaryError(std::exception_ptr e) noexcept override {
 		PrintException(e);
 	}

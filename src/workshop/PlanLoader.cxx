@@ -37,6 +37,7 @@
 #include "io/FileLineParser.hxx"
 #include "io/ConfigParser.hxx"
 #include "util/RuntimeError.hxx"
+#include "util/StringAPI.hxx"
 
 #include <array>
 
@@ -96,6 +97,12 @@ PlanLoader::ParseLine(FileLineParser &line)
 		/* previously, the "yes"/"no" parameter was mandatory, but
 		   that's deprecated since 2.0.36 */
 		plan.control_channel = line.IsEnd() || line.NextBool();
+		line.ExpectEnd();
+	} else if (StringIsEqual(key, "allow_spawn")) {
+		if (!plan.control_channel)
+			throw std::runtime_error{"allow_spawn requires control_channel"};
+
+		plan.allow_spawn = true;
 		line.ExpectEnd();
 	} else if (strcmp(key, "timeout") == 0) {
 		plan.timeout = line.ExpectValueAndEnd();

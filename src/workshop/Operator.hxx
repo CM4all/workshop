@@ -53,6 +53,7 @@ class ProgressReader;
 class WorkshopControlChannelServer;
 class UniqueFileDescriptor;
 class UniqueSocketDescriptor;
+class ChildProcessHandle;
 
 /** an operator is a job being executed */
 class WorkshopOperator final
@@ -87,6 +88,14 @@ class WorkshopOperator final
 	std::unique_ptr<WorkshopControlChannelServer> control_channel;
 
 	LogBridge log;
+
+	class SpawnedProcess;
+
+	/**
+	 * Child processes spawned by this job.  They will need to be
+	 * killed when the job process exits.
+	 */
+	IntrusiveList<SpawnedProcess> children;
 
 public:
 	WorkshopOperator(EventLoop &_event_loop,
@@ -141,6 +150,8 @@ private:
 	void OnControlProgress(unsigned progress) noexcept override;
 	void OnControlSetEnv(const char *s) noexcept override;
 	void OnControlAgain(std::chrono::seconds d) noexcept override;
+	UniqueFileDescriptor OnControlSpawn(const char *token,
+					    const char *param) override;
 	void OnControlTemporaryError(std::exception_ptr e) noexcept override;
 	void OnControlPermanentError(std::exception_ptr e) noexcept override;
 	void OnControlClosed() noexcept override;

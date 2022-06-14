@@ -94,9 +94,14 @@ The following settings are recognized:
     captured for the `log` column (units such as `kB` may be used)
   * :envvar:`journal`: set to :samp:`yes` to send structured log
     messages to the systemd journal
+
+.. _workshop_translation_server:
+
   * :envvar:`translation_server`: address the translation server is
     listening to; must start with :file:`/` (absolute path) or
     :file:`@` (abstract socket)
+  * :envvar:`tag`: a string which will be transmitted to the
+    translation server in a :envvar:`LISTENER_TAG` packet (optional)
 
 * :envvar:`cron`: opens a block (with curly braces), which
   configures a cron database ("partition"):
@@ -232,6 +237,11 @@ The following options are available:
   be absolute, because Workshop will not consider the :envvar:`PATH`.
 
 * :samp:`control_channel`: see `Control Channel`_.
+
+.. _allow_spawn:
+
+* :samp:`allow_spawn`: allow this plan to :ref:`spawn <spawn>` more
+  child processes through the `Control Channel`_.
 
 * :samp:`timeout INTERVAL`: A timeout for this plan.  If the process
   does not finish or update its state within this time span, it is
@@ -517,6 +527,22 @@ The following commands are available:
   different node).  The optional parameter specifies how many seconds
   shall pass at least; if present, then :envvar:`scheduled_time` will
   be updated.
+
+.. _spawn:
+
+* :samp:`spawn TOKEN [PARAM]`: Spawn a new child process.  This
+  queries the translation server, passing :samp:`EXECUTE=<token>`,
+  :samp:`PARAM=<param>`, :samp:`PLAN=<plan name>`,
+  :samp:`SERVICE="workshop"`.  Its response is expected to contain
+  :samp:`EXECUTE=<executable>` etc., or :samp:`STATUS=<error code>`
+  and :samp:`MESSAGE=<error message>` on error.  After spawning the
+  child process, Workshop replies with a datagram containing
+  :samp:`ok` and a pidfd the client can ``poll()`` on to wait for it
+  to exit; or containing :samp:`error <error message>`.
+
+  This command is only available if the plan's :ref:`allow_spawn
+  <allow_spawn>` option is set and a :ref:`translation_server
+  <workshop_translation_server>` was configured.
 
 
 Cron Schedule

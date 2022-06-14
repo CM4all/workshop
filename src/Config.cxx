@@ -40,6 +40,7 @@
 #include "net/Resolver.hxx"
 #include "net/AddressInfo.hxx"
 #include "net/Parser.hxx"
+#include "util/StringAPI.hxx"
 #include "util/StringParser.hxx"
 
 #include <string.h>
@@ -159,8 +160,10 @@ WorkshopConfigParser::Partition::ParseLine(FileLineParser &line)
 		config.database = line.ExpectValueAndEnd();
 	} else if (strcmp(word, "database_schema") == 0) {
 		config.database_schema = line.ExpectValueAndEnd();
-	} else if (strcmp(word, "translation_server") == 0) {
+	} else if (StringIsEqual(word, "translation_server")) {
 		config.translation_socket.SetLocal(line.ExpectValueAndEnd());
+	} else if (StringIsEqual(word, "tag")) {
+		config.tag = line.ExpectValueAndEnd();
 	} else if (strcmp(word, "max_log") == 0) {
 		config.max_log = ParseSize(line.ExpectValueAndEnd());
 	} else if (strcmp(word, "journal") == 0) {

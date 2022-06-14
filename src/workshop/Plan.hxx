@@ -81,6 +81,8 @@ struct Plan {
 
 	bool control_channel = false;
 
+	bool allow_spawn = false;
+
 	Plan() = default;
 
 	Plan(Plan &&) = default;

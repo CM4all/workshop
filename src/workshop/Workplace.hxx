@@ -33,6 +33,7 @@
 #pragma once
 
 #include "io/Logger.hxx"
+#include "net/SocketAddress.hxx"
 #include "util/IntrusiveList.hxx"
 
 #include <memory>
@@ -60,6 +61,9 @@ class WorkshopWorkplace {
 
 	OperatorList operators;
 
+	const SocketAddress translation_socket;
+	const char *const listener_tag;
+
 	const std::size_t max_operators;
 	const bool enable_journal;
 
@@ -68,6 +72,8 @@ public:
 			  ExitListener &_exit_listener,
 			  const Logger &parent_logger,
 			  const char *_node_name,
+			  SocketAddress _translation_socket,
+			  const char *_listener_tag,
 			  std::size_t _max_operators,
 			  bool _enable_journal) noexcept;
 
@@ -87,6 +93,18 @@ public:
 
 	bool IsFull() const noexcept {
 		return operators.size() == max_operators;
+	}
+
+	auto &GetSpawnService() const noexcept {
+		return spawn_service;
+	}
+
+	SocketAddress GetTranslationSocket() const noexcept {
+		return translation_socket;
+	}
+
+	const char *GetListenerTag() const noexcept {
+		return listener_tag;
 	}
 
 	[[gnu::pure]]

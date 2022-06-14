@@ -57,11 +57,15 @@ WorkshopWorkplace::WorkshopWorkplace(SpawnService &_spawn_service,
 				     ExitListener &_exit_listener,
 				     const Logger &parent_logger,
 				     const char *_node_name,
+				     SocketAddress _translation_socket,
+				     const char *_listener_tag,
 				     std::size_t _max_operators,
 				     bool _enable_journal) noexcept
 	:spawn_service(_spawn_service), exit_listener(_exit_listener),
 	 logger(parent_logger, "workplace"),
 	 node_name(_node_name),
+	 translation_socket(_translation_socket),
+	 listener_tag(_listener_tag),
 	 max_operators(_max_operators),
 	 enable_journal(_enable_journal)
 {

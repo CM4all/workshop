@@ -183,6 +183,7 @@ translation2 = static_library(
   'src/translation/CronGlue.cxx',
   'src/translation/Receive.cxx',
   'src/translation/Send.cxx',
+  'src/translation/SpawnClient.cxx',
   include_directories: inc,
 )
 

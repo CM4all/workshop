@@ -34,6 +34,11 @@
 #include "ControlChannelHandler.hxx"
 #include "net/SocketAddress.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
+#include "net/ScmRightsBuilder.hxx"
+#include "net/SendMessage.hxx"
+#include "io/Iovec.hxx"
+#include "io/UniqueFileDescriptor.hxx"
+#include "util/Exception.hxx"
 #include "util/IterableSplitString.hxx"
 #include "util/SpanCast.hxx"
 #include "util/StringView.hxx"
@@ -107,6 +112,48 @@ WorkshopControlChannelServer::OnControl(std::vector<std::string> &&args) noexcep
 	} else if (cmd == "version"sv) {
 		constexpr std::string_view payload = "version " VERSION;
 		socket.GetSocket().Write(payload.data(), payload.size());
+		return true;
+	} else if (cmd == "spawn"sv) {
+		if (args.size() < 2 || args.size() > 3) {
+			InvokeTemporaryError("malformed 'spawn' command on control channel");
+			return true;
+		}
+
+		const char *token = args[1].c_str();
+		const char *param = args.size() >= 3
+			? args[2].c_str()
+			: nullptr;
+
+		try {
+			auto pidfd = handler.OnControlSpawn(token, param);
+			const struct iovec v[]{MakeIovec(AsBytes("ok"sv))};
+			MessageHeader msg{std::span{v}};
+			ScmRightsBuilder<1> b(msg);
+
+			// TODO assert that there is a pidfd
+			if (pidfd.IsDefined())
+				b.push_back(pidfd.Get());
+
+			b.Finish(msg);
+			SendMessage(socket.GetSocket(), msg, MSG_NOSIGNAL);
+		} catch (...) {
+			const auto msg = GetFullMessage(std::current_exception());
+			InvokeTemporaryError(msg.c_str());
+
+			const struct iovec v[] = {
+				MakeIovec(AsBytes("error "sv)),
+				MakeIovec(AsBytes(msg)),
+			};
+
+			try {
+				SendMessage(socket.GetSocket(), MessageHeader{v},
+					    MSG_NOSIGNAL);
+			} catch (...) {
+				socket.Close();
+				handler.OnControlPermanentError(std::current_exception());
+			}
+		}
+
 		return true;
 	} else {
 		InvokeTemporaryError("unknown command on control channel");

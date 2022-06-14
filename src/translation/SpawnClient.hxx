@@ -32,26 +32,10 @@
 
 #pragma once
 
-#include <chrono>
-#include <exception>
+struct TranslateResponse;
+class AllocatorPtr;
+class SocketDescriptor;
 
-class UniqueFileDescriptor;
-
-class WorkshopControlChannelHandler {
-public:
-	virtual void OnControlProgress(unsigned progress) noexcept = 0;
-	virtual void OnControlSetEnv(const char *s) noexcept = 0;
-	virtual void OnControlAgain(std::chrono::seconds d) noexcept = 0;
-
-	/**
-	 * Throws on error.
-	 *
-	 * @return a pidfd
-	 */
-	virtual UniqueFileDescriptor OnControlSpawn(const char *token,
-						    const char *param) = 0;
-
-	virtual void OnControlTemporaryError(std::exception_ptr e) noexcept = 0;
-	virtual void OnControlPermanentError(std::exception_ptr e) noexcept = 0;
-	virtual void OnControlClosed() noexcept = 0;
-};
+TranslateResponse
+TranslateSpawn(AllocatorPtr alloc, SocketDescriptor s, const char *tag,
+	       const char *plan_name, const char *execute, const char *param);

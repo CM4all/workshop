@@ -41,6 +41,12 @@ struct WorkshopPartitionConfig {
 
 	AllocatedSocketAddress translation_socket;
 
+	/**
+	 * Partition tag for #TRANSLATE_LISTENER_TAG.  Empty when not
+	 * specified.
+	 */
+	std::string tag;
+
 	size_t max_log = 8192;
 
 	bool enable_journal = false;

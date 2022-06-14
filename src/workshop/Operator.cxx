@@ -38,19 +38,50 @@
 #include "Plan.hxx"
 #include "Job.hxx"
 #include "LogBridge.hxx"
-#include "event/net/UdpListener.hxx"
+#include "translation/Response.hxx"
+#include "translation/SpawnClient.hxx"
+#include "spawn/Interface.hxx"
+#include "spawn/Prepared.hxx"
+#include "spawn/ProcessHandle.hxx"
+#include "net/ConnectSocket.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
+#include "util/DeleteDisposer.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringFormat.hxx"
 #include "util/UTF8.hxx"
-
-#include <map>
+#include "AllocatorPtr.hxx"
 
 #include <assert.h>
 #include <unistd.h>
 #include <sys/wait.h>
 
 using std::string_view_literals::operator""sv;
+
+class WorkshopOperator::SpawnedProcess final
+	: ExitListener, public AutoUnlinkIntrusiveListHook
+{
+	std::unique_ptr<ChildProcessHandle> handle;
+
+public:
+	SpawnedProcess(std::unique_ptr<ChildProcessHandle> &&_handle) noexcept
+		:handle(std::move(_handle))
+		{
+			handle->SetExitListener(*this);
+		}
+
+	~SpawnedProcess() noexcept {
+		if (handle)
+			handle->Kill(SIGTERM);
+	}
+
+private:
+	/* virtual methods from ExitListener */
+	void OnChildProcessExit(int) noexcept override {
+		handle.reset();
+
+		// TODO remove this from linked list
+	}
+};
 
 WorkshopOperator::WorkshopOperator(EventLoop &_event_loop,
 				   WorkshopWorkplace &_workplace,
@@ -83,6 +114,8 @@ WorkshopOperator::WorkshopOperator(EventLoop &_event_loop,
 
 WorkshopOperator::~WorkshopOperator() noexcept
 {
+	children.clear_and_dispose(DeleteDisposer{});
+
 	timeout_event.Cancel();
 }
 
@@ -230,6 +263,73 @@ void
 WorkshopOperator::OnControlAgain(std::chrono::seconds d) noexcept
 {
 	again = d;
+}
+
+static UniqueSocketDescriptor
+CreateConnectBlockingSocket(const SocketAddress address, int type)
+{
+	auto s = CreateConnectSocket(address, type);
+	s.SetBlocking();
+	return s;
+}
+
+UniqueFileDescriptor
+WorkshopOperator::OnControlSpawn(const char *token, const char *param)
+{
+	if (!plan->allow_spawn)
+		throw FormatRuntimeError("Plan '%s' does not have the 'allow_spawn' flag",
+					 job.plan_name.c_str());
+
+	const auto translation_socket = workplace.GetTranslationSocket();
+	if (translation_socket == nullptr)
+		throw std::runtime_error{"No 'translation_server' configured"};
+
+	Allocator alloc;
+	const auto response =
+		TranslateSpawn(alloc,
+			       CreateConnectBlockingSocket(translation_socket,
+							   SOCK_STREAM),
+			       workplace.GetListenerTag(),
+			       job.plan_name.c_str(),
+			       token, param);
+
+
+	if (response.status != 0) {
+		if (response.message != nullptr)
+			throw FormatRuntimeError("Status %u from translation server: %s",
+						 response.status,
+						 response.message);
+
+		throw FormatRuntimeError("Status %u from translation server",
+					 response.status);
+	}
+
+	if (response.execute == nullptr)
+		throw std::runtime_error("No EXECUTE from translation server");
+
+	if (response.child_options.uid_gid.IsEmpty())
+		throw std::runtime_error("No UID_GID from translation server");
+
+	PreparedChildProcess p;
+	p.args.push_back(alloc.Dup(response.execute));
+
+	for (const char *arg : response.args) {
+		if (p.args.size() >= 4096)
+			throw std::runtime_error("Too many APPEND packets from translation server");
+
+		p.args.push_back(alloc.Dup(arg));
+	}
+
+	response.child_options.CopyTo(p);
+
+	// TODO put in the same cgroup as this operator
+
+	auto handle = workplace.GetSpawnService()
+		.SpawnChildProcess(token, std::move(p));
+	children.push_front(*new SpawnedProcess(std::move(handle)));
+
+	// TODO return pidfd
+	return {};
 }
 
 void
