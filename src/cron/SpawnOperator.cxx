@@ -103,7 +103,7 @@ CronSpawnOperator::Cancel() noexcept
 	assert(pid);
 
 	output_capture.reset();
-	pid->Kill(SIGTERM);
+	pid.reset();
 
 	Finish(-1, "Canceled");
 	timeout_event.Cancel();

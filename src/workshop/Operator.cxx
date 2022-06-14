@@ -69,11 +69,6 @@ public:
 		handle->SetExitListener(*this);
 	}
 
-	~SpawnedProcess() noexcept {
-		if (handle)
-			handle->Kill(SIGTERM);
-	}
-
 private:
 	/* virtual methods from ExitListener */
 	void OnChildProcessExit(int) noexcept override {
