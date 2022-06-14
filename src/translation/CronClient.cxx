@@ -36,12 +36,13 @@
 #include "translation/Response.hxx"
 #include "AllocatorPtr.hxx"
 #include "system/Error.hxx"
+#include "net/SocketDescriptor.hxx"
 #include "util/StaticFifoBuffer.hxx"
 #include "util/SpanCast.hxx"
 
+#include <algorithm>
 #include <stdexcept>
 
-#include <string.h>
 #include <sys/socket.h>
 
 static void
@@ -82,9 +83,10 @@ WritePacket(std::byte *&p, TranslationCommand cmd,
 }
 
 static void
-SendFull(int fd, std::span<const std::byte> buffer)
+SendFull(SocketDescriptor s, std::span<const std::byte> buffer)
 {
-	ssize_t nbytes = send(fd, buffer.data(), buffer.size(), MSG_NOSIGNAL);
+	ssize_t nbytes = send(s.Get(), buffer.data(), buffer.size(),
+			      MSG_NOSIGNAL);
 	if (nbytes < 0)
 		throw MakeErrno("send() to translation server failed");
 
@@ -93,7 +95,7 @@ SendFull(int fd, std::span<const std::byte> buffer)
 }
 
 static void
-SendTranslateCron(int fd, const char *partition_name, const char *listener_tag,
+SendTranslateCron(SocketDescriptor s, const char *partition_name, const char *listener_tag,
 		  const char *user, const char *uri, const char *param)
 {
 	assert(user != nullptr);
@@ -126,11 +128,11 @@ SendTranslateCron(int fd, const char *partition_name, const char *listener_tag,
 	WritePacket(p, TranslationCommand::END);
 
 	const size_t size = p - buffer;
-	SendFull(fd, {buffer, size});
+	SendFull(s, {buffer, size});
 }
 
 static TranslateResponse
-ReceiveResponse(AllocatorPtr alloc, int fd)
+ReceiveResponse(AllocatorPtr alloc, SocketDescriptor s)
 {
 	TranslateResponse response;
 	TranslateParser parser(alloc, response);
@@ -142,7 +144,7 @@ ReceiveResponse(AllocatorPtr alloc, int fd)
 		if (w.empty())
 			throw std::runtime_error("Translation receive buffer is full");
 
-		ssize_t nbytes = recv(fd, w.data(), w.size(), MSG_NOSIGNAL);
+		ssize_t nbytes = recv(s.Get(), w.data(), w.size(), MSG_NOSIGNAL);
 		if (nbytes < 0)
 			throw MakeErrno("recv() from translation server failed");
 
@@ -178,11 +180,11 @@ ReceiveResponse(AllocatorPtr alloc, int fd)
 }
 
 TranslateResponse
-TranslateCron(AllocatorPtr alloc, int fd,
+TranslateCron(AllocatorPtr alloc, SocketDescriptor s,
 	      const char *partition_name, const char *listener_tag,
 	      const char *user, const char *uri,
 	      const char *param)
 {
-	SendTranslateCron(fd, partition_name, listener_tag, user, uri, param);
-	return ReceiveResponse(alloc, fd);
+	SendTranslateCron(s, partition_name, listener_tag, user, uri, param);
+	return ReceiveResponse(alloc, s);
 }
