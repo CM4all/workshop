@@ -35,10 +35,13 @@
 #include "net/SocketAddress.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "util/IterableSplitString.hxx"
+#include "util/SpanCast.hxx"
 #include "util/StringView.hxx"
 #include "version.h"
 
 #include <stdexcept>
+
+using std::string_view_literals::operator""sv;
 
 WorkshopControlChannelServer::WorkshopControlChannelServer(EventLoop &_event_loop,
 							   UniqueSocketDescriptor &&_socket,
@@ -57,7 +60,7 @@ WorkshopControlChannelServer::OnControl(std::vector<std::string> &&args) noexcep
 {
 	const auto &cmd = args.front();
 
-	if (cmd == "progress") {
+	if (cmd == "progress"sv) {
 		if (args.size() != 2) {
 			InvokeTemporaryError("malformed progress command on control channel");
 			return true;
@@ -72,7 +75,7 @@ WorkshopControlChannelServer::OnControl(std::vector<std::string> &&args) noexcep
 
 		handler.OnControlProgress(progress);
 		return true;
-	} else if (cmd == "setenv") {
+	} else if (cmd == "setenv"sv) {
 		if (args.size() != 2) {
 			InvokeTemporaryError("malformed 'setenv' command on control channel");
 			return true;
@@ -80,7 +83,7 @@ WorkshopControlChannelServer::OnControl(std::vector<std::string> &&args) noexcep
 
 		handler.OnControlSetEnv(args[1].c_str());
 		return true;
-	} else if (cmd == "again") {
+	} else if (cmd == "again"sv) {
 		if (args.size() > 2) {
 			InvokeTemporaryError("malformed 'again' command on control channel");
 			return true;
@@ -101,9 +104,9 @@ WorkshopControlChannelServer::OnControl(std::vector<std::string> &&args) noexcep
 
 		handler.OnControlAgain(d);
 		return true;
-	} else if (cmd == "version") {
-		StringView payload("version " VERSION);
-		socket.GetSocket().Write(payload.data, payload.size);
+	} else if (cmd == "version"sv) {
+		constexpr std::string_view payload = "version " VERSION;
+		socket.GetSocket().Write(payload.data(), payload.size());
 		return true;
 	} else {
 		InvokeTemporaryError("unknown command on control channel");
@@ -112,7 +115,7 @@ WorkshopControlChannelServer::OnControl(std::vector<std::string> &&args) noexcep
 }
 
 [[gnu::pure]]
-static StringView
+static std::string_view
 FirstLine(StringView s) noexcept
 {
 	return s.Split('\n').first;
@@ -120,7 +123,7 @@ FirstLine(StringView s) noexcept
 
 [[gnu::pure]]
 static std::vector<std::string>
-SplitArgs(StringView s) noexcept
+SplitArgs(std::string_view s) noexcept
 {
 	std::vector<std::string> result;
 	for (const std::string_view i : IterableSplitString(s, ' '))
@@ -129,17 +132,16 @@ SplitArgs(StringView s) noexcept
 }
 
 bool
-WorkshopControlChannelServer::OnUdpDatagram(std::span<const std::byte> _payload,
+WorkshopControlChannelServer::OnUdpDatagram(std::span<const std::byte> payload,
 					    std::span<UniqueFileDescriptor>,
 					    SocketAddress, int)
 {
-	if (_payload.empty()) {
+	if (payload.empty()) {
 		handler.OnControlClosed();
 		return false;
 	}
 
-	const StringView payload{ConstBuffer<char>::FromVoid(_payload)};
-	return OnControl(SplitArgs(FirstLine(payload)));
+	return OnControl(SplitArgs(FirstLine(ToStringView(payload))));
 }
 
 void
