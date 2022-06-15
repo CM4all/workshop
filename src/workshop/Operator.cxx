@@ -268,27 +268,11 @@ CreateConnectBlockingSocket(const SocketAddress address, int type)
 	return s;
 }
 
-UniqueFileDescriptor
-WorkshopOperator::OnControlSpawn(const char *token, const char *param)
+static std::unique_ptr<ChildProcessHandle>
+DoSpawn(SpawnService &service, AllocatorPtr alloc,
+	const char *token,
+	const TranslateResponse &response)
 {
-	if (!plan->allow_spawn)
-		throw FormatRuntimeError("Plan '%s' does not have the 'allow_spawn' flag",
-					 job.plan_name.c_str());
-
-	const auto translation_socket = workplace.GetTranslationSocket();
-	if (translation_socket == nullptr)
-		throw std::runtime_error{"No 'translation_server' configured"};
-
-	Allocator alloc;
-	const auto response =
-		TranslateSpawn(alloc,
-			       CreateConnectBlockingSocket(translation_socket,
-							   SOCK_STREAM),
-			       workplace.GetListenerTag(),
-			       job.plan_name.c_str(),
-			       token, param);
-
-
 	if (response.status != 0) {
 		if (response.message != nullptr)
 			throw FormatRuntimeError("Status %u from translation server: %s",
@@ -319,8 +303,33 @@ WorkshopOperator::OnControlSpawn(const char *token, const char *param)
 
 	// TODO put in the same cgroup as this operator
 
-	auto handle = workplace.GetSpawnService()
-		.SpawnChildProcess(token, std::move(p));
+	return service.SpawnChildProcess(token, std::move(p));
+}
+
+UniqueFileDescriptor
+WorkshopOperator::OnControlSpawn(const char *token, const char *param)
+{
+	if (!plan->allow_spawn)
+		throw FormatRuntimeError("Plan '%s' does not have the 'allow_spawn' flag",
+					 job.plan_name.c_str());
+
+	const auto translation_socket = workplace.GetTranslationSocket();
+	if (translation_socket == nullptr)
+		throw std::runtime_error{"No 'translation_server' configured"};
+
+	Allocator alloc;
+	const auto response =
+		TranslateSpawn(alloc,
+			       CreateConnectBlockingSocket(translation_socket,
+							   SOCK_STREAM),
+			       workplace.GetListenerTag(),
+			       job.plan_name.c_str(),
+			       token, param);
+
+
+	auto handle = DoSpawn(workplace.GetSpawnService(), alloc,
+			      token, response);
+
 	children.push_front(*new SpawnedProcess(std::move(handle)));
 
 	// TODO return pidfd
