@@ -85,6 +85,7 @@ WorkshopOperator::WorkshopOperator(EventLoop &_event_loop,
 				   const WorkshopJob &_job,
 				   const std::shared_ptr<Plan> &_plan,
 				   UniqueFileDescriptor stderr_read_pipe,
+				   UniqueFileDescriptor _stderr_write_pipe,
 				   UniqueSocketDescriptor control_socket,
 				   size_t max_log_buffer,
 				   bool enable_journal) noexcept
@@ -97,6 +98,7 @@ WorkshopOperator::WorkshopOperator(EventLoop &_event_loop,
 							    std::move(control_socket),
 							    *this)
 			 : nullptr),
+	 stderr_write_pipe(std::move(_stderr_write_pipe)),
 	 log(event_loop, job.plan_name.c_str(), job.id.c_str(),
 	     std::move(stderr_read_pipe))
 {
@@ -273,6 +275,7 @@ CreateConnectBlockingSocket(const SocketAddress address, int type)
 static std::pair<std::unique_ptr<ChildProcessHandle>, UniqueSocketDescriptor>
 DoSpawn(SpawnService &service, AllocatorPtr alloc,
 	const char *token,
+	FileDescriptor stderr_w,
 	const TranslateResponse &response)
 {
 	if (response.status != 0) {
@@ -293,6 +296,9 @@ DoSpawn(SpawnService &service, AllocatorPtr alloc,
 
 	PreparedChildProcess p;
 	p.args.push_back(alloc.Dup(response.execute));
+
+	if (stderr_w.IsDefined())
+		p.stderr_fd = p.stdout_fd = FileDescriptor{dup(stderr_w.Get())};
 
 	UniqueSocketDescriptor return_pidfd;
 	if (!UniqueSocketDescriptor::CreateSocketPair(AF_LOCAL, SOCK_DGRAM, 0,
@@ -340,7 +346,7 @@ WorkshopOperator::OnControlSpawn(const char *token, const char *param)
 
 	auto [handle, return_pidfd] =
 		DoSpawn(workplace.GetSpawnService(), alloc,
-			token, response);
+			token, stderr_write_pipe, response);
 
 	children.push_front(*new SpawnedProcess(std::move(handle)));
 

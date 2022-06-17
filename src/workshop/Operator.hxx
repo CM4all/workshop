@@ -87,6 +87,13 @@ class WorkshopOperator final
 
 	std::unique_ptr<WorkshopControlChannelServer> control_channel;
 
+	/**
+	 * The write end of the stderr pipe.  This is only set if the
+	 * process is allowed to use the "spawn" command, to be able
+	 * to redirect its stderr to the same pipe.
+	 */
+	UniqueFileDescriptor stderr_write_pipe;
+
 	LogBridge log;
 
 	class SpawnedProcess;
@@ -102,6 +109,7 @@ public:
 			 WorkshopWorkplace &_workplace, const WorkshopJob &_job,
 			 const std::shared_ptr<Plan> &_plan,
 			 UniqueFileDescriptor stderr_read_pipe,
+			 UniqueFileDescriptor _stderr_write_pipe,
 			 UniqueSocketDescriptor control_socket,
 			 size_t max_log_buffer,
 			 bool enable_journal) noexcept;
