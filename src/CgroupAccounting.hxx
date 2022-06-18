@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2022 CM4all GmbH
+ * Copyright 2017-2022 CM4all GmbH
  * All rights reserved.
  *
  * author: Max Kellermann <mk@cm4all.com>
@@ -30,35 +30,11 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "Job.hxx"
-#include "Queue.hxx"
+#pragma once
 
-bool
-WorkshopJob::SetProgress(unsigned progress, const char *timeout) noexcept
-{
-	return queue.SetJobProgress(*this, progress, timeout);
-}
+#include <chrono>
 
-void
-WorkshopJob::SetEnv(const char *more_env)
-{
-	queue.SetJobEnv(*this, more_env);
-}
+class FileDescriptor;
 
-void
-WorkshopJob::SetDone(int status, const char *log) noexcept
-{
-	queue.SetJobDone(*this, status, log);
-}
-
-void
-WorkshopJob::SetAgain(std::chrono::seconds delay, const char *log) noexcept
-{
-	queue.AgainJob(*this, log, delay);
-}
-
-void
-WorkshopJob::AddCpuUsage(std::chrono::microseconds cpu_usage) noexcept
-{
-	queue.AddJobCpuUsage(*this, cpu_usage);
-}
+std::chrono::microseconds
+ReadCgroupCpuUsage(FileDescriptor fd);

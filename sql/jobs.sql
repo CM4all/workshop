@@ -45,6 +45,8 @@ CREATE TABLE jobs (
         time_started timestamp NULL,
         -- the time this job was completed
         time_done timestamp NULL,
+        -- CPU usage in microseconds
+        cpu_usage interval NULL,
         -- the output logged by the process to stderr
         log text NULL,
         -- the process' exit code

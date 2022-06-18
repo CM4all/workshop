@@ -196,6 +196,9 @@ public:
 	void SetJobDone(const WorkshopJob &job, int status,
 			const char *log) noexcept;
 
+	void AddJobCpuUsage(const WorkshopJob &job,
+			    std::chrono::microseconds cpu_usage) noexcept;
+
 	unsigned ReapFinishedJobs(const char *plan_name,
 				  const char *reap_finished);
 

@@ -40,6 +40,7 @@
 #include "spawn/ProcessHandle.hxx"
 #include "event/FarTimerEvent.hxx"
 #include "io/Logger.hxx"
+#include "io/UniqueFileDescriptor.hxx"
 #include "util/IntrusiveList.hxx"
 
 #include <memory>
@@ -79,6 +80,8 @@ class WorkshopOperator final
 	 */
 	std::chrono::seconds again = std::chrono::seconds(-1);
 
+	std::chrono::microseconds cpu_usage_start = std::chrono::microseconds::min();
+
 	LazyDomainLogger logger;
 
 	FarTimerEvent timeout_event;
@@ -93,6 +96,11 @@ class WorkshopOperator final
 	 * to redirect its stderr to the same pipe.
 	 */
 	UniqueFileDescriptor stderr_write_pipe;
+
+	/**
+	 * The cgroup2 "cpu.stat" file.
+	 */
+	UniqueFileDescriptor cgroup_cpu_stat;
 
 	LogBridge log;
 
@@ -131,6 +139,10 @@ public:
 	void SetPid(std::unique_ptr<ChildProcessHandle> &&_pid) noexcept {
 		pid = std::move(_pid);
 		pid->SetExitListener(*this);
+	}
+
+	void SetCgroup(FileDescriptor fd) noexcept {
+		cgroup_cpu_stat.OpenReadOnly(fd, "cpu.stat");
 	}
 
 	void SetOutput(UniqueFileDescriptor fd) noexcept;

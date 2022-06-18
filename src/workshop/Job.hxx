@@ -86,6 +86,8 @@ struct WorkshopJob {
 	 * has passed
 	 */
 	void SetAgain(std::chrono::seconds delay, const char *log) noexcept;
+
+	void AddCpuUsage(std::chrono::microseconds cpu_usage) noexcept;
 };
 
 #endif

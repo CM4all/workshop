@@ -446,6 +446,19 @@ WorkshopQueue::SetJobDone(const WorkshopJob &job, int status,
 	}
 }
 
+void
+WorkshopQueue::AddJobCpuUsage(const WorkshopJob &job,
+			      std::chrono::microseconds cpu_usage) noexcept
+{
+	assert(&job.queue == this);
+
+	try {
+		PgAddJobCpuUsage(db, job.id.c_str(), cpu_usage);
+	} catch (...) {
+		db.CheckError(std::current_exception());
+	}
+}
+
 unsigned
 WorkshopQueue::ReapFinishedJobs(const char *plan_name,
 				const char *reap_finished)

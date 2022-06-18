@@ -47,11 +47,15 @@
 #include "net/EasyMessage.hxx"
 #include "net/SocketError.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
+#include "io/Open.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringFormat.hxx"
 #include "util/UTF8.hxx"
 #include "AllocatorPtr.hxx"
+#include "CgroupAccounting.hxx"
+
+#include <tuple>
 
 #include <assert.h>
 #include <unistd.h>
@@ -227,6 +231,19 @@ WorkshopOperator::OnChildProcessExit(int status) noexcept
 		logger(2, log_text);
 	}
 
+	if (cpu_usage_start.count() >= 0) {
+		assert(cgroup_cpu_stat.IsDefined());
+
+		try {
+			const auto cpu_usage_end = ReadCgroupCpuUsage(cgroup_cpu_stat);
+			if (cpu_usage_end.count() >= 0)
+				job.AddCpuUsage(cpu_usage_end - cpu_usage_start);
+		} catch (...) {
+			logger(1, "Failed to read CPU usage: ",
+			       std::current_exception());
+		}
+	}
+
 	if (again >= std::chrono::seconds())
 		job.SetAgain(again, log_text);
 	else
@@ -363,6 +380,15 @@ WorkshopOperator::OnControlSpawn(const char *token, const char *param)
 			token, stderr_write_pipe, response);
 
 	children.push_front(*new SpawnedProcess(std::move(handle)));
+
+	if (cgroup_cpu_stat.IsDefined()) {
+		try {
+			cpu_usage_start = ReadCgroupCpuUsage(cgroup_cpu_stat);
+		} catch (...) {
+			logger(1, "Failed to read CPU usage: ",
+			       std::current_exception());
+		}
+	}
 
 	return EasyReceiveMessageWithOneFD(return_pidfd);
 }

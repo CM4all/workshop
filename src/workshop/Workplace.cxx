@@ -41,6 +41,8 @@
 #include "spawn/Interface.hxx"
 #include "spawn/Client.hxx"
 #include "system/Error.hxx"
+#include "net/EasyMessage.hxx"
+#include "net/SocketError.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
@@ -186,9 +188,18 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 	CgroupOptions cgroup;
 	p.cgroup = &cgroup;
 
-	if (auto *client = dynamic_cast<SpawnServerClient *>(&spawn_service))
-		if (client->SupportsCgroups())
+	UniqueSocketDescriptor return_cgroup;
+
+	if (auto *client = dynamic_cast<SpawnServerClient *>(&spawn_service)) {
+		if (client->SupportsCgroups()) {
 			cgroup.name = job.plan_name.c_str();
+
+			if (!UniqueSocketDescriptor::CreateSocketPair(AF_LOCAL, SOCK_DGRAM, 0,
+								      return_cgroup,
+								      p.return_cgroup))
+				throw MakeSocketError("socketpair() failed");
+		}
+	}
 
 	/* create stdout/stderr pipes */
 
@@ -244,6 +255,13 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 
 	logger(2, "job ", job.id, " (plan '", job.plan_name,
 	       "') started");
+
+	try {
+		o->SetCgroup(EasyReceiveMessageWithOneFD(return_cgroup));
+	} catch (...) {
+		logger(1, "Failed to receive cgroup fd: ",
+		       std::current_exception());
+	}
 
 	operators.push_back(*o.release());
 }

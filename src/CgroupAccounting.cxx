@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2022 CM4all GmbH
+ * Copyright 2017-2022 CM4all GmbH
  * All rights reserved.
  *
  * author: Max Kellermann <mk@cm4all.com>
@@ -30,35 +30,58 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "Job.hxx"
-#include "Queue.hxx"
+#include "CgroupAccounting.hxx"
+#include "system/Error.hxx"
+#include "io/UniqueFileDescriptor.hxx"
 
-bool
-WorkshopJob::SetProgress(unsigned progress, const char *timeout) noexcept
+using std::string_view_literals::operator""sv;
+
+static size_t
+ReadFile(FileDescriptor fd, void *buffer, size_t buffer_size)
 {
-	return queue.SetJobProgress(*this, progress, timeout);
+	ssize_t nbytes = pread(fd.Get(), buffer, buffer_size, 0);
+	if (nbytes < 0)
+		throw MakeErrno("Failed to read");
+
+	return nbytes;
 }
 
-void
-WorkshopJob::SetEnv(const char *more_env)
+static char *
+ReadFileZ(FileDescriptor fd, char *buffer, size_t buffer_size)
 {
-	queue.SetJobEnv(*this, more_env);
+	size_t length = ReadFile(fd, buffer, buffer_size - 1);
+	buffer[length] = 0;
+	return buffer;
 }
 
-void
-WorkshopJob::SetDone(int status, const char *log) noexcept
+static const char *
+FindLine(const char *data, const char *name)
 {
-	queue.SetJobDone(*this, status, log);
+	const size_t name_length = strlen(name);
+	const char *p = data;
+
+	while (true) {
+		const char *needle = strstr(p, name);
+		if (needle == nullptr)
+			break;
+
+		if ((needle == data || needle[-1] == '\n') && needle[name_length] == ' ')
+			return needle + name_length + 1;
+
+		p = needle + 1;
+	}
+
+	return nullptr;
 }
 
-void
-WorkshopJob::SetAgain(std::chrono::seconds delay, const char *log) noexcept
+std::chrono::microseconds
+ReadCgroupCpuUsage(FileDescriptor fd)
 {
-	queue.AgainJob(*this, log, delay);
-}
+	char buffer[4096];
+	const char *data = ReadFileZ(fd, buffer, sizeof(buffer));
 
-void
-WorkshopJob::AddCpuUsage(std::chrono::microseconds cpu_usage) noexcept
-{
-	queue.AddJobCpuUsage(*this, cpu_usage);
+	if (const char *p = FindLine(data, "usage_usec"))
+		return std::chrono::microseconds(strtoull(p, nullptr, 10));
+
+	return std::chrono::microseconds::min();
 }

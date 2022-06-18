@@ -233,6 +233,23 @@ pg_set_job_done(Pg::Connection &db, const char *id, int status,
 		throw std::runtime_error("No matching job");
 }
 
+void
+PgAddJobCpuUsage(Pg::Connection &db, const char *id,
+		 std::chrono::microseconds cpu_usage)
+{
+	char buffer[64];
+	snprintf(buffer, sizeof(buffer), "%" PRIu64 " microseconds",
+		 cpu_usage.count());
+
+	const auto result =
+		db.ExecuteParams("UPDATE jobs "
+				 "SET cpu_usage=COALESCE(cpu_usage, '0'::interval)+$2::interval "
+				 "WHERE id=$1",
+				 id, (const char *)buffer);
+	if (result.GetAffectedRows() < 1)
+		throw std::runtime_error("No matching job");
+}
+
 unsigned
 PgReapFinishedJobs(Pg::Connection &db, const char *plan_name,
 		   const char *reap_finished)

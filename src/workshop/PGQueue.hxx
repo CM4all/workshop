@@ -139,6 +139,10 @@ void
 pg_set_job_done(Pg::Connection &db, const char *id, int status,
 		const char *log);
 
+void
+PgAddJobCpuUsage(Pg::Connection &db, const char *id,
+		 std::chrono::microseconds cpu_usage);
+
 unsigned
 PgReapFinishedJobs(Pg::Connection &db, const char *plan_name,
 		   const char *reap_finished);

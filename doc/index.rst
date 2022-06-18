@@ -472,6 +472,7 @@ The `jobs` table
   started execution.
 * :envvar:`time_done`: Time stamp when the job has completed
   execution.
+* :envvar:`cpu_usage`: total CPU usage (user + system) of the job.
 * :envvar:`log`: Log data written by the job to `stderr`.
 * :envvar:`exit_status`: Exit code of the plan process.  Negative when
   the process was killed by a signal.
