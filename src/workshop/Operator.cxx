@@ -274,6 +274,7 @@ CreateConnectBlockingSocket(const SocketAddress address, int type)
 
 static std::pair<std::unique_ptr<ChildProcessHandle>, UniqueSocketDescriptor>
 DoSpawn(SpawnService &service, AllocatorPtr alloc,
+	const WorkshopJob &job, const Plan &plan,
 	const char *token,
 	FileDescriptor stderr_w,
 	const TranslateResponse &response)
@@ -315,7 +316,20 @@ DoSpawn(SpawnService &service, AllocatorPtr alloc,
 
 	response.child_options.CopyTo(p);
 
-	// TODO put in the same cgroup as this operator
+	if (p.umask == -1)
+		p.umask = plan.umask;
+
+	p.priority = plan.priority;
+	p.sched_idle = plan.sched_idle;
+	p.ioprio_idle = plan.ioprio_idle;
+	p.no_new_privs = true;
+
+	/* use the same per-plan cgroup as the orignal job process */
+
+	CgroupOptions cgroup;
+	cgroup.name = job.plan_name.c_str();
+
+	p.cgroup = &cgroup;
 
 	return {
 		service.SpawnChildProcess(token, std::move(p)),
@@ -345,7 +359,7 @@ WorkshopOperator::OnControlSpawn(const char *token, const char *param)
 
 
 	auto [handle, return_pidfd] =
-		DoSpawn(workplace.GetSpawnService(), alloc,
+		DoSpawn(workplace.GetSpawnService(), alloc, job, *plan,
 			token, stderr_write_pipe, response);
 
 	children.push_front(*new SpawnedProcess(std::move(handle)));
