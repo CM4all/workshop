@@ -141,9 +141,7 @@ public:
 		pid->SetExitListener(*this);
 	}
 
-	void SetCgroup(FileDescriptor fd) noexcept {
-		cgroup_cpu_stat.OpenReadOnly(fd, "cpu.stat");
-	}
+	void SetCgroup(FileDescriptor fd) noexcept;
 
 	void SetOutput(UniqueFileDescriptor fd) noexcept;
 

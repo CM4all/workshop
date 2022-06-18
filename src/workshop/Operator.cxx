@@ -157,6 +157,19 @@ WorkshopOperator::OnProgress(unsigned progress) noexcept
 }
 
 void
+WorkshopOperator::SetCgroup(FileDescriptor fd) noexcept
+{
+	if (cgroup_cpu_stat.OpenReadOnly(fd, "cpu.stat")) {
+		try {
+			cpu_usage_start = ReadCgroupCpuUsage(cgroup_cpu_stat);
+		} catch (...) {
+			logger(1, "Failed to read CPU usage: ",
+			       std::current_exception());
+		}
+	}
+}
+
+void
 WorkshopOperator::SetOutput(UniqueFileDescriptor fd) noexcept
 {
 	assert(fd.IsDefined());
@@ -380,15 +393,6 @@ WorkshopOperator::OnControlSpawn(const char *token, const char *param)
 			token, stderr_write_pipe, response);
 
 	children.push_front(*new SpawnedProcess(std::move(handle)));
-
-	if (cgroup_cpu_stat.IsDefined()) {
-		try {
-			cpu_usage_start = ReadCgroupCpuUsage(cgroup_cpu_stat);
-		} catch (...) {
-			logger(1, "Failed to read CPU usage: ",
-			       std::current_exception());
-		}
-	}
 
 	return EasyReceiveMessageWithOneFD(return_pidfd);
 }
