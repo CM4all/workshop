@@ -143,7 +143,7 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 
 	UniqueFileDescriptor stderr_w_for_operator =
 		plan->control_channel && plan->allow_spawn
-		? UniqueFileDescriptor{dup(stderr_w.Get())}
+		? stderr_w.Duplicate()
 		: UniqueFileDescriptor{};
 
 	auto o = std::make_unique<WorkshopOperator>(event_loop, *this, job, plan,
