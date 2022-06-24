@@ -4,7 +4,7 @@ cm4all-workshop (6.0.2) unstable; urgency=low
   * translation: add packet CHDIR
   * spawn: don't inherit capabilities to launched processes
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Fri, 24 Jun 2022 10:40:45 +0200
 
 cm4all-workshop (6.0.1) unstable; urgency=low
 
