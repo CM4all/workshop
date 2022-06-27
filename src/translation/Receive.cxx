@@ -49,7 +49,7 @@ ReceiveTranslateResponse(AllocatorPtr alloc, SocketDescriptor s)
 	TranslateResponse response;
 	TranslateParser parser(alloc, response);
 
-	StaticFifoBuffer<uint8_t, 8192> buffer;
+	StaticFifoBuffer<std::byte, 8192> buffer;
 
 	while (true) {
 		auto w = buffer.Write();
@@ -70,7 +70,7 @@ ReceiveTranslateResponse(AllocatorPtr alloc, SocketDescriptor s)
 			if (r.empty())
 				break;
 
-			size_t consumed = parser.Feed(r.data(), r.size());
+			size_t consumed = parser.Feed(r);
 			if (consumed == 0)
 				break;
 
