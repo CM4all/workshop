@@ -35,8 +35,9 @@
 #include "CaptureBuffer.hxx"
 #include "util/Exception.hxx"
 #include "util/PrintException.hxx"
+#include "util/SpanCast.hxx"
 
-#include <string.h>
+#include <algorithm>
 
 CronCurlOperator::CronCurlOperator(CronQueue &_queue,
 				   CronWorkplace &_workplace,
@@ -86,12 +87,13 @@ CronCurlOperator::OnHeaders(unsigned _status, Curl::Headers &&headers)
 }
 
 void
-CronCurlOperator::OnData(ConstBuffer<void> data)
+CronCurlOperator::OnData(std::span<const std::byte> _src)
 {
 	if (output_capture) {
+		const auto src = ToStringView(_src);
 		auto w = output_capture->Write();
-		size_t nbytes = std::min(w.size(), data.size);
-		memcpy(w.data(), data.data, nbytes);
+		size_t nbytes = std::min(w.size(), src.size());
+		std::copy_n(src.begin(), nbytes, w.begin());
 		output_capture->Append(nbytes);
 	}
 }

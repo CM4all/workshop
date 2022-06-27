@@ -23,8 +23,8 @@ public:
 		printf("\n");
 	}
 
-	void OnData(ConstBuffer<void> data) {
-		fwrite(data.data, 1, data.size, stdout);
+	void OnData(std::span<const std::byte> src) {
+		fwrite(src.data(), 1, src.size(), stdout);
 	}
 
 	void OnEnd() {
