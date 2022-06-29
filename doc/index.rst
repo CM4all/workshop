@@ -130,24 +130,67 @@ instead of editing the main :file:`workshop.conf`.
 ``spawn``
 ^^^^^^^^^
 
-* ``allow_user``: allow child processes to impersonate the given
+Configures the process spawner. Example::
+
+   spawn {
+     allow_user "www-data"
+     allow_group "www-data"
+     CPUWeight "50"
+     TasksMax "100"
+     MemoryHigh "12 GB"
+     MemoryMax "16 GB"
+     IOWeight "50"
+   }
+
+- ``allow_user``: allow child processes to impersonate the given
   user.  This can be a user name (from :file:`/etc/passwd`), a
   numeric user id or an open range (e.g. `2147483648-` which allows
   all user ids from 2147483648 on).
-* :envvar:`allow_group`: allow child processes to impersonate the
-  given group (not necessary for Workshop plans)
-* :envvar:`CPUWeight`: CPU weight for all spawned processes combined
-  (``1..10000``).  :program:`systemd`'s default is :samp:`100`.
-* :envvar:`TasksMax`: Maximum number of tasks (``1..``).
-  :program:`systemd` sets no limit by default.
-* :envvar:`MemoryMax`: Absolute limit on the combined memory usage
-  of all spawned processes.  Value is in bytes and may be postfixed
-  with ``kB``, ``MB``, ``GB`` or ``TB``.  :program:`systemd` sets no
-  limit by default.
-* :envvar:`MemoryMin`, :envvar:`MemoryLow`, :envvar:`MemoryHigh`,
-  :envvar:`MemorySwapMax`: More memory limits.
-* :envvar:`IOWeight`: IO weight for all spawned processes combined
-  (``1..10000``).  :program:`systemd`'s default is :samp:`100`.
+
+- ``allow_group``: allow child processes to impersonate the given
+  group.
+
+- ``CPUWeight``: CPU weight for all spawned processes combined
+  (:math:`1..10000`).  :program:`systemd`'s default is 100.
+
+- ``TasksMax``: maximum number of tasks
+  (:math:`1..`). :program:`systemd` sets no limit by default.
+
+- ``MemoryMin``: "If the memory usage of a cgroup is within its
+  effective min boundary, the cgroup’s memory won’t be reclaimed under
+  any conditions. If there is no unprotected reclaimable memory
+  available, OOM killer is invoked."
+  (https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v2.html#memory-interface-files)
+
+- ``MemoryLow``: "Best-effort memory protection. If the memory usage
+  of a cgroup is within its effective low boundary, the cgroup’s
+  memory won’t be reclaimed unless there is no reclaimable memory
+  available in unprotected cgroups."
+  (https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v2.html#memory-interface-files)
+
+- ``MemoryHigh``: "Specify the throttling limit on memory usage of the
+  executed processes in this unit.  Memory usage may go above the
+  limit if unavoidable, but the processes are heavily slowed down and
+  memory is taken away aggressively in such cases.  This is the main
+  mechanism to control memory usage of a unit."
+  (:manpage:`systemd.resource-control(5)`)
+
+- ``MemoryMax``: "Specify the absolute limit on memory usage of the
+  executed processes in this unit. If memory usage cannot be contained
+  under the limit, out-of-memory killer is invoked inside the unit."
+  (:manpage:`systemd.resource-control(5)`)
+
+- ``MemorySwapMax``: "Swap usage hard limit. If a cgroup’s swap usage
+  reaches this limit, anonymous memory of the cgroup will not be
+  swapped out."
+  (https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v2.html#memory-interface-files)
+
+- ``IOWeight``: IO weight for all spawned processes combined
+  (:math:`1..10000`).  :program:`systemd`'s default is 100.
+
+Memory limits are in bytes and may be postfixed with ``kB``, ``MB``,
+``GB`` or ``TB``.  Percent values are relative to total physical
+memory.
 
 
 Settings in :file:`/etc/default/cm4all-workshop`
