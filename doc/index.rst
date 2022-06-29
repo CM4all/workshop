@@ -1,8 +1,8 @@
 Workshop
-========
+########
 
 What is Workshop?
------------------
+=================
 
 Workshop is a daemon which executes jobs from a queue stored in a
 PostgreSQL database.  Multiple instances can run in parallel on
@@ -14,7 +14,7 @@ by hosted users ("cron").
 
 
 Installation & Configuration
-----------------------------
+============================
 
 Workshop (classic):
 
@@ -50,8 +50,9 @@ Cron:
    <https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING>`_)
 #. :samp:`systemctl start cm4all-workshop`
 
+
 Settings in :file:`/etc/cm4all/workshop/workshop.conf`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------------------------------------
 
 The file :file:`/etc/cm4all/workshop/workshop.conf` configures Workshop.
 The following settings are recognized:
@@ -143,8 +144,9 @@ The default configuration file includes :file:`local.conf` and
 :file:`conf.d/*.conf`, and you should probably better edit these files
 instead of editing the main :file:`workshop.conf`.
 
+
 Settings in :file:`/etc/default/cm4all-workshop`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------------------------------
 
 Additionally, the file :file:`/etc/default/cm4all-workshop` configures
 how the Workshop daemon is launched.  The following settings are
@@ -157,7 +159,7 @@ This file is Workshop 1.0 legacy, and should not be used anymore.
 
 
 Migrating from Workhop 1.0.x
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+----------------------------
 
 In Workshop 1.0.x, all configuration options were in the shell-style
 file :file:`/etc/default/cm4all-workshop`.  That format lacks
@@ -180,7 +182,7 @@ in a :envvar:`workshop` section, e.g.::
 
 
 Database Migration
-^^^^^^^^^^^^^^^^^^
+------------------
 
 Sometimes, new Workshop releases come with changes to the database
 schema to allow new features.  For this, Workshop comes with a
@@ -202,7 +204,7 @@ as user :samp:`postgres` (the superuser)::
 
 
 Concept
--------
+=======
 
 The queue (a PostgreSQL table) contains a list of *jobs*.  Every
 daemon instance monitors this queue.
@@ -216,10 +218,10 @@ command line to be executed by the shell (:file:`/bin/sh`).
 
 
 Using Workshop
---------------
+==============
 
 Plan Files
-^^^^^^^^^^
+----------
 
 The directory :file:`/usr/share/cm4all/workshop/plans/` contains a
 text file for each plan.  Example::
@@ -319,7 +321,7 @@ following line to the file :file:`debian/PACKAGENAME.triggers`::
   activate cm4all-workshop-reload-plans
 
 Queueing a job
-^^^^^^^^^^^^^^
+--------------
 
 A job consists of a row in the PostgreSQL table.  Example::
 
@@ -331,7 +333,7 @@ Upon completion, the columns `time_done` and `status` contain
 interesting data.
 
 Development
-^^^^^^^^^^^
+-----------
 
 The package :file:`cm4all-workshop-dev` contains the tool
 :file:`cm4all-workshop-run-job` which allows running a job on the
@@ -350,7 +352,7 @@ pipe connected to the child's ``stdout``.
 
 
 Using the systemd journal
--------------------------
+=========================
 
 If the `journal` option is enabled, then all log output from job
 processes (text lines printed to `stderr`) are forwarded to the
@@ -373,7 +375,7 @@ To see the log of job `42`, type::
 
 
 Using Cron
-----------
+==========
 
 A cron job consists of a row in the PostgreSQL table.  Example::
 
@@ -384,7 +386,7 @@ During job execution, the column `node_name` is set.
 
 
 Controlling the Daemon
-----------------------
+======================
 
 The :envvar:`control` block in the configuration file sets up a
 control listener.  The :file:`cm4all-workshop-control` program can
@@ -402,10 +404,10 @@ The following commands are implemented:
 
 
 Reference
----------
+=========
 
 Plan Protocol
-^^^^^^^^^^^^^
+-------------
 
 The environment is empty.  There are only two file handles: 1
 (standard output, `stdout`) and 2 (standard error, `stderr`).  0
@@ -438,7 +440,7 @@ The plan should clean up after itself in any case (e.g. delete its
 temporary files), whether successful or not.
 
 The `jobs` table
-^^^^^^^^^^^^^^^^
+----------------
 
 * :envvar:`id`: The primary key.
 * :envvar:`name`: An optional name assigned by the job creator.  Not
@@ -501,7 +503,7 @@ The client is allowed to execute the following operations:
   IS NOT NULL`.
 
 Control Channel
-^^^^^^^^^^^^^^^
+---------------
 
 With the :envvar:`control_channel` option enabled, the child process
 gets a SEQPACKET socket on file descriptor 3.  It can be used to
@@ -547,7 +549,7 @@ The following commands are available:
 
 
 Cron Schedule
-^^^^^^^^^^^^^
+-------------
 
 The :envvar:`schedule` column follows the classic `cron` schedule
 syntax (see :manpage:`crontab(5)`).
@@ -562,7 +564,7 @@ delay depends on the schedule; e.g. ":samp:`@hourly`" will be delayed
 up to an hour and ":samp:`@daily`" will be delayed up to one day.
 
 The `cronjobs` table
-^^^^^^^^^^^^^^^^^^^^
+--------------------
 
 * :envvar:`id`: The primary key.
 * :envvar:`account_id`: The user account which owns this job.  This
@@ -620,7 +622,7 @@ current execution, and will attempt to apply the new settings after
 finishing.
 
 The `cronresults` table
-^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------
 
 * :envvar:`id`: The primary key.
 * :envvar:`cronjob_id`: A reference to the `cronjobs` record.
@@ -638,7 +640,7 @@ The client is allowed to execute the following operations:
 
 
 Security
---------
+========
 
 Workshop is a service which executes programs based on data stored in
 a database.  That concept is potentially dangerous, when the database
@@ -656,7 +658,7 @@ damage from a successful attack.
 The plan author is responsible for the security of his plan.
 
 Cron
-^^^^
+----
 
 This service executes programs based on data stored in a database.
 That concept is potentially dangerous when the database has been
