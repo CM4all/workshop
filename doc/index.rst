@@ -63,26 +63,7 @@ The following settings are recognized:
 * :envvar:`concurrency`: How many jobs shall this node execute concurrently?
   Rule of thumb: number of CPUs, not much more.
 * :envvar:`spawn`: opens a block (with curly braces), which
-  configures the process spawner:
-
-  - ``allow_user``: allow child processes to impersonate the given
-    user.  This can be a user name (from :file:`/etc/passwd`), a
-    numeric user id or an open range (e.g. `2147483648-` which allows
-    all user ids from 2147483648 on).
-  * :envvar:`allow_group`: allow child processes to impersonate the
-    given group (not necessary for Workshop plans)
-  * :envvar:`CPUWeight`: CPU weight for all spawned processes combined
-    (``1..10000``).  :program:`systemd`'s default is :samp:`100`.
-  * :envvar:`TasksMax`: Maximum number of tasks (``1..``).
-    :program:`systemd` sets no limit by default.
-  * :envvar:`MemoryMax`: Absolute limit on the combined memory usage
-    of all spawned processes.  Value is in bytes and may be postfixed
-    with ``kB``, ``MB``, ``GB`` or ``TB``.  :program:`systemd` sets no
-    limit by default.
-  * :envvar:`MemoryMin`, :envvar:`MemoryLow`, :envvar:`MemoryHigh`,
-    :envvar:`MemorySwapMax`: More memory limits.
-  * :envvar:`IOWeight`: IO weight for all spawned processes combined
-    (``1..10000``).  :program:`systemd`'s default is :samp:`100`.
+  configures the process spawner; see :ref:`config.spawn`.
 
 * :envvar:`workshop`: opens a block (with curly braces), which
   configures a Workshop classic database:
@@ -143,6 +124,30 @@ The following settings are recognized:
 The default configuration file includes :file:`local.conf` and
 :file:`conf.d/*.conf`, and you should probably better edit these files
 instead of editing the main :file:`workshop.conf`.
+
+.. _config.spawn:
+
+``spawn``
+^^^^^^^^^
+
+* ``allow_user``: allow child processes to impersonate the given
+  user.  This can be a user name (from :file:`/etc/passwd`), a
+  numeric user id or an open range (e.g. `2147483648-` which allows
+  all user ids from 2147483648 on).
+* :envvar:`allow_group`: allow child processes to impersonate the
+  given group (not necessary for Workshop plans)
+* :envvar:`CPUWeight`: CPU weight for all spawned processes combined
+  (``1..10000``).  :program:`systemd`'s default is :samp:`100`.
+* :envvar:`TasksMax`: Maximum number of tasks (``1..``).
+  :program:`systemd` sets no limit by default.
+* :envvar:`MemoryMax`: Absolute limit on the combined memory usage
+  of all spawned processes.  Value is in bytes and may be postfixed
+  with ``kB``, ``MB``, ``GB`` or ``TB``.  :program:`systemd` sets no
+  limit by default.
+* :envvar:`MemoryMin`, :envvar:`MemoryLow`, :envvar:`MemoryHigh`,
+  :envvar:`MemorySwapMax`: More memory limits.
+* :envvar:`IOWeight`: IO weight for all spawned processes combined
+  (``1..10000``).  :program:`systemd`'s default is :samp:`100`.
 
 
 Settings in :file:`/etc/default/cm4all-workshop`
