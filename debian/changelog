@@ -4,7 +4,7 @@ cm4all-workshop (6.0.3) unstable; urgency=low
   * spawn: support percent memory limits
   * spawn: use inotify to watch cgroup memory limits
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Wed, 29 Jun 2022 12:31:31 +0200
 
 cm4all-workshop (6.0.2) unstable; urgency=low
 
