@@ -31,7 +31,17 @@ jobs:
         with:
           key: ${{ matrix.os }}-${{ matrix.type }}
       - name: Install dependencies
-        run: sudo apt install -y g++-10 libsystemd-dev libdbus-1-dev libseccomp-dev libboost-dev libcurl4-openssl-dev libcap-dev libgtest-dev libpq-dev
+        run: |
+          sudo apt install -y \
+            g++-10 \
+            libsystemd-dev \
+            libdbus-1-dev \
+            libseccomp-dev \
+            libboost-dev \
+            libcurl4-openssl-dev \
+            libcap-dev \
+            libgtest-dev \
+            libpq-dev
       - name: Meson Build
         uses: BSFishy/meson-build@v1.0.3
         with:
