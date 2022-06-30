@@ -32,7 +32,7 @@ jobs:
           key: ${{ matrix.os }}-${{ matrix.type }}
       - name: Install dependencies
         run: |
-          sudo apt-get install -y \
+          sudo apt-get install -y --no-install-recommends \
             g++-10 \
             libsystemd-dev \
             libdbus-1-dev \
