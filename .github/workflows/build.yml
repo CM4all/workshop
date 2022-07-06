@@ -43,7 +43,15 @@ jobs:
             libcap-dev \
             libgtest-dev \
             libpq-dev
-      - name: Meson Build
+
+      - name: Build
+        uses: BSFishy/meson-build@v1.0.3
+        with:
+          action: build
+          setup-options: -Ddocumentation=disabled
+          meson-version: 0.56.0
+
+      - name: Unit Tests
         uses: BSFishy/meson-build@v1.0.3
         with:
           action: test
