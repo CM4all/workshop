@@ -31,7 +31,6 @@
  */
 
 #include "AllocatorPtr.hxx"
-#include "util/StringView.hxx"
 
 #include <algorithm>
 

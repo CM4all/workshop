@@ -41,7 +41,7 @@
 #include "util/Exception.hxx"
 #include "util/IterableSplitString.hxx"
 #include "util/SpanCast.hxx"
-#include "util/StringView.hxx"
+#include "util/StringSplit.hxx"
 #include "version.h"
 
 #include <stdexcept>
@@ -163,9 +163,9 @@ WorkshopControlChannelServer::OnControl(std::vector<std::string> &&args) noexcep
 
 [[gnu::pure]]
 static std::string_view
-FirstLine(StringView s) noexcept
+FirstLine(std::string_view s) noexcept
 {
-	return s.Split('\n').first;
+	return Split(s, '\n').first;
 }
 
 [[gnu::pure]]
