@@ -36,8 +36,11 @@
 #include "util/Exception.hxx"
 #include "util/PrintException.hxx"
 #include "util/SpanCast.hxx"
+#include "util/StringCompare.hxx"
 
 #include <algorithm>
+
+using std::string_view_literals::operator""sv;
 
 CronCurlOperator::CronCurlOperator(CronQueue &_queue,
 				   CronWorkplace &_workplace,
@@ -80,7 +83,7 @@ CronCurlOperator::OnHeaders(unsigned _status, Curl::Headers &&headers)
 	const auto ct = headers.find("content-type");
 	if (ct != headers.end()) {
 		const char *content_type = ct->second.c_str();
-		if (strncmp(content_type, "text/", 5) == 0)
+		if (StringStartsWith(content_type, "text/"sv))
 			/* capture the response body if it's text */
 			output_capture = std::make_unique<CaptureBuffer>(8192);
 	}
