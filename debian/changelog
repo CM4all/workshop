@@ -3,7 +3,7 @@ cm4all-workshop (6.0.4) unstable; urgency=low
   * spawn: fix inotify busy loop
   * spawn: fix CRC miscalculation bug
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Wed, 13 Jul 2022 11:09:40 +0200
 
 cm4all-workshop (6.0.3) unstable; urgency=low
 
