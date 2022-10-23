@@ -2,7 +2,7 @@ cm4all-workshop (5.5) unstable; urgency=low
 
   * workshop: fix crash after failure to reaping finished jobs
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Sun, 23 Oct 2022 17:26:04 +0200
 
 cm4all-workshop (5.4) unstable; urgency=low
 
