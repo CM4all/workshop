@@ -134,30 +134,25 @@ WorkshopPartition::OnReapTimer() noexcept
 {
 	logger(6, "Reaping finished jobs");
 
-	try {
-		bool found = false;
+	bool found = false;
 
-		library.VisitPlans(GetEventLoop().SteadyNow(), [this, &found](const std::string &name, const Plan &plan){
-			if (plan.reap_finished.empty())
-				return;
+	library.VisitPlans(GetEventLoop().SteadyNow(), [this, &found](const std::string &name, const Plan &plan){
+		if (plan.reap_finished.empty())
+			return;
 
-			unsigned n = queue.ReapFinishedJobs(name.c_str(),
-							    plan.reap_finished.c_str());
-			if (n > 0) {
-				found = true;
-				logger(5, "Reaped ", n, " jobs of plan '",
-				       name.c_str(), "'");
-			}
-		});
+		unsigned n = queue.ReapFinishedJobs(name.c_str(),
+						    plan.reap_finished.c_str());
+		if (n > 0) {
+			found = true;
+			logger(5, "Reaped ", n, " jobs of plan '",
+			       name.c_str(), "'");
+		}
+	});
 
-		if (found)
-			/* keep on watching for jobs to be reaped as
-			   long as we're busy */
-			ScheduleReapFinished();
-	} catch (...) {
-		logger(1, "Failed to reap finished jobs: ",
-		       std::current_exception());
-	}
+	if (found)
+		/* keep on watching for jobs to be reaped as long as
+		   we're busy */
+		ScheduleReapFinished();
 }
 
 void
