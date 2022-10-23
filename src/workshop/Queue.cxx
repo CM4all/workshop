@@ -450,6 +450,11 @@ unsigned
 WorkshopQueue::ReapFinishedJobs(const char *plan_name,
 				const char *reap_finished) noexcept
 {
+	if (!db.IsReady())
+		/* can't reap finished jobs because we currently have
+		   no database connection */
+		return 0;
+
 	try {
 		return PgReapFinishedJobs(db, plan_name, reap_finished);
 	} catch (...) {
