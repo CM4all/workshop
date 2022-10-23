@@ -448,9 +448,14 @@ WorkshopQueue::SetJobDone(const WorkshopJob &job, int status,
 
 unsigned
 WorkshopQueue::ReapFinishedJobs(const char *plan_name,
-				const char *reap_finished)
+				const char *reap_finished) noexcept
 {
-	return PgReapFinishedJobs(db, plan_name, reap_finished);
+	try {
+		return PgReapFinishedJobs(db, plan_name, reap_finished);
+	} catch (...) {
+		db.CheckError(std::current_exception());
+		return 0;
+	}
 }
 
 void
