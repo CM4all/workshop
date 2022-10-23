@@ -200,7 +200,7 @@ public:
 			    std::chrono::microseconds cpu_usage) noexcept;
 
 	unsigned ReapFinishedJobs(const char *plan_name,
-				  const char *reap_finished);
+				  const char *reap_finished) noexcept;
 
 private:
 	/**

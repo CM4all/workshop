@@ -1,6 +1,6 @@
 cm4all-workshop (6.0.9) unstable; urgency=low
 
-  * 
+  * merge release 5.5
 
  --   
 
@@ -63,6 +63,12 @@ cm4all-workshop (6.0.1) unstable; urgency=low
   * translation: add packets MOUNT_DEV, BIND_MOUNT_FILE, CGROUP_XATTR
 
  -- Max Kellermann <mk@cm4all.com>  Sat, 18 Jun 2022 16:17:45 +0200
+
+cm4all-workshop (5.5) unstable; urgency=low
+
+  * workshop: fix crash after failure to reaping finished jobs
+
+ -- Max Kellermann <mk@cm4all.com>  Sun, 23 Oct 2022 17:26:04 +0200
 
 cm4all-workshop (5.4) unstable; urgency=low
 

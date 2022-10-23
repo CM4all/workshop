@@ -461,9 +461,19 @@ WorkshopQueue::AddJobCpuUsage(const WorkshopJob &job,
 
 unsigned
 WorkshopQueue::ReapFinishedJobs(const char *plan_name,
-				const char *reap_finished)
+				const char *reap_finished) noexcept
 {
-	return PgReapFinishedJobs(db, plan_name, reap_finished);
+	if (!db.IsReady())
+		/* can't reap finished jobs because we currently have
+		   no database connection */
+		return 0;
+
+	try {
+		return PgReapFinishedJobs(db, plan_name, reap_finished);
+	} catch (...) {
+		db.CheckError(std::current_exception());
+		return 0;
+	}
 }
 
 void
