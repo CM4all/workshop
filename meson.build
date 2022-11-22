@@ -139,6 +139,7 @@ libcommon_enable_net_log = false
 subdir('libcommon/src/util')
 subdir('libcommon/src/time')
 subdir('libcommon/src/io')
+subdir('libcommon/src/io/config')
 subdir('libcommon/src/system')
 
 system2 = static_library(
@@ -289,5 +290,5 @@ subdir('t')
 subdir('libcommon/test/util')
 subdir('libcommon/test/net')
 subdir('libcommon/test/pg')
-subdir('libcommon/test/io')
+subdir('libcommon/test/io/config')
 subdir('doc')

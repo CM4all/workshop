@@ -34,8 +34,8 @@
 #include "Plan.hxx"
 #include "pg/Interval.hxx"
 #include "system/Error.hxx"
-#include "io/FileLineParser.hxx"
-#include "io/ConfigParser.hxx"
+#include "io/config/FileLineParser.hxx"
+#include "io/config/ConfigParser.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringAPI.hxx"
 
