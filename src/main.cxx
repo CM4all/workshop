@@ -69,7 +69,7 @@ Run(const Config &config)
 
 	/* main loop */
 
-	instance.Dispatch();
+	instance.Run();
 }
 
 int

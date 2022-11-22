@@ -55,7 +55,7 @@ try {
 	MyResponseHandler handler;
 	CurlRequest request(curl_global, url, handler);
 
-	event_loop.Dispatch();
+	event_loop.Run();
 
 	return EXIT_SUCCESS;
 } catch (...) {

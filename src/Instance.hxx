@@ -93,8 +93,8 @@ public:
 
 	void Start();
 
-	void Dispatch() noexcept {
-		event_loop.Dispatch();
+	void Run() noexcept {
+		event_loop.Run();
 	}
 
 	void UpdateFilter(bool library_modified) noexcept;

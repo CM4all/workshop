@@ -107,8 +107,8 @@ class RunJobInstance final
 public:
 	void Start(RunJobCommandLine &&cmdline);
 
-	int Run() {
-		event_loop.Dispatch();
+	int Run() noexcept {
+		event_loop.Run();
 		return exit_status;
 	}
 
