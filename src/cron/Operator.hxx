@@ -48,7 +48,7 @@ class CronWorkplace;
  * A #CronJob being executed.
  */
 class CronOperator
-	: public IntrusiveListHook,
+	: public IntrusiveListHook<IntrusiveHookMode::NORMAL>,
 	  LoggerDomainFactory
 {
 protected:

@@ -58,7 +58,7 @@ class EmailService {
 	const AllocatedSocketAddress address;
 
 	class Job final
-		: public IntrusiveListHook,
+		: public IntrusiveListHook<IntrusiveHookMode::NORMAL>,
 		  ConnectSocketHandler, QmqpClientHandler
 	{
 		EmailService &service;

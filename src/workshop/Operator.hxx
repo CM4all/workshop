@@ -58,7 +58,7 @@ class ChildProcessHandle;
 
 /** an operator is a job being executed */
 class WorkshopOperator final
-	: public IntrusiveListHook,
+	: public IntrusiveListHook<IntrusiveHookMode::NORMAL>,
 	  public ExitListener,
 	WorkshopControlChannelHandler,
 	LoggerDomainFactory
