@@ -37,7 +37,6 @@
 #include "workshop/Partition.hxx"
 #include "cron/Partition.hxx"
 #include "spawn/Client.hxx"
-#include "spawn/Glue.hxx"
 
 #include <signal.h>
 
