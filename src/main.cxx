@@ -34,6 +34,7 @@
 #include "Instance.hxx"
 #include "CommandLine.hxx"
 #include "Config.hxx"
+#include "workshop/MultiLibrary.hxx"
 #include "system/SetupProcess.hxx"
 #include "system/ProcessName.hxx"
 #include "system/CapabilityGlue.hxx"
@@ -51,12 +52,28 @@
 bool debug_mode = false;
 #endif
 
+static auto
+MakeLibrary()
+{
+	auto library = std::make_unique<MultiLibrary>();
+	library->InsertPath("/etc/cm4all/workshop/plans");
+	library->InsertPath("/usr/share/cm4all/workshop/plans");
+	return library;
+}
+
 static void
 Run(const Config &config)
 {
 	SetupProcess();
 
-	Instance instance(config);
+	std::unique_ptr<MultiLibrary> library;
+	if (!config.partitions.empty())
+		library = MakeLibrary();
+
+	Instance instance{
+		config,
+		std::move(library),
+	};
 
 	/* now that the spawner has been launched by the Instance
 	   constructor, drop all capabilities, we don't need any */

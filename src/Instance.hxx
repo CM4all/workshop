@@ -83,7 +83,8 @@ class Instance final : SpawnHook, ControlHandler {
 	std::forward_list<ControlServer> control_servers;
 
 public:
-	explicit Instance(const Config &config);
+	Instance(const Config &config,
+		 std::unique_ptr<MultiLibrary> library);
 
 	~Instance() noexcept;
 

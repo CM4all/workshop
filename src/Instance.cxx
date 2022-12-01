@@ -41,22 +41,14 @@
 
 #include <signal.h>
 
-Instance::Instance(const Config &config)
+Instance::Instance(const Config &config,
+		   std::unique_ptr<MultiLibrary> _library)
 	:shutdown_listener(event_loop, BIND_THIS_METHOD(OnExit)),
 	 sighup_event(event_loop, SIGHUP, BIND_THIS_METHOD(OnReload)),
 	 defer_idle_check(event_loop, BIND_THIS_METHOD(RemoveIdlePartitions)),
-	 curl(event_loop)
+	 curl(event_loop),
+	 library(std::move(_library))
 {
-	/* the plan library must be initialized before starting the
-	   spawner, because it is required by Verify(), which runs inside
-	   the spawner process */
-
-	if (!config.partitions.empty()) {
-		library.reset(new MultiLibrary());
-		library->InsertPath("/etc/cm4all/workshop/plans");
-		library->InsertPath("/usr/share/cm4all/workshop/plans");
-	}
-
 	spawn_service = StartSpawnServer(config.spawn, event_loop,
 				    this,
 				    [this](){
