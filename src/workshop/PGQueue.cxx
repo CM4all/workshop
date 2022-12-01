@@ -33,6 +33,8 @@
 #include "PGQueue.hxx"
 #include "pg/Connection.hxx"
 
+#include <fmt/format.h>
+
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
@@ -238,8 +240,8 @@ PgAddJobCpuUsage(Pg::Connection &db, const char *id,
 		 std::chrono::microseconds cpu_usage)
 {
 	char buffer[64];
-	snprintf(buffer, sizeof(buffer), "%" PRIu64 " microseconds",
-		 cpu_usage.count());
+	snprintf(buffer, sizeof(buffer), "%s microseconds",
+		 fmt::format_int{cpu_usage.count()}.c_str());
 
 	const auto result =
 		db.ExecuteParams("UPDATE jobs "

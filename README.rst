@@ -15,6 +15,7 @@ You need:
 
 - a C++20 compliant compiler (e.g. gcc or clang)
 - `libcap2 <https://sites.google.com/site/fullycapable/>`__
+- `libfmt <https://fmt.dev/>`__
 - `libpq <https://www.postgresql.org/>`__
 - `Boost <http://www.boost.org/>`__
 - `CURL <https://curl.haxx.se/>`__
