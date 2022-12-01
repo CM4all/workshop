@@ -136,6 +136,7 @@ inc = include_directories(
 libcommon_enable_DefaultFifoBuffer = false
 
 subdir('libcommon/src/util')
+subdir('libcommon/src/lib/fmt')
 subdir('libcommon/src/time')
 subdir('libcommon/src/io')
 subdir('libcommon/src/io/config')
@@ -247,7 +248,7 @@ executable('cm4all-workshop',
     spawn_dep,
     pg_dep,
     curl_dep,
-    dependency('fmt', version: '>= 7'),
+    fmt_dep,
   ],
   install: true,
   install_dir: 'sbin',
