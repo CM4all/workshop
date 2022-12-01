@@ -30,7 +30,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "Instance.hxx"
+#include "Hook.hxx"
 #include "workshop/MultiLibrary.hxx"
 #include "workshop/Plan.hxx"
 #include "spawn/Prepared.hxx"
@@ -53,13 +53,15 @@ CompareGroups(const std::vector<gid_t> &a, const std::array<gid_t, 32> &b)
 }
 
 bool
-Instance::Verify(const PreparedChildProcess &p)
+WorkshopSpawnHook::Verify(const PreparedChildProcess &p)
 {
 	if (p.hook_info != nullptr && library) {
-		library->Update(event_loop.SteadyNow(), false);
+		const auto now = std::chrono::steady_clock::now();
+
+		library->Update(now, false);
 
 		const char *plan_name = p.hook_info;
-		auto plan = library->Get(event_loop.SteadyNow(), plan_name);
+		auto plan = library->Get(now, plan_name);
 		if (!plan)
 			throw FormatRuntimeError("No such plan: %s", plan_name);
 

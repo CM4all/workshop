@@ -32,13 +32,16 @@
 
 #include "debug.h"
 #include "Instance.hxx"
+#include "Hook.hxx"
 #include "CommandLine.hxx"
 #include "Config.hxx"
 #include "workshop/MultiLibrary.hxx"
+#include "spawn/Launch.hxx"
 #include "system/SetupProcess.hxx"
 #include "system/ProcessName.hxx"
 #include "system/CapabilityGlue.hxx"
 #include "system/CapabilityState.hxx"
+#include "net/UniqueSocketDescriptor.hxx"
 #include "util/PrintException.hxx"
 
 #include <systemd/sd-daemon.h>
@@ -70,8 +73,13 @@ Run(const Config &config)
 	if (!config.partitions.empty())
 		library = MakeLibrary();
 
+	WorkshopSpawnHook hook{library.get()};
+
+	auto spawner_socket = LaunchSpawnServer(config.spawn, &hook);
+
 	Instance instance{
 		config,
+		std::move(spawner_socket),
 		std::move(library),
 	};
 

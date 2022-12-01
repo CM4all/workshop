@@ -42,22 +42,20 @@
 #include <signal.h>
 
 Instance::Instance(const Config &config,
+		   UniqueSocketDescriptor spawner_socket,
 		   std::unique_ptr<MultiLibrary> _library)
 	:shutdown_listener(event_loop, BIND_THIS_METHOD(OnExit)),
 	 sighup_event(event_loop, SIGHUP, BIND_THIS_METHOD(OnReload)),
 	 defer_idle_check(event_loop, BIND_THIS_METHOD(RemoveIdlePartitions)),
+	 spawn_service(new SpawnServerClient(event_loop,
+					     config.spawn,
+					     std::move(spawner_socket),
+					     /* disable "verify", we
+						do it via SpawnHook */
+					     false)),
 	 curl(event_loop),
 	 library(std::move(_library))
 {
-	spawn_service = StartSpawnServer(config.spawn, event_loop,
-				    this,
-				    [this](){
-		event_loop.Reinit();
-		child_process_registry.~ChildProcessRegistry();
-		systemd_watchdog.Disable();
-		event_loop.~EventLoop();
-	});
-
 	shutdown_listener.Enable();
 	sighup_event.Enable();
 
