@@ -134,7 +134,6 @@ inc = include_directories(
 )
 
 libcommon_enable_DefaultFifoBuffer = false
-libcommon_enable_net_log = false
 
 subdir('libcommon/src/util')
 subdir('libcommon/src/time')
@@ -156,6 +155,7 @@ system_dep = declare_dependency(
 
 subdir('libcommon/src/event')
 subdir('libcommon/src/net')
+subdir('libcommon/src/net/djb')
 
 net2 = static_library(
   'net2',
@@ -170,6 +170,7 @@ net_dep = declare_dependency(
 )
 
 subdir('libcommon/src/event/net')
+subdir('libcommon/src/event/net/djb')
 subdir('libcommon/src/event/systemd')
 subdir('libcommon/src/lib/curl')
 subdir('libcommon/src/lib/dbus')
@@ -237,6 +238,7 @@ executable('cm4all-workshop',
   include_directories: inc,
   dependencies: [
     event_net_dep,
+    event_net_djb_dep,
     event_systemd_dep,
     time_dep,
     system_dep,
