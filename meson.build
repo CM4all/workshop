@@ -134,6 +134,7 @@ inc = include_directories(
 )
 
 libcommon_enable_DefaultFifoBuffer = false
+libcommon_enable_spawn_local = false
 
 subdir('libcommon/src/util')
 subdir('libcommon/src/lib/fmt')
