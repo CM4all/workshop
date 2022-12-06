@@ -37,6 +37,6 @@ struct Config;
 
 /** read configuration options from the command line */
 void
-ParseCommandLine(Config &config, int argc, char **argv);
+ParseCommandLine(int argc, char **argv);
 
 #endif

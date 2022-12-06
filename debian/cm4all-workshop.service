@@ -6,7 +6,7 @@ After=postgresql.service
 
 [Service]
 Type=notify
-ExecStart=/usr/lib/cm4all/workshop/systemd/run.sh
+ExecStart=/usr/sbin/cm4all-workshop
 KillMode=process
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=on-failure

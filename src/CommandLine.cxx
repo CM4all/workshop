@@ -60,14 +60,6 @@ static void usage(void) {
 	     " --quiet\n"
 #endif
 	     " -q             be quiet\n"
-#ifdef __GLIBC__
-	     " --name NAME\n"
-#endif
-	     " -N NAME        set the node name\n"
-#ifdef __GLIBC__
-	     " --concurrency NUM\n"
-#endif
-	     " -c NUM         set the maximum number of concurrent operators (default: 2)\n"
 	     "\n"
 	     );
 }
@@ -96,7 +88,7 @@ static void arg_error(const char *argv0, const char *fmt, ...) {
 
 /** read configuration options from the command line */
 void
-ParseCommandLine(Config &config, int argc, char **argv)
+ParseCommandLine(int argc, char **argv)
 {
 	int ret;
 #ifdef __GLIBC__
@@ -105,8 +97,6 @@ ParseCommandLine(Config &config, int argc, char **argv)
 		{"version", 0, 0, 'V'},
 		{"verbose", 0, 0, 'v'},
 		{"quiet", 0, 0, 'q'},
-		{"name", 1, 0, 'N'},
-		{"concurrency", 1, 0, 'c'},
 		{0,0,0,0}
 	};
 #endif
@@ -117,10 +107,10 @@ ParseCommandLine(Config &config, int argc, char **argv)
 #ifdef __GLIBC__
 		int option_index = 0;
 
-		ret = getopt_long(argc, argv, "hVvqN:c:",
+		ret = getopt_long(argc, argv, "hVvq",
 				  long_options, &option_index);
 #else
-		ret = getopt(argc, argv, "hVvqN:c:");
+		ret = getopt(argc, argv, "hVvq");
 #endif
 		if (ret == -1)
 			break;
@@ -140,16 +130,6 @@ ParseCommandLine(Config &config, int argc, char **argv)
 
 		case 'q':
 			log_level = 0;
-			break;
-
-		case 'N':
-			config.node_name = optarg;
-			break;
-
-		case 'c':
-			config.concurrency = (unsigned)strtoul(optarg, nullptr, 10);
-			if (config.concurrency == 0)
-				arg_error(argv[0], "invalid concurrency specification");
 			break;
 
 		case '?':

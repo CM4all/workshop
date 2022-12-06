@@ -113,24 +113,8 @@ try {
 
 	/* configuration */
 
-	ParseCommandLine(config, argc, argv);
+	ParseCommandLine(argc, argv);
 	LoadConfigFile(config, "/etc/cm4all/workshop/workshop.conf");
-
-	if (config.partitions.empty()) {
-		/* compatibility with Workshop 1.0 */
-		const char *database = getenv("WORKSHOP_DATABASE");
-		if (database != nullptr && *database != 0) {
-			config.partitions.emplace_front(database);
-
-			/* compatibility with Workshop 1.0.x: don't require
-			   allow_user/allow_group configuration if the
-			   configuration has not yet been migrated from
-			   /etc/default/cm4all-workshop to workshop.conf */
-			config.spawn.allow_any_uid_gid =
-				config.spawn.allowed_uids.empty() &&
-				config.spawn.allowed_gids.empty();
-		}
-	}
 
 	config.Check();
 
