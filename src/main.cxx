@@ -39,8 +39,8 @@
 #include "spawn/Launch.hxx"
 #include "system/SetupProcess.hxx"
 #include "system/ProcessName.hxx"
-#include "system/CapabilityGlue.hxx"
-#include "system/CapabilityState.hxx"
+#include "lib/cap/Glue.hxx"
+#include "lib/cap/State.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "util/PrintException.hxx"
 

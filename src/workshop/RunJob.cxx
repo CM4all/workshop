@@ -40,7 +40,7 @@
 #include "spawn/Registry.hxx"
 #include "spawn/PidfdEvent.hxx"
 #include "event/Loop.hxx"
-#include "system/CapabilityGlue.hxx"
+#include "lib/cap/Glue.hxx"
 #include "system/Error.hxx"
 #include "system/SetupProcess.hxx"
 #include "net/UniqueSocketDescriptor.hxx"

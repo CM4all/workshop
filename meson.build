@@ -137,6 +137,7 @@ libcommon_enable_DefaultFifoBuffer = false
 libcommon_enable_spawn_local = false
 
 subdir('libcommon/src/util')
+subdir('libcommon/src/lib/cap')
 subdir('libcommon/src/lib/fmt')
 subdir('libcommon/src/time')
 subdir('libcommon/src/io')
