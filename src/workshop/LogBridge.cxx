@@ -32,6 +32,7 @@
 
 #include "LogBridge.hxx"
 #include "SyslogClient.hxx"
+#include "lib/fmt/ToBuffer.hxx"
 
 #include <systemd/sd-journal.h>
 
@@ -50,9 +51,7 @@ LogBridge::CreateSyslog(const char *host_and_port,
 			const char *me,
 			int facility)
 {
-	char ident[256];
-	snprintf(ident, sizeof(ident), "%s[%s]",
-		 plan_name.c_str(), job_id.c_str());
+	const auto ident = FmtBuffer<256>("{}[{}]", plan_name, job_id);
 
 	syslog.reset(new SyslogClient(host_and_port, me, ident, facility));
 }
