@@ -35,7 +35,8 @@
 #include "Workplace.hxx"
 #include "EmailService.hxx"
 #include "version.h"
-#include "util/StringFormat.hxx"
+
+#include <fmt/core.h>
 
 CronOperator::CronOperator(CronQueue &_queue, CronWorkplace &_workplace,
 			   CronJob &&_job,
@@ -103,6 +104,5 @@ CronOperator::OnTimeout() noexcept
 std::string
 CronOperator::MakeLoggerDomain() const noexcept
 {
-	return StringFormat<64>("cron job=%s account=%s", job.id.c_str(),
-				job.account_id.c_str()).c_str();
+	return fmt::format("cron job={} account={}", job.id, job.account_id);
 }

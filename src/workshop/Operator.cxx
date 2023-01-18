@@ -50,10 +50,11 @@
 #include "io/Open.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "util/RuntimeError.hxx"
-#include "util/StringFormat.hxx"
 #include "util/UTF8.hxx"
 #include "AllocatorPtr.hxx"
 #include "CgroupAccounting.hxx"
+
+#include <fmt/core.h>
 
 #include <tuple>
 
@@ -268,8 +269,7 @@ WorkshopOperator::OnChildProcessExit(int status) noexcept
 std::string
 WorkshopOperator::MakeLoggerDomain() const noexcept
 {
-	return StringFormat<64>("job %s plan=%s", job.id.c_str(),
-				job.plan_name.c_str()).c_str();
+	return fmt::format("job {} plan={}", job.id, job.plan_name);
 }
 
 void
