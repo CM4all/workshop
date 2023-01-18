@@ -32,8 +32,7 @@
 
 #include "PGQueue.hxx"
 #include "pg/Connection.hxx"
-
-#include <fmt/format.h>
+#include "lib/fmt/ToBuffer.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -239,15 +238,13 @@ void
 PgAddJobCpuUsage(Pg::Connection &db, const char *id,
 		 std::chrono::microseconds cpu_usage)
 {
-	char buffer[64];
-	snprintf(buffer, sizeof(buffer), "%s microseconds",
-		 fmt::format_int{cpu_usage.count()}.c_str());
+	const auto cpu_usage_s = FmtBuffer<64>("{} microseconds", cpu_usage.count());
 
 	const auto result =
 		db.ExecuteParams("UPDATE jobs "
 				 "SET cpu_usage=COALESCE(cpu_usage, '0'::interval)+$2::interval "
 				 "WHERE id=$1",
-				 id, (const char *)buffer);
+				 id, cpu_usage_s.c_str());
 	if (result.GetAffectedRows() < 1)
 		throw std::runtime_error("No matching job");
 }
