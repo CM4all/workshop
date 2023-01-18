@@ -67,21 +67,15 @@ CronOperator::Finish(int exit_status, const char *log) noexcept
 			Email email("cm4all-workshop");
 			email.AddRecipient(job.notification.c_str());
 
-			char buffer[1024];
+			email.message += fmt::format("X-CM4all-Workshop: " VERSION "\n"
+						     "X-CM4all-Workshop-Job: {}\n"
+						     "X-CM4all-Workshop-Account: {}\n",
+						     job.id,
+						     job.account_id);
 
-			snprintf(buffer, sizeof(buffer),
-				 "X-CM4all-Workshop: " VERSION "\n"
-				 "X-CM4all-Workshop-Job: %s\n"
-				 "X-CM4all-Workshop-Account: %s\n",
-				 job.id.c_str(),
-				 job.account_id.c_str());
-			email.message += buffer;
-
-			if (exit_status >= 0) {
-				snprintf(buffer, sizeof(buffer), "X-CM4all-Workshop-Status: %d\n",
-					 exit_status);
-				email.message += buffer;
-			}
+			if (exit_status >= 0)
+				email.message += fmt::format("X-CM4all-Workshop-Status: {}\n",
+							     exit_status);
 
 			email.message += "\n";
 
