@@ -309,7 +309,7 @@ DoSpawn(SpawnService &service, AllocatorPtr alloc,
 	FileDescriptor stderr_w,
 	const TranslateResponse &response)
 {
-	if (response.status != 0) {
+	if (response.status != HttpStatus{}) {
 		if (response.message != nullptr)
 			throw FormatRuntimeError("Status %u from translation server: %s",
 						 response.status,

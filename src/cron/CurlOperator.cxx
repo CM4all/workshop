@@ -75,7 +75,7 @@ CronCurlOperator::Cancel() noexcept
 }
 
 void
-CronCurlOperator::OnHeaders(unsigned _status, Curl::Headers &&headers)
+CronCurlOperator::OnHeaders(HttpStatus _status, Curl::Headers &&headers)
 {
 	status = _status;
 	(void)headers;
@@ -108,7 +108,7 @@ CronCurlOperator::OnEnd()
 		? output_capture->NormalizeASCII()
 		: nullptr;
 
-	Finish(status, log);
+	Finish(static_cast<int>(status), log);
 	timeout_event.Cancel();
 	workplace.OnExit(this);
 }

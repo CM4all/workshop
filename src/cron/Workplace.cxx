@@ -114,14 +114,14 @@ MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
 			std::throw_with_nested(std::runtime_error("Translation failed"));
 		}
 
-		if (response.status != 0) {
+		if (response.status != HttpStatus{}) {
 			if (response.message != nullptr)
 				throw FormatRuntimeError("Status %u from translation server: %s",
-							 response.status,
+							 static_cast<unsigned>(response.status),
 							 response.message);
 
 			throw FormatRuntimeError("Status %u from translation server",
-						 response.status);
+						 static_cast<unsigned>(response.status));
 		}
 
 		if (response.child_options.uid_gid.IsEmpty())

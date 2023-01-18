@@ -49,7 +49,7 @@ class CronCurlOperator final
 {
 	CurlRequest request;
 
-	unsigned status = 0;
+	HttpStatus status{};
 
 	std::unique_ptr<CaptureBuffer> output_capture;
 
@@ -67,7 +67,7 @@ public:
 
 private:
 	/* virtual methods from CurlResponseHandler */
-	void OnHeaders(unsigned status, Curl::Headers &&headers) override;
+	void OnHeaders(HttpStatus status, Curl::Headers &&headers) override;
 	void OnData(std::span<const std::byte> src) override;
 	void OnEnd() override;
 	void OnError(std::exception_ptr ep) noexcept override;

@@ -16,8 +16,8 @@
 
 class MyResponseHandler final : public CurlResponseHandler {
 public:
-	void OnHeaders(unsigned status, Curl::Headers &&headers) {
-		printf("Status: %u\n", status);
+	void OnHeaders(HttpStatus status, Curl::Headers &&headers) {
+		printf("Status: %u\n", static_cast<unsigned>(status));
 		for (const auto &i : headers)
 			printf("%s: %s\n", i.first.c_str(), i.second.c_str());
 		printf("\n");
