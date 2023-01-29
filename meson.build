@@ -260,6 +260,7 @@ executable('cm4all-workshop-migrate',
   'src/Migrate.cxx',
   include_directories: inc,
   dependencies: [
+    fmt_dep,
     pg_dep,
     util_dep,
   ],
@@ -271,6 +272,7 @@ executable(
   'src/control/Client.cxx',
   include_directories: inc,
   dependencies: [
+    fmt_dep,
     net_dep,
     io_dep,
     util_dep,
@@ -286,6 +288,7 @@ executable(
   'src/AllocatorPtr.cxx',
   include_directories: inc,
   dependencies: [
+    fmt_dep,
     spawn_dep,
     event_net_dep,
   ],

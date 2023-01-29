@@ -43,6 +43,8 @@
 #include "util/StringCompare.hxx"
 #include "util/PrintException.hxx"
 
+#include <fmt/core.h>
+
 #include <sys/socket.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -177,16 +179,16 @@ main(int argc, char **argv)
 			throw Usage{"Unknown command"};
 	} catch (const Usage &u) {
 		if (u.msg)
-			fprintf(stderr, "%s\n\n", u.msg);
+			fmt::print(stderr, "{}\n\n", u.msg);
 
-		fprintf(stderr, "Usage: %s [--server=SERVER[:PORT]] COMMAND ...\n"
-			"\n"
-			"Commands:\n"
-			"  verbose LEVEL\n"
-			"  disable-queue\n"
-			"  enable-queue\n"
-			"  nop\n",
-			argv[0]);
+		fmt::print(stderr, "Usage: {} [--server=SERVER[:PORT]] COMMAND ...\n"
+			   "\n"
+			   "Commands:\n"
+			   "  verbose LEVEL\n"
+			   "  disable-queue\n"
+			   "  enable-queue\n"
+			   "  nop\n",
+			   argv[0]);
 		return EXIT_FAILURE;
 	} catch (...) {
 		PrintException(std::current_exception());

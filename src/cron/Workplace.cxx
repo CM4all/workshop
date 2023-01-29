@@ -38,12 +38,12 @@
 #include "AllocatorPtr.hxx"
 #include "translation/CronGlue.hxx"
 #include "translation/Response.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "spawn/Prepared.hxx"
 #include "spawn/Interface.hxx"
 #include "system/Error.hxx"
 #include "net/SocketAddress.hxx"
 #include "util/Exception.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
 
 #include <cassert>
@@ -116,12 +116,12 @@ MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
 
 		if (response.status != HttpStatus{}) {
 			if (response.message != nullptr)
-				throw FormatRuntimeError("Status %u from translation server: %s",
-							 static_cast<unsigned>(response.status),
-							 response.message);
+				throw FmtRuntimeError("Status {} from translation server: {}",
+						      static_cast<unsigned>(response.status),
+						      response.message);
 
-			throw FormatRuntimeError("Status %u from translation server",
-						 static_cast<unsigned>(response.status));
+			throw FmtRuntimeError("Status {} from translation server",
+					      static_cast<unsigned>(response.status));
 		}
 
 		if (response.child_options.uid_gid.IsEmpty())

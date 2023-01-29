@@ -34,10 +34,10 @@
 #include "PGQueue.hxx"
 #include "Job.hxx"
 #include "Plan.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "pg/Array.hxx"
 #include "pg/Reflection.hxx"
 #include "event/Loop.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
 
 #include <stdexcept>
@@ -136,7 +136,7 @@ MakeJob(WorkshopQueue &queue,
 		throw std::runtime_error("Job has no id");
 
 	if (job.plan_name.empty())
-		throw FormatRuntimeError("Job '%s' has no plan", job.id.c_str());
+		throw FmtRuntimeError("Job '{}' has no plan", job.id);
 
 	return job;
 }
@@ -480,8 +480,8 @@ void
 WorkshopQueue::OnConnect()
 {
 	if (db.GetServerVersion() < 90600)
-		throw FormatRuntimeError("PostgreSQL version '%s' is too old, need at least 9.6",
-					 db.GetParameterStatus("server_version"));
+		throw FmtRuntimeError("PostgreSQL version '{}' is too old, need at least 9.6",
+				      db.GetParameterStatus("server_version"));
 
 	static constexpr const char *const required_jobs_columns[] = {
 		"enabled",
@@ -494,8 +494,8 @@ WorkshopQueue::OnConnect()
 
 	for (const char *name : required_jobs_columns)
 		if (!Pg::ColumnExists(db, schema, "jobs", name))
-			throw FormatRuntimeError("No column 'jobs.%s'; please migrate the database",
-						 name);
+			throw FmtRuntimeError("No column 'jobs.{}'; please migrate the database",
+					      name);
 
 	db.Execute("LISTEN new_job");
 

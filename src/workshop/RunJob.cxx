@@ -41,12 +41,12 @@
 #include "spawn/PidfdEvent.hxx"
 #include "event/Loop.hxx"
 #include "lib/cap/Glue.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "system/Error.hxx"
 #include "system/SetupProcess.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/PrintException.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
 
 #include <memory>
@@ -81,7 +81,7 @@ ParseCommandLine(RunJobCommandLine &cmdline, ConstBuffer<const char *> args)
 		} else if (StringIsEqual(s, "--control")) {
 			cmdline.control = true;
 		} else
-			throw FormatRuntimeError("Unrecognized option: %s", s);
+			throw FmtRuntimeError("Unrecognized option: {}", s);
 	}
 
 	if (args.empty())
@@ -114,7 +114,7 @@ public:
 
 private:
 	void OnProgress(unsigned progress) noexcept {
-		fprintf(stderr, "received PROGRESS %u\n", progress);
+		fmt::print(stderr, "received PROGRESS {}\n", progress);
 	}
 
 	/* virtual methods from WorkshopControlChannelHandler */
@@ -123,12 +123,11 @@ private:
 	}
 
 	void OnControlSetEnv(const char *s) noexcept override {
-		fprintf(stderr, "received SETENV '%s'\n", s);
+		fmt::print(stderr, "received SETENV '{}'\n", s);
 	}
 
 	void OnControlAgain(std::chrono::seconds d) noexcept override {
-		fprintf(stderr, "received AGAIN %lu\n",
-			(unsigned long)d.count());
+		fmt::print(stderr, "received AGAIN {}\n", d.count());
 	}
 
 	UniqueFileDescriptor OnControlSpawn(const char *, const char *) override {
@@ -151,9 +150,9 @@ private:
 	/* virtual methods from ExitListener */
 	void OnChildProcessExit(int status) noexcept override {
 		if (WIFSIGNALED(status)) {
-			fprintf(stderr, "died from signal %d%s",
-				WTERMSIG(status),
-				WCOREDUMP(status) ? " (core dumped)" : "");
+			fmt::print(stderr, "died from signal {}{}",
+				   WTERMSIG(status),
+				   WCOREDUMP(status) ? " (core dumped)" : "");
 			exit_status = EXIT_FAILURE;
 		} else if (WIFEXITED(status))
 			exit_status = WEXITSTATUS(status);
@@ -212,11 +211,11 @@ try {
 
 	return instance.Run();
 } catch (Usage) {
-	fprintf(stderr, "Usage: %s [OPTIONS] PROGRAM [ARGS...]\n\n"
-		"Valid options:\n"
-		" --help, -h     Show this help text\n"
-		" --control      Enable the control channel\n"
-		, argv[0]);
+	fmt::print(stderr, "Usage: {} [OPTIONS] PROGRAM [ARGS...]\n\n"
+		   "Valid options:\n"
+		   " --help, -h     Show this help text\n"
+		   " --control      Enable the control channel\n"
+		   , argv[0]);
 	return EXIT_FAILURE;
 } catch (...) {
 	PrintException(std::current_exception());

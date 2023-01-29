@@ -40,6 +40,7 @@
 #include "LogBridge.hxx"
 #include "translation/Response.hxx"
 #include "translation/SpawnClient.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "spawn/Interface.hxx"
 #include "spawn/Prepared.hxx"
 #include "spawn/ProcessHandle.hxx"
@@ -49,7 +50,6 @@
 #include "net/UniqueSocketDescriptor.hxx"
 #include "io/Open.hxx"
 #include "util/DeleteDisposer.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/UTF8.hxx"
 #include "AllocatorPtr.hxx"
 #include "CgroupAccounting.hxx"
@@ -189,8 +189,8 @@ WorkshopOperator::CreateSyslogClient(const char *me,
 	try {
 		log.CreateSyslog(host_and_port, me, facility);
 	} catch (...) {
-		std::throw_with_nested(FormatRuntimeError("syslog_open(%s) failed",
-							  host_and_port));
+		std::throw_with_nested(FmtRuntimeError("syslog_open({}) failed",
+						       host_and_port));
 	}
 }
 
@@ -311,12 +311,12 @@ DoSpawn(SpawnService &service, AllocatorPtr alloc,
 {
 	if (response.status != HttpStatus{}) {
 		if (response.message != nullptr)
-			throw FormatRuntimeError("Status %u from translation server: %s",
-						 response.status,
-						 response.message);
+			throw FmtRuntimeError("Status {} from translation server: {}",
+					      static_cast<unsigned>(response.status),
+					      response.message);
 
-		throw FormatRuntimeError("Status %u from translation server",
-					 response.status);
+		throw FmtRuntimeError("Status {} from translation server",
+				      static_cast<unsigned>(response.status));
 	}
 
 	if (response.execute == nullptr)
@@ -371,8 +371,8 @@ UniqueFileDescriptor
 WorkshopOperator::OnControlSpawn(const char *token, const char *param)
 {
 	if (!plan->allow_spawn)
-		throw FormatRuntimeError("Plan '%s' does not have the 'allow_spawn' flag",
-					 job.plan_name.c_str());
+		throw FmtRuntimeError("Plan '{}' does not have the 'allow_spawn' flag",
+				      job.plan_name);
 
 	const auto translation_socket = workplace.GetTranslationSocket();
 	if (translation_socket == nullptr)

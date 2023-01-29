@@ -30,11 +30,11 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "lib/fmt/RuntimeError.hxx"
 #include "pg/Connection.hxx"
 #include "pg/Reflection.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/PrintException.hxx"
-#include "util/RuntimeError.hxx"
 
 #include <stdexcept>
 
@@ -161,18 +161,18 @@ try {
 			if (*set_role == 0)
 				throw "Role name missing";
 		} else {
-			fprintf(stderr, "Unknown option: %s\n\n", args.front());
+			fmt::print(stderr, "Unknown option: {}\n\n", args.front());
 			/* clear the list to trigger printing the usage */
 			args.size = 0;
 		}
 	}
 
 	if (args.size < 1 || args.size > 2) {
-		fprintf(stderr, "Usage: %s [OPTIONS] CONNINFO [SCHEMA]\n"
-			"\n"
-			"Options:\n"
-			"  --set-role=ROLE       Execute \"SET ROLE ...\"\n"
-			"\n", argv[0]);
+		fmt::print(stderr, "Usage: {} [OPTIONS] CONNINFO [SCHEMA]\n"
+			   "\n"
+			   "Options:\n"
+			   "  --set-role=ROLE       Execute \"SET ROLE ...\"\n"
+			   "\n", argv[0]);
 		return EXIT_FAILURE;
 	}
 
@@ -183,8 +183,8 @@ try {
 	Pg::Connection c(conninfo);
 
 	if (c.GetServerVersion() < 90600)
-		throw FormatRuntimeError("PostgreSQL version '%s' is too old, need at least 9.6",
-					 c.GetParameterStatus("server_version"));
+		throw FmtRuntimeError("PostgreSQL version '{}' is too old, need at least 9.6",
+				      c.GetParameterStatus("server_version"));
 
 	if (set_role != nullptr)
 		c.SetRole(set_role);

@@ -33,10 +33,10 @@
 #include "PlanLoader.hxx"
 #include "Plan.hxx"
 #include "pg/Interval.hxx"
-#include "system/Error.hxx"
+#include "lib/fmt/RuntimeError.hxx"
+#include "lib/fmt/SystemError.hxx"
 #include "io/config/FileLineParser.hxx"
 #include "io/config/ConfigParser.hxx"
-#include "util/RuntimeError.hxx"
 #include "util/StringAPI.hxx"
 
 #include <array>
@@ -111,8 +111,8 @@ PlanLoader::ParseLine(FileLineParser &line)
 		plan.reap_finished = line.ExpectValueAndEnd();
 		auto d = Pg::ParseIntervalS(plan.reap_finished.c_str());
 		if (d.count() <= 0)
-			throw FormatRuntimeError("Not a positive duration: %s",
-						 plan.reap_finished.c_str());
+			throw FmtRuntimeError("Not a positive duration: {}",
+					      plan.reap_finished);
 	} else if (strcmp(key, "chroot") == 0) {
 		const char *value = line.ExpectValueAndEnd();
 
@@ -121,10 +121,10 @@ PlanLoader::ParseLine(FileLineParser &line)
 
 		ret = stat(value, &st);
 		if (ret < 0)
-			throw FormatErrno("failed to stat '%s'", value);
+			throw FmtErrno("failed to stat '{}'", value);
 
 		if (!S_ISDIR(st.st_mode))
-			throw FormatRuntimeError("not a directory: %s", value);
+			throw FmtRuntimeError("not a directory: {}", value);
 
 		plan.chroot = value;
 	} else if (strcmp(key, "user") == 0) {
@@ -134,7 +134,7 @@ PlanLoader::ParseLine(FileLineParser &line)
 
 		pw = getpwnam(value);
 		if (pw == nullptr)
-			throw FormatRuntimeError("no such user '%s'", value);
+			throw FmtRuntimeError("no such user '{}'", value);
 
 		if (pw->pw_uid == 0)
 			throw std::runtime_error("user 'root' is forbidden");
@@ -186,7 +186,7 @@ PlanLoader::ParseLine(FileLineParser &line)
 	} else if (strcmp(key, "rate_limit") == 0) {
 		plan.rate_limits.emplace_back(RateLimit::Parse(line.ExpectValueAndEnd()));
 	} else
-		throw FormatRuntimeError("unknown option '%s'", key);
+		throw FmtRuntimeError("unknown option '{}'", key);
 }
 
 void

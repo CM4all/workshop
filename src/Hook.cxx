@@ -33,8 +33,8 @@
 #include "Hook.hxx"
 #include "workshop/MultiLibrary.hxx"
 #include "workshop/Plan.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "spawn/Prepared.hxx"
-#include "util/RuntimeError.hxx"
 
 static bool
 CompareGroups(const std::vector<gid_t> &a, const std::array<gid_t, 32> &b)
@@ -63,26 +63,24 @@ WorkshopSpawnHook::Verify(const PreparedChildProcess &p)
 		const char *plan_name = p.hook_info;
 		auto plan = library->Get(now, plan_name);
 		if (!plan)
-			throw FormatRuntimeError("No such plan: %s", plan_name);
+			throw FmtRuntimeError("No such plan: {}", plan_name);
 
 		if (p.uid_gid.uid != plan->uid)
-			throw FormatRuntimeError("Wrong uid %d, expected %d for plan %s",
-						 int(p.uid_gid.uid), int(plan->uid),
-						 plan_name);
+			throw FmtRuntimeError("Wrong uid {}, expected {} for plan {}",
+					      p.uid_gid.uid, plan->uid, plan_name);
 
 		if (p.uid_gid.gid != plan->gid)
-			throw FormatRuntimeError("Wrong gid %d, expected %d for plan %s",
-						 int(p.uid_gid.gid), int(plan->gid),
-						 plan_name);
+			throw FmtRuntimeError("Wrong gid {}, expected {} for plan {}",
+					      p.uid_gid.gid, plan->gid, plan_name);
 
 		if (!CompareGroups(plan->groups, p.uid_gid.groups))
-			throw FormatRuntimeError("Supplementary group mismatch for plan %s",
-						 plan_name);
+			throw FmtRuntimeError("Supplementary group mismatch for plan {}",
+					      plan_name);
 
 		if (p.args.empty() || plan->args.empty() ||
 		    plan->args.front() != p.args.front())
-			throw FormatRuntimeError("Executable mismatch for plan %s",
-						 plan_name);
+			throw FmtRuntimeError("Executable mismatch for plan {}",
+					      plan_name);
 
 		return true;
 	} else

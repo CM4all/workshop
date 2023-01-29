@@ -33,6 +33,7 @@
 #include "LogBridge.hxx"
 #include "SyslogClient.hxx"
 #include "lib/fmt/ToBuffer.hxx"
+#include "util/SpanCast.hxx"
 
 #include <systemd/sd-journal.h>
 
@@ -77,8 +78,8 @@ LogBridge::OnPipeLine(std::span<char> line) noexcept
 				nullptr);
 
 	if (max_buffer_size == 0 && !syslog && !enable_journal)
-		fprintf(stderr, "[%s:%s] %.*s\n", plan_name.c_str(), job_id.c_str(),
-			int(line.size()), line.data());
+		fmt::print(stderr, "[{}:{}] {}\n", plan_name, job_id,
+			   ToStringView(line));
 
 	return true;
 }
