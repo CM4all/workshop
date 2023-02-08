@@ -5,7 +5,7 @@ cm4all-workshop (6.0.10) unstable; urgency=low
   * drop support for /etc/default/cm4all-workshop (deprecated since v4)
   * drop Boost dependency
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Wed, 08 Feb 2023 16:03:40 +0100
 
 cm4all-workshop (6.0.9) unstable; urgency=low
 
