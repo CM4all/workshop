@@ -1,3 +1,9 @@
+cm4all-workshop (6.0.12) unstable; urgency=low
+
+  * 
+
+ --   
+
 cm4all-workshop (6.0.11) unstable; urgency=low
 
   * spawn: given the spawner the highest possible CPU and I/O weight
