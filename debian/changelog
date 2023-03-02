@@ -1,5 +1,6 @@
 cm4all-workshop (6.0.11) unstable; urgency=low
 
+  * spawn: given the spawner the highest possible CPU and I/O weight
   * spawn: combine multiple KILL commands on one datagram
   * spawn: drop support for cgroup1
 
