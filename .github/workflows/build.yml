@@ -19,12 +19,9 @@ on:
 permissions:
   contents: read #  to fetch code (actions/checkout)
 
-env:
-  CC: 'ccache gcc-10'
-  CXX: 'ccache g++-10'
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - id: checkout
         uses: actions/checkout@v3
@@ -38,7 +35,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            g++-10 \
             libsystemd-dev \
             libdbus-1-dev \
             libseccomp-dev \
