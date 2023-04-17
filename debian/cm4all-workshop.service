@@ -34,8 +34,6 @@ CPUSchedulingPolicy=batch
 RestrictRealtime=yes
 TimerSlackNSec=1s
 
-SyslogIdentifier=cm4all-workshop
-
 # enable crash dumps
 LimitCORE=infinity
 
