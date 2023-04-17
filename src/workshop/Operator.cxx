@@ -154,19 +154,6 @@ WorkshopOperator::SetOutput(UniqueFileDescriptor fd) noexcept
 }
 
 void
-WorkshopOperator::CreateSyslogClient(const char *me,
-				     int facility,
-				     const char *host_and_port)
-{
-	try {
-		log.CreateSyslog(host_and_port, me, facility);
-	} catch (...) {
-		std::throw_with_nested(FmtRuntimeError("syslog_open({}) failed",
-						       host_and_port));
-	}
-}
-
-void
 WorkshopOperator::Expand(std::list<std::string> &args) const noexcept
 {
 	assert(!args.empty());

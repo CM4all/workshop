@@ -9,13 +9,10 @@
 #include <memory>
 #include <string>
 
-class SyslogClient;
-
 class LogBridge final : PipeLineReaderHandler {
 	const std::string plan_name, job_id;
 
 	PipeLineReader reader;
-	std::unique_ptr<SyslogClient> syslog;
 	bool enable_journal = false;
 
 	std::string buffer;
@@ -26,10 +23,6 @@ public:
 		  const char *_plan_name, const char *_job_id,
 		  UniqueFileDescriptor read_pipe_fd);
 	~LogBridge();
-
-	void CreateSyslog(const char *host_and_port,
-			  const char *me,
-			  int facility);
 
 	void EnableBuffer(size_t max_size) {
 		max_buffer_size = max_size;

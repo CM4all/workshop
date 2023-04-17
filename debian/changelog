@@ -1,5 +1,6 @@
 cm4all-workshop (6.0.12) unstable; urgency=low
 
+  * workshop: remove syslog support
   * spawn: combine multiple EXIT in one datagram
   * spawn: improved handling of spawner startup errors
   * add JavaScript-based PolicyKit rules (version 121 or newer)

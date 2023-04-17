@@ -99,10 +99,7 @@ MakeJob(WorkshopQueue &queue,
 	job.plan_name = result.GetValue(row, 1);
 
 	job.args = Pg::DecodeArray(result.GetValue(row, 2));
-	job.env = Pg::DecodeArray(result.GetValue(row, 4));
-
-	if (!result.IsValueNull(row, 3))
-		job.syslog_server = result.GetValue(row, 3);
+	job.env = Pg::DecodeArray(result.GetValue(row, 3));
 
 	if (job.id.empty())
 		throw std::runtime_error("Job has no id");

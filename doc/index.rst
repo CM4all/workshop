@@ -468,9 +468,8 @@ this number into the job's database row.  (If the plan enables the
 channel shall be used instead.)
 
 The process may log errors and other messages to `stderr`.  They will
-be forwarded to the configured syslog server, or will be logged to
-Workshop's journal.  Additionally, the log will be copied to the job's
-`log` column.
+be logged to Workshop's journal.  Additionally, the log will be copied
+to the job's `log` column.
 
 Upon successful completion, the process exits with status 0.
 
@@ -508,9 +507,6 @@ The `jobs` table
 * :envvar:`env`: Additional environment variables.  Some dangerous
   environment variables cannot be set, though, for example
   :envvar:`LD_PRELOAD`.
-* :envvar:`syslog_server`: If this column is not :samp:`NULL`, then
-  all `stderr` lines are sent to this address with the syslog protocol
-  (see :rfc:`3164`)
 * :envvar:`node_name`: Name of the node which is currently executing
   this job, or :samp:`NULL`.
 * :envvar:`node_timeout`: When this time stamp has passed, then the
@@ -540,8 +536,7 @@ The client is allowed to execute the following operations:
 
 * Create new jobs (only :envvar:`name`, :envvar:`description`,
   :envvar:`scheduled_time`, :envvar:`enabled`, :envvar:`priority`,
-  :envvar:`plan_name`, :envvar:`args`,
-  :envvar:`syslog_server` may be set).
+  :envvar:`plan_name`, :envvar:`args` may be set).
 * Modify jobs which have not yet been assigned, i.e. :samp:`node_name
   IS NULL`.  Afterwards, send the notify :envvar:`new_job`, so
   Workshop gets notified of the change.

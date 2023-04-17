@@ -3,9 +3,9 @@
 // author: Max Kellermann <mk@cm4all.com>
 
 #include "LogBridge.hxx"
-#include "SyslogClient.hxx"
-#include "lib/fmt/ToBuffer.hxx"
 #include "util/SpanCast.hxx"
+
+#include <fmt/core.h>
 
 #include <systemd/sd-journal.h>
 
@@ -19,16 +19,6 @@ LogBridge::LogBridge(EventLoop &event_loop,
 
 LogBridge::~LogBridge() = default;
 
-void
-LogBridge::CreateSyslog(const char *host_and_port,
-			const char *me,
-			int facility)
-{
-	const auto ident = FmtBuffer<256>("{}[{}]", plan_name, job_id);
-
-	syslog.reset(new SyslogClient(host_and_port, me, ident, facility));
-}
-
 bool
 LogBridge::OnPipeLine(std::span<char> line) noexcept
 {
@@ -40,16 +30,13 @@ LogBridge::OnPipeLine(std::span<char> line) noexcept
 		buffer.push_back('\n');
 	}
 
-	if (syslog)
-		syslog->Log(6, {line.data(), line.size()});
-
 	if (enable_journal)
 		sd_journal_send("MESSAGE=%.*s", int(line.size()), line.data(),
 				"WORKSHOP_PLAN=%s", plan_name.c_str(),
 				"WORKSHOP_JOB=%s", job_id.c_str(),
 				nullptr);
 
-	if (max_buffer_size == 0 && !syslog && !enable_journal)
+	if (max_buffer_size == 0 && !enable_journal)
 		fmt::print(stderr, "[{}:{}] {}\n", plan_name, job_id,
 			   ToStringView(line));
 

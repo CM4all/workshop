@@ -14,7 +14,7 @@ class WorkshopQueue;
 struct WorkshopJob {
 	WorkshopQueue &queue;
 
-	std::string id, plan_name, syslog_server;
+	std::string id, plan_name;
 
 	std::forward_list<std::string> args;
 

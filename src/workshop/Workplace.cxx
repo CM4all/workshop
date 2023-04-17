@@ -188,11 +188,6 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 		p.SetStdout(std::move(stdout_w));
 	}
 
-	if (!job.syslog_server.empty()) {
-		o->CreateSyslogClient(node_name.c_str(), 1,
-				      job.syslog_server.c_str());
-	}
-
 	/* build command line */
 
 	std::list<std::string> args;

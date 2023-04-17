@@ -117,10 +117,6 @@ public:
 
 	void SetOutput(UniqueFileDescriptor fd) noexcept;
 
-	void CreateSyslogClient(const char *me,
-				int facility,
-				const char *host_and_port);
-
 	void Expand(std::list<std::string> &args) const noexcept;
 
 private:

@@ -30,9 +30,6 @@ CREATE TABLE jobs (
         -- environment variables in the form NAME=VALUE
         env varchar(4096)[] NULL,
 
-        -- syslog server which receives stderr output
-        syslog_server varchar(256) NULL,
-
         -- which cm4all-workshop node is executing this job?
         node_name varchar(256) NULL,
         -- which time can we assume the node is dead?
