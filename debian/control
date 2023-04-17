@@ -20,7 +20,7 @@ Package: cm4all-workshop
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends},
  cm4all-slice (>= 0.6),
- policykit-1,
+ polkitd | policykit-1,
  systemd-sysv
 Recommends: cm4all-spawn (>= 0.5)
 Suggests: cm4all-workshop-database, cm4all-workshop-migrate
