@@ -1,3 +1,4 @@
 usr/sbin/cm4all-workshop
 debian/workshop.conf etc/cm4all/workshop
 debian/cm4all-workshop.pkla var/lib/polkit-1/localauthority/10-vendor.d
+debian/cm4all-workshop.rules usr/share/polkit-1/rules.d
