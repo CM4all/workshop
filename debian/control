@@ -72,6 +72,7 @@ Package: cm4all-workshop-doc
 Section: non-free/doc
 Architecture: all
 Depends: ${misc:Depends}, ${sphinxdoc:Depends}
+Built-Using: ${sphinxdoc:Built-Using}
 Description: Documentation for cm4all-workshop
  cm4all-workshop is a daemon which reads jobs from a database queue
  (PostgreSQL) and executes them.  Multiple instances distributed over
