@@ -29,8 +29,7 @@ jobs:
           submodules: recursive
       - id: cache-ccache
         uses: hendrikmuhs/ccache-action@v1
-        with:
-          key: ${{ matrix.os }}-${{ matrix.type }}
+
       - name: Install dependencies
         run: |
           sudo apt-get update
