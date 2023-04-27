@@ -9,6 +9,7 @@
 #include "Config.hxx"
 #include "workshop/MultiLibrary.hxx"
 #include "spawn/Launch.hxx"
+#include "system/KernelVersion.hxx"
 #include "system/SetupProcess.hxx"
 #include "system/ProcessName.hxx"
 #include "lib/cap/Glue.hxx"
@@ -72,6 +73,9 @@ Run(const Config &config)
 int
 main(int argc, char **argv)
 try {
+	if (!IsKernelVersionOrNewer({5, 12}))
+		throw "Your Linux kernel is too old; this program requires at least 5.12";
+
 	if (geteuid() == 0)
 		throw "Refusing to run as root";
 

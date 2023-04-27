@@ -13,6 +13,7 @@ Building Workshop
 
 You need:
 
+- Linux kernel 5.12 or later
 - a C++20 compliant compiler (e.g. gcc or clang)
 - `libcap2 <https://sites.google.com/site/fullycapable/>`__
 - `libfmt <https://fmt.dev/>`__
