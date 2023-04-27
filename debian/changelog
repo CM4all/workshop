@@ -1,6 +1,7 @@
 cm4all-workshop (6.0.13) unstable; urgency=low
 
   * require Linux kernel 5.12
+  * spawn: use the Linux 5.12 mount API
 
  --   
 
