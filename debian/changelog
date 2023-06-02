@@ -3,7 +3,7 @@ cm4all-workshop (6.0.13) unstable; urgency=low
   * require Linux kernel 5.12
   * spawn: use the Linux 5.12 mount API
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Fri, 02 Jun 2023 11:26:10 +0200
 
 cm4all-workshop (6.0.12) unstable; urgency=low
 
