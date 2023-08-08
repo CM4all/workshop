@@ -82,7 +82,10 @@ try {
 	InitProcessName(argc, argv);
 
 #ifndef NDEBUG
-	debug_mode = !IsSysAdmin();
+	/* also checking $SYSTEMD_EXEC_PID to see if we were launched
+	   by systemd, because if Workshop is running in a container,
+	   it may not have CAP_SYS_ADMIN */
+	debug_mode = !IsSysAdmin() && getenv("SYSTEMD_EXEC_PID") == nullptr;
 #endif
 
 	Config config;
