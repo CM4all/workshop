@@ -4,6 +4,9 @@ Wants=network-online.target
 After=network-online.target
 After=postgresql.service
 
+# require at least Linux kernel 5.12
+AssertKernelVersion=>=5.12
+
 [Service]
 Type=notify
 ExecStart=/usr/sbin/cm4all-workshop
