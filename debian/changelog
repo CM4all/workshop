@@ -3,7 +3,7 @@ cm4all-workshop (6.0.14) unstable; urgency=low
   * add workaround for running in unprivileged containers
   * systemd: add AssertKernelVersion>=5.12
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Tue, 15 Aug 2023 20:15:26 +0200
 
 cm4all-workshop (6.0.13) unstable; urgency=low
 
