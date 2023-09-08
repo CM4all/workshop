@@ -94,8 +94,6 @@ public:
 		db.Connect();
 	}
 
-	void Close() noexcept;
-
 	/**
 	 * Configure a "plan" filter.
 	 */

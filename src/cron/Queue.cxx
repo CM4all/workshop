@@ -29,16 +29,6 @@ CronQueue::CronQueue(const Logger &parent_logger,
 CronQueue::~CronQueue() noexcept = default;
 
 void
-CronQueue::Close() noexcept
-{
-	db.Disconnect();
-
-	check_notify_event.Cancel();
-	scheduler_timer.Cancel();
-	claim_timer.Cancel();
-}
-
-void
 CronQueue::EnableAdmin() noexcept
 {
 	if (!disabled_admin)

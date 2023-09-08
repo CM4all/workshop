@@ -67,8 +67,6 @@ public:
 		db.Connect();
 	}
 
-	void Close() noexcept;
-
 	[[gnu::pure]]
 	std::string GetNow() {
 		ScheduleCheckNotify();

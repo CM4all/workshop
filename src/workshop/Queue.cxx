@@ -40,17 +40,6 @@ WorkshopQueue::~WorkshopQueue() noexcept
 }
 
 void
-WorkshopQueue::Close() noexcept
-{
-	assert(!running);
-
-	db.Disconnect();
-
-	timer_event.Cancel();
-	check_notify_event.Cancel();
-}
-
-void
 WorkshopQueue::OnTimer() noexcept
 {
 	Run();
