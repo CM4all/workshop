@@ -37,8 +37,6 @@ WorkshopQueue::WorkshopQueue(const Logger &parent_logger,
 WorkshopQueue::~WorkshopQueue() noexcept
 {
 	assert(!running);
-
-	Close();
 }
 
 void

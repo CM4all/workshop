@@ -26,10 +26,7 @@ CronQueue::CronQueue(const Logger &parent_logger,
 {
 }
 
-CronQueue::~CronQueue() noexcept
-{
-	Close();
-}
+CronQueue::~CronQueue() noexcept = default;
 
 void
 CronQueue::Close() noexcept
