@@ -2,8 +2,7 @@
 // Copyright CM4all GmbH
 // author: Max Kellermann <mk@cm4all.com>
 
-#ifndef WORKSHOP_PARTITION_HXX
-#define WORKSHOP_PARTITION_HXX
+#pragma once
 
 #include "Queue.hxx"
 #include "Workplace.hxx"
@@ -67,10 +66,6 @@ public:
 		queue.Connect();
 	}
 
-	void Close() {
-		queue.Close();
-	}
-
 	void BeginShutdown() {
 		queue.DisableAdmin();
 	}
@@ -108,5 +103,3 @@ private:
 	/* virtual methods from ExitListener */
 	void OnChildProcessExit(int status) noexcept override;
 };
-
-#endif

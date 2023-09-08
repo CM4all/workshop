@@ -2,8 +2,7 @@
 // Copyright CM4all GmbH
 // author: Max Kellermann <mk@cm4all.com>
 
-#ifndef CRON_PARTITION_HXX
-#define CRON_PARTITION_HXX
+#pragma once
 
 #include "Queue.hxx"
 #include "Workplace.hxx"
@@ -57,10 +56,6 @@ public:
 		queue.Connect();
 	}
 
-	void Close() {
-		queue.Close();
-	}
-
 	void BeginShutdown();
 
 	void DisableQueue() {
@@ -77,5 +72,3 @@ private:
 	/* virtual methods from ExitListener */
 	void OnChildProcessExit(int status) noexcept override;
 };
-
-#endif
