@@ -37,7 +37,6 @@ jobs:
             libsystemd-dev \
             libdbus-1-dev \
             libseccomp-dev \
-            libfmt-dev \
             libcurl4-openssl-dev \
             libcap-dev \
             libgtest-dev \
@@ -47,6 +46,7 @@ jobs:
         run: |
           meson setup \
             -Ddocumentation=disabled \
+             --force-fallback-for=fmt \
             -Dwrap_mode=nofallback \
             output
 
