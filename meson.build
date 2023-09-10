@@ -124,6 +124,7 @@ subdir('libcommon/src/lib/cap')
 subdir('libcommon/src/lib/fmt')
 subdir('libcommon/src/time')
 subdir('libcommon/src/io')
+subdir('libcommon/src/io/linux')
 subdir('libcommon/src/io/config')
 subdir('libcommon/src/system')
 
