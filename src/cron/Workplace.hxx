@@ -23,10 +23,10 @@ class CronWorkplace {
 	CurlGlobal &curl;
 	ExitListener &exit_listener;
 
-	using OperatorList =
-		IntrusiveList<CronOperator,
-			      IntrusiveListBaseHookTraits<CronOperator>,
-			      true>;
+	using OperatorList = IntrusiveList<
+		CronOperator,
+		IntrusiveListBaseHookTraits<CronOperator>,
+		IntrusiveListOptions{.constant_time_size = true}>;
 
 	OperatorList operators;
 

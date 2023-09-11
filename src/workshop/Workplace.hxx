@@ -26,10 +26,10 @@ class WorkshopWorkplace {
 
 	const std::string node_name;
 
-	using OperatorList =
-		IntrusiveList<WorkshopOperator,
-			      IntrusiveListBaseHookTraits<WorkshopOperator>,
-			      true>;
+	using OperatorList = IntrusiveList<
+		WorkshopOperator,
+		IntrusiveListBaseHookTraits<WorkshopOperator>,
+		IntrusiveListOptions{.constant_time_size = true}>;
 
 	OperatorList operators;
 
