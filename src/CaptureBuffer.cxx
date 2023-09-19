@@ -8,19 +8,19 @@
 #include <algorithm>
 
 static constexpr bool
-IsAllowedNonPrintableChar(char ch)
+IsAllowedNonPrintableChar(char ch) noexcept
 {
 	return ch == '\r' || ch == '\n' || ch == '\t';
 }
 
 static constexpr bool
-IsDisallowedChar(char ch)
+IsDisallowedChar(char ch) noexcept
 {
 	return !IsPrintableASCII(ch) && !IsAllowedNonPrintableChar(ch);
 }
 
 char *
-CaptureBuffer::NormalizeASCII()
+CaptureBuffer::NormalizeASCII() noexcept
 {
 	if (size == capacity)
 		/* crop the last character to make room for the null

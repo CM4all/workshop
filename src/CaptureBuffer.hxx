@@ -18,7 +18,7 @@ class CaptureBuffer final {
 	std::unique_ptr<char[]> data;
 
 public:
-	explicit CaptureBuffer(size_t _capacity)
+	explicit CaptureBuffer(size_t _capacity) noexcept
 		:capacity(_capacity),
 		 data(new char[capacity]) {}
 
@@ -26,15 +26,15 @@ public:
 		return size == capacity;
 	}
 
-	std::span<char> Write() {
+	std::span<char> Write() noexcept {
 		return { &data[size], capacity - size };
 	}
 
-	void Append(size_t n) {
+	void Append(size_t n) noexcept {
 		size += n;
 	}
 
-	std::span<char> GetData() {
+	std::span<char> GetData() noexcept {
 		return {data.get(), size};
 	}
 
@@ -45,5 +45,5 @@ public:
 	 *
 	 * @return the null-terminated ASCII string
 	 */
-	char *NormalizeASCII();
+	char *NormalizeASCII() noexcept;
 };
