@@ -5,7 +5,7 @@
 #include "Expand.hxx"
 
 void
-Expand(std::string &p, const StringMap &vars)
+Expand(std::string &p, const StringMap &vars) noexcept
 {
 	const std::string src = std::move(p);
 	p.clear();
