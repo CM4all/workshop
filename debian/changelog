@@ -1,6 +1,7 @@
 cm4all-workshop (6.0.15) unstable; urgency=low
 
   * spawn: create dummy process to hold the systemd scope
+  * translation: allow dots in CGROUP_SET
 
  --   
 
