@@ -3,7 +3,7 @@ cm4all-workshop (6.0.15) unstable; urgency=low
   * spawn: create dummy process to hold the systemd scope
   * translation: allow dots in CGROUP_SET
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Wed, 20 Sep 2023 09:57:17 +0200
 
 cm4all-workshop (6.0.14) unstable; urgency=low
 
