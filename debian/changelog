@@ -2,7 +2,7 @@ cm4all-workshop (6.0.16) unstable; urgency=low
 
   * spawn: don't follow symlinks for BIND_MOUNT
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Wed, 04 Oct 2023 09:18:59 +0200
 
 cm4all-workshop (6.0.15) unstable; urgency=low
 
