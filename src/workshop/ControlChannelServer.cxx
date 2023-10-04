@@ -83,7 +83,7 @@ WorkshopControlChannelServer::OnControl(std::vector<std::string> &&args) noexcep
 		return true;
 	} else if (cmd == "version"sv) {
 		constexpr std::string_view payload = "version " VERSION;
-		socket.GetSocket().Write(payload.data(), payload.size());
+		socket.GetSocket().WriteNoWait(AsBytes(payload));
 		return true;
 	} else if (cmd == "spawn"sv) {
 		if (args.size() < 2 || args.size() > 3) {
