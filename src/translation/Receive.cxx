@@ -28,7 +28,7 @@ ReceiveTranslateResponse(AllocatorPtr alloc, SocketDescriptor s)
 		if (w.empty())
 			throw std::runtime_error("Translation receive buffer is full");
 
-		ssize_t nbytes = recv(s.Get(), w.data(), w.size(), MSG_NOSIGNAL);
+		ssize_t nbytes = s.Receive(w);
 		if (nbytes < 0)
 			throw MakeErrno("recv() from translation server failed");
 

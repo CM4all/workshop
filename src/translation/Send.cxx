@@ -13,8 +13,7 @@ class SocketDescriptor;
 void
 SendFull(SocketDescriptor s, std::span<const std::byte> buffer)
 {
-	ssize_t nbytes = send(s.Get(), buffer.data(), buffer.size(),
-			      MSG_NOSIGNAL);
+	ssize_t nbytes = s.Send(buffer);
 	if (nbytes < 0)
 		throw MakeSocketError("send() to translation server failed");
 
