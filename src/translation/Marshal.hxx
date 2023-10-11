@@ -24,9 +24,10 @@ public:
 	}
 
 	void WriteHeader(TranslationCommand command, size_t size) noexcept {
-		TranslationHeader header;
-		header.length = (uint16_t)size;
-		header.command = command;
+		const TranslationHeader header{
+			.length = static_cast<uint16_t>(size),
+			.command = command,
+		};
 
 		Write(std::as_bytes(std::span{&header, 1}));
 	}
