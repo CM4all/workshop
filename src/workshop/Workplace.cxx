@@ -16,6 +16,7 @@
 #include "net/EasyMessage.hxx"
 #include "net/SocketError.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
+#include "util/DeleteDisposer.hxx"
 #include "util/StringCompare.hxx"
 
 #include <cassert>
@@ -235,8 +236,8 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 void
 WorkshopWorkplace::OnExit(WorkshopOperator *o) noexcept
 {
-	operators.erase(operators.iterator_to(*o));
-	delete o;
+	operators.erase_and_dispose(operators.iterator_to(*o),
+				    DeleteDisposer{});
 
 	exit_listener.OnChildProcessExit(-1);
 }

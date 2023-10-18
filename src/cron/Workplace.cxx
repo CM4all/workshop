@@ -15,6 +15,7 @@
 #include "spawn/Interface.hxx"
 #include "system/Error.hxx"
 #include "net/SocketAddress.hxx"
+#include "util/DeleteDisposer.hxx"
 #include "util/Exception.hxx"
 #include "util/StringCompare.hxx"
 
@@ -170,8 +171,8 @@ CronWorkplace::Start(CronQueue &queue, SocketAddress translation_socket,
 void
 CronWorkplace::OnExit(CronOperator *o)
 {
-	operators.erase(operators.iterator_to(*o));
-	delete o;
+	operators.erase_and_dispose(operators.iterator_to(*o),
+				    DeleteDisposer{});
 
 	exit_listener.OnChildProcessExit(-1);
 }
