@@ -9,6 +9,7 @@
 #include "AllocatorPtr.hxx"
 #include "system/Error.hxx"
 #include "net/SocketDescriptor.hxx"
+#include "net/TimeoutError.hxx"
 #include "util/StaticFifoBuffer.hxx"
 
 #include <stdexcept>
@@ -18,6 +19,13 @@
 TranslateResponse
 ReceiveTranslateResponse(AllocatorPtr alloc, SocketDescriptor s)
 {
+	if (int result = s.WaitReadable(30000); result <= 0) {
+		if (result == 0)
+			throw TimeoutError{"Translation server timed out"};
+		else
+			throw MakeErrno("Error on translation socket");
+	}
+
 	TranslateResponse response;
 	TranslateParser parser(alloc, response);
 
