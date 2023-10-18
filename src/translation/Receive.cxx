@@ -9,6 +9,7 @@
 #include "AllocatorPtr.hxx"
 #include "system/Error.hxx"
 #include "net/SocketDescriptor.hxx"
+#include "net/SocketProtocolError.hxx"
 #include "net/TimeoutError.hxx"
 #include "util/StaticFifoBuffer.hxx"
 
@@ -34,14 +35,14 @@ ReceiveTranslateResponse(AllocatorPtr alloc, SocketDescriptor s)
 	while (true) {
 		auto w = buffer.Write();
 		if (w.empty())
-			throw std::runtime_error("Translation receive buffer is full");
+			throw SocketBufferFullError{};
 
 		ssize_t nbytes = s.Receive(w);
 		if (nbytes < 0)
 			throw MakeErrno("recv() from translation server failed");
 
 		if (nbytes == 0)
-			throw std::runtime_error("Translation server hung up");
+			throw SocketClosedPrematurelyError{};
 
 		buffer.Append(nbytes);
 
@@ -63,7 +64,7 @@ ReceiveTranslateResponse(AllocatorPtr alloc, SocketDescriptor s)
 
 			case TranslateParser::Result::DONE:
 				if (!buffer.empty())
-					throw std::runtime_error("Excessive data from translation server");
+					throw SocketProtocolError{"Excessive data from translation server"};
 
 				return response;
 			}
