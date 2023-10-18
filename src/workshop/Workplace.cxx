@@ -71,7 +71,7 @@ WorkshopWorkplace::GetFullPlanNames() const noexcept
 		if (plan.concurrency == 0)
 			continue;
 
-		const std::string &plan_name = o.GetPlanName();
+		const std::string_view plan_name = o.GetPlanName();
 
 		auto i = counters.emplace(plan_name, 0);
 		std::size_t &n = i.first->second;

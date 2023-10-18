@@ -104,7 +104,7 @@ public:
 		return *plan;
 	}
 
-	const std::string &GetPlanName() const noexcept {
+	std::string_view GetPlanName() const noexcept {
 		return job.plan_name;
 	}
 
