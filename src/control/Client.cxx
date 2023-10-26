@@ -12,6 +12,7 @@
 #include "util/ConstBuffer.hxx"
 #include "util/CRC32.hxx"
 #include "util/Macros.hxx"
+#include "util/SpanCast.hxx"
 #include "util/StringCompare.hxx"
 #include "util/PrintException.hxx"
 
@@ -102,7 +103,7 @@ Verbose(const char *server, ConstBuffer<const char *> args)
 
 	WorkshopControlClient client(server);
 	client.Send(WorkshopControlCommand::VERBOSE,
-		    std::as_bytes(std::span{&log_level, 1}));
+		    ReferenceAsBytes(log_level));
 }
 
 static void

@@ -29,7 +29,7 @@ public:
 			.command = command,
 		};
 
-		Write(std::as_bytes(std::span{&header, 1}));
+		Write(ReferenceAsBytes(header));
 	}
 
 	void Write(TranslationCommand command,
