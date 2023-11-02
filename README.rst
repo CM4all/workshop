@@ -5,7 +5,9 @@ Workshop is a daemon which executes jobs from a queue stored in a
 PostgreSQL database.  Multiple instances can run in parallel on
 different hosts.
 
-For more information, read the manual in the `doc` directory.
+For more information, `read the manual
+<https://cm4all-workshop.readthedocs.io/en/latest/>`__ in the `doc`
+directory.
 
 
 Building Workshop
