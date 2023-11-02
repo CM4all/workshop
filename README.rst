@@ -36,6 +36,7 @@ Compile and install::
 Building the Debian package
 ---------------------------
 
-After installing the build dependencies, run::
+After installing the build dependencies (``dpkg-checkbuilddeps``),
+run::
 
  dpkg-buildpackage -rfakeroot -b -uc -us
