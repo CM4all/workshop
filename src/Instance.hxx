@@ -9,11 +9,15 @@
 #include "event/ShutdownListener.hxx"
 #include "event/SignalEvent.hxx"
 #include "event/DeferEvent.hxx"
-#include "event/systemd/Watchdog.hxx"
 #include "spawn/Registry.hxx"
 #include "lib/curl/Init.hxx"
 #include "lib/curl/Global.hxx"
 #include "io/Logger.hxx"
+#include "config.h"
+
+#ifdef HAVE_LIBSYSTEMD
+#include "event/systemd/Watchdog.hxx"
+#endif
 
 #include <forward_list>
 
@@ -31,7 +35,9 @@ class Instance final : ControlHandler {
 
 	EventLoop event_loop;
 
+#ifdef HAVE_LIBSYSTEMD
 	Systemd::Watchdog systemd_watchdog{event_loop};
+#endif
 
 	bool should_exit = false;
 

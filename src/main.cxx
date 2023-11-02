@@ -21,7 +21,9 @@
 #include "lib/cap/State.hxx"
 #endif
 
+#ifdef HAVE_LIBSYSTEMD
 #include <systemd/sd-daemon.h>
+#endif
 
 #include <stdexcept>
 
@@ -68,8 +70,10 @@ Run(const Config &config)
 
 	instance.Start();
 
+#ifdef HAVE_LIBSYSTEMD
 	/* tell systemd we're ready */
 	sd_notify(0, "READY=1");
+#endif
 
 	/* main loop */
 

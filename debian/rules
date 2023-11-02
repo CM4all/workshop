@@ -5,6 +5,7 @@ MESON_OPTIONS = \
 	-Ddocumentation=enabled \
 	-Dcap=enabled \
 	-Dseccomp=enabled \
+	-Dsystemd=enabled \
 	--werror
 
 %:

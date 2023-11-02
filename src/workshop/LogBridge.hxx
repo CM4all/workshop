@@ -5,6 +5,7 @@
 #pragma once
 
 #include "event/PipeLineReader.hxx"
+#include "config.h"
 
 #include <memory>
 #include <string>
@@ -13,7 +14,9 @@ class LogBridge final : PipeLineReaderHandler {
 	const std::string plan_name, job_id;
 
 	PipeLineReader reader;
+#ifdef HAVE_LIBSYSTEMD
 	bool enable_journal = false;
+#endif // HAVE_LIBSYSTEMD
 
 	std::string buffer;
 	size_t max_buffer_size = 0;
@@ -35,7 +38,9 @@ public:
 	}
 
 	void EnableJournal() {
+#ifdef HAVE_LIBSYSTEMD
 		enable_journal = true;
+#endif
 	}
 
 	void Flush() noexcept {

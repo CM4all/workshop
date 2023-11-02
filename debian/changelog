@@ -2,6 +2,7 @@ cm4all-workshop (6.0.17) unstable; urgency=low
 
   * translation: time out after 30 seconds
   * spawn: do not ignore SIGTERM in spawned processes
+  * make libcap, libseccomp, libsystemd optional
 
  --   
 

@@ -14,6 +14,7 @@
 #include "net/Parser.hxx"
 #include "util/StringAPI.hxx"
 #include "util/StringParser.hxx"
+#include "config.h"
 
 #include <string.h>
 #include <unistd.h> // for gethostname()
@@ -26,9 +27,11 @@ Config::Config()
 	if (debug_mode)
 		spawn.default_uid_gid.LoadEffective();
 
+#ifdef HAVE_LIBSYSTEMD
 	spawn.systemd_scope = "workshop-spawn.scope";
 	spawn.systemd_scope_description = "The cm4all-workshop child process spawner";
 	spawn.systemd_slice = "system-cm4all.slice";
+#endif
 }
 
 void

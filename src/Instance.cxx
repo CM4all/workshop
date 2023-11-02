@@ -85,7 +85,10 @@ Instance::OnExit() noexcept
 
 	should_exit = true;
 
+#ifdef HAVE_LIBSYSTEMD
 	systemd_watchdog.Disable();
+#endif
+
 	shutdown_listener.Disable();
 	sighup_event.Disable();
 

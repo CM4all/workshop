@@ -115,11 +115,14 @@ inc = include_directories(
   '.',
 )
 
+libsystemd = dependency('libsystemd', required: get_option('systemd'))
+
 libcommon_enable_DefaultFifoBuffer = false
 libcommon_enable_spawn_local = false
 libcommon_enable_boost = false
 libcommon_require_cap = get_option('cap')
 libcommon_enable_seccomp = get_option('seccomp')
+libcommon_enable_libsystemd = libsystemd.found()
 
 subdir('libcommon/src/util')
 subdir('libcommon/src/lib/cap')
@@ -160,9 +163,15 @@ net_dep = declare_dependency(
 
 subdir('libcommon/src/event/net')
 subdir('libcommon/src/event/net/djb')
-subdir('libcommon/src/event/systemd')
 subdir('libcommon/src/lib/curl')
-subdir('libcommon/src/lib/dbus')
+
+if libsystemd.found()
+  subdir('libcommon/src/event/systemd')
+  subdir('libcommon/src/lib/dbus')
+else
+  event_systemd_dep = dependency('', required: false)
+endif
+
 subdir('libcommon/src/pg')
 subdir('libcommon/src/adata')
 subdir('libcommon/src/spawn')
@@ -282,6 +291,7 @@ executable(
 
 conf = configuration_data()
 conf.set('HAVE_LIBCAP', cap_dep.found())
+conf.set('HAVE_LIBSYSTEMD', libsystemd.found())
 configure_file(output: 'config.h', configuration: conf)
 
 subdir('t')

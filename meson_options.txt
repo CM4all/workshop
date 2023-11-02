@@ -3,3 +3,4 @@ option('documentation', type: 'feature',
 
 option('cap', type: 'feature', description: 'Linux capability support (using libcap)')
 option('seccomp', type: 'feature', description: 'seccomp support (using libseccomp)')
+option('systemd', type: 'feature', description: 'systemd support (using libsystemd)')
