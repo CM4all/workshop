@@ -27,8 +27,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
+
       - id: cache-ccache
         uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: ${{github.job}}
 
       - name: Install dependencies
         run: |
@@ -48,6 +51,49 @@ jobs:
           meson setup \
             -Dauto_features=enabled \
             -Ddocumentation=disabled \
+             --force-fallback-for=fmt \
+            -Dwrap_mode=nofallback \
+            output
+
+      - name: Build
+        run: ninja -C output -v
+
+      - name: Unit Tests
+        run: meson test -C output
+
+      - name: Dump Unit Test Log
+        if: ${{ failure() }}
+        continue-on-error: true
+        run: cat output/meson-logs/testlog.txt
+
+  mini:
+    runs-on: ubuntu-22.04
+    steps:
+      - id: checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - id: cache-ccache
+        uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: ${{github.job}}
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            meson \
+            libsystemd-dev \
+            libdbus-1-dev \
+            libcurl4-openssl-dev \
+            libgtest-dev \
+            libpq-dev
+
+      - name: Configure
+        run: |
+          meson setup \
+            -Dauto_features=disabled \
              --force-fallback-for=fmt \
             -Dwrap_mode=nofallback \
             output
