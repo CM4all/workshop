@@ -46,6 +46,7 @@ jobs:
       - name: Configure
         run: |
           meson setup \
+            -Dauto_features=enabled \
             -Ddocumentation=disabled \
              --force-fallback-for=fmt \
             -Dwrap_mode=nofallback \

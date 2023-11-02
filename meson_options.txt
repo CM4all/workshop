@@ -1,2 +1,5 @@
 option('documentation', type: 'feature',
   description: 'Build documentation')
+
+option('cap', type: 'feature', description: 'Linux capability support (using libcap)')
+option('seccomp', type: 'feature', description: 'seccomp support (using libseccomp)')

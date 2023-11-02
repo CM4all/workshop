@@ -118,6 +118,8 @@ inc = include_directories(
 libcommon_enable_DefaultFifoBuffer = false
 libcommon_enable_spawn_local = false
 libcommon_enable_boost = false
+libcommon_require_cap = get_option('cap')
+libcommon_enable_seccomp = get_option('seccomp')
 
 subdir('libcommon/src/util')
 subdir('libcommon/src/lib/cap')
@@ -277,6 +279,10 @@ executable(
   ],
   install: true,
 )
+
+conf = configuration_data()
+conf.set('HAVE_LIBCAP', cap_dep.found())
+configure_file(output: 'config.h', configuration: conf)
 
 subdir('t')
 subdir('libcommon/test/util')

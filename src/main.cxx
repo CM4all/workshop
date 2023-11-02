@@ -12,10 +12,14 @@
 #include "system/KernelVersion.hxx"
 #include "system/SetupProcess.hxx"
 #include "system/ProcessName.hxx"
-#include "lib/cap/Glue.hxx"
-#include "lib/cap/State.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "util/PrintException.hxx"
+#include "config.h"
+
+#ifdef HAVE_LIBCAP
+#include "lib/cap/Glue.hxx"
+#include "lib/cap/State.hxx"
+#endif
 
 #include <systemd/sd-daemon.h>
 
@@ -56,9 +60,11 @@ Run(const Config &config)
 		std::move(library),
 	};
 
+#ifdef HAVE_LIBCAP
 	/* now that the spawner has been launched by the Instance
 	   constructor, drop all capabilities, we don't need any */
 	CapabilityState::Empty().Install();
+#endif // HAVE_LIBCAP
 
 	instance.Start();
 
@@ -85,7 +91,11 @@ try {
 	/* also checking $SYSTEMD_EXEC_PID to see if we were launched
 	   by systemd, because if Workshop is running in a container,
 	   it may not have CAP_SYS_ADMIN */
-	debug_mode = !IsSysAdmin() && getenv("SYSTEMD_EXEC_PID") == nullptr;
+	debug_mode =
+#ifdef HAVE_LIBCAP
+		!IsSysAdmin() &&
+#endif // HAVE_LIBCAP
+		getenv("SYSTEMD_EXEC_PID") == nullptr;
 #endif
 
 	Config config;

@@ -12,7 +12,6 @@
 #include "spawn/Registry.hxx"
 #include "spawn/PidfdEvent.hxx"
 #include "event/Loop.hxx"
-#include "lib/cap/Glue.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "system/Error.hxx"
 #include "system/SetupProcess.hxx"
@@ -20,6 +19,11 @@
 #include "util/ConstBuffer.hxx"
 #include "util/PrintException.hxx"
 #include "util/StringCompare.hxx"
+#include "config.h"
+
+#ifdef HAVE_LIBCAP
+#include "lib/cap/Glue.hxx"
+#endif
 
 #include <memory>
 #include <optional>
@@ -162,9 +166,15 @@ RunJobInstance::Start(RunJobCommandLine &&cmdline)
 								   BIND_THIS_METHOD(OnProgress));
 	}
 
+#ifdef HAVE_LIBCAP
+	const bool is_sys_admin = IsSysAdmin();
+#else
+	const bool is_sys_admin = true;
+#endif
+
 	ExitListener &exit_listener = *this;
 	pid.emplace(event_loop,
-		    std::move(SpawnChildProcess(std::move(p), {}, IsSysAdmin()).first),
+		    std::move(SpawnChildProcess(std::move(p), {}, is_sys_admin).first),
 		    "foo", exit_listener);
 }
 
