@@ -17,9 +17,6 @@ compiler = meson.get_compiler('cpp')
 
 common_flags = [
   '-D_GNU_SOURCE',
-
-  # disable boost specific code in libcommon
-  '-DNO_BOOST',
 ]
 
 test_common_flags = [
@@ -119,7 +116,6 @@ libsystemd = dependency('libsystemd', required: get_option('systemd'))
 
 libcommon_enable_DefaultFifoBuffer = false
 libcommon_enable_spawn_local = false
-libcommon_enable_boost = false
 libcommon_require_cap = get_option('cap')
 libcommon_enable_seccomp = get_option('seccomp')
 libcommon_enable_libsystemd = libsystemd.found()
