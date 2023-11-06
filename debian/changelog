@@ -4,7 +4,7 @@ cm4all-workshop (6.0.17) unstable; urgency=low
   * spawn: do not ignore SIGTERM in spawned processes
   * make libcap, libseccomp, libsystemd optional
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Mon, 06 Nov 2023 22:59:52 +0100
 
 cm4all-workshop (6.0.16) unstable; urgency=low
 
