@@ -8,7 +8,7 @@
 #include "spawn/Interface.hxx"
 #include "spawn/Prepared.hxx"
 #include "spawn/ProcessHandle.hxx"
-#include "system/Error.hxx"
+#include "io/Pipe.hxx"
 #include "io/UniqueFileDescriptor.hxx"
 #include "util/Exception.hxx"
 #include "util/UTF8.hxx"
@@ -37,9 +37,7 @@ CronSpawnOperator::Spawn(PreparedChildProcess &&p,
 		if (!p.stderr_fd.IsDefined()) {
 			/* no STDERR destination configured: the default is to capture
 			   it and save in the cronresults table */
-			UniqueFileDescriptor r, w;
-			if (!UniqueFileDescriptor::CreatePipe(r, w))
-				throw MakeErrno("pipe() failed");
+			auto [r, w] = CreatePipe();
 
 			p.SetStderr(std::move(w));
 			if (!p.stdout_fd.IsDefined())

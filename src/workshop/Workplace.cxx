@@ -12,10 +12,10 @@
 #include "spawn/CgroupOptions.hxx"
 #include "spawn/Interface.hxx"
 #include "spawn/Client.hxx"
-#include "system/Error.hxx"
 #include "net/EasyMessage.hxx"
 #include "net/SocketPair.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
+#include "io/Pipe.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "util/StringCompare.hxx"
 
@@ -95,10 +95,7 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 
 	/* create stdout/stderr pipes */
 
-	UniqueFileDescriptor stderr_r, stderr_w;
-	if (!UniqueFileDescriptor::CreatePipe(stderr_r, stderr_w))
-		throw MakeErrno("pipe() failed");
-
+	auto [stderr_r, stderr_w] = CreatePipe();
 	stderr_r.SetNonBlocking();
 
 	/* create control socket */
@@ -177,9 +174,7 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 	} else {
 		/* if there is no control channel, read progress from the
 		   stdout pipe */
-		UniqueFileDescriptor stdout_r, stdout_w;
-		if (!UniqueFileDescriptor::CreatePipe(stdout_r, stdout_w))
-			throw MakeErrno("pipe() failed");
+		auto [stdout_r, stdout_w] = CreatePipe();
 
 		o->SetOutput(std::move(stdout_r));
 		p.SetStdout(std::move(stdout_w));

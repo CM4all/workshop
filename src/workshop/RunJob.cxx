@@ -13,10 +13,10 @@
 #include "spawn/PidfdEvent.hxx"
 #include "event/Loop.hxx"
 #include "lib/fmt/RuntimeError.hxx"
-#include "system/Error.hxx"
 #include "system/SetupProcess.hxx"
 #include "net/SocketPair.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
+#include "io/Pipe.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/PrintException.hxx"
 #include "util/StringCompare.hxx"
@@ -153,9 +153,7 @@ RunJobInstance::Start(RunJobCommandLine &&cmdline)
 	} else {
 		/* if there is no control channel, read progress from the
 		   stdout pipe */
-		UniqueFileDescriptor stdout_r, stdout_w;
-		if (!UniqueFileDescriptor::CreatePipe(stdout_r, stdout_w))
-			throw MakeErrno("pipe() failed");
+		auto [stdout_r, stdout_w] = CreatePipe();
 
 		p.SetStdout(std::move(stdout_w));
 
