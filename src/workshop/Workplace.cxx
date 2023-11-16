@@ -14,7 +14,7 @@
 #include "spawn/Client.hxx"
 #include "system/Error.hxx"
 #include "net/EasyMessage.hxx"
-#include "net/SocketError.hxx"
+#include "net/SocketPair.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "util/StringCompare.hxx"
@@ -24,6 +24,7 @@
 #include <map>
 #include <set>
 #include <list>
+#include <tuple> // for std::tie()
 
 #include <sys/socket.h>
 
@@ -104,9 +105,7 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 
 	UniqueSocketDescriptor control_parent, control_child;
 	if (plan->control_channel) {
-		if (!UniqueSocketDescriptor::CreateSocketPair(AF_LOCAL, SOCK_SEQPACKET, 0,
-							      control_parent, control_child))
-			throw MakeErrno("socketpair() failed");
+		std::tie(control_parent, control_child) = CreateSocketPair(SOCK_SEQPACKET);
 
 		control_parent.SetNonBlocking();
 	}
@@ -166,10 +165,7 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 		if (client->SupportsCgroups()) {
 			cgroup.name = job.plan_name.c_str();
 
-			if (!UniqueSocketDescriptor::CreateSocketPair(AF_LOCAL, SOCK_DGRAM, 0,
-								      return_cgroup,
-								      p.return_cgroup))
-				throw MakeSocketError("socketpair() failed");
+			std::tie(return_cgroup, p.return_cgroup) = CreateSocketPair(SOCK_DGRAM);
 		}
 	}
 

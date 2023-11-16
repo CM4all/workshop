@@ -18,7 +18,7 @@
 #include "spawn/ProcessHandle.hxx"
 #include "net/ConnectSocket.hxx"
 #include "net/EasyMessage.hxx"
-#include "net/SocketError.hxx"
+#include "net/SocketPair.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "io/Open.hxx"
 #include "util/DeleteDisposer.hxx"
@@ -291,10 +291,7 @@ DoSpawn(SpawnService &service, AllocatorPtr alloc,
 		p.stderr_fd = p.stdout_fd = FileDescriptor{dup(stderr_w.Get())};
 
 	UniqueSocketDescriptor return_pidfd;
-	if (!UniqueSocketDescriptor::CreateSocketPair(AF_LOCAL, SOCK_DGRAM, 0,
-						      return_pidfd,
-						      p.return_pidfd))
-		throw MakeSocketError("socketpair() failed");
+	std::tie(return_pidfd, p.return_pidfd) = CreateSocketPair(SOCK_DGRAM);
 
 	for (const char *arg : response.args) {
 		if (p.args.size() >= 4096)

@@ -15,6 +15,7 @@
 #include "lib/fmt/RuntimeError.hxx"
 #include "system/Error.hxx"
 #include "system/SetupProcess.hxx"
+#include "net/SocketPair.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/PrintException.hxx"
@@ -141,11 +142,7 @@ RunJobInstance::Start(RunJobCommandLine &&cmdline)
 	auto &p = cmdline.child;
 
 	if (cmdline.control) {
-		UniqueSocketDescriptor control_parent, control_child;
-
-		if (!UniqueSocketDescriptor::CreateSocketPair(AF_LOCAL, SOCK_SEQPACKET, 0,
-							      control_parent, control_child))
-			throw MakeErrno("socketpair() failed");
+		auto [control_parent, control_child] = CreateSocketPair(SOCK_SEQPACKET);
 
 		p.SetControl(std::move(control_child));
 
