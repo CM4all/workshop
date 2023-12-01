@@ -1,6 +1,6 @@
 cm4all-workshop (6.0.20) unstable; urgency=low
 
-  * 
+  * systemd: keep CAP_CHOWN (needed for `cgroups_writable_by_gid`)
 
  --   
 

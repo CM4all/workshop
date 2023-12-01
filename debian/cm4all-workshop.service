@@ -25,6 +25,11 @@ AmbientCapabilities=CAP_DAC_READ_SEARCH
 # Allow the spawner to write cgroup files
 AmbientCapabilities=CAP_DAC_OVERRIDE
 
+# For spawner initalization to chown cgroup.procs to itself, which is
+# necessary if we are running in a non-root user namespace (e.g. in a
+# container)
+AmbientCapabilities=CAP_CHOWN
+
 # Needed by the spawner
 AmbientCapabilities=CAP_SETUID CAP_SETGID CAP_KILL
 #TODO: check CAP_SYS_NICE CAP_SYS_PTRACE CAP_SYS_RESOURCE
