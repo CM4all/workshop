@@ -3,7 +3,7 @@ cm4all-workshop (6.0.19) unstable; urgency=low
   * fix exit status/signal reporting
   * spawn: add setting `cgroups_writable_by_gid`
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Fri, 01 Dec 2023 17:36:25 +0100
 
 cm4all-workshop (6.0.18) unstable; urgency=low
 
