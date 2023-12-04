@@ -2,6 +2,7 @@ cm4all-workshop (6.0.20) unstable; urgency=low
 
   * systemd: keep CAP_CHOWN/CAP_FSETID (needed for `cgroups_writable_by_gid`)
   * systemd: add "Wants=cm4all-spawn-reaper.service"
+  * systemd: add "After=cm4all-spawn-accessory.service"
   * debian: adjust dependencies to splitted "cm4all-spawn" packages
 
  --   
