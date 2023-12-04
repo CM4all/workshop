@@ -22,8 +22,9 @@ Depends: ${misc:Depends}, ${shlibs:Depends},
  cm4all-slice (>= 0.6),
  polkitd | policykit-1,
  systemd-sysv
-Recommends: cm4all-spawn (>= 0.5)
-Suggests: cm4all-workshop-database, cm4all-workshop-migrate
+Recommends: cm4all-spawn-reaper
+Suggests: cm4all-workshop-database, cm4all-workshop-migrate,
+ cm4all-spawn-accessory
 Description: Distributed job scheduler
  cm4all-workshop is a daemon which reads jobs from a database queue
  (PostgreSQL) and executes them.  Multiple instances distributed over
