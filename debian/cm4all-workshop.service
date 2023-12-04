@@ -4,6 +4,10 @@ Wants=network-online.target
 After=network-online.target
 After=postgresql.service
 
+# the spawn daemon provides services for our spawner
+Wants=cm4all-spawn.service
+After=cm4all-spawn.service
+
 # the spawn-reaper cleans up empty cgroups
 Wants=cm4all-spawn-reaper.service
 
