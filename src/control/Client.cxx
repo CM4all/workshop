@@ -5,6 +5,7 @@
 #include "system/Error.hxx"
 #include "io/Iovec.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
+#include "net/control/Builder.hxx"
 #include "net/control/Client.hxx"
 #include "util/ByteOrder.hxx"
 #include "util/ConstBuffer.hxx"
@@ -79,8 +80,11 @@ TerminateChildren(const char *server, ConstBuffer<const char *> args)
 
 	BengControlClient client{server};
 
+	BengControlBuilder builder;
 	for (const std::string_view tag : args)
-		client.Send(BengProxy::ControlCommand::TERMINATE_CHILDREN, tag);
+		builder.Add(BengProxy::ControlCommand::TERMINATE_CHILDREN, tag);
+
+	client.Send(builder);
 }
 
 int
