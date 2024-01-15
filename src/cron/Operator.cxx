@@ -16,14 +16,8 @@ CronOperator::CronOperator(CronQueue &_queue, CronWorkplace &_workplace,
 	:queue(_queue), workplace(_workplace), job(std::move(_job)),
 	 logger(*this),
 	 start_time(std::move(_start_time)),
-	 timeout_event(GetEventLoop(), BIND_THIS_METHOD(OnTimeout))
+	 timeout_event(_queue.GetEventLoop(), BIND_THIS_METHOD(OnTimeout))
 {
-}
-
-EventLoop &
-CronOperator::GetEventLoop() noexcept
-{
-	return queue.GetEventLoop();
 }
 
 void

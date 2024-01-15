@@ -2,8 +2,7 @@
 // Copyright CM4all GmbH
 // author: Max Kellermann <mk@cm4all.com>
 
-#ifndef CRON_OPERATOR_HXX
-#define CRON_OPERATOR_HXX
+#pragma once
 
 #include "Job.hxx"
 #include "event/FarTimerEvent.hxx"
@@ -43,7 +42,9 @@ public:
 	CronOperator(const CronOperator &other) = delete;
 	CronOperator &operator=(const CronOperator &other) = delete;
 
-	EventLoop &GetEventLoop() noexcept;
+	EventLoop &GetEventLoop() const noexcept {
+		return timeout_event.GetEventLoop();
+	}
 
 	/**
 	 * Cancel job execution, e.g. by sending SIGTERM to the child
@@ -63,5 +64,3 @@ private:
 	/* virtual methods from LoggerDomainFactory */
 	std::string MakeLoggerDomain() const noexcept;
 };
-
-#endif
