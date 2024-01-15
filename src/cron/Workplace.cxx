@@ -180,6 +180,13 @@ CronWorkplace::OnExit(CronOperator *o)
 void
 CronWorkplace::CancelAll() noexcept
 {
-	while (!operators.empty())
-		operators.front().Cancel();
+	if (operators.empty())
+		return;
+
+	operators.clear_and_dispose([](auto *o){
+		o->Cancel();
+		delete o;
+	});
+
+	exit_listener.OnChildProcessExit(-1);
 }

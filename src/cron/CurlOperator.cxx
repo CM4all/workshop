@@ -43,7 +43,6 @@ CronCurlOperator::Cancel() noexcept
 {
 	Finish(-1, "Canceled");
 	timeout_event.Cancel();
-	workplace.OnExit(this);
 }
 
 void
