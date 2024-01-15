@@ -18,6 +18,7 @@
 #include "util/DeleteDisposer.hxx"
 #include "util/Exception.hxx"
 #include "util/StringCompare.hxx"
+#include "debug.h"
 
 #include <cassert>
 #include <string>
@@ -97,7 +98,7 @@ MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
 					      static_cast<unsigned>(response.status));
 		}
 
-		if (response.child_options.uid_gid.IsEmpty())
+		if (response.child_options.uid_gid.IsEmpty() && !debug_mode)
 			throw std::runtime_error("No UID_GID from translation server");
 
 		if (uri != nullptr) {
