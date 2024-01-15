@@ -69,18 +69,6 @@ try {
 }
 
 void
-CronSpawnOperator::Cancel() noexcept
-{
-	assert(pid);
-
-	output_capture.reset();
-	pid.reset();
-
-	Finish(-1, "Canceled");
-	timeout_event.Cancel();
-}
-
-void
 CronSpawnOperator::OnChildProcessExit(int status) noexcept
 {
 	int exit_status = WEXITSTATUS(status);

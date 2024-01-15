@@ -39,13 +39,6 @@ CronCurlOperator::Start()
 }
 
 void
-CronCurlOperator::Cancel() noexcept
-{
-	Finish(-1, "Canceled");
-	timeout_event.Cancel();
-}
-
-void
 CronCurlOperator::OnHeaders(HttpStatus _status, Curl::Headers &&headers)
 {
 	status = _status;

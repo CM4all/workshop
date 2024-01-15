@@ -37,8 +37,6 @@ public:
 
 	void Spawn(PreparedChildProcess &&p, SocketDescriptor pond_socket);
 
-	void Cancel() noexcept override;
-
 public:
 	/* virtual methods from ExitListener */
 	void OnChildProcessExit(int status) noexcept override;

@@ -35,8 +35,6 @@ public:
 
 	void Start();
 
-	void Cancel() noexcept override;
-
 private:
 	/* virtual methods from CurlResponseHandler */
 	void OnHeaders(HttpStatus status, Curl::Headers &&headers) override;
