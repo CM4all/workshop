@@ -37,6 +37,23 @@ SimpleCommand(const char *server, ConstBuffer<const char *> args,
 }
 
 static void
+OptionalPayloadCommand(const char *server, ConstBuffer<const char *> args,
+		       BengProxy::ControlCommand cmd)
+{
+	BengControlClient client{server};
+
+	BengControlBuilder builder;
+
+	if (args.empty())
+		builder.Add(cmd);
+	else
+		for (const std::string_view i : args)
+			builder.Add(cmd, i);
+
+	client.Send(builder);
+}
+
+static void
 Nop(const char *server, ConstBuffer<const char *> args)
 {
 	SimpleCommand(server, args, BengProxy::ControlCommand::NOP);
@@ -63,13 +80,13 @@ Verbose(const char *server, ConstBuffer<const char *> args)
 static void
 DisableQueue(const char *server, ConstBuffer<const char *> args)
 {
-	SimpleCommand(server, args, BengProxy::ControlCommand::DISABLE_QUEUE);
+	OptionalPayloadCommand(server, args, BengProxy::ControlCommand::DISABLE_QUEUE);
 }
 
 static void
 EnableQueue(const char *server, ConstBuffer<const char *> args)
 {
-	SimpleCommand(server, args, BengProxy::ControlCommand::ENABLE_QUEUE);
+	OptionalPayloadCommand(server, args, BengProxy::ControlCommand::ENABLE_QUEUE);
 }
 
 static void
@@ -129,8 +146,8 @@ try {
 		   "\n"
 		   "Commands:\n"
 		   "  verbose LEVEL\n"
-		   "  disable-queue\n"
-		   "  enable-queue\n"
+		   "  disable-queue [NAME]\n"
+		   "  enable-queue [NAME]\n"
 		   "  terminate-children TAG\n"
 		   "  nop\n",
 		   argv[0]);

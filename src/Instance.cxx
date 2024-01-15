@@ -192,22 +192,44 @@ Instance::OnControlPacket([[maybe_unused]] ControlServer &control_server,
 		if (!is_privileged)
 			break;
 
-		logger(2, "Disabling all queues");
-		for (auto &i : partitions)
-			i.DisableQueue();
-		for (auto &i : cron_partitions)
-			i.DisableQueue();
+		if (payload.empty()) {
+			logger(2, "Disabling all queues");
+			for (auto &i : partitions)
+				i.DisableQueue();
+			for (auto &i : cron_partitions)
+				i.DisableQueue();
+		} else {
+			const std::string_view name = ToStringView(payload);
+			for (auto &i : cron_partitions) {
+				if (i.IsName(name)) {
+					logger.Fmt(2, "Disabling queue '{}'", name);
+					i.DisableQueue();
+				}
+			}
+		}
+
 		break;
 
 	case BengProxy::ControlCommand::ENABLE_QUEUE:
 		if (!is_privileged)
 			break;
 
-		logger(2, "Enabling all queues");
-		for (auto &i : partitions)
-			i.EnableQueue();
-		for (auto &i : cron_partitions)
-			i.EnableQueue();
+		if (payload.empty()) {
+			logger(2, "Enabling all queues");
+			for (auto &i : partitions)
+				i.EnableQueue();
+			for (auto &i : cron_partitions)
+				i.EnableQueue();
+		} else {
+			const std::string_view name = ToStringView(payload);
+			for (auto &i : cron_partitions) {
+				if (i.IsName(name)) {
+					logger.Fmt(2, "Enabling queue '{}'", name);
+					i.EnableQueue();
+				}
+			}
+		}
+
 		break;
 	}
 }

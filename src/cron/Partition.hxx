@@ -48,6 +48,10 @@ public:
 
 	~CronPartition();
 
+	bool IsName(std::string_view _name) const noexcept {
+		return name != nullptr && _name == name;
+	}
+
 	bool IsIdle() const {
 		return workplace.IsEmpty();
 	}
