@@ -9,6 +9,7 @@
 #include "workshop/Partition.hxx"
 #include "cron/Partition.hxx"
 #include "spawn/Client.hxx"
+#include "util/SpanCast.hxx"
 
 #include <signal.h>
 
@@ -168,7 +169,6 @@ Instance::OnControlPacket([[maybe_unused]] ControlServer &control_server,
 	case BengProxy::ControlCommand::STOPWATCH_PIPE:
 	case BengProxy::ControlCommand::DISCARD_SESSION:
 	case BengProxy::ControlCommand::FLUSH_HTTP_CACHE:
-	case BengProxy::ControlCommand::TERMINATE_CHILDREN:
 		// not applicable
 		break;
 
@@ -180,6 +180,12 @@ Instance::OnControlPacket([[maybe_unused]] ControlServer &control_server,
 
 			SetLogLevel(*log_level);
 		}
+		break;
+
+	case BengProxy::ControlCommand::TERMINATE_CHILDREN:
+		if (const auto tag = ToStringView(payload); !tag.empty())
+			for (auto &i : cron_partitions)
+				i.TerminateChildren(tag);
 		break;
 
 	case BengProxy::ControlCommand::DISABLE_QUEUE:

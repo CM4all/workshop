@@ -71,6 +71,18 @@ EnableQueue(const char *server, ConstBuffer<const char *> args)
 	SimpleCommand(server, args, BengProxy::ControlCommand::ENABLE_QUEUE);
 }
 
+static void
+TerminateChildren(const char *server, ConstBuffer<const char *> args)
+{
+	if (args.empty())
+		throw Usage{"Tag missing"};
+
+	BengControlClient client{server};
+
+	for (const std::string_view tag : args)
+		client.Send(BengProxy::ControlCommand::TERMINATE_CHILDREN, tag);
+}
+
 int
 main(int argc, char **argv)
 try {
@@ -101,6 +113,8 @@ try {
 		DisableQueue(server, args);
 	} else if (StringIsEqual(command, "enable-queue")) {
 		EnableQueue(server, args);
+	} else if (StringIsEqual(command, "terminate-children")) {
+		TerminateChildren(server, args);
 	} else
 		throw Usage{"Unknown command"};
 } catch (const Usage &u) {
@@ -113,6 +127,7 @@ try {
 		   "  verbose LEVEL\n"
 		   "  disable-queue\n"
 		   "  enable-queue\n"
+		   "  terminate-children TAG\n"
 		   "  nop\n",
 		   argv[0]);
 	return EXIT_FAILURE;

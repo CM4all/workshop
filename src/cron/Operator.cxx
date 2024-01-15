@@ -12,9 +12,11 @@
 
 CronOperator::CronOperator(CronQueue &_queue, CronWorkplace &_workplace,
 			   CronJob &&_job,
+			   std::string_view _tag,
 			   std::string &&_start_time) noexcept
 	:queue(_queue), workplace(_workplace), job(std::move(_job)),
 	 logger(*this),
+	 tag(_tag),
 	 start_time(std::move(_start_time)),
 	 timeout_event(_queue.GetEventLoop(), BIND_THIS_METHOD(OnTimeout))
 {

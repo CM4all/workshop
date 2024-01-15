@@ -32,6 +32,7 @@ public:
 	CronSpawnOperator(CronQueue &_queue, CronWorkplace &_workplace,
 			  SpawnService &_spawn_service,
 			  CronJob &&_job,
+			  std::string_view _tag,
 			  std::string &&_start_time) noexcept;
 	~CronSpawnOperator() noexcept override;
 

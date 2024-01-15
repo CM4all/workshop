@@ -22,6 +22,7 @@ CronCurlOperator::CronCurlOperator(CronQueue &_queue,
 				   const char *url) noexcept
 	:CronOperator(_queue, _workplace,
 		      std::move(_job),
+		      {},
 		      std::move(_start_time)),
 	 request(_global, url, *this)
 {

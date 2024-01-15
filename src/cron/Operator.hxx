@@ -29,12 +29,15 @@ protected:
 
 	LazyDomainLogger logger;
 
+	const std::string tag;
+
 	const std::string start_time;
 
 	FarTimerEvent timeout_event;
 
 public:
 	CronOperator(CronQueue &_queue, CronWorkplace &_workplace, CronJob &&_job,
+		     std::string_view _tag,
 		     std::string &&_start_time) noexcept;
 
 	virtual ~CronOperator() noexcept = default;
@@ -44,6 +47,10 @@ public:
 
 	EventLoop &GetEventLoop() const noexcept {
 		return timeout_event.GetEventLoop();
+	}
+
+	bool IsTag(std::string_view _tag) const noexcept {
+		return tag == _tag;
 	}
 
 	/**

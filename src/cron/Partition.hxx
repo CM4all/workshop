@@ -66,6 +66,10 @@ public:
 		queue.EnableAdmin();
 	}
 
+	void TerminateChildren(std::string_view child_tag) noexcept {
+		workplace.CancelTag(child_tag);
+	}
+
 private:
 	void OnJob(CronJob &&job);
 

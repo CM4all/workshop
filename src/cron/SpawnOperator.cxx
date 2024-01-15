@@ -20,9 +20,11 @@ CronSpawnOperator::CronSpawnOperator(CronQueue &_queue,
 				     CronWorkplace &_workplace,
 				     SpawnService &_spawn_service,
 				     CronJob &&_job,
+				     std::string_view _tag,
 				     std::string &&_start_time) noexcept
 	:CronOperator(_queue, _workplace,
 		      std::move(_job),
+		      _tag,
 		      std::move(_start_time)),
 	 spawn_service(_spawn_service)
 {

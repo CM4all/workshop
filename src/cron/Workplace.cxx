@@ -127,6 +127,7 @@ MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
 	auto o = std::make_unique<CronSpawnOperator>(queue, workplace,
 						     workplace.GetSpawnService(),
 						     std::move(job),
+						     response.child_options.tag,
 						     std::move(start_time));
 	o->Spawn(std::move(p), workplace.GetPondSocket());
 	return std::unique_ptr<CronOperator>(std::move(o));
@@ -190,4 +191,18 @@ CronWorkplace::CancelAll() noexcept
 	});
 
 	exit_listener.OnChildProcessExit(-1);
+}
+
+void
+CronWorkplace::CancelTag(std::string_view tag) noexcept
+{
+	const auto n = operators.remove_and_dispose_if([tag](const auto &o){
+		return o.IsTag(tag);
+	}, [](auto *o) {
+		o->Cancel();
+		delete o;
+	});
+
+	if (n > 0)
+		exit_listener.OnChildProcessExit(-1);
 }

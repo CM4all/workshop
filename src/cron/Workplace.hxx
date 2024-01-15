@@ -75,4 +75,6 @@ public:
 	void OnExit(CronOperator *o);
 
 	void CancelAll() noexcept;
+
+	void CancelTag(std::string_view tag) noexcept;
 };
