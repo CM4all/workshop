@@ -52,7 +52,8 @@ try {
 	}
 
 	/* change to home directory (if one was set) */
-	p.chdir = p.ns.GetJailedHome();
+	if (p.ns.mount.home != nullptr)
+		p.chdir = p.ns.mount.GetJailedHome();
 
 	pid = spawn_service.SpawnChildProcess(job.id.c_str(),
 					      std::move(p));
