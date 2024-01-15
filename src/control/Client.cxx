@@ -120,50 +120,50 @@ EnableQueue(const char *server, ConstBuffer<const char *> args)
 
 int
 main(int argc, char **argv)
-	try {
-		ConstBuffer<const char *> args(argv + 1, argc - 1);
+try {
+	ConstBuffer<const char *> args(argv + 1, argc - 1);
 
-		const char *server = "@cm4all-workshop.control";
+	const char *server = "@cm4all-workshop.control";
 
-		while (!args.empty() && args.front()[0] == '-') {
-			const char *option = args.shift();
-			if (const char *new_server = StringAfterPrefix(option, "--server=")) {
-				server = new_server;
-			} else
-				throw Usage{"Unknown option"};
-		}
-
-		if (args.empty())
-			throw Usage();
-
-		const char *const command = args.shift();
-
-		if (StringIsEqual(command, "nop")) {
-			Nop(server, args);
-			return EXIT_SUCCESS;
-		} else if (StringIsEqual(command, "verbose")) {
-			Verbose(server, args);
-			return EXIT_SUCCESS;
-		} else if (StringIsEqual(command, "disable-queue")) {
-			DisableQueue(server, args);
-		} else if (StringIsEqual(command, "enable-queue")) {
-			EnableQueue(server, args);
+	while (!args.empty() && args.front()[0] == '-') {
+		const char *option = args.shift();
+		if (const char *new_server = StringAfterPrefix(option, "--server=")) {
+			server = new_server;
 		} else
-			throw Usage{"Unknown command"};
-	} catch (const Usage &u) {
-		if (u.msg)
-			fmt::print(stderr, "{}\n\n", u.msg);
-
-		fmt::print(stderr, "Usage: {} [--server=SERVER[:PORT]] COMMAND ...\n"
-			   "\n"
-			   "Commands:\n"
-			   "  verbose LEVEL\n"
-			   "  disable-queue\n"
-			   "  enable-queue\n"
-			   "  nop\n",
-			   argv[0]);
-		return EXIT_FAILURE;
-	} catch (...) {
-		PrintException(std::current_exception());
-		return EXIT_FAILURE;
+			throw Usage{"Unknown option"};
 	}
+
+	if (args.empty())
+		throw Usage();
+
+	const char *const command = args.shift();
+
+	if (StringIsEqual(command, "nop")) {
+		Nop(server, args);
+		return EXIT_SUCCESS;
+	} else if (StringIsEqual(command, "verbose")) {
+		Verbose(server, args);
+		return EXIT_SUCCESS;
+	} else if (StringIsEqual(command, "disable-queue")) {
+		DisableQueue(server, args);
+	} else if (StringIsEqual(command, "enable-queue")) {
+		EnableQueue(server, args);
+	} else
+		throw Usage{"Unknown command"};
+} catch (const Usage &u) {
+	if (u.msg)
+		fmt::print(stderr, "{}\n\n", u.msg);
+
+	fmt::print(stderr, "Usage: {} [--server=SERVER[:PORT]] COMMAND ...\n"
+		   "\n"
+		   "Commands:\n"
+		   "  verbose LEVEL\n"
+		   "  disable-queue\n"
+		   "  enable-queue\n"
+		   "  nop\n",
+		   argv[0]);
+	return EXIT_FAILURE;
+} catch (...) {
+	PrintException(std::current_exception());
+	return EXIT_FAILURE;
+}
