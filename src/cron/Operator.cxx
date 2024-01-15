@@ -58,7 +58,7 @@ CronOperator::OnTimeout() noexcept
 {
 	logger(2, "Timeout");
 
-	Cancel();
+	Finish(-1, "Timeout");
 }
 
 std::string

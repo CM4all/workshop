@@ -1,5 +1,6 @@
 cm4all-workshop (6.0.21) unstable; urgency=low
 
+  * cron: on timeout, log "Timeout" in cronresults instead of "Canceled"
   * control: switch to the beng-proxy control protocol
   * control: accept VERBOSE, DISABLE_QUEUE, ENABLE_QUEUE only from local clients
   * systemd: depend on "cm4all-spawn-accessory.socket", not ".service"
