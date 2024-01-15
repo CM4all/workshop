@@ -27,7 +27,6 @@
 
 #include <stdexcept>
 
-#include <stdio.h>
 #include <stdlib.h>
 
 #ifndef NDEBUG
