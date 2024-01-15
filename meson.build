@@ -143,6 +143,7 @@ system_dep = declare_dependency(
 
 subdir('libcommon/src/event')
 subdir('libcommon/src/net')
+subdir('libcommon/src/net/control')
 subdir('libcommon/src/net/djb')
 
 net2 = static_library(
@@ -158,6 +159,7 @@ net_dep = declare_dependency(
 )
 
 subdir('libcommon/src/event/net')
+subdir('libcommon/src/event/net/control')
 subdir('libcommon/src/event/net/djb')
 subdir('libcommon/src/lib/curl')
 
@@ -227,12 +229,12 @@ executable('cm4all-workshop',
   'src/workshop/LogBridge.cxx',
   'src/workshop/Operator.cxx',
   'src/workshop/Workplace.cxx',
-  'src/control/Server.cxx',
   include_directories: inc,
   dependencies: [
     event_net_dep,
     event_net_djb_dep,
     event_systemd_dep,
+    control_server_dep,
     time_dep,
     system_dep,
     io_dep,
@@ -263,8 +265,8 @@ executable(
   include_directories: inc,
   dependencies: [
     fmt_dep,
+    control_client_dep,
     net_dep,
-    io_dep,
     util_dep,
   ],
   install: true,

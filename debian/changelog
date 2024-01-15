@@ -1,5 +1,6 @@
 cm4all-workshop (6.0.21) unstable; urgency=low
 
+  * switch to the beng-proxy control protocol
   * systemd: depend on "cm4all-spawn-accessory.socket", not ".service"
 
  --   

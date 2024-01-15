@@ -2,12 +2,10 @@
 // Copyright CM4all GmbH
 // author: Max Kellermann <mk@cm4all.com>
 
-#include "Protocol.hxx"
 #include "system/Error.hxx"
 #include "io/Iovec.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
-#include "net/RConnectSocket.hxx"
-#include "net/SendMessage.hxx"
+#include "net/control/Client.hxx"
 #include "util/ByteOrder.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/CRC32.hxx"
@@ -26,66 +24,21 @@ struct Usage {
 	const char *msg = nullptr;
 };
 
-class WorkshopControlClient {
-	UniqueSocketDescriptor socket;
-
-public:
-	explicit WorkshopControlClient(UniqueSocketDescriptor _socket)
-		:socket(std::move(_socket)) {}
-
-	explicit WorkshopControlClient(const char *host_and_port)
-		:WorkshopControlClient(ResolveConnectDatagramSocket(host_and_port,
-								    WORKSHOP_CONTROL_DEFAULT_PORT)) {}
-
-	void Send(WorkshopControlCommand cmd, std::span<const std::byte> payload={});
-};
-
-static constexpr size_t
-PaddingSize(size_t size)
-{
-	return (3 - ((size - 1) & 0x3));
-}
-
-void
-WorkshopControlClient::Send(WorkshopControlCommand cmd,
-			    std::span<const std::byte> payload)
-{
-	WorkshopControlHeader h{ToBE16(payload.size()), ToBE16(uint16_t(cmd))};
-	WorkshopControlDatagramHeader dh{ToBE32(WORKSHOP_CONTROL_MAGIC), 0};
-
-	static constexpr std::byte padding[3]{};
-
-	const struct iovec v[] = {
-		MakeIovecT(dh),
-		MakeIovecT(h),
-		MakeIovec(payload),
-		MakeIovec(std::span{padding, PaddingSize(payload.size())}),
-	};
-
-	CRC32State crc;
-	for (size_t i = 1; i < ARRAY_SIZE(v); ++i)
-		crc.Update({(const std::byte *)v[i].iov_base, v[i].iov_len});
-
-	dh.crc = ToBE32(crc.Finish());
-
-	SendMessage(socket, MessageHeader{v}, 0);
-}
-
 static void
 SimpleCommand(const char *server, ConstBuffer<const char *> args,
-	      WorkshopControlCommand cmd)
+	      BengProxy::ControlCommand cmd)
 {
 	if (!args.empty())
 		throw Usage{"Too many arguments"};
 
-	WorkshopControlClient client(server);
+	BengControlClient client{server};
 	client.Send(cmd);
 }
 
 static void
 Nop(const char *server, ConstBuffer<const char *> args)
 {
-	SimpleCommand(server, args, WorkshopControlCommand::NOP);
+	SimpleCommand(server, args, BengProxy::ControlCommand::NOP);
 }
 
 static void
@@ -101,21 +54,21 @@ Verbose(const char *server, ConstBuffer<const char *> args)
 
 	uint8_t log_level = atoi(s);
 
-	WorkshopControlClient client(server);
-	client.Send(WorkshopControlCommand::VERBOSE,
+	BengControlClient client{server};
+	client.Send(BengProxy::ControlCommand::VERBOSE,
 		    ReferenceAsBytes(log_level));
 }
 
 static void
 DisableQueue(const char *server, ConstBuffer<const char *> args)
 {
-	SimpleCommand(server, args, WorkshopControlCommand::DISABLE_QUEUE);
+	SimpleCommand(server, args, BengProxy::ControlCommand::DISABLE_QUEUE);
 }
 
 static void
 EnableQueue(const char *server, ConstBuffer<const char *> args)
 {
-	SimpleCommand(server, args, WorkshopControlCommand::ENABLE_QUEUE);
+	SimpleCommand(server, args, BengProxy::ControlCommand::ENABLE_QUEUE);
 }
 
 int

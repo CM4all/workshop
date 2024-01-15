@@ -4,7 +4,7 @@
 
 #include "Instance.hxx"
 #include "Config.hxx"
-#include "control/Server.hxx"
+#include "event/net/control/Server.hxx"
 #include "workshop/MultiLibrary.hxx"
 #include "workshop/Partition.hxx"
 #include "cron/Partition.hxx"
@@ -140,14 +140,36 @@ Instance::RemoveIdlePartitions() noexcept
 }
 
 void
-Instance::OnControlPacket(WorkshopControlCommand command,
-			  std::span<const std::byte> payload)
+Instance::OnControlPacket([[maybe_unused]] ControlServer &control_server,
+			  BengProxy::ControlCommand command,
+			  std::span<const std::byte> payload,
+			  [[maybe_unused]] std::span<UniqueFileDescriptor> fds,
+			  [[maybe_unused]] SocketAddress address,
+			  [[maybe_unused]] int uid)
 {
 	switch (command) {
-	case WorkshopControlCommand::NOP:
+	case BengProxy::ControlCommand::NOP:
 		break;
 
-	case WorkshopControlCommand::VERBOSE:
+	case BengProxy::ControlCommand::TCACHE_INVALIDATE:
+	case BengProxy::ControlCommand::DUMP_POOLS:
+	case BengProxy::ControlCommand::ENABLE_NODE:
+	case BengProxy::ControlCommand::FADE_NODE:
+	case BengProxy::ControlCommand::NODE_STATUS:
+	case BengProxy::ControlCommand::STATS:
+	case BengProxy::ControlCommand::FADE_CHILDREN:
+	case BengProxy::ControlCommand::DISABLE_ZEROCONF:
+	case BengProxy::ControlCommand::ENABLE_ZEROCONF:
+	case BengProxy::ControlCommand::FLUSH_NFS_CACHE:
+	case BengProxy::ControlCommand::FLUSH_FILTER_CACHE:
+	case BengProxy::ControlCommand::STOPWATCH_PIPE:
+	case BengProxy::ControlCommand::DISCARD_SESSION:
+	case BengProxy::ControlCommand::FLUSH_HTTP_CACHE:
+	case BengProxy::ControlCommand::TERMINATE_CHILDREN:
+		// not applicable
+		break;
+
+	case BengProxy::ControlCommand::VERBOSE:
 		{
 			const auto *log_level = (const uint8_t *)payload.data();
 			if (payload.size() != sizeof(*log_level))
@@ -157,7 +179,7 @@ Instance::OnControlPacket(WorkshopControlCommand command,
 		}
 		break;
 
-	case WorkshopControlCommand::DISABLE_QUEUE:
+	case BengProxy::ControlCommand::DISABLE_QUEUE:
 		logger(2, "Disabling all queues");
 		for (auto &i : partitions)
 			i.DisableQueue();
@@ -165,7 +187,7 @@ Instance::OnControlPacket(WorkshopControlCommand command,
 			i.DisableQueue();
 		break;
 
-	case WorkshopControlCommand::ENABLE_QUEUE:
+	case BengProxy::ControlCommand::ENABLE_QUEUE:
 		logger(2, "Enabling all queues");
 		for (auto &i : partitions)
 			i.EnableQueue();

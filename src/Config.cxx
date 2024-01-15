@@ -3,7 +3,6 @@
 // author: Max Kellermann <mk@cm4all.com>
 
 #include "Config.hxx"
-#include "control/Protocol.hxx"
 #include "spawn/ConfigParser.hxx"
 #include "debug.h"
 #include "system/Error.hxx"
@@ -12,6 +11,7 @@
 #include "net/Resolver.hxx"
 #include "net/AddressInfo.hxx"
 #include "net/Parser.hxx"
+#include "net/control/Protocol.hxx"
 #include "util/StringAPI.hxx"
 #include "util/StringParser.hxx"
 #include "config.h"
@@ -212,7 +212,7 @@ WorkshopConfigParser::Control::ParseLine(FileLineParser &line)
 
 	if (strcmp(word, "bind") == 0) {
 		config.bind_address = ParseSocketAddress(line.ExpectValueAndEnd(),
-							 WORKSHOP_CONTROL_DEFAULT_PORT,
+							 BengProxy::CONTROL_PORT,
 							 true);
 	} else if (strcmp(word, "multicast_group") == 0) {
 		config.multicast_group = ParseSocketAddress(line.ExpectValueAndEnd(),

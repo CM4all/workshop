@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "control/Handler.hxx"
+#include "event/net/control/Handler.hxx"
 #include "event/Loop.hxx"
 #include "event/ShutdownListener.hxx"
 #include "event/SignalEvent.hxx"
@@ -88,7 +88,10 @@ private:
 	void RemoveIdlePartitions() noexcept;
 
 	/* virtual methods from ControlHandler */
-	void OnControlPacket(WorkshopControlCommand command,
-			     std::span<const std::byte> payload) override;
+	void OnControlPacket(ControlServer &control_server,
+			     BengProxy::ControlCommand command,
+			     std::span<const std::byte> payload,
+			     std::span<UniqueFileDescriptor> fds,
+			     SocketAddress address, int uid) override;
 	void OnControlError(std::exception_ptr ep) noexcept override;
 };
