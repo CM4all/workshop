@@ -147,6 +147,9 @@ Instance::OnControlPacket([[maybe_unused]] ControlServer &control_server,
 			  [[maybe_unused]] SocketAddress address,
 			  [[maybe_unused]] int uid)
 {
+	/* only local clients are allowed to use most commands */
+	const bool is_privileged = uid >= 0;
+
 	switch (command) {
 	case BengProxy::ControlCommand::NOP:
 		break;
@@ -170,7 +173,7 @@ Instance::OnControlPacket([[maybe_unused]] ControlServer &control_server,
 		break;
 
 	case BengProxy::ControlCommand::VERBOSE:
-		{
+		if (is_privileged) {
 			const auto *log_level = (const uint8_t *)payload.data();
 			if (payload.size() != sizeof(*log_level))
 				throw std::runtime_error("Malformed VERBOSE packet");
@@ -180,6 +183,9 @@ Instance::OnControlPacket([[maybe_unused]] ControlServer &control_server,
 		break;
 
 	case BengProxy::ControlCommand::DISABLE_QUEUE:
+		if (!is_privileged)
+			break;
+
 		logger(2, "Disabling all queues");
 		for (auto &i : partitions)
 			i.DisableQueue();
@@ -188,6 +194,9 @@ Instance::OnControlPacket([[maybe_unused]] ControlServer &control_server,
 		break;
 
 	case BengProxy::ControlCommand::ENABLE_QUEUE:
+		if (!is_privileged)
+			break;
+
 		logger(2, "Enabling all queues");
 		for (auto &i : partitions)
 			i.EnableQueue();
