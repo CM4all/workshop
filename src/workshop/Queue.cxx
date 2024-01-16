@@ -10,6 +10,7 @@
 #include "pg/Array.hxx"
 #include "pg/Reflection.hxx"
 #include "event/Loop.hxx"
+#include "util/StringAPI.hxx"
 #include "util/StringCompare.hxx"
 
 #include <stdexcept>
@@ -18,7 +19,6 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <string.h>
 #include <time.h>
 
 WorkshopQueue::WorkshopQueue(const Logger &parent_logger,
@@ -455,7 +455,7 @@ WorkshopQueue::OnConnect()
 
 	db.Execute("LISTEN new_job");
 
-	if (strcmp(schema, "public") != 0)
+	if (!StringIsEqual(schema, "public"))
 		/* for compatibility with future Workshop versions with
 		   improved schema support */
 		db.Execute(("LISTEN \"" + db.Escape(schema)

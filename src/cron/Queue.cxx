@@ -6,6 +6,7 @@
 #include "Job.hxx"
 #include "CalculateNextRun.hxx"
 #include "lib/fmt/RuntimeError.hxx"
+#include "util/StringAPI.hxx"
 
 #include <chrono>
 
@@ -285,9 +286,9 @@ CronQueue::OnDisconnect() noexcept
 void
 CronQueue::OnNotify(const char *name)
 {
-	if (strcmp(name, "cronjobs_modified") == 0)
+	if (StringIsEqual(name, "cronjobs_modified"))
 		ScheduleScheduler(false);
-	else if (strcmp(name, "cronjobs_scheduled") == 0)
+	else if (StringIsEqual(name, "cronjobs_scheduled"))
 		ScheduleClaim();
 }
 
