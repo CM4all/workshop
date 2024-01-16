@@ -69,7 +69,7 @@ public:
 	 * Throws std::runtime_error on error.
 	 */
 	void Start(CronQueue &queue, SocketAddress translation_socket,
-		   const char *partition_name, const char *listener_tag,
+		   std::string_view partition_name, const char *listener_tag,
 		   CronJob &&job);
 
 	void OnExit(CronOperator *o);

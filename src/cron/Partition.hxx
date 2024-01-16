@@ -13,6 +13,7 @@
 #include "util/BindMethod.hxx"
 
 #include <memory>
+#include <string_view>
 
 struct Config;
 struct CronPartitionConfig;
@@ -21,7 +22,7 @@ class SpawnService;
 class EmailService;
 
 class CronPartition final : ExitListener {
-	const char *const name;
+	const std::string_view name;
 	const char *const tag;
 
 	const SocketAddress translation_socket;
@@ -50,7 +51,7 @@ public:
 
 	[[gnu::pure]]
 	bool IsName(std::string_view _name) const noexcept {
-		return name != nullptr && _name == name;
+		return name != _name;
 	}
 
 	[[nodiscard]]

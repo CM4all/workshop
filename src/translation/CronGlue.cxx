@@ -12,7 +12,8 @@
 
 TranslateResponse
 TranslateCron(AllocatorPtr alloc, SocketAddress address,
-	      const char *partition_name, const char *listener_tag,
+	      std::string_view partition_name,
+	      const char *listener_tag,
 	      const char *user, const char *uri, const char *param)
 {
 	auto s = CreateConnectSocket(address, SOCK_STREAM);

@@ -14,7 +14,9 @@
 #include <stdexcept>
 
 static void
-SendTranslateCron(SocketDescriptor s, const char *partition_name, const char *listener_tag,
+SendTranslateCron(SocketDescriptor s,
+		  std::string_view partition_name,
+		  const char *listener_tag,
 		  const char *user, const char *uri, const char *param)
 {
 	assert(user != nullptr);
@@ -29,11 +31,7 @@ SendTranslateCron(SocketDescriptor s, const char *partition_name, const char *li
 
 	m.Write(TranslationCommand::BEGIN);
 
-	size_t partition_name_size = partition_name != nullptr
-		? strlen(partition_name)
-		: 0;
-	m.Write(TranslationCommand::CRON,
-		std::string_view{partition_name, partition_name_size});
+	m.Write(TranslationCommand::CRON, partition_name);
 
 	if (listener_tag != nullptr)
 		m.Write(TranslationCommand::LISTENER_TAG, listener_tag);
@@ -50,7 +48,8 @@ SendTranslateCron(SocketDescriptor s, const char *partition_name, const char *li
 
 TranslateResponse
 TranslateCron(AllocatorPtr alloc, SocketDescriptor s,
-	      const char *partition_name, const char *listener_tag,
+	      std::string_view partition_name,
+	      const char *listener_tag,
 	      const char *user, const char *uri,
 	      const char *param)
 {

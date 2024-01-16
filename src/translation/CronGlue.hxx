@@ -4,11 +4,14 @@
 
 #pragma once
 
+#include <string_view>
+
 struct TranslateResponse;
 class SocketAddress;
 class AllocatorPtr;
 
 TranslateResponse
 TranslateCron(AllocatorPtr alloc, SocketAddress socket_path,
-	      const char *partition_name, const char *listener_tag,
+	      std::string_view partition_name,
+	      const char *listener_tag,
 	      const char *user, const char *uri, const char *param);
