@@ -31,11 +31,11 @@ CronQueue::~CronQueue() noexcept = default;
 void
 CronQueue::EnableAdmin() noexcept
 {
-	if (!disabled_admin)
+	if (enabled_admin)
 		return;
 
-	disabled_admin = false;
-	if (IsDisabled() || !db.IsReady())
+	enabled_admin = true;
+	if (!IsEnabled() || !db.IsReady())
 		return;
 
 	ScheduleClaim();
@@ -48,7 +48,7 @@ CronQueue::EnableFull() noexcept
 		return;
 
 	disabled_full = false;
-	if (IsDisabled() || !db.IsReady())
+	if (!IsEnabled() || !db.IsReady())
 		return;
 
 	ScheduleClaim();
@@ -122,7 +122,7 @@ FindEarliestPending(Pg::Connection &db)
 void
 CronQueue::RunClaim() noexcept
 {
-	if (IsDisabled())
+	if (!IsEnabled())
 		return;
 
 	logger(4, "claim");
@@ -218,7 +218,7 @@ try {
 bool
 CronQueue::CheckPending()
 {
-	if (IsDisabled())
+	if (!IsEnabled())
 		return false;
 
 	const auto result =
@@ -239,7 +239,7 @@ CronQueue::CheckPending()
 
 		callback(std::move(job));
 
-		if (IsDisabled())
+		if (!IsEnabled())
 			return false;
 	}
 

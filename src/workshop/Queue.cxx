@@ -150,7 +150,7 @@ void
 WorkshopQueue::RunResult(const Pg::Result &result)
 {
 	for (unsigned row = 0, end = result.GetRowCount();
-	     row != end && !IsDisabled() && !interrupt; ++row) {
+	     row != end && IsEnabled() && !interrupt; ++row) {
 		auto job = MakeJob(*this, result, row);
 		auto plan = handler.GetWorkshopPlan(job.plan_name.c_str());
 
@@ -170,7 +170,7 @@ WorkshopQueue::Run2()
 	int ret;
 	bool full = false;
 
-	assert(!IsDisabled());
+	assert(IsEnabled());
 	assert(running);
 
 	if (plans_include.empty() ||
@@ -213,7 +213,7 @@ WorkshopQueue::Run2()
 			full = true;
 	}
 
-	if (!IsDisabled() && !interrupt &&
+	if (IsEnabled() && !interrupt &&
 	    plans_lowprio.compare("{}") != 0) {
 		/* now also select plans which are already running */
 
@@ -235,7 +235,7 @@ WorkshopQueue::Run2()
 
 	/* update timeout */
 
-	if (IsDisabled()) {
+	if (!IsEnabled()) {
 		logger(7, "queue has been disabled");
 	} else if (interrupt) {
 		/* we have been interrupted: run again in 100ms */
@@ -263,7 +263,7 @@ WorkshopQueue::Run() noexcept
 {
 	assert(!running);
 
-	if (IsDisabled())
+	if (!IsEnabled())
 		return;
 
 	ScheduleCheckNotify();
@@ -284,12 +284,12 @@ WorkshopQueue::EnableAdmin() noexcept
 {
 	assert(!running);
 
-	if (!disabled_admin)
+	if (enabled_admin)
 		return;
 
-	disabled_admin = false;
+	enabled_admin = true;
 
-	if (!IsDisabled() && db.IsReady())
+	if (IsEnabled() && db.IsReady())
 		Reschedule();
 }
 
@@ -303,7 +303,7 @@ WorkshopQueue::EnableFull() noexcept
 
 	disabled_full = false;
 
-	if (!IsDisabled() && db.IsReady())
+	if (IsEnabled() && db.IsReady())
 		Reschedule();
 }
 

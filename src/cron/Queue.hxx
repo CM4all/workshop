@@ -39,7 +39,7 @@ class CronQueue final : private Pg::AsyncConnectionHandler {
 	 * Was the queue disabled by the administrator?  Also used during
 	 * shutdown.
 	 */
-	bool disabled_admin = false;
+	bool enabled_admin = true;
 
 	/**
 	 * Is the queue disabled because the node is busy and all slots
@@ -74,8 +74,8 @@ public:
 		return result.GetOnlyStringChecked();
 	}
 
-	bool IsDisabled() const noexcept {
-		return disabled_admin || disabled_full;
+	bool IsEnabled() const noexcept {
+		return enabled_admin && !disabled_full;
 	}
 
 	/**
@@ -83,7 +83,7 @@ public:
 	 * shutdown).
 	 */
 	void DisableAdmin() noexcept {
-		disabled_admin = true;
+		enabled_admin = false;
 	}
 
 	/**

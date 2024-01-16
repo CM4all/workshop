@@ -40,10 +40,10 @@ class WorkshopQueue final : private Pg::AsyncConnectionHandler {
 	Pg::AsyncConnection db;
 
 	/**
-	 * Was the queue disabled by the administrator?  Also used during
-	 * shutdown.
+	 * Was the queue enabled by the administrator?  Also used
+	 * during shutdown.
 	 */
-	bool disabled_admin = false;
+	bool enabled_admin = true;
 
 	/**
 	 * Is the queue disabled because the node is busy and all slots
@@ -100,8 +100,8 @@ public:
 	void SetFilter(std::string &&plans_include, std::string &&plans_exclude,
 		       std::string &&plans_lowprio) noexcept;
 
-	bool IsDisabled() const noexcept {
-		return disabled_admin || disabled_full;
+	bool IsEnabled() const noexcept {
+		return enabled_admin && !disabled_full;
 	}
 
 	/**
@@ -109,7 +109,7 @@ public:
 	 * shutdown).
 	 */
 	void DisableAdmin() noexcept {
-		disabled_admin = true;
+		enabled_admin = false;
 	}
 
 	/**
