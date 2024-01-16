@@ -11,6 +11,8 @@
 #include "spawn/Client.hxx"
 #include "util/SpanCast.hxx"
 
+#include <fmt/core.h>
+
 #include <signal.h>
 
 Instance::Instance(const Config &config,
@@ -52,6 +54,8 @@ Instance::~Instance() noexcept = default;
 void
 Instance::Start()
 {
+	ReloadState();
+
 	for (auto &i : partitions)
 		i.Start();
 	for (auto &i : cron_partitions)
@@ -110,12 +114,24 @@ Instance::OnExit() noexcept
 }
 
 void
+Instance::ReloadState() noexcept
+{
+	for (auto &i : cron_partitions) {
+		const auto path = fmt::format("workshop/{}/enabled",
+					      i.GetName());
+		i.SetStateEnabled(state_directories.GetBool(path.c_str(), true));
+	}
+}
+
+void
 Instance::OnReload(int) noexcept
 {
 	logger(4, "reloading");
 
 	if (library)
 		UpdateLibraryAndFilter(true);
+
+	ReloadState();
 }
 
 void

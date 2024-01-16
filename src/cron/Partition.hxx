@@ -65,6 +65,10 @@ public:
 
 	void BeginShutdown() noexcept;
 
+	void SetStateEnabled(bool _enabled) noexcept {
+		queue.SetStateEnabled(_enabled);
+	}
+
 	void DisableQueue() noexcept {
 		queue.DisableAdmin();
 	}

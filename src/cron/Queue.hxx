@@ -35,6 +35,11 @@ class CronQueue final : private Pg::AsyncConnectionHandler {
 	FineTimerEvent scheduler_timer, claim_timer;
 
 	/**
+	 * Was the queue enabled by #StateDirectories?
+	 */
+	bool enabled_state = true;
+
+	/**
 	 * Was the queue enabled by the administrator?  Also used
 	 * during shutdown.
 	 */
@@ -74,8 +79,10 @@ public:
 	}
 
 	bool IsEnabled() const noexcept {
-		return enabled_admin && !disabled_full;
+		return enabled_state && enabled_admin && !disabled_full;
 	}
+
+	void SetStateEnabled(bool _enabled) noexcept;
 
 	/**
 	 * Disable the queue as an administrative decision (e.g. daemon

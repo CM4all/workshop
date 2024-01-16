@@ -37,6 +37,18 @@ CronQueue::CheckEnabled() noexcept
 }
 
 void
+CronQueue::SetStateEnabled(bool _enabled) noexcept
+{
+	if (_enabled == enabled_state)
+		return;
+
+	logger.Fmt(2, "SetStateEnabled {}", _enabled);
+
+	enabled_state = _enabled;
+	CheckEnabled();
+}
+
+void
 CronQueue::EnableAdmin() noexcept
 {
 	if (enabled_admin)

@@ -13,6 +13,7 @@
 #include "lib/curl/Init.hxx"
 #include "lib/curl/Global.hxx"
 #include "io/Logger.hxx"
+#include "io/StateDirectories.hxx"
 #include "config.h"
 
 #ifdef HAVE_LIBSYSTEMD
@@ -50,6 +51,8 @@ class Instance final : ControlHandler {
 	ScopeCurlInit curl_init;
 	CurlGlobal curl;
 
+	const StateDirectories state_directories;
+
 	std::unique_ptr<MultiLibrary> library;
 
 	std::forward_list<WorkshopPartition> partitions;
@@ -81,6 +84,8 @@ public:
 	void UpdateLibraryAndFilter(bool force) noexcept;
 
 private:
+	void ReloadState() noexcept;
+
 	void OnExit() noexcept;
 	void OnReload(int) noexcept;
 
