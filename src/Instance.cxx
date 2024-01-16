@@ -201,7 +201,7 @@ Instance::OnControlPacket([[maybe_unused]] ControlServer &control_server,
 		} else {
 			const std::string_view name = ToStringView(payload);
 			for (auto &i : cron_partitions) {
-				if (i.IsName(name)) {
+				if (name == i.GetName()) {
 					logger.Fmt(2, "Disabling queue '{}'", name);
 					i.DisableQueue();
 				}
@@ -223,7 +223,7 @@ Instance::OnControlPacket([[maybe_unused]] ControlServer &control_server,
 		} else {
 			const std::string_view name = ToStringView(payload);
 			for (auto &i : cron_partitions) {
-				if (i.IsName(name)) {
+				if (name == i.GetName()) {
 					logger.Fmt(2, "Enabling queue '{}'", name);
 					i.EnableQueue();
 				}

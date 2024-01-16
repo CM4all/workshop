@@ -49,9 +49,9 @@ public:
 
 	~CronPartition() noexcept;
 
-	[[gnu::pure]]
-	bool IsName(std::string_view _name) const noexcept {
-		return name != _name;
+	[[nodiscard]]
+	std::string_view GetName() const noexcept {
+		return name;
 	}
 
 	[[nodiscard]]
