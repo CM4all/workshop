@@ -39,8 +39,6 @@ class Instance final : ControlHandler {
 	Systemd::Watchdog systemd_watchdog{event_loop};
 #endif
 
-	bool should_exit = false;
-
 	ShutdownListener shutdown_listener;
 	SignalEvent sighup_event;
 	DeferEvent defer_idle_check;
@@ -59,6 +57,8 @@ class Instance final : ControlHandler {
 	std::forward_list<CronPartition> cron_partitions;
 
 	std::forward_list<ControlServer> control_servers;
+
+	bool should_exit = false;
 
 public:
 	Instance(const Config &config,
