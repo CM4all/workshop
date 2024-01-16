@@ -47,7 +47,7 @@ WorkshopPartition::OnRateLimitTimer() noexcept
 }
 
 void
-WorkshopPartition::UpdateFilter(bool library_modified)
+WorkshopPartition::UpdateFilter(bool library_modified) noexcept
 {
 	std::set<std::string_view, std::less<>> available_plans;
 	library.VisitAvailable(GetEventLoop().SteadyNow(),
@@ -81,14 +81,14 @@ WorkshopPartition::UpdateFilter(bool library_modified)
 }
 
 void
-WorkshopPartition::UpdateLibraryAndFilter(bool force)
+WorkshopPartition::UpdateLibraryAndFilter(bool force) noexcept
 {
 	instance.UpdateLibraryAndFilter(force);
 }
 
 bool
 WorkshopPartition::StartJob(WorkshopJob &&job,
-			    std::shared_ptr<Plan> plan)
+			    std::shared_ptr<Plan> plan) noexcept
 {
 	try {
 		workplace.Start(instance.GetEventLoop(), job, std::move(plan),

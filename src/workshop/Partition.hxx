@@ -54,41 +54,45 @@ public:
 			  const WorkshopPartitionConfig &config,
 			  BoundMethod<void() noexcept> _idle_callback) noexcept;
 
+	[[nodiscard]]
 	auto &GetEventLoop() const noexcept {
 		return queue.GetEventLoop();
 	}
 
-	bool IsIdle() const {
+	[[nodiscard]]
+	bool IsIdle() const noexcept {
 		return workplace.IsEmpty();
 	}
 
-	void Start() {
+	void Start() noexcept {
 		queue.Connect();
 	}
 
-	void BeginShutdown() {
+	void BeginShutdown() noexcept {
 		queue.DisableAdmin();
 	}
 
-	void DisableQueue() {
+	void DisableQueue() noexcept {
 		queue.DisableAdmin();
 	}
 
-	void EnableQueue() {
+	void EnableQueue() noexcept {
 		queue.EnableAdmin();
 	}
 
-	void UpdateFilter(bool library_modified=false);
-	void UpdateLibraryAndFilter(bool force);
+	void UpdateFilter(bool library_modified=false) noexcept;
+	void UpdateLibraryAndFilter(bool force) noexcept;
 
 private:
 	void OnRateLimitTimer() noexcept;
 
+	[[nodiscard]]
 	std::chrono::seconds CheckRateLimit(const char *plan_name,
 					    const Plan &plan) noexcept;
 
+	[[nodiscard]]
 	bool StartJob(WorkshopJob &&job,
-		      std::shared_ptr<Plan> plan);
+		      std::shared_ptr<Plan> plan) noexcept;
 
 	void OnReapTimer() noexcept;
 	void ScheduleReapFinished() noexcept;
