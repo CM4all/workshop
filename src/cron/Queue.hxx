@@ -36,8 +36,8 @@ class CronQueue final : private Pg::AsyncConnectionHandler {
 	FineTimerEvent scheduler_timer, claim_timer;
 
 	/**
-	 * Was the queue disabled by the administrator?  Also used during
-	 * shutdown.
+	 * Was the queue enabled by the administrator?  Also used
+	 * during shutdown.
 	 */
 	bool enabled_admin = true;
 
