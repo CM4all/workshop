@@ -7,7 +7,7 @@ cm4all-workshop (6.0.21) unstable; urgency=low
   * control: accept VERBOSE, DISABLE_QUEUE, ENABLE_QUEUE only from local clients
   * systemd: depend on "cm4all-spawn-accessory.socket", not ".service"
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Tue, 16 Jan 2024 21:46:34 +0100
 
 cm4all-workshop (6.0.20) unstable; urgency=low
 
