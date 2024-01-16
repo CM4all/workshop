@@ -2,8 +2,7 @@
 // Copyright CM4all GmbH
 // author: Max Kellermann <mk@cm4all.com>
 
-#ifndef CRON_QUEUE_HXX
-#define CRON_QUEUE_HXX
+#pragma once
 
 #include "event/DeferEvent.hxx"
 #include "event/FineTimerEvent.hxx"
@@ -116,6 +115,13 @@ public:
 
 private:
 	/**
+	 * Check whether the queue shall be enabled now, and do what
+	 * is needed to really enable it (after it was disabled and
+	 * may just have been enabled).
+	 */
+	void CheckEnabled() noexcept;
+
+	/**
 	 * Checks everything asynchronously: if the connection has failed,
 	 * schedule a reconnect.  If there are notifies, schedule a queue run.
 	 *
@@ -150,5 +156,3 @@ private:
 	void OnNotify(const char *name) override;
 	void OnError(std::exception_ptr e) noexcept override;
 };
-
-#endif

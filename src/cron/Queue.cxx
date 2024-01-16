@@ -30,16 +30,20 @@ CronQueue::CronQueue(const Logger &parent_logger,
 CronQueue::~CronQueue() noexcept = default;
 
 void
+CronQueue::CheckEnabled() noexcept
+{
+	if (IsEnabled() && db.IsReady())
+		ScheduleClaim();
+}
+
+void
 CronQueue::EnableAdmin() noexcept
 {
 	if (enabled_admin)
 		return;
 
 	enabled_admin = true;
-	if (!IsEnabled() || !db.IsReady())
-		return;
-
-	ScheduleClaim();
+	CheckEnabled();
 }
 
 void
@@ -49,10 +53,7 @@ CronQueue::EnableFull() noexcept
 		return;
 
 	disabled_full = false;
-	if (!IsEnabled() || !db.IsReady())
-		return;
-
-	ScheduleClaim();
+	CheckEnabled();
 }
 
 void
