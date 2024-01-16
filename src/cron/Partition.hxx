@@ -46,27 +46,29 @@ public:
 		      const CronPartitionConfig &config,
 		      BoundMethod<void() noexcept> _idle_callback);
 
-	~CronPartition();
+	~CronPartition() noexcept;
 
+	[[gnu::pure]]
 	bool IsName(std::string_view _name) const noexcept {
 		return name != nullptr && _name == name;
 	}
 
-	bool IsIdle() const {
+	[[nodiscard]]
+	bool IsIdle() const noexcept {
 		return workplace.IsEmpty();
 	}
 
-	void Start() {
+	void Start() noexcept {
 		queue.Connect();
 	}
 
-	void BeginShutdown();
+	void BeginShutdown() noexcept;
 
-	void DisableQueue() {
+	void DisableQueue() noexcept {
 		queue.DisableAdmin();
 	}
 
-	void EnableQueue() {
+	void EnableQueue() noexcept {
 		queue.EnableAdmin();
 	}
 
@@ -75,7 +77,7 @@ public:
 	}
 
 private:
-	void OnJob(CronJob &&job);
+	void OnJob(CronJob &&job) noexcept;
 
 	/* virtual methods from ExitListener */
 	void OnChildProcessExit(int status) noexcept override;

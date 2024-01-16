@@ -34,12 +34,10 @@ CronPartition::CronPartition(EventLoop &event_loop,
 {
 }
 
-CronPartition::~CronPartition()
-{
-}
+CronPartition::~CronPartition() noexcept = default;
 
 void
-CronPartition::BeginShutdown()
+CronPartition::BeginShutdown() noexcept
 {
 	queue.DisableAdmin();
 	workplace.CancelAll();
@@ -49,7 +47,7 @@ CronPartition::BeginShutdown()
 }
 
 void
-CronPartition::OnJob(CronJob &&job)
+CronPartition::OnJob(CronJob &&job) noexcept
 {
 	logger(4, "OnJob ", job.id);
 
