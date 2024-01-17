@@ -249,6 +249,11 @@ Instance::OnControlPacket([[maybe_unused]] BengControl::Server &control_server,
 		}
 
 		break;
+
+	case Command::RELOAD_STATE:
+		if (is_privileged)
+			ReloadState();
+		break;
 	}
 }
 
