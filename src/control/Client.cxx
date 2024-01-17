@@ -132,6 +132,8 @@ try {
 	} else if (StringIsEqual(command, "verbose")) {
 		Verbose(server, args);
 		return EXIT_SUCCESS;
+	} else if (StringIsEqual(command, "reload-state")) {
+		SimpleCommand(server, args, Command::RELOAD_STATE);
 	} else if (StringIsEqual(command, "disable-queue")) {
 		DisableQueue(server, args);
 	} else if (StringIsEqual(command, "enable-queue")) {
@@ -148,6 +150,7 @@ try {
 		   "\n"
 		   "Commands:\n"
 		   "  verbose LEVEL\n"
+		   "  reload-state\n"
 		   "  disable-queue [NAME]\n"
 		   "  enable-queue [NAME]\n"
 		   "  terminate-children TAG\n"
