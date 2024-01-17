@@ -21,28 +21,30 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+using namespace BengControl;
+
 struct Usage {
 	const char *msg = nullptr;
 };
 
 static void
 SimpleCommand(const char *server, ConstBuffer<const char *> args,
-	      BengProxy::ControlCommand cmd)
+	      Command cmd)
 {
 	if (!args.empty())
 		throw Usage{"Too many arguments"};
 
-	BengControlClient client{server};
+	Client client{server};
 	client.Send(cmd);
 }
 
 static void
 OptionalPayloadCommand(const char *server, ConstBuffer<const char *> args,
-		       BengProxy::ControlCommand cmd)
+		       Command cmd)
 {
-	BengControlClient client{server};
+	Client client{server};
 
-	BengControlBuilder builder;
+	Builder builder;
 
 	if (args.empty())
 		builder.Add(cmd);
@@ -56,7 +58,7 @@ OptionalPayloadCommand(const char *server, ConstBuffer<const char *> args,
 static void
 Nop(const char *server, ConstBuffer<const char *> args)
 {
-	SimpleCommand(server, args, BengProxy::ControlCommand::NOP);
+	SimpleCommand(server, args, Command::NOP);
 }
 
 static void
@@ -72,21 +74,21 @@ Verbose(const char *server, ConstBuffer<const char *> args)
 
 	uint8_t log_level = atoi(s);
 
-	BengControlClient client{server};
-	client.Send(BengProxy::ControlCommand::VERBOSE,
+	Client client{server};
+	client.Send(Command::VERBOSE,
 		    ReferenceAsBytes(log_level));
 }
 
 static void
 DisableQueue(const char *server, ConstBuffer<const char *> args)
 {
-	OptionalPayloadCommand(server, args, BengProxy::ControlCommand::DISABLE_QUEUE);
+	OptionalPayloadCommand(server, args, Command::DISABLE_QUEUE);
 }
 
 static void
 EnableQueue(const char *server, ConstBuffer<const char *> args)
 {
-	OptionalPayloadCommand(server, args, BengProxy::ControlCommand::ENABLE_QUEUE);
+	OptionalPayloadCommand(server, args, Command::ENABLE_QUEUE);
 }
 
 static void
@@ -95,11 +97,11 @@ TerminateChildren(const char *server, ConstBuffer<const char *> args)
 	if (args.empty())
 		throw Usage{"Tag missing"};
 
-	BengControlClient client{server};
+	Client client{server};
 
-	BengControlBuilder builder;
+	Builder builder;
 	for (const std::string_view tag : args)
-		builder.Add(BengProxy::ControlCommand::TERMINATE_CHILDREN, tag);
+		builder.Add(Command::TERMINATE_CHILDREN, tag);
 
 	client.Send(builder);
 }

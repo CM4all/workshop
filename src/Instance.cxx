@@ -43,7 +43,7 @@ Instance::Instance(const Config &config,
 					      config, i,
 					      BIND_THIS_METHOD(OnPartitionIdle));
 
-	ControlHandler &control_handler = *this;
+	BengControl::Handler &control_handler = *this;
 	for (const auto &i : config.control_listen)
 		control_servers.emplace_front(event_loop, i.Create(SOCK_DGRAM),
 					      control_handler);
@@ -157,38 +157,40 @@ Instance::RemoveIdlePartitions() noexcept
 }
 
 void
-Instance::OnControlPacket([[maybe_unused]] ControlServer &control_server,
-			  BengProxy::ControlCommand command,
+Instance::OnControlPacket([[maybe_unused]] BengControl::Server &control_server,
+			  BengControl::Command command,
 			  std::span<const std::byte> payload,
 			  [[maybe_unused]] std::span<UniqueFileDescriptor> fds,
 			  [[maybe_unused]] SocketAddress address,
 			  [[maybe_unused]] int uid)
 {
+	using namespace BengControl;
+
 	/* only local clients are allowed to use most commands */
 	const bool is_privileged = uid >= 0;
 
 	switch (command) {
-	case BengProxy::ControlCommand::NOP:
+	case Command::NOP:
 		break;
 
-	case BengProxy::ControlCommand::TCACHE_INVALIDATE:
-	case BengProxy::ControlCommand::DUMP_POOLS:
-	case BengProxy::ControlCommand::ENABLE_NODE:
-	case BengProxy::ControlCommand::FADE_NODE:
-	case BengProxy::ControlCommand::NODE_STATUS:
-	case BengProxy::ControlCommand::STATS:
-	case BengProxy::ControlCommand::FADE_CHILDREN:
-	case BengProxy::ControlCommand::DISABLE_ZEROCONF:
-	case BengProxy::ControlCommand::ENABLE_ZEROCONF:
-	case BengProxy::ControlCommand::FLUSH_NFS_CACHE:
-	case BengProxy::ControlCommand::FLUSH_FILTER_CACHE:
-	case BengProxy::ControlCommand::STOPWATCH_PIPE:
-	case BengProxy::ControlCommand::DISCARD_SESSION:
-	case BengProxy::ControlCommand::FLUSH_HTTP_CACHE:
+	case Command::TCACHE_INVALIDATE:
+	case Command::DUMP_POOLS:
+	case Command::ENABLE_NODE:
+	case Command::FADE_NODE:
+	case Command::NODE_STATUS:
+	case Command::STATS:
+	case Command::FADE_CHILDREN:
+	case Command::DISABLE_ZEROCONF:
+	case Command::ENABLE_ZEROCONF:
+	case Command::FLUSH_NFS_CACHE:
+	case Command::FLUSH_FILTER_CACHE:
+	case Command::STOPWATCH_PIPE:
+	case Command::DISCARD_SESSION:
+	case Command::FLUSH_HTTP_CACHE:
 		// not applicable
 		break;
 
-	case BengProxy::ControlCommand::VERBOSE:
+	case Command::VERBOSE:
 		if (is_privileged) {
 			const auto *log_level = (const uint8_t *)payload.data();
 			if (payload.size() != sizeof(*log_level))
@@ -198,13 +200,13 @@ Instance::OnControlPacket([[maybe_unused]] ControlServer &control_server,
 		}
 		break;
 
-	case BengProxy::ControlCommand::TERMINATE_CHILDREN:
+	case Command::TERMINATE_CHILDREN:
 		if (const auto tag = ToStringView(payload); !tag.empty())
 			for (auto &i : cron_partitions)
 				i.TerminateChildren(tag);
 		break;
 
-	case BengProxy::ControlCommand::DISABLE_QUEUE:
+	case Command::DISABLE_QUEUE:
 		if (!is_privileged)
 			break;
 
@@ -226,7 +228,7 @@ Instance::OnControlPacket([[maybe_unused]] ControlServer &control_server,
 
 		break;
 
-	case BengProxy::ControlCommand::ENABLE_QUEUE:
+	case Command::ENABLE_QUEUE:
 		if (!is_privileged)
 			break;
 

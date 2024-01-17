@@ -27,11 +27,11 @@ class UniqueSocketDescriptor;
 class SpawnServerClient;
 class CurlGlobal;
 class MultiLibrary;
-class ControlServer;
+namespace BengControl { class Server; }
 class WorkshopPartition;
 class CronPartition;
 
-class Instance final : ControlHandler {
+class Instance final : BengControl::Handler {
 	const RootLogger logger;
 
 	EventLoop event_loop;
@@ -59,7 +59,7 @@ class Instance final : ControlHandler {
 
 	std::forward_list<CronPartition> cron_partitions;
 
-	std::forward_list<ControlServer> control_servers;
+	std::forward_list<BengControl::Server> control_servers;
 
 	bool should_exit = false;
 
@@ -92,9 +92,9 @@ private:
 	void OnPartitionIdle() noexcept;
 	void RemoveIdlePartitions() noexcept;
 
-	/* virtual methods from ControlHandler */
-	void OnControlPacket(ControlServer &control_server,
-			     BengProxy::ControlCommand command,
+	/* virtual methods from BengControl::Handler */
+	void OnControlPacket(BengControl::Server &control_server,
+			     BengControl::Command command,
 			     std::span<const std::byte> payload,
 			     std::span<UniqueFileDescriptor> fds,
 			     SocketAddress address, int uid) override;
