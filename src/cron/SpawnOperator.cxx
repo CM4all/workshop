@@ -98,6 +98,5 @@ CronSpawnOperator::OnChildProcessExit(int status) noexcept
 	}
 
 	Finish(exit_status, log);
-	timeout_event.Cancel();
 	workplace.OnExit(this);
 }
