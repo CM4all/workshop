@@ -20,6 +20,8 @@ CronOperator::CronOperator(CronQueue &_queue, CronWorkplace &_workplace,
 	 start_time(std::move(_start_time)),
 	 timeout_event(_queue.GetEventLoop(), BIND_THIS_METHOD(OnTimeout))
 {
+	/* kill after 5 minutes */
+	timeout_event.Schedule(std::chrono::minutes(5));
 }
 
 void

@@ -33,9 +33,6 @@ CronCurlOperator::~CronCurlOperator() noexcept = default;
 void
 CronCurlOperator::Start()
 {
-	/* kill after 5 minutes */
-	timeout_event.Schedule(std::chrono::minutes(5));
-
 	request.Start();
 }
 
