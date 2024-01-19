@@ -16,5 +16,5 @@ struct CronJob {
 	 */
 	std::string notification;
 
-	Event::Duration timeout = std::chrono::minutes{5};
+	Event::Duration timeout{};
 };

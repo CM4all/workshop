@@ -30,7 +30,8 @@ CronPartition::CronPartition(EventLoop &event_loop,
 	 workplace(_spawn_service, email_service.get(), pond_socket,
 		   _curl, *this,
 		   root_config.concurrency),
-	 idle_callback(_idle_callback)
+	 idle_callback(_idle_callback),
+	 default_timeout(config.default_timeout)
 {
 }
 
@@ -50,6 +51,9 @@ void
 CronPartition::OnJob(CronJob &&job) noexcept
 {
 	logger(4, "OnJob ", job.id);
+
+	if (job.timeout.count() <= 0)
+		job.timeout = default_timeout;
 
 	if (!queue.Claim(job))
 		return;

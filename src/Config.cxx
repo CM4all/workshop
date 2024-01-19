@@ -5,6 +5,7 @@
 #include "Config.hxx"
 #include "spawn/ConfigParser.hxx"
 #include "debug.h"
+#include "pg/Interval.hxx"
 #include "system/Error.hxx"
 #include "io/config/FileLineParser.hxx"
 #include "io/config/ConfigParser.hxx"
@@ -192,6 +193,12 @@ WorkshopConfigParser::CronPartition::ParseLine(FileLineParser &line)
 							  5479);
 	} else if (strcmp(word, "tag") == 0) {
 		config.tag = line.ExpectValueAndEnd();
+	} else if (StringIsEqual(word, "default_timeout")) {
+		const auto default_timeout = Pg::ParseIntervalS(line.ExpectValueAndEnd());
+		if (default_timeout.count() <= 0)
+			throw LineParser::Error("Bad timeout");
+
+		config.default_timeout = default_timeout;
 	} else
 		throw LineParser::Error("Unknown option");
 }

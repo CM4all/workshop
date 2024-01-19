@@ -7,6 +7,7 @@
 #include "Queue.hxx"
 #include "Workplace.hxx"
 #include "spawn/ExitListener.hxx"
+#include "event/Chrono.hxx"
 #include "net/SocketAddress.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "io/Logger.hxx"
@@ -38,6 +39,8 @@ class CronPartition final : ExitListener {
 	CronWorkplace workplace;
 
 	BoundMethod<void() noexcept> idle_callback;
+
+	const Event::Duration default_timeout;
 
 public:
 	CronPartition(EventLoop &event_loop,

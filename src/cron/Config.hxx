@@ -2,9 +2,9 @@
 // Copyright CM4all GmbH
 // author: Max Kellermann <mk@cm4all.com>
 
-#ifndef CRON_CONFIG_HXX
-#define CRON_CONFIG_HXX
+#pragma once
 
+#include "event/Chrono.hxx"
 #include "net/AllocatedSocketAddress.hxx"
 
 #include <string>
@@ -32,9 +32,9 @@ struct CronPartitionConfig {
 	 */
 	AllocatedSocketAddress pond_server;
 
+	Event::Duration default_timeout;
+
 	explicit CronPartitionConfig(std::string &&_name):name(std::move(_name)) {}
 
 	void Check() const;
 };
-
-#endif
