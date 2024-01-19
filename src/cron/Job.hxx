@@ -2,8 +2,9 @@
 // Copyright CM4all GmbH
 // author: Max Kellermann <mk@cm4all.com>
 
-#ifndef CRON_JOB_HXX
-#define CRON_JOB_HXX
+#pragma once
+
+#include "event/Chrono.hxx"
 
 #include <string>
 
@@ -14,6 +15,6 @@ struct CronJob {
 	 * Email address to receive notification.
 	 */
 	std::string notification;
-};
 
-#endif
+	Event::Duration timeout = std::chrono::minutes{5};
+};
