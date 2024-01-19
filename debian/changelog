@@ -1,6 +1,7 @@
 cm4all-workshop (6.0.22) unstable; urgency=low
 
   * cron: set the HOME environment variable
+  * state: change path to "workshop/cron/NAME/enabled"
   * control: add packet RELOAD_STATE
 
  --   
