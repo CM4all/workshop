@@ -58,6 +58,12 @@ CronOperator::Finish(int exit_status, const char *log) noexcept
 }
 
 void
+CronOperator::InvokeExit() noexcept
+{
+	workplace.OnExit(this);
+}
+
+void
 CronOperator::OnTimeout() noexcept
 {
 	logger(2, "Timeout");

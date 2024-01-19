@@ -98,5 +98,5 @@ CronSpawnOperator::OnChildProcessExit(int status) noexcept
 	}
 
 	Finish(exit_status, log);
-	workplace.OnExit(this);
+	InvokeExit();
 }

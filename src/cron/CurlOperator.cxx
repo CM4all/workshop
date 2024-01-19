@@ -71,7 +71,7 @@ CronCurlOperator::OnEnd()
 		: nullptr;
 
 	Finish(static_cast<int>(status), log);
-	workplace.OnExit(this);
+	InvokeExit();
 }
 
 void
@@ -80,5 +80,5 @@ CronCurlOperator::OnError(std::exception_ptr ep) noexcept
 	PrintException(ep);
 
 	Finish(-1, GetFullMessage(ep).c_str());
-	workplace.OnExit(this);
+	InvokeExit();
 }

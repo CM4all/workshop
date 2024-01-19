@@ -66,6 +66,7 @@ public:
 
 protected:
 	void Finish(int exit_status, const char *log) noexcept;
+	void InvokeExit() noexcept;
 
 private:
 	void OnTimeout() noexcept;
