@@ -122,6 +122,9 @@ MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
 		throw;
 	}
 
+	if (response.timeout.count() > 0)
+		job.timeout = response.timeout;
+
 	/* create operator object */
 
 	auto o = std::make_unique<CronSpawnOperator>(queue, workplace,
