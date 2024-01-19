@@ -40,7 +40,6 @@ void
 CronCurlOperator::OnHeaders(HttpStatus _status, Curl::Headers &&headers)
 {
 	status = _status;
-	(void)headers;
 
 	const auto ct = headers.find("content-type");
 	if (ct != headers.end()) {
