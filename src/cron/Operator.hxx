@@ -22,13 +22,15 @@ class CronOperator
 	: public IntrusiveListHook<IntrusiveHookMode::NORMAL>,
 	  LoggerDomainFactory
 {
-protected:
 	CronQueue &queue;
 	CronWorkplace &workplace;
+
+protected:
 	const CronJob job;
 
 	LazyDomainLogger logger;
 
+private:
 	const std::string tag;
 
 	const std::string start_time;
