@@ -55,7 +55,8 @@ try {
 
 	if (p.ns.mount.home != nullptr) {
 		/* change to home directory (if one was set) */
-		p.chdir = p.ns.mount.GetJailedHome();
+		if (p.chdir == nullptr)
+			p.chdir = p.ns.mount.GetJailedHome();
 
 		p.SetEnv("HOME", p.ns.mount.GetJailedHome());
 	}
