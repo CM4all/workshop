@@ -682,6 +682,16 @@ The client is allowed to execute the following operations:
 * Delete records.
 
 
+State Directories
+-----------------
+
+- :file:`workshop/NAME/enabled` (boolean): enable or
+  disable the Cron partition with the specified name.
+
+For a description of this feature, read
+https://beng-proxy.readthedocs.io/en/latest/state.html
+
+
 Security
 ========
 
