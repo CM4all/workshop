@@ -199,13 +199,13 @@ MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 		if (response.execute == nullptr)
 			throw std::runtime_error("No EXECUTE from translation server");
 
-		p.args.push_back(alloc.Dup(response.execute));
+		p.args.push_back(response.execute);
 
 		for (const char *arg : response.args) {
 			if (p.args.size() >= 4096)
 				throw std::runtime_error("Too many APPEND packets from translation server");
 
-			p.args.push_back(alloc.Dup(arg));
+			p.args.push_back(arg);
 		}
 	}
 
