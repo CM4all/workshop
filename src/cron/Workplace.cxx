@@ -148,7 +148,7 @@ IsURL(std::string_view command) noexcept
 		command.starts_with("https://"sv);
 }
 
-static Co::Task<std::unique_ptr<CronOperator>>
+static std::unique_ptr<CronOperator>
 MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 		  SocketDescriptor pond_socket,
 		  LazyDomainLogger &logger,
@@ -209,7 +209,7 @@ MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 	o->Spawn(event_loop, spawn_service,
 		 job.id.c_str(), site,
 		 std::move(p), pond_socket);
-	co_return std::unique_ptr<CronOperator>(std::move(o));
+	return std::unique_ptr<CronOperator>(std::move(o));
 }
 
 static std::unique_ptr<CronOperator>
@@ -264,11 +264,11 @@ MakeOperator(EventLoop &event_loop, SpawnService &spawn_service,
 		co_return MakeCurlOperator(curl_global, logger,
 					   job.command.c_str());
 	else
-		co_return co_await MakeSpawnOperator(event_loop, spawn_service, pond_socket,
-						     logger,
-						     job,
-						     uri == nullptr ? job.command.c_str() : nullptr,
-						     response);
+		co_return MakeSpawnOperator(event_loop, spawn_service, pond_socket,
+					    logger,
+					    job,
+					    uri == nullptr ? job.command.c_str() : nullptr,
+					    response);
 }
 
 inline Co::InvokeTask
