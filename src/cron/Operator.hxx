@@ -7,8 +7,6 @@
 #include "Job.hxx"
 #include "io/Logger.hxx"
 
-#include <string>
-
 class ChildProcessRegistry;
 class CronHandler;
 struct CronResult;
@@ -26,21 +24,13 @@ protected:
 
 	LazyDomainLogger logger;
 
-private:
-	const std::string tag;
-
 public:
-	CronOperator(CronHandler &_handler, CronJob &&_job,
-		     std::string_view _tag) noexcept;
+	CronOperator(CronHandler &_handler, CronJob &&_job) noexcept;
 
 	virtual ~CronOperator() noexcept = default;
 
 	CronOperator(const CronOperator &other) = delete;
 	CronOperator &operator=(const CronOperator &other) = delete;
-
-	bool IsTag(std::string_view _tag) const noexcept {
-		return tag == _tag;
-	}
 
 protected:
 	void Finish(const CronResult &result) noexcept;

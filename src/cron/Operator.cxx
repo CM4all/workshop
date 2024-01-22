@@ -11,11 +11,9 @@
 using std::string_view_literals::operator""sv;
 
 CronOperator::CronOperator(CronHandler &_handler,
-			   CronJob &&_job,
-			   std::string_view _tag) noexcept
+			   CronJob &&_job) noexcept
 	:handler(_handler), job(std::move(_job)),
-	 logger(*this),
-	 tag(_tag)
+	 logger(*this)
 {
 }
 

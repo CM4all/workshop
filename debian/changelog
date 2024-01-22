@@ -4,6 +4,7 @@ cm4all-workshop (6.0.22) unstable; urgency=low
   * cron: set CHDIR only if not set by translation server
   * cron: allow translation server to specify timeout
   * cron: add setting "default_timeout"
+  * cron: TERMINATE_CHILDREN cancels HTTP requests
   * state: change path to "workshop/cron/NAME/enabled"
   * control: add packet RELOAD_STATE
 

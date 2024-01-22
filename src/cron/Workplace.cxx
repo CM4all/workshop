@@ -41,6 +41,8 @@ class CronWorkplace::Running final : public IntrusiveListHook<>, CronHandler {
 	Co::InvokeTask task;
 	std::unique_ptr<CronOperator> op;
 
+	std::string tag;
+
 public:
 	Running(CronQueue &_queue, CronWorkplace &_workplace,
 		CronJob &&_job, std::string &&_start_time) noexcept
@@ -55,7 +57,7 @@ public:
 	}
 
 	bool IsTag(std::string_view _tag) const noexcept {
-		return op && op->IsTag(_tag);
+		return tag == _tag;
 	}
 
 	void Start(SocketAddress translation_socket,
@@ -196,8 +198,7 @@ MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 
 	auto o = std::make_unique<CronSpawnOperator>(handler,
 						     spawn_service,
-						     std::move(job),
-						     response.child_options.tag);
+						     std::move(job));
 	o->Spawn(event_loop, std::move(p), pond_socket);
 	co_return std::unique_ptr<CronOperator>(std::move(o));
 }
@@ -220,6 +221,7 @@ MakeOperator(EventLoop &event_loop, SpawnService &spawn_service,
 	     CronHandler &handler,
 	     SocketAddress translation_socket,
 	     CurlGlobal &curl_global,
+	     std::string &tag_r,
 	     std::string_view partition_name, const char *listener_tag,
 	     CronJob job)
 {
@@ -248,6 +250,9 @@ MakeOperator(EventLoop &event_loop, SpawnService &spawn_service,
 		std::throw_with_nested(std::runtime_error("Translation failed"));
 	}
 
+	if (!response.child_options.tag.empty())
+		tag_r = response.child_options.tag;
+
 	if (IsURL(command))
 		co_return MakeCurlOperator(handler, curl_global,
 					   std::move(job), command.c_str());
@@ -269,6 +274,7 @@ CronWorkplace::Running::CoStart(SocketAddress translation_socket,
 				   workplace.GetPondSocket(),
 				   *this,
 				   translation_socket, workplace.curl,
+				   tag,
 				   partition_name, listener_tag,
 				   CronJob{job});
 }

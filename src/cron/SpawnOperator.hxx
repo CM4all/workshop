@@ -31,8 +31,7 @@ class CronSpawnOperator final
 public:
 	CronSpawnOperator(CronHandler &_handler,
 			  SpawnService &_spawn_service,
-			  CronJob &&_job,
-			  std::string_view _tag) noexcept;
+			  CronJob &&_job) noexcept;
 	~CronSpawnOperator() noexcept override;
 
 	void Spawn(EventLoop &event_loop,

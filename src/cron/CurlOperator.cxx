@@ -16,11 +16,9 @@ using std::string_view_literals::operator""sv;
 
 CronCurlOperator::CronCurlOperator(CronHandler &_handler,
 				   CronJob &&_job,
-			   CurlGlobal &_global,
+				   CurlGlobal &_global,
 				   const char *url) noexcept
-	:CronOperator(_handler,
-		      std::move(_job),
-		      {}),
+	:CronOperator(_handler, std::move(_job)),
 	 request(_global, url, *this)
 {
 }
