@@ -8,6 +8,7 @@
 #include "spawn/ExitListener.hxx"
 
 #include <memory>
+#include <string_view>
 
 struct PreparedChildProcess;
 class EventLoop;
@@ -31,6 +32,7 @@ public:
 	~CronSpawnOperator() noexcept override;
 
 	void Spawn(EventLoop &event_loop, SpawnService &spawn_service,
+		   const char *name, std::string_view site,
 		   PreparedChildProcess &&p, SocketDescriptor pond_socket);
 
 public:

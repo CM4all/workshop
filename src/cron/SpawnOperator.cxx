@@ -25,6 +25,7 @@ CronSpawnOperator::~CronSpawnOperator() noexcept = default;
 
 void
 CronSpawnOperator::Spawn(EventLoop &event_loop, SpawnService &spawn_service,
+			 const char *name, std::string_view site,
 			 PreparedChildProcess &&p,
 			 SocketDescriptor pond_socket)
 {
@@ -42,7 +43,7 @@ CronSpawnOperator::Spawn(EventLoop &event_loop, SpawnService &spawn_service,
 								   std::move(r),
 								   8192,
 								   pond_socket,
-								   job.account_id);
+								   site);
 	}
 
 	if (p.ns.mount.home != nullptr) {
@@ -53,7 +54,7 @@ CronSpawnOperator::Spawn(EventLoop &event_loop, SpawnService &spawn_service,
 		p.SetEnv("HOME", p.ns.mount.GetJailedHome());
 	}
 
-	pid = spawn_service.SpawnChildProcess(job.id.c_str(),
+	pid = spawn_service.SpawnChildProcess(name,
 					      std::move(p));
 	pid->SetExitListener(*this);
 
