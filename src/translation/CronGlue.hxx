@@ -6,12 +6,15 @@
 
 #include <string_view>
 
+namespace Co { template<typename T> class Task; }
 struct TranslateResponse;
+class EventLoop;
 class SocketAddress;
 class AllocatorPtr;
 
-TranslateResponse
-TranslateCron(AllocatorPtr alloc, SocketAddress socket_path,
+Co::Task<TranslateResponse>
+TranslateCron(EventLoop &event_loop,
+	      AllocatorPtr alloc, SocketAddress socket_path,
 	      std::string_view partition_name,
 	      const char *listener_tag,
 	      const char *user, const char *uri, const char *param);

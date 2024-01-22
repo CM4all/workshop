@@ -9,7 +9,9 @@
 #include "translation/Protocol.hxx"
 #include "translation/Response.hxx"
 #include "AllocatorPtr.hxx"
+#include "event/AwaitableSocketEvent.hxx"
 #include "net/SocketDescriptor.hxx"
+#include "co/Task.hxx"
 
 #include <stdexcept>
 
@@ -46,13 +48,15 @@ SendTranslateCron(SocketDescriptor s,
 	SendFull(s, m.Commit());
 }
 
-TranslateResponse
-TranslateCron(AllocatorPtr alloc, SocketDescriptor s,
+Co::Task<TranslateResponse>
+TranslateCron(EventLoop &event_loop,
+	      AllocatorPtr alloc, SocketDescriptor s,
 	      std::string_view partition_name,
 	      const char *listener_tag,
 	      const char *user, const char *uri,
 	      const char *param)
 {
 	SendTranslateCron(s, partition_name, listener_tag, user, uri, param);
-	return ReceiveTranslateResponse(alloc, s);
+	co_await AwaitableSocketEvent(event_loop, s, SocketEvent::READ);
+	co_return ReceiveTranslateResponse(alloc, s);
 }

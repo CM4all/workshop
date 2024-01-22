@@ -88,12 +88,12 @@ IsURL(std::string_view command) noexcept
 		command.starts_with("https://"sv);
 }
 
-static std::unique_ptr<CronOperator>
+static Co::Task<std::unique_ptr<CronOperator>>
 MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
 		  SocketAddress translation_socket,
 		  std::string_view partition_name, const char *listener_tag,
-		  CronJob &&job, const char *command,
-		  std::string &&start_time)
+		  CronJob job, const char *command,
+		  std::string start_time)
 {
 	const char *uri = StringStartsWith(command, "urn:")
 		? command
@@ -113,13 +113,15 @@ MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
 
 	TranslateResponse response;
 	try {
-		response = TranslateCron(alloc, translation_socket,
-					 partition_name, listener_tag,
-					 job.account_id.c_str(),
-					 uri,
-					 job.translate_param.empty()
-					 ? nullptr
-					 : job.translate_param.c_str());
+		response = co_await
+			TranslateCron(queue.GetEventLoop(),
+				      alloc, translation_socket,
+				      partition_name, listener_tag,
+				      job.account_id.c_str(),
+				      uri,
+				      job.translate_param.empty()
+				      ? nullptr
+				      : job.translate_param.c_str());
 	} catch (...) {
 		std::throw_with_nested(std::runtime_error("Translation failed"));
 	}
@@ -164,7 +166,7 @@ MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
 						     response.child_options.tag,
 						     std::move(start_time));
 	o->Spawn(std::move(p), workplace.GetPondSocket());
-	return std::unique_ptr<CronOperator>(std::move(o));
+	co_return std::unique_ptr<CronOperator>(std::move(o));
 }
 
 static std::unique_ptr<CronOperator>
@@ -194,14 +196,15 @@ MakeOperator(CronQueue &queue, CronWorkplace &workplace,
 	   c_str() pointer */
 	const auto command = job.command;
 
-	co_return IsURL(command)
-		? MakeCurlOperator(queue, workplace, curl_global,
-				   std::move(job), command.c_str(),
-				   std::move(start_time))
-		: MakeSpawnOperator(queue, workplace, translation_socket,
-				    partition_name, listener_tag,
-				    std::move(job), command.c_str(),
-				    std::move(start_time));
+	if (IsURL(command))
+		co_return MakeCurlOperator(queue, workplace, curl_global,
+					   std::move(job), command.c_str(),
+					   std::move(start_time));
+	else
+		co_return co_await MakeSpawnOperator(queue, workplace, translation_socket,
+						     partition_name, listener_tag,
+						     std::move(job), command.c_str(),
+						     std::move(start_time));
 }
 
 inline Co::InvokeTask

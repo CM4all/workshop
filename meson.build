@@ -184,11 +184,15 @@ translation2 = static_library(
   'src/translation/Send.cxx',
   'src/translation/SpawnClient.cxx',
   include_directories: inc,
+  dependencies: [
+    coroutines_dep,
+  ],
 )
 
 translation_dep = declare_dependency(
   link_with: translation2,
   dependencies: [
+    coroutines_dep,
     translation_dep,
   ],
 )
