@@ -44,8 +44,9 @@ CronWorkplace::~CronWorkplace() noexcept
 	assert(operators.empty());
 }
 
+[[gnu::pure]]
 static bool
-IsURL(const char *command)
+IsURL(const char *command) noexcept
 {
 	return StringStartsWith(command, "http://") ||
 		StringStartsWith(command, "https://");
