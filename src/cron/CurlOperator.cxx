@@ -4,7 +4,6 @@
 
 #include "CurlOperator.hxx"
 #include "Result.hxx"
-#include "Workplace.hxx"
 #include "CaptureBuffer.hxx"
 #include "util/PrintException.hxx"
 #include "util/SpanCast.hxx"

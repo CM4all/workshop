@@ -3,7 +3,6 @@
 // author: Max Kellermann <mk@cm4all.com>
 
 #include "SpawnOperator.hxx"
-#include "Workplace.hxx"
 #include "Result.hxx"
 #include "PipePondAdapter.hxx"
 #include "spawn/Interface.hxx"

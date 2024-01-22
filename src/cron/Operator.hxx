@@ -36,8 +36,6 @@ protected:
 	void Finish(const CronResult &result) noexcept;
 
 private:
-	void OnTimeout() noexcept;
-
 	/* virtual methods from LoggerDomainFactory */
 	std::string MakeLoggerDomain() const noexcept;
 };
