@@ -198,11 +198,6 @@ MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 
 	response.child_options.CopyTo(p);
 
-	/* TODO
-	if (response.timeout.count() > 0)
-		job.timeout = response.timeout;
-	*/
-
 	/* create operator object */
 
 	std::string_view site = job.account_id;
@@ -258,6 +253,9 @@ CronWorkplace::Running::MakeOperator(SocketAddress translation_socket,
 
 	if (!response.child_options.tag.empty())
 		tag = response.child_options.tag;
+
+	if (response.timeout.count() > 0)
+		timeout_event.Schedule(response.timeout);
 
 	if (IsURL(job.command))
 		co_return MakeCurlOperator(workplace.curl, logger,
