@@ -200,7 +200,7 @@ MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 
 	/* create operator object */
 
-	auto o = std::make_unique<CronSpawnOperator>(job, logger);
+	auto o = std::make_unique<CronSpawnOperator>(logger);
 	o->Spawn(event_loop, spawn_service,
 		 job.id.c_str(), job.account_id,
 		 std::move(p), pond_socket);
@@ -210,9 +210,9 @@ MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 static std::unique_ptr<CronOperator>
 MakeCurlOperator(CurlGlobal &curl_global,
 		 LazyDomainLogger &logger,
-		 const CronJob &job, const char *url)
+		 const char *url)
 {
-	auto o = std::make_unique<CronCurlOperator>(job, logger,
+	auto o = std::make_unique<CronCurlOperator>(logger,
 						    curl_global, url);
 	o->Start();
 	return std::unique_ptr<CronOperator>(std::move(o));
@@ -254,7 +254,7 @@ MakeOperator(EventLoop &event_loop, SpawnService &spawn_service,
 
 	if (IsURL(job.command))
 		co_return MakeCurlOperator(curl_global, logger,
-					   job, job.command.c_str());
+					   job.command.c_str());
 	else
 		co_return co_await MakeSpawnOperator(event_loop, spawn_service, pond_socket,
 						     logger,

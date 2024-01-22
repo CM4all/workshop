@@ -26,7 +26,7 @@ class CronCurlOperator final
 	std::unique_ptr<CaptureBuffer> output_capture;
 
 public:
-	CronCurlOperator(const CronJob &_job, LazyDomainLogger &_logger,
+	CronCurlOperator(LazyDomainLogger &_logger,
 			 CurlGlobal &_global,
 			 const char *url) noexcept;
 	~CronCurlOperator() noexcept override;

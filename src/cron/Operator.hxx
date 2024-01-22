@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "Job.hxx"
 #include "Result.hxx"
 #include "io/Logger.hxx"
 #include "co/AwaitableHelper.hxx"
@@ -24,12 +23,10 @@ class CronOperator
 	friend Awaitable;
 
 protected:
-	const CronJob &job;
-
 	LazyDomainLogger &logger;
 
-	explicit CronOperator(const CronJob &_job, LazyDomainLogger &_logger) noexcept
-		:job(std::move(_job)), logger(_logger) {}
+	explicit CronOperator(LazyDomainLogger &_logger) noexcept
+		:logger(_logger) {}
 
 public:
 	virtual ~CronOperator() noexcept = default;

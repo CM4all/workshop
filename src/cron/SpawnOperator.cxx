@@ -15,9 +15,8 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-CronSpawnOperator::CronSpawnOperator(const CronJob &_job,
-				     LazyDomainLogger &_logger) noexcept
-	:CronOperator(_job, _logger)
+CronSpawnOperator::CronSpawnOperator(LazyDomainLogger &_logger) noexcept
+	:CronOperator(_logger)
 {
 }
 

@@ -28,7 +28,7 @@ class CronSpawnOperator final
 	std::unique_ptr<PipeCaptureBuffer> output_capture;
 
 public:
-	CronSpawnOperator(const CronJob &_job, LazyDomainLogger &_logger) noexcept;
+	explicit CronSpawnOperator(LazyDomainLogger &_logger) noexcept;
 	~CronSpawnOperator() noexcept override;
 
 	void Spawn(EventLoop &event_loop, SpawnService &spawn_service,
