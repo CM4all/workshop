@@ -14,16 +14,14 @@
 
 using std::string_view_literals::operator""sv;
 
-CronCurlOperator::CronCurlOperator(CronQueue &_queue,
-				   CronWorkplace &_workplace,
+CronCurlOperator::CronCurlOperator(EventLoop &event_loop,
+				   CronHandler &_handler,
 				   CronJob &&_job,
-				   std::string &&_start_time,
-				   CurlGlobal &_global,
+			   CurlGlobal &_global,
 				   const char *url) noexcept
-	:CronOperator(_queue, _workplace,
+	:CronOperator(event_loop, _handler,
 		      std::move(_job),
-		      {},
-		      std::move(_start_time)),
+		      {}),
 	 request(_global, url, *this)
 {
 }

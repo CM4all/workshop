@@ -16,16 +16,14 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-CronSpawnOperator::CronSpawnOperator(CronQueue &_queue,
-				     CronWorkplace &_workplace,
+CronSpawnOperator::CronSpawnOperator(EventLoop &event_loop,
+				     CronHandler &_handler,
 				     SpawnService &_spawn_service,
 				     CronJob &&_job,
-				     std::string_view _tag,
-				     std::string &&_start_time) noexcept
-	:CronOperator(_queue, _workplace,
+				     std::string_view _tag) noexcept
+	:CronOperator(event_loop, _handler,
 		      std::move(_job),
-		      _tag,
-		      std::move(_start_time)),
+		      _tag),
 	 spawn_service(_spawn_service)
 {
 }

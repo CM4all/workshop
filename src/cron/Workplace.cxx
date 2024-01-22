@@ -6,6 +6,8 @@
 #include "Queue.hxx"
 #include "Job.hxx"
 #include "Result.hxx"
+#include "Notification.hxx"
+#include "Handler.hxx"
 #include "SpawnOperator.hxx"
 #include "CurlOperator.hxx"
 #include "AllocatorPtr.hxx"
@@ -27,36 +29,73 @@
 
 using std::string_view_literals::operator""sv;
 
-class CronWorkplace::Starting final : public IntrusiveListHook<> {
+class CronWorkplace::Running final : public IntrusiveListHook<>, CronHandler {
 	CronQueue &queue;
 	CronWorkplace &workplace;
 	const CronJob job;
 	const std::string start_time;
+
 	Co::InvokeTask task;
+	std::unique_ptr<CronOperator> op;
 
 public:
-	Starting(CronQueue &_queue, CronWorkplace &_workplace,
-		 CronJob &&_job, std::string &&_start_time,
-		 Co::InvokeTask &&_task) noexcept
+	Running(CronQueue &_queue, CronWorkplace &_workplace,
+		CronJob &&_job, std::string &&_start_time) noexcept
 		:queue(_queue), workplace(_workplace),
-		 job(std::move(_job)), start_time(std::move(_start_time)),
-		 task(std::move(_task)) {}
+		 job(std::move(_job)),
+		 start_time(std::move(_start_time)) {}
 
-	void Start() noexcept {
+	bool IsTag(std::string_view _tag) const noexcept {
+		return op && op->IsTag(_tag);
+	}
+
+	void Start(SocketAddress translation_socket,
+		   std::string_view partition_name,
+		   const char *listener_tag) noexcept {
+		task = CoStart(translation_socket, partition_name, listener_tag);
 		task.Start(BIND_THIS_METHOD(OnCompletion));
 	}
 
+	void Cancel() noexcept {
+		OnFinish(CronResult::Error("Canceled"sv));
+	}
+
 private:
+	Co::InvokeTask CoStart(SocketAddress translation_socket,
+			       std::string_view partition_name,
+			       const char *listener_tag);
+
 	void OnCompletion(std::exception_ptr error) noexcept {
 		if (error) {
-			queue.Finish(job);
-			queue.InsertResult(job, start_time.c_str(),
-					   CronResult::Error(error));
+			OnFinish(CronResult::Error(error));
+			OnExit();
+			return;
 		}
 
+		// the CronOperator will invoke OnExit() 
+		assert(op);
+	}
+
+	// virtual methods from class CronHandler
+	void OnFinish(const CronResult &result) noexcept override;
+
+	void OnExit() noexcept override {
 		workplace.OnCompletion(*this);
 	}
 };
+
+void
+CronWorkplace::Running::OnFinish(const CronResult &result) noexcept
+{
+	if (!job.notification.empty()) {
+		auto *es = workplace.GetEmailService();
+		if (es != nullptr)
+			SendNotificationEmail(*es, job, result);
+	}
+
+	queue.Finish(job);
+	queue.InsertResult(job, start_time.c_str(), result);
+}
 
 CronWorkplace::CronWorkplace(SpawnService &_spawn_service,
 			     EmailService *_email_service,
@@ -76,8 +115,7 @@ CronWorkplace::CronWorkplace(SpawnService &_spawn_service,
 
 CronWorkplace::~CronWorkplace() noexcept
 {
-	assert(operators.empty());
-	assert(starting.empty());
+	assert(running.empty());
 }
 
 [[gnu::pure]]
@@ -89,11 +127,12 @@ IsURL(std::string_view command) noexcept
 }
 
 static Co::Task<std::unique_ptr<CronOperator>>
-MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
+MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
+		  SocketDescriptor pond_socket,
+		  CronHandler &handler,
 		  SocketAddress translation_socket,
 		  std::string_view partition_name, const char *listener_tag,
-		  CronJob job, const char *command,
-		  std::string start_time)
+		  CronJob job, const char *command)
 {
 	const char *uri = StringStartsWith(command, "urn:")
 		? command
@@ -114,7 +153,7 @@ MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
 	TranslateResponse response;
 	try {
 		response = co_await
-			TranslateCron(queue.GetEventLoop(),
+			TranslateCron(event_loop,
 				      alloc, translation_socket,
 				      partition_name, listener_tag,
 				      job.account_id.c_str(),
@@ -160,66 +199,62 @@ MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
 
 	/* create operator object */
 
-	auto o = std::make_unique<CronSpawnOperator>(queue, workplace,
-						     workplace.GetSpawnService(),
+	auto o = std::make_unique<CronSpawnOperator>(event_loop, handler,
+						     spawn_service,
 						     std::move(job),
-						     response.child_options.tag,
-						     std::move(start_time));
-	o->Spawn(std::move(p), workplace.GetPondSocket());
+						     response.child_options.tag);
+	o->Spawn(std::move(p), pond_socket);
 	co_return std::unique_ptr<CronOperator>(std::move(o));
 }
 
 static std::unique_ptr<CronOperator>
-MakeCurlOperator(CronQueue &queue, CronWorkplace &workplace,
+MakeCurlOperator(EventLoop &event_loop, CronHandler &handler,
 		 CurlGlobal &curl_global,
-		 CronJob &&job, const char *url,
-		 std::string &&start_time)
+		 CronJob &&job, const char *url)
 {
-	auto o = std::make_unique<CronCurlOperator>(queue, workplace,
+	auto o = std::make_unique<CronCurlOperator>(event_loop, handler,
 						    std::move(job),
-						    std::move(start_time),
 						    curl_global, url);
 	o->Start();
 	return std::unique_ptr<CronOperator>(std::move(o));
 }
 
 static Co::Task<std::unique_ptr<CronOperator>>
-MakeOperator(CronQueue &queue, CronWorkplace &workplace,
+MakeOperator(EventLoop &event_loop, SpawnService &spawn_service,
+	     SocketDescriptor pond_socket,
+	     CronHandler &handler,
 	     SocketAddress translation_socket,
 	     CurlGlobal &curl_global,
 	     std::string_view partition_name, const char *listener_tag,
 	     CronJob job)
 {
-	auto start_time = queue.GetNow();
-
 	/* need a copy because the std::move(job) below may invalidate the
 	   c_str() pointer */
 	const auto command = job.command;
 
 	if (IsURL(command))
-		co_return MakeCurlOperator(queue, workplace, curl_global,
-					   std::move(job), command.c_str(),
-					   std::move(start_time));
+		co_return MakeCurlOperator(event_loop, handler, curl_global,
+					   std::move(job), command.c_str());
 	else
-		co_return co_await MakeSpawnOperator(queue, workplace, translation_socket,
+		co_return co_await MakeSpawnOperator(event_loop, spawn_service, pond_socket,
+						     handler,
+						     translation_socket,
 						     partition_name, listener_tag,
-						     std::move(job), command.c_str(),
-						     std::move(start_time));
+						     std::move(job), command.c_str());
 }
 
 inline Co::InvokeTask
-CronWorkplace::CoStart(CronQueue &queue,
-		       SocketAddress translation_socket,
-		       std::string_view partition_name,
-		       const char *listener_tag,
-		       CronJob job)
+CronWorkplace::Running::CoStart(SocketAddress translation_socket,
+				std::string_view partition_name,
+				const char *listener_tag)
 {
-	auto o = co_await MakeOperator(queue, *this,
-				       translation_socket, curl,
-				       partition_name, listener_tag,
-				       std::move(job));
-
-	operators.push_back(*o.release());
+	op = co_await MakeOperator(queue.GetEventLoop(),
+				   workplace.GetSpawnService(),
+				   workplace.GetPondSocket(),
+				   *this,
+				   translation_socket, workplace.curl,
+				   partition_name, listener_tag,
+				   CronJob{job});
 }
 
 void
@@ -227,31 +262,19 @@ CronWorkplace::Start(CronQueue &queue, SocketAddress translation_socket,
 		     std::string_view partition_name, const char *listener_tag,
 		     CronJob &&job)
 {
-	CronJob copy{job};
+	auto *r = new Running(queue, *this,
+			      std::move(job), queue.GetNow());
+	running.push_back(*r);
 
-	auto *s = new Starting(queue, *this,
-			       std::move(copy), queue.GetNow(),
-			       CoStart(queue, translation_socket,
-				       partition_name, listener_tag,
-				       std::move(job)));
-	starting.push_back(*s);
-	s->Start();
+	r->Start(translation_socket,
+		 partition_name, listener_tag);
 }
 
 inline void
-CronWorkplace::OnCompletion(Starting &s) noexcept
+CronWorkplace::OnCompletion(Running &r) noexcept
 {
-	starting.erase_and_dispose(starting.iterator_to(s),
-				   DeleteDisposer{});
-
-	exit_listener.OnChildProcessExit(-1);
-}
-
-void
-CronWorkplace::OnExit(CronOperator *o)
-{
-	operators.erase_and_dispose(operators.iterator_to(*o),
-				    DeleteDisposer{});
+	running.erase_and_dispose(running.iterator_to(r),
+				  DeleteDisposer{});
 
 	exit_listener.OnChildProcessExit(-1);
 }
@@ -259,14 +282,12 @@ CronWorkplace::OnExit(CronOperator *o)
 void
 CronWorkplace::CancelAll() noexcept
 {
-	if (operators.empty() && starting.empty())
+	if (running.empty())
 		return;
 
-	starting.clear_and_dispose(DeleteDisposer{});
-
-	operators.clear_and_dispose([](auto *o){
-		o->Cancel();
-		delete o;
+	running.clear_and_dispose([](auto *r){
+		r->Cancel();
+		delete r;
 	});
 
 	exit_listener.OnChildProcessExit(-1);
@@ -275,11 +296,11 @@ CronWorkplace::CancelAll() noexcept
 void
 CronWorkplace::CancelTag(std::string_view tag) noexcept
 {
-	const auto n = operators.remove_and_dispose_if([tag](const auto &o){
-		return o.IsTag(tag);
-	}, [](auto *o) {
-		o->Cancel();
-		delete o;
+	const auto n = running.remove_and_dispose_if([tag](const auto &r){
+		return r.IsTag(tag);
+	}, [](auto *r) {
+		r->Cancel();
+		delete r;
 	});
 
 	if (n > 0)

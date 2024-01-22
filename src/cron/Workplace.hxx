@@ -8,13 +8,11 @@
 #include "util/IntrusiveList.hxx"
 
 struct CronJob;
-class CronOperator;
 class SpawnService;
 class EmailService;
 class CurlGlobal;
 class CronQueue;
 class ExitListener;
-namespace Co { class InvokeTask; }
 
 class CronWorkplace {
 	SpawnService &spawn_service;
@@ -24,17 +22,10 @@ class CronWorkplace {
 	CurlGlobal &curl;
 	ExitListener &exit_listener;
 
-	using OperatorList = IntrusiveList<
-		CronOperator,
-		IntrusiveListBaseHookTraits<CronOperator>,
-		IntrusiveListOptions{.constant_time_size = true}>;
-
-	OperatorList operators;
-
-	class Starting;
-	IntrusiveList<Starting,
-		IntrusiveListBaseHookTraits<Starting>,
-		IntrusiveListOptions{.constant_time_size = true}> starting;
+	class Running;
+	IntrusiveList<Running,
+		IntrusiveListBaseHookTraits<Running>,
+		IntrusiveListOptions{.constant_time_size = true}> running;
 
 	const std::size_t max_operators;
 
@@ -64,11 +55,11 @@ public:
 	}
 
 	bool IsEmpty() const {
-		return operators.empty() && starting.empty();
+		return running.empty();
 	}
 
 	bool IsFull() const {
-		return operators.size() + starting.size() >= max_operators;
+		return running.size() >= max_operators;
 	}
 
 	/**
@@ -78,18 +69,10 @@ public:
 		   std::string_view partition_name, const char *listener_tag,
 		   CronJob &&job);
 
-	void OnExit(CronOperator *o);
-
 	void CancelAll() noexcept;
 
 	void CancelTag(std::string_view tag) noexcept;
 
 private:
-	Co::InvokeTask CoStart(CronQueue &queue,
-			       SocketAddress translation_socket,
-			       std::string_view partition_name,
-			       const char *listener_tag,
-			       CronJob job);
-
-	void OnCompletion(Starting &s) noexcept;
+	void OnCompletion(Running &r) noexcept;
 };
