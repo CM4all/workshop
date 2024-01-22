@@ -13,7 +13,6 @@
  * A #CronJob being executed.
  */
 class CronOperator
-	: LoggerDomainFactory
 {
 	std::coroutine_handle<> continuation;
 
@@ -27,10 +26,10 @@ class CronOperator
 protected:
 	const CronJob job;
 
-	LazyDomainLogger logger{*this};
+	LazyDomainLogger &logger;
 
-	explicit CronOperator(CronJob &&_job) noexcept
-		:job(std::move(_job)) {}
+	explicit CronOperator(CronJob &&_job, LazyDomainLogger &_logger) noexcept
+		:job(std::move(_job)), logger(_logger) {}
 
 public:
 	virtual ~CronOperator() noexcept = default;
@@ -59,7 +58,4 @@ private:
 	CronResult TakeValue() noexcept {
 		return std::move(value);
 	}
-
-	/* virtual methods from LoggerDomainFactory */
-	std::string MakeLoggerDomain() const noexcept;
 };

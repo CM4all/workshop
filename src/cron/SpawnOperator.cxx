@@ -15,8 +15,9 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-CronSpawnOperator::CronSpawnOperator(CronJob &&_job) noexcept
-	:CronOperator(std::move(_job))
+CronSpawnOperator::CronSpawnOperator(CronJob &&_job,
+				     LazyDomainLogger &_logger) noexcept
+	:CronOperator(std::move(_job), _logger)
 {
 }
 

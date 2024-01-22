@@ -29,7 +29,9 @@
 
 using std::string_view_literals::operator""sv;
 
-class CronWorkplace::Running final : public IntrusiveListHook<> {
+class CronWorkplace::Running final
+	: public IntrusiveListHook<>, LoggerDomainFactory
+{
 	CronQueue &queue;
 	CronWorkplace &workplace;
 	const CronJob job;
@@ -40,6 +42,8 @@ class CronWorkplace::Running final : public IntrusiveListHook<> {
 	Co::InvokeTask task;
 
 	std::string tag;
+
+	LazyDomainLogger logger{*this};
 
 public:
 	Running(CronQueue &_queue, CronWorkplace &_workplace,
@@ -91,6 +95,11 @@ private:
 	}
 
 	void SetResult(const CronResult &result) noexcept;
+
+	/* virtual methods from LoggerDomainFactory */
+	std::string MakeLoggerDomain() const noexcept {
+		return fmt::format("cron job={} account={}", job.id, job.account_id);
+	}
 };
 
 void
@@ -138,6 +147,7 @@ IsURL(std::string_view command) noexcept
 static Co::Task<std::unique_ptr<CronOperator>>
 MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 		  SocketDescriptor pond_socket,
+		  LazyDomainLogger &logger,
 		  CronJob job, const char *command,
 		  const TranslateResponse &response)
 {
@@ -185,7 +195,7 @@ MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 
 	/* create operator object */
 
-	auto o = std::make_unique<CronSpawnOperator>(std::move(job));
+	auto o = std::make_unique<CronSpawnOperator>(std::move(job), logger);
 	o->Spawn(event_loop, spawn_service,
 		 std::move(p), pond_socket);
 	co_return std::unique_ptr<CronOperator>(std::move(o));
@@ -193,9 +203,10 @@ MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 
 static std::unique_ptr<CronOperator>
 MakeCurlOperator(CurlGlobal &curl_global,
+		 LazyDomainLogger &logger,
 		 CronJob &&job, const char *url)
 {
-	auto o = std::make_unique<CronCurlOperator>(std::move(job),
+	auto o = std::make_unique<CronCurlOperator>(std::move(job), logger,
 						    curl_global, url);
 	o->Start();
 	return std::unique_ptr<CronOperator>(std::move(o));
@@ -206,6 +217,7 @@ MakeOperator(EventLoop &event_loop, SpawnService &spawn_service,
 	     SocketDescriptor pond_socket,
 	     SocketAddress translation_socket,
 	     CurlGlobal &curl_global,
+	     LazyDomainLogger &logger,
 	     std::string &tag_r,
 	     std::string_view partition_name, const char *listener_tag,
 	     CronJob job)
@@ -239,10 +251,11 @@ MakeOperator(EventLoop &event_loop, SpawnService &spawn_service,
 		tag_r = response.child_options.tag;
 
 	if (IsURL(command))
-		co_return MakeCurlOperator(curl_global,
+		co_return MakeCurlOperator(curl_global, logger,
 					   std::move(job), command.c_str());
 	else
 		co_return co_await MakeSpawnOperator(event_loop, spawn_service, pond_socket,
+						     logger,
 						     std::move(job),
 						     uri == nullptr ? command.c_str() : nullptr,
 						     response);
@@ -257,6 +270,7 @@ CronWorkplace::Running::CoStart(SocketAddress translation_socket,
 					workplace.GetSpawnService(),
 					workplace.GetPondSocket(),
 					translation_socket, workplace.curl,
+					logger,
 					tag,
 					partition_name, listener_tag,
 					CronJob{job});
