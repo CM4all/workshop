@@ -162,7 +162,7 @@ Instance::OnControlPacket([[maybe_unused]] BengControl::Server &control_server,
 			  std::span<const std::byte> payload,
 			  [[maybe_unused]] std::span<UniqueFileDescriptor> fds,
 			  [[maybe_unused]] SocketAddress address,
-			  [[maybe_unused]] int uid)
+			  int uid)
 {
 	using namespace BengControl;
 
