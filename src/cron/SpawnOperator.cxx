@@ -4,13 +4,13 @@
 
 #include "SpawnOperator.hxx"
 #include "Workplace.hxx"
+#include "Result.hxx"
 #include "PipePondAdapter.hxx"
 #include "spawn/Interface.hxx"
 #include "spawn/Prepared.hxx"
 #include "spawn/ProcessHandle.hxx"
 #include "io/Pipe.hxx"
 #include "io/UniqueFileDescriptor.hxx"
-#include "util/Exception.hxx"
 #include "util/UTF8.hxx"
 
 #include <unistd.h>
@@ -67,36 +67,37 @@ try {
 
 	logger(2, "running");
 } catch (...) {
-	Finish(-1, GetFullMessage(std::current_exception()).c_str());
+	Finish(CronResult::Error(std::current_exception()));
 	throw;
 }
 
 void
 CronSpawnOperator::OnChildProcessExit(int status) noexcept
 {
-	int exit_status = WEXITSTATUS(status);
+	CronResult result{
+		.exit_status = WEXITSTATUS(status),
+	};
 
 	if (WIFSIGNALED(status)) {
 		logger(1, "died from signal ",
 		       WTERMSIG(status),
 		       WCOREDUMP(status) ? " (core dumped)" : "");
-		exit_status = -1;
-	} else if (exit_status == 0)
+		result.exit_status = -1;
+	} else if (result.exit_status == 0)
 		logger(3, "exited with success");
 	else
-		logger(2, "exited with status ", exit_status);
+		logger(2, "exited with status ", result.exit_status);
 
-	const char *log = output_capture
-		? output_capture->NormalizeASCII()
-		: nullptr;
+	if (output_capture)
+		result.log = std::move(*output_capture).NormalizeASCII();
 
-	if (log != nullptr && !ValidateUTF8(log)) {
+	if (result.log != nullptr && !ValidateUTF8(result.log.c_str())) {
 		/* TODO: purge illegal UTF-8 sequences instead of
 		   replacing the log text? */
-		log = "Invalid UTF-8 output";
-		logger(2, log);
+		result.log = AllocatedString{"Invalid UTF-8 output"};
+		logger(2, result.log.c_str());
 	}
 
-	Finish(exit_status, log);
+	Finish(result);
 	InvokeExit();
 }

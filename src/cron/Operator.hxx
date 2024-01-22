@@ -14,6 +14,7 @@
 class ChildProcessRegistry;
 class CronQueue;
 class CronWorkplace;
+struct CronResult;
 
 /**
  * A #CronJob being executed.
@@ -62,12 +63,10 @@ public:
 	 * if the child process continues to run (because it ignores the
 	 * kill signal).
 	 */
-	void Cancel() noexcept {
-		Finish(-1, "Canceled");
-	}
+	void Cancel() noexcept;
 
 protected:
-	void Finish(int exit_status, const char *log) noexcept;
+	void Finish(const CronResult &result) noexcept;
 	void InvokeExit() noexcept;
 
 private:

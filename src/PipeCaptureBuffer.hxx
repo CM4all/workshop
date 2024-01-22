@@ -6,6 +6,7 @@
 
 #include "CaptureBuffer.hxx"
 #include "event/PipeEvent.hxx"
+#include "util/AllocatedString.hxx"
 
 class UniqueFileDescriptor;
 
@@ -34,8 +35,8 @@ public:
 		return buffer.GetData();
 	}
 
-	char *NormalizeASCII() noexcept {
-		return buffer.NormalizeASCII();
+	AllocatedString NormalizeASCII() && noexcept {
+		return std::move(buffer).NormalizeASCII();
 	}
 
 protected:

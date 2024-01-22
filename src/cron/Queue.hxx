@@ -13,6 +13,7 @@
 #include <functional>
 
 struct CronJob;
+struct CronResult;
 class EventLoop;
 
 class CronQueue final : private Pg::AsyncConnectionHandler {
@@ -117,8 +118,7 @@ public:
 	 * #CronJob execution result.
 	 */
 	void InsertResult(const CronJob &job, const char *start_time,
-			  int exit_status,
-			  const char *log) noexcept;
+			  const CronResult &result) noexcept;
 
 private:
 	/**

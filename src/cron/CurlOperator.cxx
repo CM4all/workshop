@@ -3,9 +3,9 @@
 // author: Max Kellermann <mk@cm4all.com>
 
 #include "CurlOperator.hxx"
+#include "Result.hxx"
 #include "Workplace.hxx"
 #include "CaptureBuffer.hxx"
-#include "util/Exception.hxx"
 #include "util/PrintException.hxx"
 #include "util/SpanCast.hxx"
 #include "util/StringCompare.hxx"
@@ -65,11 +65,14 @@ CronCurlOperator::OnData(std::span<const std::byte> _src)
 void
 CronCurlOperator::OnEnd()
 {
-	const char *log = output_capture
-		? output_capture->NormalizeASCII()
-		: nullptr;
+	CronResult result{
+		.exit_status = static_cast<int>(status),
+	};
 
-	Finish(static_cast<int>(status), log);
+	if (output_capture)
+		result.log = std::move(*output_capture).NormalizeASCII();
+
+	Finish(result);
 	InvokeExit();
 }
 
@@ -78,6 +81,6 @@ CronCurlOperator::OnError(std::exception_ptr ep) noexcept
 {
 	PrintException(ep);
 
-	Finish(-1, GetFullMessage(ep).c_str());
+	Finish(CronResult::Error(ep));
 	InvokeExit();
 }

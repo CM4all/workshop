@@ -4,6 +4,7 @@
 
 #include "Queue.hxx"
 #include "Job.hxx"
+#include "Result.hxx"
 #include "CalculateNextRun.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "util/StringAPI.hxx"
@@ -214,7 +215,7 @@ try {
 
 void
 CronQueue::InsertResult(const CronJob &job, const char *start_time,
-			int exit_status, const char *log) noexcept
+			const CronResult &result) noexcept
 try {
 	ScheduleCheckNotify();
 
@@ -223,8 +224,8 @@ try {
 			 job.id.c_str(),
 			 node_name.c_str(),
 			 start_time,
-			 exit_status,
-			 log);
+			 result.exit_status,
+			 result.log.c_str());
 } catch (...) {
 	db.CheckError(std::current_exception());
 }

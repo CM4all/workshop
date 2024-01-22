@@ -7,6 +7,8 @@
 #include <memory>
 #include <span>
 
+class AllocatedString;
+
 /**
  * A buffer which helps capture up to 8 kB of data.
  */
@@ -45,5 +47,5 @@ public:
 	 *
 	 * @return the null-terminated ASCII string
 	 */
-	char *NormalizeASCII() noexcept;
+	AllocatedString NormalizeASCII() && noexcept;
 };

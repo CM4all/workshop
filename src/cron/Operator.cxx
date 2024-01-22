@@ -5,10 +5,13 @@
 #include "Operator.hxx"
 #include "Queue.hxx"
 #include "Workplace.hxx"
+#include "Result.hxx"
 #include "EmailService.hxx"
 #include "version.h"
 
 #include <fmt/core.h>
+
+using std::string_view_literals::operator""sv;
 
 CronOperator::CronOperator(CronQueue &_queue, CronWorkplace &_workplace,
 			   CronJob &&_job,
@@ -25,10 +28,10 @@ CronOperator::CronOperator(CronQueue &_queue, CronWorkplace &_workplace,
 }
 
 void
-CronOperator::Finish(int exit_status, const char *log) noexcept
+CronOperator::Finish(const CronResult &result) noexcept
 {
 	queue.Finish(job);
-	queue.InsertResult(job, start_time.c_str(), exit_status, log);
+	queue.InsertResult(job, start_time.c_str(), result);
 
 	if (!job.notification.empty()) {
 		auto *email_service = workplace.GetEmailService();
@@ -43,18 +46,24 @@ CronOperator::Finish(int exit_status, const char *log) noexcept
 						     job.id,
 						     job.account_id);
 
-			if (exit_status >= 0)
+			if (result.exit_status >= 0)
 				email.message += fmt::format("X-CM4all-Workshop-Status: {}\n",
-							     exit_status);
+							     result.exit_status);
 
 			email.message += "\n";
 
-			if (log != nullptr)
-				email.message += log;
+			if (result.log != nullptr)
+				email.message += result.log;
 
 			email_service->Submit(std::move(email));
 		}
 	}
+}
+
+void
+CronOperator::Cancel() noexcept
+{
+	Finish(CronResult::Error("Canceled"sv));
 }
 
 void
@@ -68,7 +77,7 @@ CronOperator::OnTimeout() noexcept
 {
 	logger(2, "Timeout");
 
-	Finish(-1, "Timeout");
+	Finish(CronResult::Error("Timeout"sv));
 }
 
 std::string

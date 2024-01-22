@@ -5,6 +5,7 @@
 #include "Workplace.hxx"
 #include "Queue.hxx"
 #include "Job.hxx"
+#include "Result.hxx"
 #include "SpawnOperator.hxx"
 #include "CurlOperator.hxx"
 #include "AllocatorPtr.hxx"
@@ -18,7 +19,6 @@
 #include "co/InvokeTask.hxx"
 #include "co/Task.hxx"
 #include "util/DeleteDisposer.hxx"
-#include "util/Exception.hxx"
 #include "util/StringCompare.hxx"
 #include "debug.h"
 
@@ -50,8 +50,8 @@ private:
 	void OnCompletion(std::exception_ptr error) noexcept {
 		if (error) {
 			queue.Finish(job);
-			queue.InsertResult(job, start_time.c_str(), -1,
-					   GetFullMessage(error).c_str());
+			queue.InsertResult(job, start_time.c_str(),
+					   CronResult::Error(error));
 		}
 
 		workplace.OnCompletion(*this);

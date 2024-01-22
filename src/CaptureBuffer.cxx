@@ -3,6 +3,7 @@
 // author: Max Kellermann <mk@cm4all.com>
 
 #include "CaptureBuffer.hxx"
+#include "util/AllocatedString.hxx"
 #include "util/CharUtil.hxx"
 
 #include <algorithm>
@@ -19,8 +20,8 @@ IsDisallowedChar(char ch) noexcept
 	return !IsPrintableASCII(ch) && !IsAllowedNonPrintableChar(ch);
 }
 
-char *
-CaptureBuffer::NormalizeASCII() noexcept
+AllocatedString
+CaptureBuffer::NormalizeASCII() && noexcept
 {
 	if (size == capacity)
 		/* crop the last character to make room for the null
@@ -30,5 +31,5 @@ CaptureBuffer::NormalizeASCII() noexcept
 	std::replace_if(data.get(), std::next(data.get(), size),
 			IsDisallowedChar, ' ');
 	data[size] = 0;
-	return data.get();
+	return AllocatedString::Donate(data.release());
 }
