@@ -23,6 +23,8 @@
 #include <cassert>
 #include <string>
 
+using std::string_view_literals::operator""sv;
+
 CronWorkplace::CronWorkplace(SpawnService &_spawn_service,
 			     EmailService *_email_service,
 			     SocketDescriptor _pond_socket,
@@ -46,10 +48,10 @@ CronWorkplace::~CronWorkplace() noexcept
 
 [[gnu::pure]]
 static bool
-IsURL(const char *command) noexcept
+IsURL(std::string_view command) noexcept
 {
-	return StringStartsWith(command, "http://") ||
-		StringStartsWith(command, "https://");
+	return command.starts_with("http://"sv) ||
+		command.starts_with("https://"sv);
 }
 
 static std::unique_ptr<CronOperator>
@@ -162,7 +164,7 @@ CronWorkplace::Start(CronQueue &queue, SocketAddress translation_socket,
 	   c_str() pointer */
 	const auto command = job.command;
 
-	auto o = IsURL(command.c_str())
+	auto o = IsURL(command)
 		? MakeCurlOperator(queue, *this, curl,
 				   std::move(job), command.c_str(),
 				   std::move(start_time))
