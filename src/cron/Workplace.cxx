@@ -83,13 +83,16 @@ private:
 			       const char *listener_tag);
 
 	void OnCompletion(std::exception_ptr error) noexcept {
-		if (error)
+		if (error) {
+			logger(1, error);
 			SetResult(CronResult::Error(error));
+		}
 
 		workplace.OnCompletion(*this);
 	}
 
 	void OnTimeout() noexcept {
+		logger(1, "Timeout");
 		SetResult(CronResult::Error("Timeout"sv));
 		workplace.OnCompletion(*this);
 	}
