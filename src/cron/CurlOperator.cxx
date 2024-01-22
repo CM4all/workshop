@@ -31,7 +31,7 @@ CronCurlOperator::OnHeaders(HttpStatus _status, Curl::Headers &&headers)
 {
 	status = _status;
 
-	const auto ct = headers.find("content-type");
+	const auto ct = headers.find("content-type"sv);
 	if (ct != headers.end()) {
 		const char *content_type = ct->second.c_str();
 		if (StringStartsWith(content_type, "text/"sv))
