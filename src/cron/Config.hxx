@@ -32,7 +32,7 @@ struct CronPartitionConfig {
 	 */
 	AllocatedSocketAddress pond_server;
 
-	Event::Duration default_timeout;
+	Event::Duration default_timeout = std::chrono::minutes{5};
 
 	explicit CronPartitionConfig(std::string &&_name):name(std::move(_name)) {}
 
