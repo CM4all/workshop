@@ -153,10 +153,12 @@ MakeCurlOperator(CronQueue &queue, CronWorkplace &workplace,
 	return std::unique_ptr<CronOperator>(std::move(o));
 }
 
-void
-CronWorkplace::Start(CronQueue &queue, SocketAddress translation_socket,
-		     std::string_view partition_name, const char *listener_tag,
-		     CronJob &&job)
+static std::unique_ptr<CronOperator>
+MakeOperator(CronQueue &queue, CronWorkplace &workplace,
+	     SocketAddress translation_socket,
+	     CurlGlobal &curl_global,
+	     std::string_view partition_name, const char *listener_tag,
+	     CronJob &&job)
 {
 	auto start_time = queue.GetNow();
 
@@ -164,14 +166,25 @@ CronWorkplace::Start(CronQueue &queue, SocketAddress translation_socket,
 	   c_str() pointer */
 	const auto command = job.command;
 
-	auto o = IsURL(command)
-		? MakeCurlOperator(queue, *this, curl,
+	return IsURL(command)
+		? MakeCurlOperator(queue, workplace, curl_global,
 				   std::move(job), command.c_str(),
 				   std::move(start_time))
-		: MakeSpawnOperator(queue, *this, translation_socket,
+		: MakeSpawnOperator(queue, workplace, translation_socket,
 				    partition_name, listener_tag,
 				    std::move(job), command.c_str(),
 				    std::move(start_time));
+}
+
+void
+CronWorkplace::Start(CronQueue &queue, SocketAddress translation_socket,
+		     std::string_view partition_name, const char *listener_tag,
+		     CronJob &&job)
+{
+	auto o = MakeOperator(queue, *this,
+			      translation_socket, curl,
+			      partition_name, listener_tag,
+			      std::move(job));
 
 	operators.push_back(*o.release());
 }
