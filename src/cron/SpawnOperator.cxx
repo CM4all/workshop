@@ -15,10 +15,9 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-CronSpawnOperator::CronSpawnOperator(CronHandler &_handler,
-				     SpawnService &_spawn_service,
+CronSpawnOperator::CronSpawnOperator(SpawnService &_spawn_service,
 				     CronJob &&_job) noexcept
-	:CronOperator(_handler, std::move(_job)),
+	:CronOperator(std::move(_job)),
 	 spawn_service(_spawn_service)
 {
 }
@@ -89,5 +88,5 @@ CronSpawnOperator::OnChildProcessExit(int status) noexcept
 		logger(2, result.log.c_str());
 	}
 
-	Finish(result);
+	Finish(std::move(result));
 }

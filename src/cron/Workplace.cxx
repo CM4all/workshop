@@ -7,7 +7,6 @@
 #include "Job.hxx"
 #include "Result.hxx"
 #include "Notification.hxx"
-#include "Handler.hxx"
 #include "SpawnOperator.hxx"
 #include "CurlOperator.hxx"
 #include "AllocatorPtr.hxx"
@@ -30,7 +29,7 @@
 
 using std::string_view_literals::operator""sv;
 
-class CronWorkplace::Running final : public IntrusiveListHook<>, CronHandler {
+class CronWorkplace::Running final : public IntrusiveListHook<> {
 	CronQueue &queue;
 	CronWorkplace &workplace;
 	const CronJob job;
@@ -39,7 +38,6 @@ class CronWorkplace::Running final : public IntrusiveListHook<>, CronHandler {
 	FarTimerEvent timeout_event;
 
 	Co::InvokeTask task;
-	std::unique_ptr<CronOperator> op;
 
 	std::string tag;
 
@@ -81,26 +79,18 @@ private:
 			       const char *listener_tag);
 
 	void OnCompletion(std::exception_ptr error) noexcept {
-		if (error) {
-			OnFinish(CronResult::Error(error));
-			return;
-		}
+		if (error)
+			SetResult(CronResult::Error(error));
 
-		// the CronOperator will invoke OnExit() 
-		assert(op);
+		workplace.OnCompletion(*this);
 	}
 
 	void OnTimeout() noexcept {
-		OnFinish(CronResult::Error("Timeout"sv));
+		SetResult(CronResult::Error("Timeout"sv));
+		workplace.OnCompletion(*this);
 	}
 
 	void SetResult(const CronResult &result) noexcept;
-
-	// virtual methods from class CronHandler
-	void OnFinish(const CronResult &result) noexcept override {
-		SetResult(result);
-		workplace.OnCompletion(*this);
-	}
 };
 
 void
@@ -148,7 +138,6 @@ IsURL(std::string_view command) noexcept
 static Co::Task<std::unique_ptr<CronOperator>>
 MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 		  SocketDescriptor pond_socket,
-		  CronHandler &handler,
 		  CronJob job, const char *command,
 		  const TranslateResponse &response)
 {
@@ -196,20 +185,17 @@ MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 
 	/* create operator object */
 
-	auto o = std::make_unique<CronSpawnOperator>(handler,
-						     spawn_service,
+	auto o = std::make_unique<CronSpawnOperator>(spawn_service,
 						     std::move(job));
 	o->Spawn(event_loop, std::move(p), pond_socket);
 	co_return std::unique_ptr<CronOperator>(std::move(o));
 }
 
 static std::unique_ptr<CronOperator>
-MakeCurlOperator(CronHandler &handler,
-		 CurlGlobal &curl_global,
+MakeCurlOperator(CurlGlobal &curl_global,
 		 CronJob &&job, const char *url)
 {
-	auto o = std::make_unique<CronCurlOperator>(handler,
-						    std::move(job),
+	auto o = std::make_unique<CronCurlOperator>(std::move(job),
 						    curl_global, url);
 	o->Start();
 	return std::unique_ptr<CronOperator>(std::move(o));
@@ -218,7 +204,6 @@ MakeCurlOperator(CronHandler &handler,
 static Co::Task<std::unique_ptr<CronOperator>>
 MakeOperator(EventLoop &event_loop, SpawnService &spawn_service,
 	     SocketDescriptor pond_socket,
-	     CronHandler &handler,
 	     SocketAddress translation_socket,
 	     CurlGlobal &curl_global,
 	     std::string &tag_r,
@@ -254,11 +239,10 @@ MakeOperator(EventLoop &event_loop, SpawnService &spawn_service,
 		tag_r = response.child_options.tag;
 
 	if (IsURL(command))
-		co_return MakeCurlOperator(handler, curl_global,
+		co_return MakeCurlOperator(curl_global,
 					   std::move(job), command.c_str());
 	else
 		co_return co_await MakeSpawnOperator(event_loop, spawn_service, pond_socket,
-						     handler,
 						     std::move(job),
 						     uri == nullptr ? command.c_str() : nullptr,
 						     response);
@@ -269,14 +253,17 @@ CronWorkplace::Running::CoStart(SocketAddress translation_socket,
 				std::string_view partition_name,
 				const char *listener_tag)
 {
-	op = co_await MakeOperator(GetEventLoop(),
-				   workplace.GetSpawnService(),
-				   workplace.GetPondSocket(),
-				   *this,
-				   translation_socket, workplace.curl,
-				   tag,
-				   partition_name, listener_tag,
-				   CronJob{job});
+	auto op = co_await MakeOperator(GetEventLoop(),
+					workplace.GetSpawnService(),
+					workplace.GetPondSocket(),
+					translation_socket, workplace.curl,
+					tag,
+					partition_name, listener_tag,
+					CronJob{job});
+	assert(op);
+
+	const auto result = co_await *op;
+	SetResult(result);
 }
 
 void

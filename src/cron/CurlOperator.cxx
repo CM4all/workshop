@@ -13,11 +13,10 @@
 
 using std::string_view_literals::operator""sv;
 
-CronCurlOperator::CronCurlOperator(CronHandler &_handler,
-				   CronJob &&_job,
+CronCurlOperator::CronCurlOperator(CronJob &&_job,
 				   CurlGlobal &_global,
 				   const char *url) noexcept
-	:CronOperator(_handler, std::move(_job)),
+	:CronOperator(std::move(_job)),
 	 request(_global, url, *this)
 {
 }
@@ -66,7 +65,7 @@ CronCurlOperator::OnEnd()
 	if (output_capture)
 		result.log = std::move(*output_capture).NormalizeASCII();
 
-	Finish(result);
+	Finish(std::move(result));
 }
 
 void

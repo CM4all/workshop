@@ -5,11 +5,9 @@
 #pragma once
 
 #include "Job.hxx"
+#include "Result.hxx"
 #include "io/Logger.hxx"
-
-class ChildProcessRegistry;
-class CronHandler;
-struct CronResult;
+#include "co/AwaitableHelper.hxx"
 
 /**
  * A #CronJob being executed.
@@ -17,25 +15,51 @@ struct CronResult;
 class CronOperator
 	: LoggerDomainFactory
 {
-	CronHandler &handler;
+	std::coroutine_handle<> continuation;
+
+	CronResult value;
+
+	bool ready = false;
+
+	using Awaitable = Co::AwaitableHelper<CronOperator, false>;
+	friend Awaitable;
 
 protected:
 	const CronJob job;
 
-	LazyDomainLogger logger;
+	LazyDomainLogger logger{*this};
+
+	explicit CronOperator(CronJob &&_job) noexcept
+		:job(std::move(_job)) {}
 
 public:
-	CronOperator(CronHandler &_handler, CronJob &&_job) noexcept;
-
 	virtual ~CronOperator() noexcept = default;
 
 	CronOperator(const CronOperator &other) = delete;
 	CronOperator &operator=(const CronOperator &other) = delete;
 
+	Awaitable operator co_await() noexcept {
+		return *this;
+	}
+
 protected:
-	void Finish(const CronResult &result) noexcept;
+	void Finish(CronResult &&result) noexcept {
+		value = std::move(result);
+		ready = true;
+
+		if (continuation)
+			continuation.resume();
+	}
 
 private:
+	bool IsReady() const noexcept {
+		return ready;
+	}
+
+	CronResult TakeValue() noexcept {
+		return std::move(value);
+	}
+
 	/* virtual methods from LoggerDomainFactory */
 	std::string MakeLoggerDomain() const noexcept;
 };

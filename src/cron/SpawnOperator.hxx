@@ -29,8 +29,7 @@ class CronSpawnOperator final
 	std::unique_ptr<PipeCaptureBuffer> output_capture;
 
 public:
-	CronSpawnOperator(CronHandler &_handler,
-			  SpawnService &_spawn_service,
+	CronSpawnOperator(SpawnService &_spawn_service,
 			  CronJob &&_job) noexcept;
 	~CronSpawnOperator() noexcept override;
 
