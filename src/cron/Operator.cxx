@@ -58,6 +58,7 @@ CronOperator::OnTimeout() noexcept
 	logger(2, "Timeout");
 
 	Finish(CronResult::Error("Timeout"sv));
+	InvokeExit();
 }
 
 std::string
