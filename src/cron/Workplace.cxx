@@ -147,39 +147,17 @@ static Co::Task<std::unique_ptr<CronOperator>>
 MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 		  SocketDescriptor pond_socket,
 		  CronHandler &handler,
-		  SocketAddress translation_socket,
-		  std::string_view partition_name, const char *listener_tag,
-		  CronJob job, const char *command)
+		  CronJob job, const char *command,
+		  const TranslateResponse &response)
 {
-	const char *uri = StringStartsWith(command, "urn:")
-		? command
-		: nullptr;
-
 	/* prepare the child process */
 
 	PreparedChildProcess p;
 
-	if (uri == nullptr) {
+	if (command != nullptr) {
 		p.args.push_back("/bin/sh");
 		p.args.push_back("-c");
 		p.args.push_back(command);
-	}
-
-	Allocator alloc;
-
-	TranslateResponse response;
-	try {
-		response = co_await
-			TranslateCron(event_loop,
-				      alloc, translation_socket,
-				      partition_name, listener_tag,
-				      job.account_id.c_str(),
-				      uri,
-				      job.translate_param.empty()
-				      ? nullptr
-				      : job.translate_param.c_str());
-	} catch (...) {
-		std::throw_with_nested(std::runtime_error("Translation failed"));
 	}
 
 	if (response.status != HttpStatus{}) {
@@ -195,7 +173,7 @@ MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 	if (response.child_options.uid_gid.IsEmpty() && !debug_mode)
 		throw std::runtime_error("No UID_GID from translation server");
 
-	if (uri != nullptr) {
+	if (command == nullptr) {
 		if (response.execute == nullptr)
 			throw std::runtime_error("No EXECUTE from translation server");
 
@@ -249,15 +227,36 @@ MakeOperator(EventLoop &event_loop, SpawnService &spawn_service,
 	   c_str() pointer */
 	const auto command = job.command;
 
+	const char *const uri = command.starts_with("urn:"sv)
+		? command.c_str()
+		: nullptr;
+
+	Allocator alloc;
+
+	TranslateResponse response;
+	try {
+		response = co_await
+			TranslateCron(event_loop,
+				      alloc, translation_socket,
+				      partition_name, listener_tag,
+				      job.account_id.c_str(),
+				      uri,
+				      job.translate_param.empty()
+				      ? nullptr
+				      : job.translate_param.c_str());
+	} catch (...) {
+		std::throw_with_nested(std::runtime_error("Translation failed"));
+	}
+
 	if (IsURL(command))
 		co_return MakeCurlOperator(handler, curl_global,
 					   std::move(job), command.c_str());
 	else
 		co_return co_await MakeSpawnOperator(event_loop, spawn_service, pond_socket,
 						     handler,
-						     translation_socket,
-						     partition_name, listener_tag,
-						     std::move(job), command.c_str());
+						     std::move(job),
+						     uri == nullptr ? command.c_str() : nullptr,
+						     response);
 }
 
 inline Co::InvokeTask
