@@ -5,7 +5,6 @@
 #include "CurlOperator.hxx"
 #include "Result.hxx"
 #include "CaptureBuffer.hxx"
-#include "util/PrintException.hxx"
 #include "util/SpanCast.hxx"
 #include "util/StringCompare.hxx"
 
@@ -69,7 +68,5 @@ CronCurlOperator::OnEnd()
 void
 CronCurlOperator::OnError(std::exception_ptr ep) noexcept
 {
-	PrintException(ep);
-
 	Finish(CronResult::Error(ep));
 }
