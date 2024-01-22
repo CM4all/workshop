@@ -41,7 +41,7 @@ class CronWorkplace::Running final
 
 	Co::InvokeTask task;
 
-	std::string tag;
+	std::string site, tag;
 
 	LazyDomainLogger logger{*this};
 
@@ -52,7 +52,8 @@ public:
 		 job(std::move(_job)),
 		 start_time(std::move(_start_time)),
 		 timeout_event(queue.GetEventLoop(),
-			       BIND_THIS_METHOD(OnTimeout)) {}
+			       BIND_THIS_METHOD(OnTimeout)),
+		 site(job.account_id) {}
 
 	auto &GetEventLoop() const noexcept {
 		return timeout_event.GetEventLoop();
@@ -101,7 +102,7 @@ private:
 
 	/* virtual methods from LoggerDomainFactory */
 	std::string MakeLoggerDomain() const noexcept {
-		return fmt::format("cron job={} account={}", job.id, job.account_id);
+		return fmt::format("cron job={} account={}", job.id, site);
 	}
 };
 
@@ -228,7 +229,7 @@ MakeOperator(EventLoop &event_loop, SpawnService &spawn_service,
 	     SocketAddress translation_socket,
 	     CurlGlobal &curl_global,
 	     LazyDomainLogger &logger,
-	     std::string &tag_r,
+	     std::string &site_r, std::string &tag_r,
 	     std::string_view partition_name, const char *listener_tag,
 	     const CronJob &job)
 {
@@ -252,6 +253,9 @@ MakeOperator(EventLoop &event_loop, SpawnService &spawn_service,
 	} catch (...) {
 		std::throw_with_nested(std::runtime_error("Translation failed"));
 	}
+
+	if (response.site != nullptr)
+		site_r = response.site;
 
 	if (!response.child_options.tag.empty())
 		tag_r = response.child_options.tag;
@@ -277,7 +281,7 @@ CronWorkplace::Running::CoStart(SocketAddress translation_socket,
 					workplace.GetPondSocket(),
 					translation_socket, workplace.curl,
 					logger,
-					tag,
+					site, tag,
 					partition_name, listener_tag,
 					job);
 	assert(op);
