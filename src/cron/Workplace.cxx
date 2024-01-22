@@ -200,9 +200,13 @@ MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 
 	/* create operator object */
 
+	std::string_view site = job.account_id;
+	if (response.site != nullptr)
+		site = response.site;
+
 	auto o = std::make_unique<CronSpawnOperator>(logger);
 	o->Spawn(event_loop, spawn_service,
-		 job.id.c_str(), job.account_id,
+		 job.id.c_str(), site,
 		 std::move(p), pond_socket);
 	co_return std::unique_ptr<CronOperator>(std::move(o));
 }
