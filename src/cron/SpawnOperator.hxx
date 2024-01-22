@@ -22,18 +22,15 @@ class ChildProcessHandle;
 class CronSpawnOperator final
 	: public CronOperator, ExitListener
 {
-	SpawnService &spawn_service;
-
 	std::unique_ptr<ChildProcessHandle> pid;
 
 	std::unique_ptr<PipeCaptureBuffer> output_capture;
 
 public:
-	CronSpawnOperator(SpawnService &_spawn_service,
-			  CronJob &&_job) noexcept;
+	CronSpawnOperator(CronJob &&_job) noexcept;
 	~CronSpawnOperator() noexcept override;
 
-	void Spawn(EventLoop &event_loop,
+	void Spawn(EventLoop &event_loop, SpawnService &spawn_service,
 		   PreparedChildProcess &&p, SocketDescriptor pond_socket);
 
 public:

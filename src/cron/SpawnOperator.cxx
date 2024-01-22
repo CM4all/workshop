@@ -15,17 +15,15 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-CronSpawnOperator::CronSpawnOperator(SpawnService &_spawn_service,
-				     CronJob &&_job) noexcept
-	:CronOperator(std::move(_job)),
-	 spawn_service(_spawn_service)
+CronSpawnOperator::CronSpawnOperator(CronJob &&_job) noexcept
+	:CronOperator(std::move(_job))
 {
 }
 
 CronSpawnOperator::~CronSpawnOperator() noexcept = default;
 
 void
-CronSpawnOperator::Spawn(EventLoop &event_loop,
+CronSpawnOperator::Spawn(EventLoop &event_loop, SpawnService &spawn_service,
 			 PreparedChildProcess &&p,
 			 SocketDescriptor pond_socket)
 {
