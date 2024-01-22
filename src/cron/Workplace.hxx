@@ -14,6 +14,7 @@ class EmailService;
 class CurlGlobal;
 class CronQueue;
 class ExitListener;
+namespace Co { class InvokeTask; }
 
 class CronWorkplace {
 	SpawnService &spawn_service;
@@ -29,6 +30,11 @@ class CronWorkplace {
 		IntrusiveListOptions{.constant_time_size = true}>;
 
 	OperatorList operators;
+
+	class Starting;
+	IntrusiveList<Starting,
+		IntrusiveListBaseHookTraits<Starting>,
+		IntrusiveListOptions{.constant_time_size = true}> starting;
 
 	const std::size_t max_operators;
 
@@ -58,11 +64,11 @@ public:
 	}
 
 	bool IsEmpty() const {
-		return operators.empty();
+		return operators.empty() && starting.empty();
 	}
 
 	bool IsFull() const {
-		return operators.size() == max_operators;
+		return operators.size() + starting.size() >= max_operators;
 	}
 
 	/**
@@ -77,4 +83,13 @@ public:
 	void CancelAll() noexcept;
 
 	void CancelTag(std::string_view tag) noexcept;
+
+private:
+	Co::InvokeTask CoStart(CronQueue &queue,
+			       SocketAddress translation_socket,
+			       std::string_view partition_name,
+			       const char *listener_tag,
+			       CronJob job);
+
+	void OnCompletion(Starting &s) noexcept;
 };

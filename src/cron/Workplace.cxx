@@ -15,6 +15,8 @@
 #include "spawn/Interface.hxx"
 #include "system/Error.hxx"
 #include "net/SocketAddress.hxx"
+#include "co/InvokeTask.hxx"
+#include "co/Task.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "util/Exception.hxx"
 #include "util/StringCompare.hxx"
@@ -24,6 +26,37 @@
 #include <string>
 
 using std::string_view_literals::operator""sv;
+
+class CronWorkplace::Starting final : public IntrusiveListHook<> {
+	CronQueue &queue;
+	CronWorkplace &workplace;
+	const CronJob job;
+	const std::string start_time;
+	Co::InvokeTask task;
+
+public:
+	Starting(CronQueue &_queue, CronWorkplace &_workplace,
+		 CronJob &&_job, std::string &&_start_time,
+		 Co::InvokeTask &&_task) noexcept
+		:queue(_queue), workplace(_workplace),
+		 job(std::move(_job)), start_time(std::move(_start_time)),
+		 task(std::move(_task)) {}
+
+	void Start() noexcept {
+		task.Start(BIND_THIS_METHOD(OnCompletion));
+	}
+
+private:
+	void OnCompletion(std::exception_ptr error) noexcept {
+		if (error) {
+			queue.Finish(job);
+			queue.InsertResult(job, start_time.c_str(), -1,
+					   GetFullMessage(error).c_str());
+		}
+
+		workplace.OnCompletion(*this);
+	}
+};
 
 CronWorkplace::CronWorkplace(SpawnService &_spawn_service,
 			     EmailService *_email_service,
@@ -44,6 +77,7 @@ CronWorkplace::CronWorkplace(SpawnService &_spawn_service,
 CronWorkplace::~CronWorkplace() noexcept
 {
 	assert(operators.empty());
+	assert(starting.empty());
 }
 
 [[gnu::pure]]
@@ -79,51 +113,45 @@ MakeSpawnOperator(CronQueue &queue, CronWorkplace &workplace,
 
 	TranslateResponse response;
 	try {
-		try {
-			response = TranslateCron(alloc, translation_socket,
-						 partition_name, listener_tag,
-						 job.account_id.c_str(),
-						 uri,
-						 job.translate_param.empty()
-						 ? nullptr
-						 : job.translate_param.c_str());
-		} catch (...) {
-			std::throw_with_nested(std::runtime_error("Translation failed"));
-		}
-
-		if (response.status != HttpStatus{}) {
-			if (response.message != nullptr)
-				throw FmtRuntimeError("Status {} from translation server: {}",
-						      static_cast<unsigned>(response.status),
-						      response.message);
-
-			throw FmtRuntimeError("Status {} from translation server",
-					      static_cast<unsigned>(response.status));
-		}
-
-		if (response.child_options.uid_gid.IsEmpty() && !debug_mode)
-			throw std::runtime_error("No UID_GID from translation server");
-
-		if (uri != nullptr) {
-			if (response.execute == nullptr)
-				throw std::runtime_error("No EXECUTE from translation server");
-
-			p.args.push_back(alloc.Dup(response.execute));
-
-			for (const char *arg : response.args) {
-				if (p.args.size() >= 4096)
-					throw std::runtime_error("Too many APPEND packets from translation server");
-
-				p.args.push_back(alloc.Dup(arg));
-			}
-		}
-
-		response.child_options.CopyTo(p);
+		response = TranslateCron(alloc, translation_socket,
+					 partition_name, listener_tag,
+					 job.account_id.c_str(),
+					 uri,
+					 job.translate_param.empty()
+					 ? nullptr
+					 : job.translate_param.c_str());
 	} catch (...) {
-		queue.Finish(job);
-		queue.InsertResult(job, start_time.c_str(), -1, GetFullMessage(std::current_exception()).c_str());
-		throw;
+		std::throw_with_nested(std::runtime_error("Translation failed"));
 	}
+
+	if (response.status != HttpStatus{}) {
+		if (response.message != nullptr)
+			throw FmtRuntimeError("Status {} from translation server: {}",
+					      static_cast<unsigned>(response.status),
+					      response.message);
+
+		throw FmtRuntimeError("Status {} from translation server",
+				      static_cast<unsigned>(response.status));
+	}
+
+	if (response.child_options.uid_gid.IsEmpty() && !debug_mode)
+		throw std::runtime_error("No UID_GID from translation server");
+
+	if (uri != nullptr) {
+		if (response.execute == nullptr)
+			throw std::runtime_error("No EXECUTE from translation server");
+
+		p.args.push_back(alloc.Dup(response.execute));
+
+		for (const char *arg : response.args) {
+			if (p.args.size() >= 4096)
+				throw std::runtime_error("Too many APPEND packets from translation server");
+
+			p.args.push_back(alloc.Dup(arg));
+		}
+	}
+
+	response.child_options.CopyTo(p);
 
 	if (response.timeout.count() > 0)
 		job.timeout = response.timeout;
@@ -153,12 +181,12 @@ MakeCurlOperator(CronQueue &queue, CronWorkplace &workplace,
 	return std::unique_ptr<CronOperator>(std::move(o));
 }
 
-static std::unique_ptr<CronOperator>
+static Co::Task<std::unique_ptr<CronOperator>>
 MakeOperator(CronQueue &queue, CronWorkplace &workplace,
 	     SocketAddress translation_socket,
 	     CurlGlobal &curl_global,
 	     std::string_view partition_name, const char *listener_tag,
-	     CronJob &&job)
+	     CronJob job)
 {
 	auto start_time = queue.GetNow();
 
@@ -166,7 +194,7 @@ MakeOperator(CronQueue &queue, CronWorkplace &workplace,
 	   c_str() pointer */
 	const auto command = job.command;
 
-	return IsURL(command)
+	co_return IsURL(command)
 		? MakeCurlOperator(queue, workplace, curl_global,
 				   std::move(job), command.c_str(),
 				   std::move(start_time))
@@ -176,17 +204,44 @@ MakeOperator(CronQueue &queue, CronWorkplace &workplace,
 				    std::move(start_time));
 }
 
+inline Co::InvokeTask
+CronWorkplace::CoStart(CronQueue &queue,
+		       SocketAddress translation_socket,
+		       std::string_view partition_name,
+		       const char *listener_tag,
+		       CronJob job)
+{
+	auto o = co_await MakeOperator(queue, *this,
+				       translation_socket, curl,
+				       partition_name, listener_tag,
+				       std::move(job));
+
+	operators.push_back(*o.release());
+}
+
 void
 CronWorkplace::Start(CronQueue &queue, SocketAddress translation_socket,
 		     std::string_view partition_name, const char *listener_tag,
 		     CronJob &&job)
 {
-	auto o = MakeOperator(queue, *this,
-			      translation_socket, curl,
-			      partition_name, listener_tag,
-			      std::move(job));
+	CronJob copy{job};
 
-	operators.push_back(*o.release());
+	auto *s = new Starting(queue, *this,
+			       std::move(copy), queue.GetNow(),
+			       CoStart(queue, translation_socket,
+				       partition_name, listener_tag,
+				       std::move(job)));
+	starting.push_back(*s);
+	s->Start();
+}
+
+inline void
+CronWorkplace::OnCompletion(Starting &s) noexcept
+{
+	starting.erase_and_dispose(starting.iterator_to(s),
+				   DeleteDisposer{});
+
+	exit_listener.OnChildProcessExit(-1);
 }
 
 void
@@ -201,8 +256,10 @@ CronWorkplace::OnExit(CronOperator *o)
 void
 CronWorkplace::CancelAll() noexcept
 {
-	if (operators.empty())
+	if (operators.empty() && starting.empty())
 		return;
+
+	starting.clear_and_dispose(DeleteDisposer{});
 
 	operators.clear_and_dispose([](auto *o){
 		o->Cancel();

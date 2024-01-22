@@ -121,6 +121,7 @@ libcommon_enable_seccomp = get_option('seccomp')
 libcommon_enable_libsystemd = libsystemd.found()
 
 subdir('libcommon/src/util')
+subdir('libcommon/src/co')
 subdir('libcommon/src/lib/cap')
 subdir('libcommon/src/lib/fmt')
 subdir('libcommon/src/time')
@@ -231,6 +232,7 @@ executable('cm4all-workshop',
   'src/workshop/Workplace.cxx',
   include_directories: inc,
   dependencies: [
+    coroutines_dep,
     event_net_dep,
     event_net_djb_dep,
     event_systemd_dep,
