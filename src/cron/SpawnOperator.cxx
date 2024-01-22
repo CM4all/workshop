@@ -35,7 +35,7 @@ CronSpawnOperator::~CronSpawnOperator() noexcept = default;
 void
 CronSpawnOperator::Spawn(PreparedChildProcess &&p,
 			 SocketDescriptor pond_socket)
-try {
+{
 	if (!p.stderr_fd.IsDefined()) {
 		/* no STDERR destination configured: the default is to capture
 		   it and save in the cronresults table */
@@ -66,9 +66,6 @@ try {
 	pid->SetExitListener(*this);
 
 	logger(2, "running");
-} catch (...) {
-	Finish(CronResult::Error(std::current_exception()));
-	throw;
 }
 
 void
