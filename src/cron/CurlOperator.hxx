@@ -26,7 +26,7 @@ class CronCurlOperator final
 	std::unique_ptr<CaptureBuffer> output_capture;
 
 public:
-	CronCurlOperator(EventLoop &event_loop, CronHandler &_handler,
+	CronCurlOperator(CronHandler &_handler,
 			 CronJob &&_job,
 			 CurlGlobal &_global,
 			 const char *url) noexcept;

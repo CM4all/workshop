@@ -16,12 +16,11 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-CronSpawnOperator::CronSpawnOperator(EventLoop &event_loop,
-				     CronHandler &_handler,
+CronSpawnOperator::CronSpawnOperator(CronHandler &_handler,
 				     SpawnService &_spawn_service,
 				     CronJob &&_job,
 				     std::string_view _tag) noexcept
-	:CronOperator(event_loop, _handler,
+	:CronOperator(_handler,
 		      std::move(_job),
 		      _tag),
 	 spawn_service(_spawn_service)
@@ -31,7 +30,8 @@ CronSpawnOperator::CronSpawnOperator(EventLoop &event_loop,
 CronSpawnOperator::~CronSpawnOperator() noexcept = default;
 
 void
-CronSpawnOperator::Spawn(PreparedChildProcess &&p,
+CronSpawnOperator::Spawn(EventLoop &event_loop,
+			 PreparedChildProcess &&p,
 			 SocketDescriptor pond_socket)
 {
 	if (!p.stderr_fd.IsDefined()) {
@@ -44,7 +44,7 @@ CronSpawnOperator::Spawn(PreparedChildProcess &&p,
 			/* capture STDOUT as well */
 			p.stdout_fd = p.stderr_fd;
 
-		output_capture = std::make_unique<PipePondAdapter>(GetEventLoop(),
+		output_capture = std::make_unique<PipePondAdapter>(event_loop,
 								   std::move(r),
 								   8192,
 								   pond_socket,

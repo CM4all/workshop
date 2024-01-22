@@ -16,6 +16,7 @@
 #include "lib/fmt/RuntimeError.hxx"
 #include "spawn/Prepared.hxx"
 #include "spawn/Interface.hxx"
+#include "event/FarTimerEvent.hxx"
 #include "system/Error.hxx"
 #include "net/SocketAddress.hxx"
 #include "co/InvokeTask.hxx"
@@ -35,6 +36,8 @@ class CronWorkplace::Running final : public IntrusiveListHook<>, CronHandler {
 	const CronJob job;
 	const std::string start_time;
 
+	FarTimerEvent timeout_event;
+
 	Co::InvokeTask task;
 	std::unique_ptr<CronOperator> op;
 
@@ -43,7 +46,13 @@ public:
 		CronJob &&_job, std::string &&_start_time) noexcept
 		:queue(_queue), workplace(_workplace),
 		 job(std::move(_job)),
-		 start_time(std::move(_start_time)) {}
+		 start_time(std::move(_start_time)),
+		 timeout_event(queue.GetEventLoop(),
+			       BIND_THIS_METHOD(OnTimeout)) {}
+
+	auto &GetEventLoop() const noexcept {
+		return timeout_event.GetEventLoop();
+	}
 
 	bool IsTag(std::string_view _tag) const noexcept {
 		return op && op->IsTag(_tag);
@@ -52,6 +61,10 @@ public:
 	void Start(SocketAddress translation_socket,
 		   std::string_view partition_name,
 		   const char *listener_tag) noexcept {
+		/* kill after the timeout expires */
+		if (job.timeout.count() > 0)
+			timeout_event.Schedule(job.timeout);
+
 		task = CoStart(translation_socket, partition_name, listener_tag);
 		task.Start(BIND_THIS_METHOD(OnCompletion));
 	}
@@ -74,6 +87,11 @@ private:
 
 		// the CronOperator will invoke OnExit() 
 		assert(op);
+	}
+
+	void OnTimeout() noexcept {
+		OnFinish(CronResult::Error("Timeout"sv));
+		OnExit();
 	}
 
 	// virtual methods from class CronHandler
@@ -199,20 +217,20 @@ MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 
 	/* create operator object */
 
-	auto o = std::make_unique<CronSpawnOperator>(event_loop, handler,
+	auto o = std::make_unique<CronSpawnOperator>(handler,
 						     spawn_service,
 						     std::move(job),
 						     response.child_options.tag);
-	o->Spawn(std::move(p), pond_socket);
+	o->Spawn(event_loop, std::move(p), pond_socket);
 	co_return std::unique_ptr<CronOperator>(std::move(o));
 }
 
 static std::unique_ptr<CronOperator>
-MakeCurlOperator(EventLoop &event_loop, CronHandler &handler,
+MakeCurlOperator(CronHandler &handler,
 		 CurlGlobal &curl_global,
 		 CronJob &&job, const char *url)
 {
-	auto o = std::make_unique<CronCurlOperator>(event_loop, handler,
+	auto o = std::make_unique<CronCurlOperator>(handler,
 						    std::move(job),
 						    curl_global, url);
 	o->Start();
@@ -233,7 +251,7 @@ MakeOperator(EventLoop &event_loop, SpawnService &spawn_service,
 	const auto command = job.command;
 
 	if (IsURL(command))
-		co_return MakeCurlOperator(event_loop, handler, curl_global,
+		co_return MakeCurlOperator(handler, curl_global,
 					   std::move(job), command.c_str());
 	else
 		co_return co_await MakeSpawnOperator(event_loop, spawn_service, pond_socket,
@@ -248,7 +266,7 @@ CronWorkplace::Running::CoStart(SocketAddress translation_socket,
 				std::string_view partition_name,
 				const char *listener_tag)
 {
-	op = co_await MakeOperator(queue.GetEventLoop(),
+	op = co_await MakeOperator(GetEventLoop(),
 				   workplace.GetSpawnService(),
 				   workplace.GetPondSocket(),
 				   *this,

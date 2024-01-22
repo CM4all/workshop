@@ -2,8 +2,7 @@
 // Copyright CM4all GmbH
 // author: Max Kellermann <mk@cm4all.com>
 
-#ifndef CRON_SPAWN_OPERATOR_HXX
-#define CRON_SPAWN_OPERATOR_HXX
+#pragma once
 
 #include "Operator.hxx"
 #include "spawn/ExitListener.hxx"
@@ -11,6 +10,7 @@
 #include <memory>
 
 struct PreparedChildProcess;
+class EventLoop;
 class SpawnService;
 class PipeCaptureBuffer;
 class SocketDescriptor;
@@ -29,17 +29,16 @@ class CronSpawnOperator final
 	std::unique_ptr<PipeCaptureBuffer> output_capture;
 
 public:
-	CronSpawnOperator(EventLoop &event_loop, CronHandler &_handler,
+	CronSpawnOperator(CronHandler &_handler,
 			  SpawnService &_spawn_service,
 			  CronJob &&_job,
 			  std::string_view _tag) noexcept;
 	~CronSpawnOperator() noexcept override;
 
-	void Spawn(PreparedChildProcess &&p, SocketDescriptor pond_socket);
+	void Spawn(EventLoop &event_loop,
+		   PreparedChildProcess &&p, SocketDescriptor pond_socket);
 
 public:
 	/* virtual methods from ExitListener */
 	void OnChildProcessExit(int status) noexcept override;
 };
-
-#endif

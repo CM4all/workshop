@@ -5,7 +5,6 @@
 #pragma once
 
 #include "Job.hxx"
-#include "event/FarTimerEvent.hxx"
 #include "io/Logger.hxx"
 
 #include <string>
@@ -30,20 +29,14 @@ protected:
 private:
 	const std::string tag;
 
-	FarTimerEvent timeout_event;
-
 public:
-	CronOperator(EventLoop &event_loop, CronHandler &_handler, CronJob &&_job,
+	CronOperator(CronHandler &_handler, CronJob &&_job,
 		     std::string_view _tag) noexcept;
 
 	virtual ~CronOperator() noexcept = default;
 
 	CronOperator(const CronOperator &other) = delete;
 	CronOperator &operator=(const CronOperator &other) = delete;
-
-	EventLoop &GetEventLoop() const noexcept {
-		return timeout_event.GetEventLoop();
-	}
 
 	bool IsTag(std::string_view _tag) const noexcept {
 		return tag == _tag;

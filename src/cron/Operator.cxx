@@ -10,16 +10,13 @@
 
 using std::string_view_literals::operator""sv;
 
-CronOperator::CronOperator(EventLoop &event_loop, CronHandler &_handler,
+CronOperator::CronOperator(CronHandler &_handler,
 			   CronJob &&_job,
 			   std::string_view _tag) noexcept
 	:handler(_handler), job(std::move(_job)),
 	 logger(*this),
-	 tag(_tag),
-	 timeout_event(event_loop, BIND_THIS_METHOD(OnTimeout))
+	 tag(_tag)
 {
-	/* kill after the timeout expires */
-	timeout_event.Schedule(job.timeout);
 }
 
 void
@@ -32,15 +29,6 @@ void
 CronOperator::InvokeExit() noexcept
 {
 	handler.OnExit();
-}
-
-void
-CronOperator::OnTimeout() noexcept
-{
-	logger(2, "Timeout");
-
-	Finish(CronResult::Error("Timeout"sv));
-	InvokeExit();
 }
 
 std::string

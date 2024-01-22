@@ -14,12 +14,11 @@
 
 using std::string_view_literals::operator""sv;
 
-CronCurlOperator::CronCurlOperator(EventLoop &event_loop,
-				   CronHandler &_handler,
+CronCurlOperator::CronCurlOperator(CronHandler &_handler,
 				   CronJob &&_job,
 			   CurlGlobal &_global,
 				   const char *url) noexcept
-	:CronOperator(event_loop, _handler,
+	:CronOperator(_handler,
 		      std::move(_job),
 		      {}),
 	 request(_global, url, *this)
