@@ -151,7 +151,7 @@ static Co::Task<std::unique_ptr<CronOperator>>
 MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 		  SocketDescriptor pond_socket,
 		  LazyDomainLogger &logger,
-		  CronJob job, const char *command,
+		  const CronJob &job, const char *command,
 		  const TranslateResponse &response)
 {
 	/* prepare the child process */
@@ -193,12 +193,14 @@ MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 
 	response.child_options.CopyTo(p);
 
+	/* TODO
 	if (response.timeout.count() > 0)
 		job.timeout = response.timeout;
+	*/
 
 	/* create operator object */
 
-	auto o = std::make_unique<CronSpawnOperator>(std::move(job), logger);
+	auto o = std::make_unique<CronSpawnOperator>(job, logger);
 	o->Spawn(event_loop, spawn_service,
 		 std::move(p), pond_socket);
 	co_return std::unique_ptr<CronOperator>(std::move(o));
@@ -207,9 +209,9 @@ MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 static std::unique_ptr<CronOperator>
 MakeCurlOperator(CurlGlobal &curl_global,
 		 LazyDomainLogger &logger,
-		 CronJob &&job, const char *url)
+		 const CronJob &job, const char *url)
 {
-	auto o = std::make_unique<CronCurlOperator>(std::move(job), logger,
+	auto o = std::make_unique<CronCurlOperator>(job, logger,
 						    curl_global, url);
 	o->Start();
 	return std::unique_ptr<CronOperator>(std::move(o));
@@ -223,14 +225,10 @@ MakeOperator(EventLoop &event_loop, SpawnService &spawn_service,
 	     LazyDomainLogger &logger,
 	     std::string &tag_r,
 	     std::string_view partition_name, const char *listener_tag,
-	     CronJob job)
+	     const CronJob &job)
 {
-	/* need a copy because the std::move(job) below may invalidate the
-	   c_str() pointer */
-	const auto command = job.command;
-
-	const char *const uri = command.starts_with("urn:"sv)
-		? command.c_str()
+	const char *const uri = job.command.starts_with("urn:"sv)
+		? job.command.c_str()
 		: nullptr;
 
 	Allocator alloc;
@@ -253,14 +251,14 @@ MakeOperator(EventLoop &event_loop, SpawnService &spawn_service,
 	if (!response.child_options.tag.empty())
 		tag_r = response.child_options.tag;
 
-	if (IsURL(command))
+	if (IsURL(job.command))
 		co_return MakeCurlOperator(curl_global, logger,
-					   std::move(job), command.c_str());
+					   job, job.command.c_str());
 	else
 		co_return co_await MakeSpawnOperator(event_loop, spawn_service, pond_socket,
 						     logger,
-						     std::move(job),
-						     uri == nullptr ? command.c_str() : nullptr,
+						     job,
+						     uri == nullptr ? job.command.c_str() : nullptr,
 						     response);
 }
 
@@ -276,7 +274,7 @@ CronWorkplace::Running::CoStart(SocketAddress translation_socket,
 					logger,
 					tag,
 					partition_name, listener_tag,
-					CronJob{job});
+					job);
 	assert(op);
 
 	const auto result = co_await *op;

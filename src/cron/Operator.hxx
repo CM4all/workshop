@@ -24,11 +24,11 @@ class CronOperator
 	friend Awaitable;
 
 protected:
-	const CronJob job;
+	const CronJob &job;
 
 	LazyDomainLogger &logger;
 
-	explicit CronOperator(CronJob &&_job, LazyDomainLogger &_logger) noexcept
+	explicit CronOperator(const CronJob &_job, LazyDomainLogger &_logger) noexcept
 		:job(std::move(_job)), logger(_logger) {}
 
 public:
