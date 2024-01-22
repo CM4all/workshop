@@ -44,7 +44,6 @@ public:
 
 protected:
 	void Finish(const CronResult &result) noexcept;
-	void InvokeExit() noexcept;
 
 private:
 	void OnTimeout() noexcept;

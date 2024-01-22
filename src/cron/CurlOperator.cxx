@@ -70,7 +70,6 @@ CronCurlOperator::OnEnd()
 		result.log = std::move(*output_capture).NormalizeASCII();
 
 	Finish(result);
-	InvokeExit();
 }
 
 void
@@ -79,5 +78,4 @@ CronCurlOperator::OnError(std::exception_ptr ep) noexcept
 	PrintException(ep);
 
 	Finish(CronResult::Error(ep));
-	InvokeExit();
 }

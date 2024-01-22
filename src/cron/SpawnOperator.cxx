@@ -94,5 +94,4 @@ CronSpawnOperator::OnChildProcessExit(int status) noexcept
 	}
 
 	Finish(result);
-	InvokeExit();
 }

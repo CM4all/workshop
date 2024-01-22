@@ -70,7 +70,7 @@ public:
 	}
 
 	void Cancel() noexcept {
-		OnFinish(CronResult::Error("Canceled"sv));
+		SetResult(CronResult::Error("Canceled"sv));
 	}
 
 private:
@@ -81,7 +81,6 @@ private:
 	void OnCompletion(std::exception_ptr error) noexcept {
 		if (error) {
 			OnFinish(CronResult::Error(error));
-			OnExit();
 			return;
 		}
 
@@ -91,19 +90,19 @@ private:
 
 	void OnTimeout() noexcept {
 		OnFinish(CronResult::Error("Timeout"sv));
-		OnExit();
 	}
 
-	// virtual methods from class CronHandler
-	void OnFinish(const CronResult &result) noexcept override;
+	void SetResult(const CronResult &result) noexcept;
 
-	void OnExit() noexcept override {
+	// virtual methods from class CronHandler
+	void OnFinish(const CronResult &result) noexcept override {
+		SetResult(result);
 		workplace.OnCompletion(*this);
 	}
 };
 
 void
-CronWorkplace::Running::OnFinish(const CronResult &result) noexcept
+CronWorkplace::Running::SetResult(const CronResult &result) noexcept
 {
 	if (!job.notification.empty()) {
 		auto *es = workplace.GetEmailService();

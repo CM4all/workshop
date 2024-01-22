@@ -11,5 +11,4 @@
 class CronHandler {
 public:
 	virtual void OnFinish(const CronResult &result) noexcept = 0;
-	virtual void OnExit() noexcept = 0;
 };

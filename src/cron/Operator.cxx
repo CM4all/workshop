@@ -25,12 +25,6 @@ CronOperator::Finish(const CronResult &result) noexcept
 	handler.OnFinish(result);
 }
 
-void
-CronOperator::InvokeExit() noexcept
-{
-	handler.OnExit();
-}
-
 std::string
 CronOperator::MakeLoggerDomain() const noexcept
 {
