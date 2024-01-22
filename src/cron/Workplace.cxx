@@ -213,11 +213,9 @@ MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 
 static std::unique_ptr<CronOperator>
 MakeCurlOperator(CurlGlobal &curl_global,
-		 LazyDomainLogger &logger,
 		 const char *url)
 {
-	auto o = std::make_unique<CronCurlOperator>(logger,
-						    curl_global, url);
+	auto o = std::make_unique<CronCurlOperator>(curl_global, url);
 	o->Start();
 	return std::unique_ptr<CronOperator>(std::move(o));
 }
@@ -258,7 +256,7 @@ CronWorkplace::Running::MakeOperator(SocketAddress translation_socket,
 		timeout_event.Schedule(response.timeout);
 
 	if (IsURL(job.command))
-		co_return MakeCurlOperator(workplace.curl, logger,
+		co_return MakeCurlOperator(workplace.curl,
 					   job.command.c_str());
 	else
 		co_return MakeSpawnOperator(GetEventLoop(),

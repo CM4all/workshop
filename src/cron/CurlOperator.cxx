@@ -13,11 +13,9 @@
 
 using std::string_view_literals::operator""sv;
 
-CronCurlOperator::CronCurlOperator(LazyDomainLogger &_logger,
-				   CurlGlobal &_global,
+CronCurlOperator::CronCurlOperator(CurlGlobal &_global,
 				   const char *url) noexcept
-	:CronOperator(_logger),
-	 request(_global, url, *this)
+	:request(_global, url, *this)
 {
 }
 

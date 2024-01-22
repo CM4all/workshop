@@ -5,7 +5,6 @@
 #pragma once
 
 #include "Result.hxx"
-#include "io/Logger.hxx"
 #include "co/AwaitableHelper.hxx"
 
 /**
@@ -23,10 +22,7 @@ class CronOperator
 	friend Awaitable;
 
 protected:
-	LazyDomainLogger &logger;
-
-	explicit CronOperator(LazyDomainLogger &_logger) noexcept
-		:logger(_logger) {}
+	CronOperator() noexcept = default;
 
 public:
 	virtual ~CronOperator() noexcept = default;

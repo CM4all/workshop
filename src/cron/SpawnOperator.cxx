@@ -8,6 +8,7 @@
 #include "spawn/Interface.hxx"
 #include "spawn/Prepared.hxx"
 #include "spawn/ProcessHandle.hxx"
+#include "io/Logger.hxx"
 #include "io/Pipe.hxx"
 #include "io/UniqueFileDescriptor.hxx"
 #include "util/UTF8.hxx"
@@ -16,7 +17,7 @@
 #include <sys/wait.h>
 
 CronSpawnOperator::CronSpawnOperator(LazyDomainLogger &_logger) noexcept
-	:CronOperator(_logger)
+	:logger(_logger)
 {
 }
 

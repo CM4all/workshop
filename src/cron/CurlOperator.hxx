@@ -2,8 +2,7 @@
 // Copyright CM4all GmbH
 // author: Max Kellermann <mk@cm4all.com>
 
-#ifndef CRON_CURL_OPERATOR_HXX
-#define CRON_CURL_OPERATOR_HXX
+#pragma once
 
 #include "Operator.hxx"
 #include "lib/curl/Handler.hxx"
@@ -26,8 +25,7 @@ class CronCurlOperator final
 	std::unique_ptr<CaptureBuffer> output_capture;
 
 public:
-	CronCurlOperator(LazyDomainLogger &_logger,
-			 CurlGlobal &_global,
+	CronCurlOperator(CurlGlobal &_global,
 			 const char *url) noexcept;
 	~CronCurlOperator() noexcept override;
 
@@ -40,5 +38,3 @@ private:
 	void OnEnd() override;
 	void OnError(std::exception_ptr ep) noexcept override;
 };
-
-#endif

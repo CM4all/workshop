@@ -16,6 +16,7 @@ class SpawnService;
 class PipeCaptureBuffer;
 class SocketDescriptor;
 class ChildProcessHandle;
+class LazyDomainLogger;
 
 /**
  * A #CronJob being executed as a spawned child process.
@@ -26,6 +27,8 @@ class CronSpawnOperator final
 	std::unique_ptr<ChildProcessHandle> pid;
 
 	std::unique_ptr<PipeCaptureBuffer> output_capture;
+
+	LazyDomainLogger &logger;
 
 public:
 	explicit CronSpawnOperator(LazyDomainLogger &_logger) noexcept;
