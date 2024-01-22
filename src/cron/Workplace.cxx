@@ -79,6 +79,10 @@ public:
 	}
 
 private:
+	Co::Task<std::unique_ptr<CronOperator>> MakeOperator(SocketAddress translation_socket,
+							     std::string_view partition_name,
+							     const char *listener_tag);
+
 	Co::InvokeTask CoStart(SocketAddress translation_socket,
 			       std::string_view partition_name,
 			       const char *listener_tag);
@@ -223,15 +227,10 @@ MakeCurlOperator(CurlGlobal &curl_global,
 	return std::unique_ptr<CronOperator>(std::move(o));
 }
 
-static Co::Task<std::unique_ptr<CronOperator>>
-MakeOperator(EventLoop &event_loop, SpawnService &spawn_service,
-	     SocketDescriptor pond_socket,
-	     SocketAddress translation_socket,
-	     CurlGlobal &curl_global,
-	     LazyDomainLogger &logger,
-	     std::string &site_r, std::string &tag_r,
-	     std::string_view partition_name, const char *listener_tag,
-	     const CronJob &job)
+inline Co::Task<std::unique_ptr<CronOperator>>
+CronWorkplace::Running::MakeOperator(SocketAddress translation_socket,
+				     std::string_view partition_name,
+				     const char *listener_tag)
 {
 	const char *const uri = job.command.starts_with("urn:"sv)
 		? job.command.c_str()
@@ -242,7 +241,7 @@ MakeOperator(EventLoop &event_loop, SpawnService &spawn_service,
 	TranslateResponse response;
 	try {
 		response = co_await
-			TranslateCron(event_loop,
+			TranslateCron(GetEventLoop(),
 				      alloc, translation_socket,
 				      partition_name, listener_tag,
 				      job.account_id.c_str(),
@@ -255,16 +254,18 @@ MakeOperator(EventLoop &event_loop, SpawnService &spawn_service,
 	}
 
 	if (response.site != nullptr)
-		site_r = response.site;
+		site = response.site;
 
 	if (!response.child_options.tag.empty())
-		tag_r = response.child_options.tag;
+		tag = response.child_options.tag;
 
 	if (IsURL(job.command))
-		co_return MakeCurlOperator(curl_global, logger,
+		co_return MakeCurlOperator(workplace.curl, logger,
 					   job.command.c_str());
 	else
-		co_return MakeSpawnOperator(event_loop, spawn_service, pond_socket,
+		co_return MakeSpawnOperator(GetEventLoop(),
+					    workplace.GetSpawnService(),
+					    workplace.GetPondSocket(),
 					    logger,
 					    job,
 					    uri == nullptr ? job.command.c_str() : nullptr,
@@ -276,14 +277,8 @@ CronWorkplace::Running::CoStart(SocketAddress translation_socket,
 				std::string_view partition_name,
 				const char *listener_tag)
 {
-	auto op = co_await MakeOperator(GetEventLoop(),
-					workplace.GetSpawnService(),
-					workplace.GetPondSocket(),
-					translation_socket, workplace.curl,
-					logger,
-					site, tag,
-					partition_name, listener_tag,
-					job);
+	auto op = co_await MakeOperator(translation_socket,
+					partition_name, listener_tag);
 	assert(op);
 
 	const auto result = co_await *op;
