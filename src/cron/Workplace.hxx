@@ -10,7 +10,6 @@
 struct CronJob;
 class SpawnService;
 class EmailService;
-class CurlGlobal;
 class CronQueue;
 class ExitListener;
 
@@ -19,7 +18,6 @@ class CronWorkplace {
 	EmailService *const email_service;
 	const SocketDescriptor pond_socket;
 
-	CurlGlobal &curl;
 	ExitListener &exit_listener;
 
 	class Running;
@@ -33,7 +31,6 @@ public:
 	CronWorkplace(SpawnService &_spawn_service,
 		      EmailService *_email_service,
 		      SocketDescriptor _pond_socket,
-		      CurlGlobal &_curl,
 		      ExitListener &_exit_listener,
 		      std::size_t _max_operators);
 

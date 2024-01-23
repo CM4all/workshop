@@ -10,7 +10,6 @@
 
 CronPartition::CronPartition(EventLoop &event_loop,
 			     SpawnService &_spawn_service,
-			     CurlGlobal &_curl,
 			     const Config &root_config,
 			     const CronPartitionConfig &config,
 			     BoundMethod<void() noexcept> _idle_callback)
@@ -28,7 +27,7 @@ CronPartition::CronPartition(EventLoop &event_loop,
 		       config.database.c_str(), config.database_schema.c_str(),
 		       [this](CronJob &&job){ OnJob(std::move(job)); }),
 	 workplace(_spawn_service, email_service.get(), pond_socket,
-		   _curl, *this,
+		   *this,
 		   root_config.concurrency),
 	 idle_callback(_idle_callback),
 	 default_timeout(config.default_timeout)

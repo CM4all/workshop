@@ -5,36 +5,38 @@
 #pragma once
 
 #include "Operator.hxx"
-#include "lib/curl/Handler.hxx"
-#include "lib/curl/Request.hxx"
+#include "event/SocketEvent.hxx"
+#include "CaptureBuffer.hxx"
 
+#include <cstdint>
 #include <memory>
 
-class CaptureBuffer;
+enum class HttpStatus : uint_least16_t;
+struct ChildOptions;
+class SpawnService;
+class ChildProcessHandle;
 
 /**
  * A #CronJob which sends a HTTP GET request to a specific URL.
  */
 class CronCurlOperator final
-	: public CronOperator, CurlResponseHandler
+	: public CronOperator
 {
-	CurlRequest request;
+	SocketEvent socket;
+
+	std::unique_ptr<ChildProcessHandle> pid;
+
+	CaptureBuffer capture{8192};
 
 	HttpStatus status{};
 
-	std::unique_ptr<CaptureBuffer> output_capture;
-
 public:
-	CronCurlOperator(CurlGlobal &_global,
-			 const char *url) noexcept;
+	CronCurlOperator(EventLoop &event_loop) noexcept;
 	~CronCurlOperator() noexcept override;
 
-	void Start();
+	void Start(SpawnService &spawn_service, const char *name,
+		   const ChildOptions &options, const char *url);
 
 private:
-	/* virtual methods from CurlResponseHandler */
-	void OnHeaders(HttpStatus status, Curl::Headers &&headers) override;
-	void OnData(std::span<const std::byte> src) override;
-	void OnEnd() override;
-	void OnError(std::exception_ptr ep) noexcept override;
+	void OnSocketReady(unsigned events) noexcept;
 };

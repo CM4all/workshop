@@ -5,68 +5,165 @@
 #include "CurlOperator.hxx"
 #include "Result.hxx"
 #include "CaptureBuffer.hxx"
+#include "lib/curl/Adapter.hxx"
+#include "lib/curl/Easy.hxx"
+#include "lib/curl/Handler.hxx"
+#include "lib/curl/Setup.hxx"
+#include "spawn/ChildOptions.hxx"
+#include "spawn/Interface.hxx"
+#include "spawn/Prepared.hxx"
+#include "spawn/ProcessHandle.hxx"
+#include "net/SocketError.hxx"
+#include "net/SocketPair.hxx"
+#include "net/SocketProtocolError.hxx"
+#include "net/UniqueSocketDescriptor.hxx"
 #include "util/SpanCast.hxx"
 #include "util/StringCompare.hxx"
 
-#include <algorithm>
-
 using std::string_view_literals::operator""sv;
 
-CronCurlOperator::CronCurlOperator(CurlGlobal &_global,
-				   const char *url) noexcept
-	:request(_global, url, *this)
-{
-}
+namespace {
 
-CronCurlOperator::~CronCurlOperator() noexcept = default;
+class MyResponseHandler final : public CurlResponseHandler {
+public:
+	bool is_text = false;
+	SocketDescriptor socket;
+	std::exception_ptr error;
 
-void
-CronCurlOperator::Start()
-{
-	request.Start();
-}
+	void OnHeaders(HttpStatus status, Curl::Headers &&headers) override {
+		(void)socket.Write(ReferenceAsBytes(status));
 
-void
-CronCurlOperator::OnHeaders(HttpStatus _status, Curl::Headers &&headers)
-{
-	status = _status;
-
-	const auto ct = headers.find("content-type"sv);
-	if (ct != headers.end()) {
-		const char *content_type = ct->second.c_str();
-		if (StringStartsWith(content_type, "text/"sv))
-			/* capture the response body if it's text */
-			output_capture = std::make_unique<CaptureBuffer>(8192);
+		if (const auto i = headers.find("content-type"sv);
+		    i != headers.end())
+			is_text = i->second.starts_with("text/"sv);
 	}
-}
 
-void
-CronCurlOperator::OnData(std::span<const std::byte> _src)
-{
-	if (output_capture) {
-		const auto src = ToStringView(_src);
-		auto w = output_capture->Write();
-		size_t nbytes = std::min(w.size(), src.size());
-		std::copy_n(src.begin(), nbytes, w.begin());
-		output_capture->Append(nbytes);
+	void OnData(std::span<const std::byte> data) override {
+		if (!is_text)
+			return;
+
+		if (socket.Write(data) < 0)
+			throw MakeSocketError("send() failed");
 	}
+
+	void OnEnd() override {}
+
+	void OnError(std::exception_ptr _error) noexcept override {
+		error = std::move(_error);
+	}
+};
+
+static CurlEasy
+ReadRequest(SocketDescriptor s)
+{
+	char url[4096];
+
+	if (const auto nbytes = s.Receive(std::as_writable_bytes(std::span{url}));
+	    nbytes < 0)
+		throw MakeSocketError("recvmsg() failed");
+	else if (static_cast<std::size_t>(nbytes) == sizeof(url))
+		throw SocketBufferFullError{};
+	else
+		url[nbytes] = 0;
+
+	return CurlEasy{url};
 }
 
-void
-CronCurlOperator::OnEnd()
+static int
+SpawnCurlFunction(PreparedChildProcess &&)
 {
-	CronResult result{
-		.exit_status = static_cast<int>(status),
+	SocketDescriptor control{3};
+
+	auto easy = ReadRequest(control);
+	Curl::Setup(easy);
+
+	MyResponseHandler handler;
+	CurlResponseHandlerAdapter adapter{handler};
+	adapter.Install(easy);
+
+	easy.Perform();
+	adapter.Done(CURLE_OK);
+
+	if (handler.error)
+		std::rethrow_exception(handler.error);
+
+	return 0;
+}
+
+static std::pair<UniqueSocketDescriptor, std::unique_ptr<ChildProcessHandle>>
+SpawnCurl(SpawnService &spawn_service, const char *name,
+	  const ChildOptions &options)
+{
+	// TODO this is a horrible and inefficient kludge
+	auto [control_socket, control_socket_for_child] = CreateSocketPair(SOCK_SEQPACKET);
+
+	PreparedChildProcess p;
+	p.exec_function = SpawnCurlFunction;
+	p.args.push_back("dummy");
+	p.ns = {ShallowCopy{}, options.ns};
+	p.ns.enable_pid = false;
+	p.ns.enable_cgroup = false;
+	p.ns.enable_ipc = false;
+	p.ns.pid_namespace = nullptr;
+	p.uid_gid = options.uid_gid;
+#ifdef HAVE_LIBSECCOMP
+	p.forbid_multicast = options.forbid_multicast;
+	p.forbid_bind = options.forbid_bind;
+#endif // HAVE_LIBSECCOMP
+	p.SetControl(std::move(control_socket_for_child));
+
+	return {
+		std::move(control_socket),
+		spawn_service.SpawnChildProcess(name, std::move(p)),
 	};
+}
 
-	if (output_capture)
-		result.log = std::move(*output_capture).NormalizeASCII();
+} // anonymous namespace
 
-	Finish(std::move(result));
+CronCurlOperator::CronCurlOperator(EventLoop &event_loop) noexcept
+	:socket(event_loop, BIND_THIS_METHOD(OnSocketReady))
+{
+}
+
+CronCurlOperator::~CronCurlOperator() noexcept
+{
+	socket.Close();
 }
 
 void
-CronCurlOperator::OnError(std::exception_ptr ep) noexcept
+CronCurlOperator::Start(SpawnService &spawn_service, const char *name,
+			const ChildOptions &options, const char *url)
 {
-	Finish(CronResult::Error(ep));
+	auto [_socket, _pid] = SpawnCurl(spawn_service, name, options);
+
+	if (_socket.Write(AsBytes(std::string_view{url})) < 0)
+		throw MakeSocketError("Failed to send");
+
+	pid = std::move(_pid);
+
+	socket.Open(_socket.Release());
+	socket.ScheduleRead();
+}
+
+void
+CronCurlOperator::OnSocketReady(unsigned) noexcept
+{
+	if (status == HttpStatus{}) {
+		if (socket.GetSocket().ReadNoWait(ReferenceAsWritableBytes(status)) != static_cast<ssize_t>(sizeof(status)) ||
+		    status == HttpStatus{})
+			Finish(CronResult::Error("Failed to read status"));
+
+		return;
+	}
+
+	auto w = capture.Write();
+	const auto nbytes = socket.GetSocket().ReadNoWait(std::as_writable_bytes(w));
+	if (nbytes > 0) {
+		capture.Append(nbytes);
+	} else {
+		Finish(CronResult{
+				.log = std::move(capture).NormalizeASCII(),
+				.exit_status = static_cast<int>(status),
+			});
+	}
 }

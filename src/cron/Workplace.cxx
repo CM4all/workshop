@@ -126,13 +126,11 @@ CronWorkplace::Running::SetResult(const CronResult &result) noexcept
 CronWorkplace::CronWorkplace(SpawnService &_spawn_service,
 			     EmailService *_email_service,
 			     SocketDescriptor _pond_socket,
-			     CurlGlobal &_curl,
 			     ExitListener &_exit_listener,
 			     std::size_t _max_operators)
 	:spawn_service(_spawn_service),
 	 email_service(_email_service),
 	 pond_socket(_pond_socket),
-	 curl(_curl),
 	 exit_listener(_exit_listener),
 	 max_operators(_max_operators)
 {
@@ -212,11 +210,12 @@ MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 }
 
 static std::unique_ptr<CronOperator>
-MakeCurlOperator(CurlGlobal &curl_global,
-		 const char *url)
+MakeCurlOperator(EventLoop &event_loop, SpawnService &spawn_service,
+		 const CronJob &job, const char *url,
+		 const TranslateResponse &response)
 {
-	auto o = std::make_unique<CronCurlOperator>(curl_global, url);
-	o->Start();
+	auto o = std::make_unique<CronCurlOperator>(event_loop);
+	o->Start(spawn_service, job.id.c_str(), response.child_options, url);
 	return std::unique_ptr<CronOperator>(std::move(o));
 }
 
@@ -256,8 +255,11 @@ CronWorkplace::Running::MakeOperator(SocketAddress translation_socket,
 		timeout_event.Schedule(response.timeout);
 
 	if (IsURL(job.command))
-		co_return MakeCurlOperator(workplace.curl,
-					   job.command.c_str());
+		co_return MakeCurlOperator(GetEventLoop(),
+					   workplace.GetSpawnService(),
+					   job,
+					   job.command.c_str(),
+					   response);
 	else
 		co_return MakeSpawnOperator(GetEventLoop(),
 					    workplace.GetSpawnService(),

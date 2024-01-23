@@ -11,7 +11,6 @@
 #include "event/DeferEvent.hxx"
 #include "spawn/Registry.hxx"
 #include "lib/curl/Init.hxx"
-#include "lib/curl/Global.hxx"
 #include "io/Logger.hxx"
 #include "io/StateDirectories.hxx"
 #include "config.h"
@@ -25,7 +24,6 @@
 struct Config;
 class UniqueSocketDescriptor;
 class SpawnServerClient;
-class CurlGlobal;
 class MultiLibrary;
 namespace BengControl { class Server; }
 class WorkshopPartition;
@@ -49,7 +47,6 @@ class Instance final : BengControl::Handler {
 	std::unique_ptr<SpawnServerClient> spawn_service;
 
 	ScopeCurlInit curl_init;
-	CurlGlobal curl;
 
 	const StateDirectories state_directories;
 

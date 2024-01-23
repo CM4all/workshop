@@ -27,7 +27,6 @@ Instance::Instance(const Config &config,
 					     /* disable "verify", we
 						do it via SpawnHook */
 					     false)),
-	 curl(event_loop),
 	 library(std::move(_library))
 {
 	shutdown_listener.Enable();
@@ -39,7 +38,7 @@ Instance::Instance(const Config &config,
 					 BIND_THIS_METHOD(OnPartitionIdle));
 
 	for (const auto &i : config.cron_partitions)
-		cron_partitions.emplace_front(event_loop, *spawn_service, curl,
+		cron_partitions.emplace_front(event_loop, *spawn_service,
 					      config, i,
 					      BIND_THIS_METHOD(OnPartitionIdle));
 
