@@ -3,7 +3,7 @@ cm4all-workshop (6.0.23) unstable; urgency=low
   * cron: perform HTTP requests in containerized user process
   * spawn: don't kill on syscall get_mem56 inpolicy(), fail with ENOSYS
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Fri, 23 Feb 2024 22:06:17 +0100
 
 cm4all-workshop (6.0.22) unstable; urgency=low
 
