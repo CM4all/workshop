@@ -172,6 +172,17 @@ else
 endif
 
 subdir('libcommon/src/pg')
+
+alloc = static_library(
+  'alloc',
+  'src/AllocatorPtr.cxx',
+  include_directories: inc,
+)
+
+alloc_dep = declare_dependency(
+  link_with: alloc,
+)
+
 subdir('libcommon/src/adata')
 subdir('libcommon/src/spawn')
 subdir('libcommon/src/translation')
@@ -202,7 +213,6 @@ executable('cm4all-workshop',
   'src/Config.cxx',
   'src/CommandLine.cxx',
   'src/CgroupAccounting.cxx',
-  'src/AllocatorPtr.cxx',
   'src/CaptureBuffer.cxx',
   'src/PipeCaptureBuffer.cxx',
   'src/PipePondAdapter.cxx',
@@ -284,7 +294,6 @@ executable(
   'src/workshop/RunJob.cxx',
   'src/workshop/ControlChannelServer.cxx',
   'src/workshop/ProgressReader.cxx',
-  'src/AllocatorPtr.cxx',
   include_directories: inc,
   dependencies: [
     fmt_dep,
