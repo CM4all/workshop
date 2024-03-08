@@ -15,11 +15,13 @@ PipePondAdapter::OnLine(std::string_view line) noexcept
 	if (line.empty())
 		return;
 
-	Net::Log::Datagram d{Net::Log::Type::JOB};
+	Net::Log::Datagram d{
+		.message = line,
+		.type = Net::Log::Type::JOB,
+	};
+
 	if (!site.empty())
 		d.site = site.c_str();
-
-	d.message = line;
 
 	try {
 		Net::Log::Send(pond_socket, d);
