@@ -13,6 +13,7 @@
 #include "net/AddressInfo.hxx"
 #include "net/Parser.hxx"
 #include "net/control/Protocol.hxx"
+#include "net/log/Protocol.hxx"
 #include "util/StringAPI.hxx"
 #include "util/StringParser.hxx"
 #include "config.h"
@@ -190,7 +191,7 @@ WorkshopConfigParser::CronPartition::ParseLine(FileLineParser &line)
 							  628);
 	} else if (strcmp(word, "pond_server") == 0) {
 		config.pond_server = ResolveStreamConnect(line.ExpectValueAndEnd(),
-							  5479);
+							  Net::Log::DEFAULT_PORT);
 	} else if (strcmp(word, "tag") == 0) {
 		config.tag = line.ExpectValueAndEnd();
 	} else if (StringIsEqual(word, "default_timeout")) {
