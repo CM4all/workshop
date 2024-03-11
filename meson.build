@@ -3,6 +3,8 @@ project('CM4all Workshop', 'cpp', version: '6.0.24',
   default_options: [
     'cpp_std=c++2a',
     'warning_level=3',
+
+    'fmt:cpp_std=c++2a',
   ],
 )
 
