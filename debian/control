@@ -21,7 +21,7 @@ Package: cm4all-workshop
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends},
  cm4all-slice (>= 0.6),
- polkitd | policykit-1,
+ polkitd,
  systemd-sysv
 Recommends: cm4all-spawn-reaper
 Suggests: cm4all-workshop-database, cm4all-workshop-migrate,
