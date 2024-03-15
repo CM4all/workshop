@@ -3,7 +3,7 @@ cm4all-workshop (6.0.24) unstable; urgency=low
   * translation: add packet ANALYTICS_ID
   * drop support for PolicyKit older than version 121
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Fri, 15 Mar 2024 16:52:13 +0100
 
 cm4all-workshop (6.0.23) unstable; urgency=low
 
