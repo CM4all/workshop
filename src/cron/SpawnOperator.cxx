@@ -29,12 +29,15 @@ CronSpawnOperator::Spawn(EventLoop &event_loop, SpawnService &spawn_service,
 			 PreparedChildProcess &&p,
 			 SocketDescriptor pond_socket)
 {
+	UniqueFileDescriptor stderr_w;
+
 	if (!p.stderr_fd.IsDefined()) {
 		/* no STDERR destination configured: the default is to capture
 		   it and save in the cronresults table */
-		auto [r, w] = CreatePipe();
+		UniqueFileDescriptor r;
+		std::tie(r, stderr_w) = CreatePipe();
 
-		p.SetStderr(std::move(w));
+		p.stderr_fd = stderr_w;
 		if (!p.stdout_fd.IsDefined())
 			/* capture STDOUT as well */
 			p.stdout_fd = p.stderr_fd;

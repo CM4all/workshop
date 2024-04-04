@@ -20,6 +20,7 @@
 #include "net/EasyMessage.hxx"
 #include "net/SocketPair.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
+#include "io/FdHolder.hxx"
 #include "io/Open.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "util/UTF8.hxx"
@@ -284,11 +285,12 @@ DoSpawn(SpawnService &service, AllocatorPtr alloc,
 	if (response.child_options.uid_gid.IsEmpty())
 		throw std::runtime_error("No UID_GID from translation server");
 
+	FdHolder close_fds;
 	PreparedChildProcess p;
 	p.args.push_back(alloc.Dup(response.execute));
 
 	if (stderr_w.IsDefined())
-		p.stderr_fd = p.stdout_fd = FileDescriptor{dup(stderr_w.Get())};
+		p.stderr_fd = p.stdout_fd = stderr_w;
 
 	UniqueSocketDescriptor return_pidfd;
 	std::tie(return_pidfd, p.return_pidfd) = CreateSocketPair(SOCK_DGRAM);
@@ -300,7 +302,7 @@ DoSpawn(SpawnService &service, AllocatorPtr alloc,
 		p.args.push_back(alloc.Dup(arg));
 	}
 
-	response.child_options.CopyTo(p);
+	response.child_options.CopyTo(p, close_fds);
 
 	if (p.umask == -1)
 		p.umask = plan.umask;

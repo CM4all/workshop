@@ -41,8 +41,8 @@ struct RunJobCommandLine {
 	PreparedChildProcess child;
 
 	RunJobCommandLine() noexcept {
-		child.SetStdout(STDOUT_FILENO);
-		child.SetStderr(STDERR_FILENO);
+		child.stdout_fd = FileDescriptor(STDOUT_FILENO);
+		child.stderr_fd = FileDescriptor{STDERR_FILENO};
 		child.no_new_privs = true;
 	}
 };
@@ -141,10 +141,14 @@ RunJobInstance::Start(RunJobCommandLine &&cmdline)
 {
 	auto &p = cmdline.child;
 
-	if (cmdline.control) {
-		auto [control_parent, control_child] = CreateSocketPair(SOCK_SEQPACKET);
+	UniqueSocketDescriptor control_child;
+	UniqueFileDescriptor stdout_w;
 
-		p.SetControl(std::move(control_child));
+	if (cmdline.control) {
+		UniqueSocketDescriptor control_parent;
+		std::tie(control_parent, control_child) = CreateSocketPair(SOCK_SEQPACKET);
+
+		p.control_fd = control_child.ToFileDescriptor();
 
 		WorkshopControlChannelHandler &listener = *this;
 		control_channel = std::make_unique<WorkshopControlChannelServer>(event_loop,
@@ -153,9 +157,10 @@ RunJobInstance::Start(RunJobCommandLine &&cmdline)
 	} else {
 		/* if there is no control channel, read progress from the
 		   stdout pipe */
-		auto [stdout_r, stdout_w] = CreatePipe();
+		UniqueFileDescriptor stdout_r;
+		std::tie(stdout_r, stdout_w) = CreatePipe();
 
-		p.SetStdout(std::move(stdout_w));
+		p.stdout_fd = stdout_w;
 
 		progress_reader = std::make_unique<ProgressReader>(event_loop, std::move(stdout_r),
 								   BIND_THIS_METHOD(OnProgress));

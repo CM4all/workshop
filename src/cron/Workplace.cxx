@@ -18,6 +18,7 @@
 #include "event/FarTimerEvent.hxx"
 #include "system/Error.hxx"
 #include "net/SocketAddress.hxx"
+#include "io/FdHolder.hxx"
 #include "co/InvokeTask.hxx"
 #include "co/Task.hxx"
 #include "util/DeleteDisposer.hxx"
@@ -159,6 +160,7 @@ MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 {
 	/* prepare the child process */
 
+	FdHolder close_fds;
 	PreparedChildProcess p;
 
 	if (command != nullptr) {
@@ -194,7 +196,7 @@ MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 		}
 	}
 
-	response.child_options.CopyTo(p);
+	response.child_options.CopyTo(p, close_fds);
 
 	/* create operator object */
 

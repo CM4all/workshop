@@ -123,10 +123,10 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 
 	PreparedChildProcess p;
 	p.hook_info = job.plan_name.c_str();
-	p.SetStderr(std::move(stderr_w));
+	p.stderr_fd = stderr_w;
 
 	if (control_child.IsDefined())
-		p.SetControl(std::move(control_child));
+		p.control_fd = control_child.ToFileDescriptor();
 
 	if (!debug_mode) {
 		p.uid_gid.uid = plan->uid;
@@ -168,16 +168,19 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 
 	/* create stdout/stderr pipes */
 
+	UniqueFileDescriptor stdout_w;
+
 	if (plan->control_channel) {
 		/* copy stdout to stderr into the "log" column */
 		p.stdout_fd = p.stderr_fd;
 	} else {
 		/* if there is no control channel, read progress from the
 		   stdout pipe */
-		auto [stdout_r, stdout_w] = CreatePipe();
+		UniqueFileDescriptor stdout_r;
+		std::tie(stdout_r, stdout_w) = CreatePipe();
 
 		o->SetOutput(std::move(stdout_r));
-		p.SetStdout(std::move(stdout_w));
+		p.stdout_fd = stdout_w;
 	}
 
 	/* build command line */
