@@ -2,7 +2,7 @@ cm4all-workshop (6.0.25) unstable; urgency=low
 
   * state: implement (artificial) symlinks
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Tue, 09 Apr 2024 17:40:27 +0200
 
 cm4all-workshop (6.0.24) unstable; urgency=low
 
