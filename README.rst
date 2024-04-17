@@ -6,7 +6,7 @@ PostgreSQL database.  Multiple instances can run in parallel on
 different hosts.
 
 For more information, `read the manual
-<https://cm4all-workshop.readthedocs.io/en/latest/>`__ in the `doc`
+<https://cm4all-workshop.readthedocs.io/en/latest/>`__ in the ``doc``
 directory.
 
 
