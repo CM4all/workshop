@@ -61,10 +61,6 @@ public:
 		return workplace.IsEmpty();
 	}
 
-	void Start() noexcept {
-		queue.Connect();
-	}
-
 	void BeginShutdown() noexcept;
 
 	void SetStateEnabled(bool _enabled) noexcept {

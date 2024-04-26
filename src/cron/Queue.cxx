@@ -33,8 +33,17 @@ CronQueue::~CronQueue() noexcept = default;
 void
 CronQueue::CheckEnabled() noexcept
 {
-	if (IsEnabled() && db.IsReady())
-		ScheduleClaim();
+	if (IsEnabled()) {
+		if (!db.IsDefined())
+			db.Connect();
+		else if (db.IsReady())
+			ScheduleClaim();
+	} else {
+		if (db.IsDefined() && !db.IsReady())
+			db.Disconnect();
+
+		// TODO disconnect if idle?
+	}
 }
 
 void

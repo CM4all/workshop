@@ -68,10 +68,6 @@ public:
 		return node_name.c_str();
 	}
 
-	void Connect() noexcept {
-		db.Connect();
-	}
-
 	[[gnu::pure]]
 	std::string GetNow() {
 		ScheduleCheckNotify();
