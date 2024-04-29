@@ -3,11 +3,37 @@
 // author: Max Kellermann <mk@cm4all.com>
 
 #include "EmailService.hxx"
+#include "event/net/ConnectSocket.hxx"
+#include "event/net/djb/QmqpClient.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "util/PrintException.hxx"
 
 #include <memory>
+
+class EmailService::Job final
+	: public IntrusiveListHook<IntrusiveHookMode::NORMAL>,
+	  ConnectSocketHandler, QmqpClientHandler
+{
+	EmailService &service;
+	Email email;
+
+	ConnectSocket connect;
+	QmqpClient client;
+
+public:
+	Job(EmailService &_service, Email &&_email) noexcept;
+	void Start() noexcept;
+
+private:
+	/* virtual methods from ConnectSocketHandler */
+	void OnSocketConnectSuccess(UniqueSocketDescriptor fd) noexcept override;
+	void OnSocketConnectError(std::exception_ptr error) noexcept override;
+
+	/* virtual methods from QmqpClientHandler */
+	void OnQmqpClientSuccess(std::string_view description) noexcept override;
+	void OnQmqpClientError(std::exception_ptr error) noexcept override;
+};
 
 EmailService::Job::Job(EmailService &_service, Email &&_email) noexcept
 	:service(_service),
@@ -59,6 +85,9 @@ EmailService::Job::OnQmqpClientError(std::exception_ptr error) noexcept
 	PrintException(error);
 	service.DeleteJob(*this);
 }
+
+EmailService::EmailService(EventLoop &_event_loop, SocketAddress _address) noexcept
+	:event_loop(_event_loop), address(_address) {}
 
 EmailService::~EmailService() noexcept
 {

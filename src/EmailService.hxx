@@ -5,12 +5,12 @@
 #pragma once
 
 #include "net/AllocatedSocketAddress.hxx"
-#include "event/net/ConnectSocket.hxx"
-#include "event/net/djb/QmqpClient.hxx"
 #include "util/IntrusiveList.hxx"
 
 #include <string>
 #include <forward_list>
+
+class EventLoop;
 
 struct Email {
 	std::string sender;
@@ -29,38 +29,13 @@ class EmailService {
 	EventLoop &event_loop;
 	const AllocatedSocketAddress address;
 
-	class Job final
-		: public IntrusiveListHook<IntrusiveHookMode::NORMAL>,
-		  ConnectSocketHandler, QmqpClientHandler
-	{
-		EmailService &service;
-		Email email;
-
-		ConnectSocket connect;
-		QmqpClient client;
-
-	public:
-		Job(EmailService &_service, Email &&_email) noexcept;
-		void Start() noexcept;
-
-	private:
-		/* virtual methods from ConnectSocketHandler */
-		void OnSocketConnectSuccess(UniqueSocketDescriptor fd) noexcept override;
-		void OnSocketConnectError(std::exception_ptr error) noexcept override;
-
-		/* virtual methods from QmqpClientHandler */
-		void OnQmqpClientSuccess(std::string_view description) noexcept override;
-		void OnQmqpClientError(std::exception_ptr error) noexcept override;
-	};
-
+	class Job;
 	using JobList = IntrusiveList<Job>;
 
 	JobList jobs;
 
 public:
-	EmailService(EventLoop &_event_loop, SocketAddress _address) noexcept
-		:event_loop(_event_loop), address(_address) {}
-
+	EmailService(EventLoop &_event_loop, SocketAddress _address) noexcept;
 	~EmailService() noexcept;
 
 	void CancelAll() noexcept;
