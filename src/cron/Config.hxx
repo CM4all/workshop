@@ -37,6 +37,8 @@ struct CronPartitionConfig {
 
 	Event::Duration default_timeout = std::chrono::minutes{5};
 
+	bool use_qrelay = false;
+
 	explicit CronPartitionConfig(std::string &&_name):name(std::move(_name)) {
 		translation_socket.Clear();
 	}

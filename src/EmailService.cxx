@@ -7,8 +7,10 @@
 #include "event/net/djb/QmqpClient.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "util/DeleteDisposer.hxx"
+#include "util/DisposablePointer.hxx"
 #include "util/PrintException.hxx"
 
+#include <cassert>
 #include <memory>
 
 class EmailService::Job final
@@ -21,9 +23,16 @@ class EmailService::Job final
 	ConnectSocket connect;
 	QmqpClient client;
 
+	/**
+	 * This is a #ChildProcessHandle of the child process which
+	 * relays QMQP to the containerized qrelay socket.
+	 */
+	DisposablePointer lease;
+
 public:
 	Job(EmailService &_service, Email &&_email) noexcept;
 	void Start() noexcept;
+	void Start(UniqueSocketDescriptor s, DisposablePointer _lease) noexcept;
 
 private:
 	/* virtual methods from ConnectSocketHandler */
@@ -50,15 +59,26 @@ EmailService::Job::Start() noexcept
 }
 
 void
-EmailService::Job::OnSocketConnectSuccess(UniqueSocketDescriptor _fd) noexcept
+EmailService::Job::Start(UniqueSocketDescriptor s, DisposablePointer _lease) noexcept
 {
+	assert(s.IsDefined());
+	assert(!lease);
+
+	lease = std::move(_lease);
+
 	client.Begin({email.message.data(), email.message.length()},
 		     {email.sender.data(), email.sender.length()});
 	for (const auto &i : email.recipients)
 		client.AddRecipient({i.data(), i.length()});
 
-	const auto fd = _fd.Release().ToFileDescriptor();
+	const auto fd = s.Release().ToFileDescriptor();
 	client.Commit(fd, fd);
+}
+
+void
+EmailService::Job::OnSocketConnectSuccess(UniqueSocketDescriptor _fd) noexcept
+{
+	Start(std::move(_fd), {});
 }
 
 void
@@ -108,6 +128,18 @@ EmailService::Submit(Email &&email) noexcept
 	auto *job = new Job(*this, std::move(email));
 	jobs.push_front(*job);
 	job->Start();
+}
+
+void
+EmailService::Submit(UniqueSocketDescriptor qmqp_socket,
+		     DisposablePointer qmqp_socket_lease,
+		     Email &&email) noexcept
+{
+	assert(qmqp_socket.IsDefined());
+
+	auto *job = new Job(*this, std::move(email));
+	jobs.push_front(*job);
+	job->Start(std::move(qmqp_socket), std::move(qmqp_socket_lease));
 }
 
 inline void

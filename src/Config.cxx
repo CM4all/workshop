@@ -205,6 +205,9 @@ WorkshopConfigParser::CronPartition::ParseLine(FileLineParser &line)
 			throw LineParser::Error("Bad timeout");
 
 		config.default_timeout = default_timeout;
+	} else if (StringIsEqual(word, "use_qrelay")) {
+		config.use_qrelay = line.NextBool();
+		line.ExpectEnd();
 	} else
 		throw LineParser::Error("Unknown option");
 }

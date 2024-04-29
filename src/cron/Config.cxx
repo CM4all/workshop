@@ -14,4 +14,7 @@ CronPartitionConfig::Check() const
 
 	if (!translation_socket.IsDefined())
 		throw std::runtime_error("Missing 'translation_server' setting");
+
+	if (!qmqp_server.IsNull() && use_qrelay)
+		throw std::runtime_error{"Cannot configure both 'qmqp_server' and 'use_qrelay'"};
 }

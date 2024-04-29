@@ -11,6 +11,8 @@
 #include <forward_list>
 
 class EventLoop;
+class UniqueSocketDescriptor;
+class DisposablePointer;
 
 struct Email {
 	std::string sender;
@@ -45,6 +47,9 @@ public:
 	void CancelAll() noexcept;
 
 	void Submit(Email &&email) noexcept;
+	void Submit(UniqueSocketDescriptor qmqp_socket,
+		    DisposablePointer qmqp_socket_lease,
+		    Email &&email) noexcept;
 
 private:
 	void DeleteJob(Job &job) noexcept;

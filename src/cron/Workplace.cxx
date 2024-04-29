@@ -41,6 +41,9 @@ class CronWorkplace::Running final
 
 	FarTimerEvent timeout_event;
 
+	Allocator alloc;
+	ChildOptions child_options;
+
 	Co::InvokeTask task;
 
 	std::string site, tag;
@@ -118,7 +121,9 @@ CronWorkplace::Running::SetResult(const CronResult &result) noexcept
 	if (!job.notification.empty()) {
 		try {
 			SendNotificationEmail(workplace.email_service,
+					      workplace.use_qrelay,
 					      workplace.default_email_sender,
+					      workplace.spawn_service, child_options,
 					      job, result);
 		} catch (...) {
 			logger(1, "Failed to send email notification: ",
@@ -132,6 +137,7 @@ CronWorkplace::Running::SetResult(const CronResult &result) noexcept
 
 CronWorkplace::CronWorkplace(SpawnService &_spawn_service,
 			     EmailService &_email_service,
+			     bool _use_qrelay,
 			     std::string_view _default_email_sender,
 			     SocketDescriptor _pond_socket,
 			     ExitListener &_exit_listener,
@@ -141,7 +147,8 @@ CronWorkplace::CronWorkplace(SpawnService &_spawn_service,
 	 default_email_sender(_default_email_sender),
 	 pond_socket(_pond_socket),
 	 exit_listener(_exit_listener),
-	 max_operators(_max_operators)
+	 max_operators(_max_operators),
+	 use_qrelay(_use_qrelay)
 {
 	assert(max_operators > 0);
 }
@@ -238,8 +245,6 @@ CronWorkplace::Running::MakeOperator(SocketAddress translation_socket,
 		? job.command.c_str()
 		: nullptr;
 
-	Allocator alloc;
-
 	TranslateResponse response;
 	try {
 		response = co_await
@@ -263,6 +268,8 @@ CronWorkplace::Running::MakeOperator(SocketAddress translation_socket,
 
 	if (response.timeout.count() > 0)
 		timeout_event.Schedule(response.timeout);
+
+	child_options = {ShallowCopy{}, response.child_options};
 
 	if (IsURL(job.command))
 		co_return MakeCurlOperator(GetEventLoop(),

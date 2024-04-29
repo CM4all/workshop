@@ -28,9 +28,12 @@ class CronWorkplace {
 
 	const std::size_t max_operators;
 
+	const bool use_qrelay;
+
 public:
 	CronWorkplace(SpawnService &_spawn_service,
 		      EmailService &_email_service,
+		      bool _use_qrelay,
 		      std::string_view _default_email_sender,
 		      SocketDescriptor _pond_socket,
 		      ExitListener &_exit_listener,

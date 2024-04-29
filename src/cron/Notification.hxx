@@ -7,6 +7,8 @@
 #include <string_view>
 
 class EmailService;
+class SpawnService;
+struct ChildOptions;
 struct CronJob;
 struct CronResult;
 
@@ -14,6 +16,7 @@ struct CronResult;
  * Throws on error.
  */
 void
-SendNotificationEmail(EmailService &service, std::string_view sender,
+SendNotificationEmail(EmailService &service, bool use_qrelay, std::string_view sender,
+		      SpawnService &spawn_service, const ChildOptions &child_options,
 		      const CronJob &job,
 		      const CronResult &result);

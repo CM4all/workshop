@@ -103,6 +103,9 @@ The following settings are recognized:
     :file:`@` (abstract socket)
   * ``qmqp_server`` (optional): address the QMQP server is
     listening to; it is used for email notifications
+  * ``use_qrelay`` (optional): if ``yes``, then connect to the `qrelay
+    <https://github.com/CM4all/qrelay/>`__ socket from within the
+    container to submit notification emails
   * ``default_email_sender`` (optional): the default envelope sender
     for email notifications
   * ``pond_server`` (optional): send job log messages to this
