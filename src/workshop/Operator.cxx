@@ -33,6 +33,7 @@
 
 #include <assert.h>
 #include <unistd.h>
+#include <string.h> // for strerror()
 #include <sys/wait.h>
 
 using std::string_view_literals::operator""sv;
@@ -187,7 +188,10 @@ WorkshopOperator::OnChildProcessExit(int status) noexcept
 
 	int exit_status = WEXITSTATUS(status);
 
-	if (WIFSIGNALED(status)) {
+	if (status < 0) {
+		logger(2, "exited with errno ", strerror(-status));
+		exit_status = status;
+	} else if (WIFSIGNALED(status)) {
 		logger(1, "died from signal ",
 		       WTERMSIG(status),
 		       WCOREDUMP(status) ? " (core dumped)" : "");

@@ -31,6 +31,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h> // for strerror()
 #include <sys/socket.h>
 #include <sys/wait.h>
 
@@ -126,8 +127,11 @@ private:
 
 	/* virtual methods from ExitListener */
 	void OnChildProcessExit(int status) noexcept override {
-		if (WIFSIGNALED(status)) {
-			fmt::print(stderr, "died from signal {}{}",
+		if (status < 0) {
+			fmt::print(stderr, "exited with errno {}\n", strerror(-status));
+			exit_status = EXIT_FAILURE;
+		} else if (WIFSIGNALED(status)) {
+			fmt::print(stderr, "died from signal {}{}\n",
 				   WTERMSIG(status),
 				   WCOREDUMP(status) ? " (core dumped)" : "");
 			exit_status = EXIT_FAILURE;

@@ -14,6 +14,7 @@
 #include "util/UTF8.hxx"
 
 #include <unistd.h>
+#include <string.h> // for strerror()
 #include <sys/wait.h>
 
 CronSpawnOperator::CronSpawnOperator(LazyDomainLogger &_logger) noexcept
@@ -71,7 +72,10 @@ CronSpawnOperator::OnChildProcessExit(int status) noexcept
 		.exit_status = WEXITSTATUS(status),
 	};
 
-	if (WIFSIGNALED(status)) {
+	if (status < 0) {
+		logger(2, "exited with errno ", strerror(-status));
+		result.exit_status = status;
+	} else if (WIFSIGNALED(status)) {
 		logger(1, "died from signal ",
 		       WTERMSIG(status),
 		       WCOREDUMP(status) ? " (core dumped)" : "");

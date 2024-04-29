@@ -6,6 +6,7 @@ cm4all-workshop (6.0.28) unstable; urgency=low
   * cron: add setting "default_email_sender"
   * cron: verify the "notification" email address
   * cron: allow routing notification emails through containerized qrelay
+  * spawn: fix bogus ECHILD error message
 
  --   
 
