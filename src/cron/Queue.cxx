@@ -252,6 +252,7 @@ CronQueue::CheckPending()
 		db.Execute("SELECT id, account_id, command, translate_param, notification "
 			   "FROM cronjobs WHERE enabled AND next_run<=now() "
 			   "AND node_name IS NULL "
+			   "ORDER BY next_run "
 			   "LIMIT 1");
 	if (result.IsEmpty())
 		return false;
