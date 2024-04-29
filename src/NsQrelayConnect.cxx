@@ -67,11 +67,15 @@ SpliceTwoSockets(SocketDescriptor a, SocketDescriptor b)
 		if (poll(fds.data(), fds.size(), -1) <= 0)
 			break;
 
-		if (fds[0].revents && !SpliceSockets(a, b, r, w))
+		if (fds[0].revents && !SpliceSockets(a, b, r, w)) {
 			fds[0].events = 0;
+			b.ShutdownWrite();
+		}
 
-		if (fds[1].revents && !SpliceSockets(b, a, r, w))
+		if (fds[1].revents && !SpliceSockets(b, a, r, w)) {
 			fds[1].events = 0;
+			a.ShutdownWrite();
+		}
 	} while (fds[0].events || fds[1].events);
 }
 
