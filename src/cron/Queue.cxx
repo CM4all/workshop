@@ -258,12 +258,13 @@ CronQueue::CheckPending()
 		return false;
 
 	for (const auto &row : result) {
-		CronJob job;
-		job.id = row.GetValue(0);
-		job.account_id = row.GetValue(1);
-		job.command = row.GetValue(2);
-		job.translate_param = row.GetValue(3);
-		job.notification = row.GetValue(4);
+		CronJob job{
+			.id = std::string{row.GetValueView(0)},
+			.account_id = std::string{row.GetValueView(1)},
+			.command = std::string{row.GetValueView(2)},
+			.translate_param = std::string{row.GetValueView(3)},
+			.notification = std::string{row.GetValueView(4)},
+		};
 
 		callback(std::move(job));
 
