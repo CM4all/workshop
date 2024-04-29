@@ -103,6 +103,8 @@ EmailService::CancelAll() noexcept
 void
 EmailService::Submit(Email &&email) noexcept
 {
+	assert(HasRelay());
+
 	auto *job = new Job(*this, std::move(email));
 	jobs.push_front(*job);
 	job->Start();

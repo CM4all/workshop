@@ -38,6 +38,10 @@ public:
 	EmailService(EventLoop &_event_loop, SocketAddress _address) noexcept;
 	~EmailService() noexcept;
 
+	bool HasRelay() const noexcept {
+		return !address.IsNull();
+	}
+
 	void CancelAll() noexcept;
 
 	void Submit(Email &&email) noexcept;

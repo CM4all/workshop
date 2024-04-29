@@ -47,6 +47,9 @@ SendNotificationEmail(EmailService &service, std::string_view sender,
 {
 	assert(!job.notification.empty());
 
+	if (!service.HasRelay())
+		throw std::invalid_argument{"No qmqp_server configured"};
+
 	if (!VerifyEmailAddress(job.notification))
 		throw FmtInvalidArgument("Malformed email address: {:?}", job.notification);
 

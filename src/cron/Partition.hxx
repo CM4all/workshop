@@ -12,8 +12,8 @@
 #include "net/UniqueSocketDescriptor.hxx"
 #include "io/Logger.hxx"
 #include "util/BindMethod.hxx"
+#include "EmailService.hxx"
 
-#include <memory>
 #include <string_view>
 
 struct Config;
@@ -30,7 +30,7 @@ class CronPartition final : ExitListener {
 
 	Logger logger;
 
-	std::unique_ptr<EmailService> email_service;
+	EmailService email_service;
 
 	const UniqueSocketDescriptor pond_socket;
 

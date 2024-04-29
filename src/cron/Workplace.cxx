@@ -23,6 +23,7 @@
 #include "co/Task.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "util/StringCompare.hxx"
+#include "EmailService.hxx"
 #include "debug.h"
 
 #include <cassert>
@@ -115,15 +116,14 @@ void
 CronWorkplace::Running::SetResult(const CronResult &result) noexcept
 {
 	if (!job.notification.empty()) {
-		auto *es = workplace.GetEmailService();
-		if (es != nullptr)
-			try {
-				SendNotificationEmail(*es, workplace.default_email_sender,
-						      job, result);
-			} catch (...) {
-				logger(1, "Failed to send email notification: ",
-				       std::current_exception());
-			}
+		try {
+			SendNotificationEmail(workplace.email_service,
+					      workplace.default_email_sender,
+					      job, result);
+		} catch (...) {
+			logger(1, "Failed to send email notification: ",
+			       std::current_exception());
+		}
 	}
 
 	queue.Finish(job);
@@ -131,7 +131,7 @@ CronWorkplace::Running::SetResult(const CronResult &result) noexcept
 }
 
 CronWorkplace::CronWorkplace(SpawnService &_spawn_service,
-			     EmailService *_email_service,
+			     EmailService &_email_service,
 			     std::string_view _default_email_sender,
 			     SocketDescriptor _pond_socket,
 			     ExitListener &_exit_listener,

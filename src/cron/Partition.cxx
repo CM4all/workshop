@@ -17,9 +17,7 @@ CronPartition::CronPartition(EventLoop &event_loop,
 	 tag(config.tag.empty() ? nullptr : config.tag.c_str()),
 	 translation_socket(config.translation_socket),
 	 logger("cron/" + config.name),
-	 email_service(config.qmqp_server.IsNull()
-		       ? nullptr
-		       : new EmailService(event_loop, config.qmqp_server)),
+	 email_service(event_loop, config.qmqp_server),
 	 pond_socket(!config.pond_server.IsNull()
 	 ? CreateConnectDatagramSocket(config.pond_server)
 	 : UniqueSocketDescriptor()),
@@ -27,7 +25,7 @@ CronPartition::CronPartition(EventLoop &event_loop,
 		       config.database.c_str(), config.database_schema.c_str(),
 		       [this](CronJob &&job){ OnJob(std::move(job)); }),
 	 workplace(_spawn_service,
-		   email_service.get(), config.default_email_sender,
+		   email_service, config.default_email_sender,
 		   pond_socket,
 		   *this,
 		   root_config.concurrency),
@@ -43,9 +41,7 @@ CronPartition::BeginShutdown() noexcept
 {
 	queue.DisableAdmin();
 	workplace.CancelAll();
-
-	if (email_service)
-		email_service->CancelAll();
+	email_service.CancelAll();
 }
 
 void

@@ -15,7 +15,7 @@ class ExitListener;
 
 class CronWorkplace {
 	SpawnService &spawn_service;
-	EmailService *const email_service;
+	EmailService &email_service;
 	const std::string_view default_email_sender;
 	const SocketDescriptor pond_socket;
 
@@ -30,7 +30,7 @@ class CronWorkplace {
 
 public:
 	CronWorkplace(SpawnService &_spawn_service,
-		      EmailService *_email_service,
+		      EmailService &_email_service,
 		      std::string_view _default_email_sender,
 		      SocketDescriptor _pond_socket,
 		      ExitListener &_exit_listener,
@@ -43,10 +43,6 @@ public:
 
 	SpawnService &GetSpawnService() {
 		return spawn_service;
-	}
-
-	EmailService *GetEmailService() {
-		return email_service;
 	}
 
 	SocketDescriptor GetPondSocket() const noexcept {
