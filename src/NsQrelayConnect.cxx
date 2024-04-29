@@ -72,7 +72,7 @@ SpliceTwoSockets(SocketDescriptor a, SocketDescriptor b)
 
 		if (fds[1].revents && !SpliceSockets(b, a, r, w))
 			fds[1].events = 0;
-	} while (fds[0].events && fds[1].events);
+	} while (fds[0].events || fds[1].events);
 }
 
 static int
