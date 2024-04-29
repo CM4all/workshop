@@ -28,7 +28,7 @@ Workshop (classic):
    :samp:`GRANT INSERT, SELECT, DELETE ON jobs TO workshop_client;`
    and :samp:`GRANT UPDATE, SELECT ON jobs_id_seq TO workshop_client;`
 #. Edit :file:`/etc/cm4all/workshop/workshop.conf` and set the variable
-   :envvar:`database` (`PostgreSQL documentation
+   ``database`` (`PostgreSQL documentation
    <https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING>`_)
 #. :samp:`systemctl start cm4all-workshop`
 
@@ -46,7 +46,7 @@ Cron:
    :samp:`GRANT INSERT, SELECT, DELETE ON cronjobs TO cron_client;` and
    :samp:`GRANT UPDATE, SELECT ON cronjobs_id_seq TO cron_client;`
 #. Edit :file:`/etc/cm4all/cron/workshop.conf` and set the variable
-   :envvar:`database` (`PostgreSQL documentation
+   ``database`` (`PostgreSQL documentation
    <https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING>`_)
 #. :samp:`systemctl start cm4all-workshop`
 
@@ -57,68 +57,68 @@ Settings in :file:`/etc/cm4all/workshop/workshop.conf`
 The file :file:`/etc/cm4all/workshop/workshop.conf` configures Workshop.
 The following settings are recognized:
 
-* :envvar:`node_name`: This node's name, for example the
+* ``node_name``: This node's name, for example the
   fully-qualified host name.  Must be unique in the cluster.  By
   default, the hostname is used.
-* :envvar:`concurrency`: How many jobs shall this node execute concurrently?
+* ``concurrency``: How many jobs shall this node execute concurrently?
   Rule of thumb: number of CPUs, not much more.
-* :envvar:`spawn`: opens a block (with curly braces), which
+* ``spawn``: opens a block (with curly braces), which
   configures the process spawner; see :ref:`config.spawn`.
 
-* :envvar:`workshop`: opens a block (with curly braces), which
+* ``workshop``: opens a block (with curly braces), which
   configures a Workshop classic database:
 
-  * :envvar:`database`: the PostgreSQL connect string (`PostgreSQL
+  * ``database``: the PostgreSQL connect string (`PostgreSQL
     documentation
     <https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING>`_)
-  * :envvar:`database_schema`: the PostgreSQL schema name (optional)
-  * :envvar:`max_log`: specifies the maximum amount of log data
+  * ``database_schema``: the PostgreSQL schema name (optional)
+  * ``max_log``: specifies the maximum amount of log data
     captured for the `log` column (units such as `kB` may be used)
-  * :envvar:`journal`: set to :samp:`yes` to send structured log
+  * ``journal``: set to :samp:`yes` to send structured log
     messages to the systemd journal
 
 .. _workshop_translation_server:
 
-  * :envvar:`translation_server`: address the translation server is
+  * ``translation_server``: address the translation server is
     listening to; must start with :file:`/` (absolute path) or
     :file:`@` (abstract socket)
-  * :envvar:`tag`: a string which will be transmitted to the
-    translation server in a :envvar:`LISTENER_TAG` packet (optional)
+  * ``tag``: a string which will be transmitted to the
+    translation server in a ``LISTENER_TAG`` packet (optional)
 
-* :envvar:`cron`: opens a block (with curly braces), which
+* ``cron``: opens a block (with curly braces), which
   configures a cron database ("partition"):
 
-  * :envvar:`cron` (the top-level block) may optionally be followed by
+  * ``cron`` (the top-level block) may optionally be followed by
     a partition name (right before the opening curly brace), which
-    will be passed to the translation server in the :envvar:`CRON`
+    will be passed to the translation server in the ``CRON``
     packet
-  * :envvar:`tag`: a string which will be transmitted to the
-    translation server in a :envvar:`LISTENER_TAG` packet (optional)
-  * :envvar:`database`: the PostgreSQL connect string (`PostgreSQL
+  * ``tag``: a string which will be transmitted to the
+    translation server in a ``LISTENER_TAG`` packet (optional)
+  * ``database``: the PostgreSQL connect string (`PostgreSQL
     documentation
     <https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING>`_)
-  * :envvar:`database_schema`: the PostgreSQL schema name (optional)
-  * :envvar:`translation_server`: address the translation server is
+  * ``database_schema``: the PostgreSQL schema name (optional)
+  * ``translation_server``: address the translation server is
     listening to; must start with :file:`/` (absolute path) or
     :file:`@` (abstract socket)
-  * :envvar:`qmqp_server` (optional): address the QMQP server is
+  * ``qmqp_server`` (optional): address the QMQP server is
     listening to; it is used for email notifications
-  * :envvar:`pond_server` (optional): send job log messages to this
-    Pond server; the :envvar:`account_id` value is passed as "site"
+  * ``pond_server`` (optional): send job log messages to this
+    Pond server; the ``account_id`` value is passed as "site"
 
-* :envvar:`control`: opens a block (with curly braces), which
+* ``control``: opens a block (with curly braces), which
   configures a control listener (see `Controlling the Daemon`_)
 
-  * :envvar:`bind`: The address to bind to. May be the wildcard "*" or
+  * ``bind``: The address to bind to. May be the wildcard "*" or
     an IPv4/IPv6 address followed by a port.  IPv6 addresses should be
     enclosed in square brackets to disambiguate the port separator.
     Local sockets start with a slash "/", and abstract sockets start
     with an at symbol "@".
-  * :envvar:`multicast_group`: Join this multicast group, which allows
+  * ``multicast_group``: Join this multicast group, which allows
     receiving multicast commands.  Value is a multicast IPv4/IPv6
     address.  IPv6 addresses may contain a scope identifier after a
     percent sign ('%').
-  * :envvar:`interface`: Limit this listener to the given network
+  * ``interface``: Limit this listener to the given network
     interface.
 
 The default configuration file includes :file:`local.conf` and
@@ -340,7 +340,7 @@ The following options are available:
   contents will be deleted automatically as soon as the process exits.
 
 * :samp:`rlimits L`: Configure resource limits.  The syntax is the
-  same as the `beng-proxy` :envvar:`RLIMITS` translation packet.
+  same as the `beng-proxy` ``RLIMITS`` translation packet.
   Check its documentation for details.
 
 * :samp:`chroot PATH`: Change the root directory prior to executing
@@ -406,8 +406,8 @@ If the `journal` option is enabled, then all log output from job
 processes (text lines printed to `stderr`) are forwarded to the
 systemd journal, along with structured data:
 
-* :envvar:`WORKSHOP_PLAN`: the plan name
-* :envvar:`WORKSHOP_JOB`: the job id
+* ``WORKSHOP_PLAN``: the plan name
+* ``WORKSHOP_JOB``: the job id
 
 To see all fields, choose output format `verbose` or `json`::
 
@@ -436,7 +436,7 @@ During job execution, the column `node_name` is set.
 Controlling the Daemon
 ======================
 
-The :envvar:`control` block in the configuration file sets up a
+The ``control`` block in the configuration file sets up a
 control listener.  The :file:`cm4all-workshop-control` program can
 then be used to send control commands to the daemon.  Most commands
 are only allowed when issued over a local socket by the *root* user.
@@ -489,43 +489,43 @@ temporary files), whether successful or not.
 The `jobs` table
 ----------------
 
-* :envvar:`id`: The primary key.
-* :envvar:`name`: An optional name assigned by the job creator.  Not
+* ``id``: The primary key.
+* ``name``: An optional name assigned by the job creator.  Not
   used by Workshop.
-* :envvar:`description`: Human readable description.  Not used by
+* ``description``: Human readable description.  Not used by
   Workshop.
-* :envvar:`time_created`: The time stamp when this job was created.
-* :envvar:`scheduled_time`: The time when the job will be executed.
+* ``time_created``: The time stamp when this job was created.
+* ``scheduled_time``: The time when the job will be executed.
   The database server's clock is the authoritative reference.
-* :envvar:`enabled`: If :samp:`FALSE`, this job will not be scheduled
+* ``enabled``: If :samp:`FALSE`, this job will not be scheduled
   until somebody reverts the value to :samp:`TRUE`.
-* :envvar:`priority`: Smaller number means higher priority.  Default
+* ``priority``: Smaller number means higher priority.  Default
   is 0.
-* :envvar:`plan_name`: The name of the plan which is used to execute
+* ``plan_name``: The name of the plan which is used to execute
   this job.
-* :envvar:`args`: Additional command-line arguments for the plan.
-* :envvar:`env`: Additional environment variables.  Some dangerous
+* ``args``: Additional command-line arguments for the plan.
+* ``env``: Additional environment variables.  Some dangerous
   environment variables cannot be set, though, for example
-  :envvar:`LD_PRELOAD`.
-* :envvar:`node_name`: Name of the node which is currently executing
+  ``LD_PRELOAD``.
+* ``node_name``: Name of the node which is currently executing
   this job, or :samp:`NULL`.
-* :envvar:`node_timeout`: When this time stamp has passed, then the
+* ``node_timeout``: When this time stamp has passed, then the
   executing node is assumed to be dead, and the record can be released
   and reassigned to another node.
-* :envvar:`progress`: Progress of job execution in percent.  Note that
+* ``progress``: Progress of job execution in percent.  Note that
   you cannot assume the job is done when this number reaches 100.
-* :envvar:`time_started`: Time stamp when the job has most recently
+* ``time_started``: Time stamp when the job has most recently
   started execution.
-* :envvar:`time_done`: Time stamp when the job has completed
+* ``time_done``: Time stamp when the job has completed
   execution.
-* :envvar:`cpu_usage`: total CPU usage (user + system) of the job.
-* :envvar:`log`: Log data written by the job to `stderr`.
-* :envvar:`exit_status`: Exit code of the plan process.  Negative when
+* ``cpu_usage``: total CPU usage (user + system) of the job.
+* ``log``: Log data written by the job to `stderr`.
+* ``exit_status``: Exit code of the plan process.  Negative when
   the process was killed by a signal.
 
 To find out whether a job is done, check the column
-:envvar:`time_done` or :envvar:`exit_status` on :samp:`NOT NULL`.  To
-wait for completion, listen on PostgreSQL notify :envvar:`job_done`
+``time_done`` or ``exit_status`` on :samp:`NOT NULL`.  To
+wait for completion, listen on PostgreSQL notify ``job_done``
 (:samp:`LISTEN job_done`).  Its payload is the id of the job record.
 
 Old records of completed jobs are not deleted by Workshop.  The
@@ -534,11 +534,11 @@ deleting it.
 
 The client is allowed to execute the following operations:
 
-* Create new jobs (only :envvar:`name`, :envvar:`description`,
-  :envvar:`scheduled_time`, :envvar:`enabled`, :envvar:`priority`,
-  :envvar:`plan_name`, :envvar:`args` may be set).
+* Create new jobs (only ``name``, ``description``,
+  ``scheduled_time``, ``enabled``, ``priority``,
+  ``plan_name``, ``args`` may be set).
 * Modify jobs which have not yet been assigned, i.e. :samp:`node_name
-  IS NULL`.  Afterwards, send the notify :envvar:`new_job`, so
+  IS NULL`.  Afterwards, send the notify ``new_job``, so
   Workshop gets notified of the change.
 * Delete jobs which have not yet been assigned, i.e.  :samp:`node_name
   IS NULL`.
@@ -548,7 +548,7 @@ The client is allowed to execute the following operations:
 Control Channel
 ---------------
 
-With the :envvar:`control_channel` option enabled, the child process
+With the ``control_channel`` option enabled, the child process
 gets a SEQPACKET socket on file descriptor 3.  It can be used to
 communicate with Workshop.
 
@@ -571,7 +571,7 @@ The following commands are available:
 
 * :samp:`again [SECONDS]`: execute the job again (which may occur on a
   different node).  The optional parameter specifies how many seconds
-  shall pass at least; if present, then :envvar:`scheduled_time` will
+  shall pass at least; if present, then ``scheduled_time`` will
   be updated.
 
 .. _spawn:
@@ -594,7 +594,7 @@ The following commands are available:
 Cron Schedule
 -------------
 
-The :envvar:`schedule` column follows the classic `cron` schedule
+The ``schedule`` column follows the classic `cron` schedule
 syntax (see :manpage:`crontab(5)`).
 
 The special schedule ":samp:`@once`" can be used to execute a job once
@@ -609,53 +609,53 @@ up to an hour and ":samp:`@daily`" will be delayed up to one day.
 The `cronjobs` table
 --------------------
 
-* :envvar:`id`: The primary key.
-* :envvar:`account_id`: The user account which owns this job.  This
+* ``id``: The primary key.
+* ``account_id``: The user account which owns this job.  This
   gets passed to the translation server to determine the process
   parameters.
-* :envvar:`schedule`: A :manpage:`crontab(5)`-like schedule.
-* :envvar:`tz`: A time zone which is used to calculate the given
+* ``schedule``: A :manpage:`crontab(5)`-like schedule.
+* ``tz``: A time zone which is used to calculate the given
   schedule.  This can be any `time zone understood by PostgreSQL
   <https://www.postgresql.org/docs/current/static/datatype-datetime.html#DATATYPE-TIMEZONES>`_.
   A :samp:`NULL` value selects the UTC time zone.
-* :envvar:`command`: A command to be executed by :file:`/bin/sh`.  If
+* ``command``: A command to be executed by :file:`/bin/sh`.  If
   it starts with :samp:`http://` or :samp:`https://`, a HTTP GET
   request is sent instead of spawning a child process.  If it starts
   with :samp:`urn:`, then that URN will be passed to the translation
-  server as :envvar:`URI` payload, and the response must contain
-  :envvar:`EXECUTE` (may be followed by :envvar:`APPEND`)
-* :envvar:`translate_param`: An opaque parameter to be passed to the
+  server as ``URI`` payload, and the response must contain
+  ``EXECUTE`` (may be followed by ``APPEND``)
+* ``translate_param``: An opaque parameter to be passed to the
   translation server.
-* :envvar:`enabled`: The cron job is never run when not enabled.
-* :envvar:`overlapping`: If false, then there is only ever one running
+* ``enabled``: The cron job is never run when not enabled.
+* ``overlapping``: If false, then there is only ever one running
   process at a time.
-* :envvar:`notification`: An email address which gets notified after
+* ``notification``: An email address which gets notified after
   each completion.
-* :envvar:`last_run`: Time stamp of the most recent run (internal, do
+* ``last_run``: Time stamp of the most recent run (internal, do
   not use).
-* :envvar:`next_run`: Time stamp of the next run (internal, do
+* ``next_run``: Time stamp of the next run (internal, do
   not use).
-* :envvar:`node_name`: Name of the node which is currently executing
+* ``node_name``: Name of the node which is currently executing
   this job, or :samp:`NULL`.
-* :envvar:`node_timeout`: When this time stamp has passed, then the
+* ``node_timeout``: When this time stamp has passed, then the
   executing node is assumed to be dead, and the record can be released
   and reassigned to another node.
-* :envvar:`description`: Human readable description.  Not used by
+* ``description``: Human readable description.  Not used by
   Cron.
 
 The client is allowed to execute the following operations:
 
 * Create new jobs.
 * Update the schedule.  This operation may clear the
-  :envvar:`next_run` column so the scheduler reevaluates the new
+  ``next_run`` column so the scheduler reevaluates the new
   schedule without waiting for the previous schedule to fire
   next time.  This is strictly necessary for ":samp:`@once`"
   schedules.
-* Enable/disable jobs by modifying the :envvar:`enabled` flag.  This
+* Enable/disable jobs by modifying the ``enabled`` flag.  This
   does not cancel any running process, it only affects future
   scheduling.
-* Update other columns such as :envvar:`command`, :envvar:`translate_param`,
-  :envvar:`notification`, :envvar:`description`.
+* Update other columns such as ``command``, ``translate_param``,
+  ``notification``, ``description``.
 * Delete jobs which are currently not running, i.e. :samp:`node_name
   IS NULL`.
 
@@ -667,14 +667,14 @@ finishing.
 The `cronresults` table
 -----------------------
 
-* :envvar:`id`: The primary key.
-* :envvar:`cronjob_id`: A reference to the `cronjobs` record.
-* :envvar:`node_name`: Name of the node which executed this job.
-* :envvar:`start_time`: A time stamp when execution started.
-* :envvar:`finish_time`: A time stamp when execution finished.
-* :envvar:`exit_status`: The process exit code or the HTTP response
+* ``id``: The primary key.
+* ``cronjob_id``: A reference to the `cronjobs` record.
+* ``node_name``: Name of the node which executed this job.
+* ``start_time``: A time stamp when execution started.
+* ``finish_time``: A time stamp when execution finished.
+* ``exit_status``: The process exit code or the HTTP response
   status.  A value of `-1` indicates an internal error.
-* :envvar:`log`: Text written by the process to `stdout`/`stderr` or
+* ``log``: Text written by the process to `stdout`/`stderr` or
   the HTTP response body.
 
 The client is allowed to execute the following operations:
