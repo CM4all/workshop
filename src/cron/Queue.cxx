@@ -151,23 +151,26 @@ CronQueue::RunClaim() noexcept
 
 	logger(4, "claim");
 
-	try {
-		auto delta = FindEarliestPending(db);
-		if (delta == delta.max())
-			return;
+	while (true) {
+		try {
+			auto delta = FindEarliestPending(db);
+			if (delta == delta.max())
+				return;
 
-		if (delta > delta.zero()) {
-			/* randomize the claim to reduce race conditions with
-			   other nodes */
-			Event::Duration r = std::chrono::microseconds(random() % 30000000);
-			claim_timer.Schedule(Event::Duration(delta) + r);
+			if (delta > delta.zero()) {
+				/* randomize the claim to reduce race conditions with
+				   other nodes */
+				Event::Duration r = std::chrono::microseconds(random() % 30000000);
+				claim_timer.Schedule(Event::Duration(delta) + r);
+				return;
+			}
+
+			if (!CheckPending())
+				break;
+		} catch (...) {
+			db.CheckError(std::current_exception());
 			return;
 		}
-
-		CheckPending();
-	} catch (...) {
-		db.CheckError(std::current_exception());
-		return;
 	}
 
 	ScheduleClaim();

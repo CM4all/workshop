@@ -1,6 +1,7 @@
 cm4all-workshop (6.0.28) unstable; urgency=low
 
   * cron: connect to database only if partition is enabled
+  * cron: start multiple pending jobs at a time
 
  --   
 
