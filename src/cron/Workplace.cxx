@@ -118,7 +118,8 @@ CronWorkplace::Running::SetResult(const CronResult &result) noexcept
 		auto *es = workplace.GetEmailService();
 		if (es != nullptr)
 			try {
-				SendNotificationEmail(*es, job, result);
+				SendNotificationEmail(*es, workplace.default_email_sender,
+						      job, result);
 			} catch (...) {
 				logger(1, "Failed to send email notification: ",
 				       std::current_exception());
@@ -131,11 +132,13 @@ CronWorkplace::Running::SetResult(const CronResult &result) noexcept
 
 CronWorkplace::CronWorkplace(SpawnService &_spawn_service,
 			     EmailService *_email_service,
+			     std::string_view _default_email_sender,
 			     SocketDescriptor _pond_socket,
 			     ExitListener &_exit_listener,
 			     std::size_t _max_operators)
 	:spawn_service(_spawn_service),
 	 email_service(_email_service),
+	 default_email_sender(_default_email_sender),
 	 pond_socket(_pond_socket),
 	 exit_listener(_exit_listener),
 	 max_operators(_max_operators)

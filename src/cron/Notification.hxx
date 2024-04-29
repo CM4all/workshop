@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <string_view>
+
 class EmailService;
 struct CronJob;
 struct CronResult;
@@ -12,5 +14,6 @@ struct CronResult;
  * Throws on error.
  */
 void
-SendNotificationEmail(EmailService &service, const CronJob &job,
+SendNotificationEmail(EmailService &service, std::string_view sender,
+		      const CronJob &job,
 		      const CronResult &result);

@@ -14,6 +14,7 @@
 #include "net/Parser.hxx"
 #include "net/control/Protocol.hxx"
 #include "net/log/Protocol.hxx"
+#include "uri/EmailAddress.hxx" // for VerifyEmailAddress()
 #include "util/StringAPI.hxx"
 #include "util/StringParser.hxx"
 #include "config.h"
@@ -189,6 +190,10 @@ WorkshopConfigParser::CronPartition::ParseLine(FileLineParser &line)
 	} else if (strcmp(word, "qmqp_server") == 0) {
 		config.qmqp_server = ResolveStreamConnect(line.ExpectValueAndEnd(),
 							  628);
+	} else if (StringIsEqual(word, "default_email_sender")) {
+		config.default_email_sender = line.ExpectValueAndEnd();
+		if (!VerifyEmailAddress(config.default_email_sender))
+			throw LineParser::Error{"Bad email address"};
 	} else if (strcmp(word, "pond_server") == 0) {
 		config.pond_server = ResolveStreamConnect(line.ExpectValueAndEnd(),
 							  Net::Log::DEFAULT_PORT);

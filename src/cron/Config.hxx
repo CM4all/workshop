@@ -28,6 +28,8 @@ struct CronPartitionConfig {
 
 	AllocatedSocketAddress qmqp_server;
 
+	std::string default_email_sender{"cm4all-workshop"};
+
 	/**
 	 * The Pond server to receive the output of job processes.
 	 */

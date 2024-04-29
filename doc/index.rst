@@ -103,6 +103,8 @@ The following settings are recognized:
     :file:`@` (abstract socket)
   * ``qmqp_server`` (optional): address the QMQP server is
     listening to; it is used for email notifications
+  * ``default_email_sender`` (optional): the default envelope sender
+    for email notifications
   * ``pond_server`` (optional): send job log messages to this
     Pond server; the ``account_id`` value is passed as "site"
 

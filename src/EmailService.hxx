@@ -17,7 +17,7 @@ struct Email {
 	std::forward_list<std::string> recipients;
 	std::string message;
 
-	explicit Email(const char *_sender)
+	explicit Email(std::string_view _sender) noexcept
 		:sender(_sender) {}
 
 	void AddRecipient(const char *recipient) {

@@ -16,10 +16,10 @@ using std::string_view_literals::operator""sv;
 
 [[nodiscard]] [[gnu::pure]]
 static Email
-MakeNotificationEmail(const CronJob &job, const CronResult &result) noexcept
+MakeNotificationEmail(std::string_view sender,
+		      const CronJob &job, const CronResult &result) noexcept
 {
-	// TODO: configurable sender?
-	Email email("cm4all-workshop");
+	Email email{sender};
 	email.AddRecipient(job.notification.c_str());
 
 	email.message += fmt::format("X-CM4all-Workshop: " VERSION "\n"
@@ -41,7 +41,8 @@ MakeNotificationEmail(const CronJob &job, const CronResult &result) noexcept
 }
 
 void
-SendNotificationEmail(EmailService &service, const CronJob &job,
+SendNotificationEmail(EmailService &service, std::string_view sender,
+		      const CronJob &job,
 		      const CronResult &result)
 {
 	assert(!job.notification.empty());
@@ -49,5 +50,5 @@ SendNotificationEmail(EmailService &service, const CronJob &job,
 	if (!VerifyEmailAddress(job.notification))
 		throw FmtInvalidArgument("Malformed email address: {:?}", job.notification);
 
-	service.Submit(MakeNotificationEmail(job, result));
+	service.Submit(MakeNotificationEmail(sender, job, result));
 }
