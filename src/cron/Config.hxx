@@ -6,6 +6,7 @@
 
 #include "event/Chrono.hxx"
 #include "net/AllocatedSocketAddress.hxx"
+#include "net/LocalSocketAddress.hxx"
 
 #include <string>
 
@@ -23,7 +24,7 @@ struct CronPartitionConfig {
 
 	std::string database, database_schema;
 
-	AllocatedSocketAddress translation_socket;
+	LocalSocketAddress translation_socket;
 
 	AllocatedSocketAddress qmqp_server;
 
@@ -34,7 +35,9 @@ struct CronPartitionConfig {
 
 	Event::Duration default_timeout = std::chrono::minutes{5};
 
-	explicit CronPartitionConfig(std::string &&_name):name(std::move(_name)) {}
+	explicit CronPartitionConfig(std::string &&_name):name(std::move(_name)) {
+		translation_socket.Clear();
+	}
 
 	void Check() const;
 };

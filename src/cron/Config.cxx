@@ -12,6 +12,6 @@ CronPartitionConfig::Check() const
 	if (database.empty())
 		throw std::runtime_error("Missing 'database' setting");
 
-	if (translation_socket == nullptr)
+	if (!translation_socket.IsDefined())
 		throw std::runtime_error("Missing 'translation_server' setting");
 }

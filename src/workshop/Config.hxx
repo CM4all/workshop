@@ -4,14 +4,14 @@
 
 #pragma once
 
-#include "net/AllocatedSocketAddress.hxx"
+#include "net/LocalSocketAddress.hxx"
 
 #include <string>
 
 struct WorkshopPartitionConfig {
 	std::string database, database_schema;
 
-	AllocatedSocketAddress translation_socket;
+	LocalSocketAddress translation_socket;
 
 	/**
 	 * Partition tag for #TRANSLATE_LISTENER_TAG.  Empty when not
@@ -23,9 +23,14 @@ struct WorkshopPartitionConfig {
 
 	bool enable_journal = false;
 
-	WorkshopPartitionConfig() = default;
-	explicit WorkshopPartitionConfig(const char *_database)
-		:database(_database) {}
+	constexpr WorkshopPartitionConfig() noexcept {
+		translation_socket.Clear();
+	}
+
+	explicit constexpr WorkshopPartitionConfig(const char *_database) noexcept
+		:database(_database) {
+		translation_socket.Clear();
+	}
 
 	void Check() const;
 };
