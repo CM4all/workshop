@@ -38,7 +38,7 @@ class CronQueue final : private Pg::AsyncConnectionHandler {
 	/**
 	 * Was the queue enabled by #StateDirectories?
 	 */
-	bool enabled_state = true;
+	bool enabled_state = false;
 
 	/**
 	 * Was the queue enabled by the administrator?  Also used
