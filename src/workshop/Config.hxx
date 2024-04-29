@@ -23,11 +23,11 @@ struct WorkshopPartitionConfig {
 
 	bool enable_journal = false;
 
-	constexpr WorkshopPartitionConfig() noexcept {
+	WorkshopPartitionConfig() noexcept {
 		translation_socket.Clear();
 	}
 
-	explicit constexpr WorkshopPartitionConfig(const char *_database) noexcept
+	explicit WorkshopPartitionConfig(const char *_database) noexcept
 		:database(_database) {
 		translation_socket.Clear();
 	}
