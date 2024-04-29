@@ -5,10 +5,14 @@
 #include "Notification.hxx"
 #include "Job.hxx"
 #include "Result.hxx"
+#include "lib/fmt/RuntimeError.hxx"
+#include "uri/EmailAddress.hxx"
 #include "EmailService.hxx"
 #include "version.h"
 
 #include <fmt/core.h>
+
+using std::string_view_literals::operator""sv;
 
 [[nodiscard]] [[gnu::pure]]
 static Email
@@ -38,9 +42,12 @@ MakeNotificationEmail(const CronJob &job, const CronResult &result) noexcept
 
 void
 SendNotificationEmail(EmailService &service, const CronJob &job,
-		      const CronResult &result) noexcept
+		      const CronResult &result)
 {
 	assert(!job.notification.empty());
+
+	if (!VerifyEmailAddress(job.notification))
+		throw FmtInvalidArgument("Malformed email address: {:?}", job.notification);
 
 	service.Submit(MakeNotificationEmail(job, result));
 }

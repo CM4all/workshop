@@ -8,6 +8,9 @@ class EmailService;
 struct CronJob;
 struct CronResult;
 
+/**
+ * Throws on error.
+ */
 void
 SendNotificationEmail(EmailService &service, const CronJob &job,
-		      const CronResult &result) noexcept;
+		      const CronResult &result);

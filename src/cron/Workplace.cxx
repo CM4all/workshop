@@ -117,7 +117,12 @@ CronWorkplace::Running::SetResult(const CronResult &result) noexcept
 	if (!job.notification.empty()) {
 		auto *es = workplace.GetEmailService();
 		if (es != nullptr)
-			SendNotificationEmail(*es, job, result);
+			try {
+				SendNotificationEmail(*es, job, result);
+			} catch (...) {
+				logger(1, "Failed to send email notification: ",
+				       std::current_exception());
+			}
 	}
 
 	queue.Finish(job);
