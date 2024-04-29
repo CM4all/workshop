@@ -10,12 +10,10 @@
 
 #include <fmt/core.h>
 
-void
-SendNotificationEmail(EmailService &service, const CronJob &job,
-		      const CronResult &result) noexcept
+[[nodiscard]] [[gnu::pure]]
+static Email
+MakeNotificationEmail(const CronJob &job, const CronResult &result) noexcept
 {
-	assert(!job.notification.empty());
-
 	// TODO: configurable sender?
 	Email email("cm4all-workshop");
 	email.AddRecipient(job.notification.c_str());
@@ -35,5 +33,14 @@ SendNotificationEmail(EmailService &service, const CronJob &job,
 	if (result.log != nullptr)
 		email.message += result.log;
 
-	service.Submit(std::move(email));
+	return email;
+}
+
+void
+SendNotificationEmail(EmailService &service, const CronJob &job,
+		      const CronResult &result) noexcept
+{
+	assert(!job.notification.empty());
+
+	service.Submit(MakeNotificationEmail(job, result));
 }
