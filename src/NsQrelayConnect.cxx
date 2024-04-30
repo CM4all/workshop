@@ -97,7 +97,7 @@ NsConnectQrelay(SpawnService &spawn_service,
 		const char *name, const ChildOptions &options)
 {
 	// TODO this is a horrible and inefficient kludge
-	auto [control_socket, control_socket_for_child] = CreateSocketPair(SOCK_SEQPACKET);
+	auto [control_socket, control_socket_for_child] = CreateSocketPair(SOCK_STREAM);
 
 	PreparedChildProcess p;
 	p.exec_function = NsConnectQrelayFunction;
