@@ -1,6 +1,7 @@
 cm4all-workshop (6.0.29) unstable; urgency=low
 
   * cron: fix corrupt qrelay responses
+  * cron: fix "Unrecognized exception" after QMQP error
   * spawn: create a session cgroup for each cron job
 
  --   
