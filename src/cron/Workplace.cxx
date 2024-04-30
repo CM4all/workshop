@@ -213,6 +213,9 @@ MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 
 	response.child_options.CopyTo(p, close_fds);
 
+	if (p.cgroup != nullptr && p.cgroup->name != nullptr)
+		p.cgroup_session = job.id.c_str();
+
 	/* create operator object */
 
 	std::string_view site = job.account_id;
