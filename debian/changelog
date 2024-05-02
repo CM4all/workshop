@@ -1,3 +1,9 @@
+cm4all-workshop (6.0.30) unstable; urgency=low
+
+  * 
+
+ --   
+
 cm4all-workshop (6.0.29) unstable; urgency=low
 
   * cron: fix corrupt qrelay responses
