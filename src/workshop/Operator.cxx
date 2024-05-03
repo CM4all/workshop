@@ -258,14 +258,6 @@ WorkshopOperator::OnControlAgain(std::chrono::seconds d) noexcept
 	again = d;
 }
 
-static UniqueSocketDescriptor
-CreateConnectBlockingSocket(const SocketAddress address, int type)
-{
-	auto s = CreateConnectSocket(address, type);
-	s.SetBlocking();
-	return s;
-}
-
 static std::pair<std::unique_ptr<ChildProcessHandle>, UniqueSocketDescriptor>
 DoSpawn(SpawnService &service, AllocatorPtr alloc,
 	const WorkshopJob &job, const Plan &plan,
@@ -343,8 +335,7 @@ WorkshopOperator::OnControlSpawn(const char *token, const char *param)
 	Allocator alloc;
 	const auto response =
 		TranslateSpawn(alloc,
-			       CreateConnectBlockingSocket(translation_socket,
-							   SOCK_STREAM),
+			       CreateConnectSocket(translation_socket, SOCK_STREAM),
 			       workplace.GetListenerTag(),
 			       job.plan_name.c_str(),
 			       token, param);
