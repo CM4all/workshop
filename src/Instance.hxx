@@ -63,6 +63,7 @@ class Instance final : BengControl::Handler {
 public:
 	Instance(const Config &config,
 		 UniqueSocketDescriptor spawner_socket,
+		 FileDescriptor cgroup,
 		 std::unique_ptr<MultiLibrary> library);
 
 	~Instance() noexcept;

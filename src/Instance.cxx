@@ -17,6 +17,7 @@
 
 Instance::Instance(const Config &config,
 		   UniqueSocketDescriptor spawner_socket,
+		   FileDescriptor cgroup,
 		   std::unique_ptr<MultiLibrary> _library)
 	:shutdown_listener(event_loop, BIND_THIS_METHOD(OnExit)),
 	 sighup_event(event_loop, SIGHUP, BIND_THIS_METHOD(OnReload)),
@@ -24,6 +25,7 @@ Instance::Instance(const Config &config,
 	 spawn_service(new SpawnServerClient(event_loop,
 					     config.spawn,
 					     std::move(spawner_socket),
+					     cgroup,
 					     /* disable "verify", we
 						do it via SpawnHook */
 					     false)),
