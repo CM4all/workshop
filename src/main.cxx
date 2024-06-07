@@ -53,13 +53,15 @@ Run(const Config &config)
 
 	WorkshopSpawnHook hook{library.get()};
 
-	auto spawner_socket = LaunchSpawnServer(config.spawn, &hook);
+	auto spawner = LaunchSpawnServer(config.spawn, &hook);
 
 	Instance instance{
 		config,
-		std::move(spawner_socket),
+		std::move(spawner.socket),
 		std::move(library),
 	};
+
+	spawner = {}; // close the pidfd
 
 #ifdef HAVE_LIBCAP
 	/* now that the spawner has been launched by the Instance
