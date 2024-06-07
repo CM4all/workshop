@@ -58,7 +58,7 @@ Run(const Config &config)
 	Instance instance{
 		config,
 		std::move(spawner.socket),
-		spawner.cgroup,
+		spawner.cgroup.IsDefined(),
 		std::move(library),
 	};
 
