@@ -2,7 +2,7 @@ cm4all-workshop (6.0.30) unstable; urgency=low
 
   * control: fix socket deregistration bug after malformed packet
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Sat, 08 Jun 2024 09:27:08 +0200
 
 cm4all-workshop (6.0.29) unstable; urgency=low
 
