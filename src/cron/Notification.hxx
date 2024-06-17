@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <string>
 #include <string_view>
 
 class EmailService;
@@ -18,5 +19,6 @@ struct CronResult;
 void
 SendNotificationEmail(EmailService &service, bool use_qrelay, std::string_view sender,
 		      SpawnService &spawn_service, const ChildOptions &child_options,
+		      std::string &&logger_domain,
 		      const CronJob &job,
 		      const CronResult &result);

@@ -6,9 +6,9 @@
 #include "event/net/ConnectSocket.hxx"
 #include "event/net/djb/QmqpClient.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
+#include "io/Logger.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "util/DisposablePointer.hxx"
-#include "util/PrintException.hxx"
 
 #include <cassert>
 #include <memory>
@@ -19,6 +19,7 @@ class EmailService::Job final
 {
 	EmailService &service;
 	Email email;
+	const Logger logger;
 
 	ConnectSocket connect;
 	QmqpClient client;
@@ -30,7 +31,8 @@ class EmailService::Job final
 	DisposablePointer lease;
 
 public:
-	Job(EmailService &_service, Email &&_email) noexcept;
+	Job(EmailService &_service, Email &&_email,
+	    std::string &&logger_domain) noexcept;
 	void Start() noexcept;
 	void Start(UniqueSocketDescriptor s, DisposablePointer _lease) noexcept;
 
@@ -44,9 +46,11 @@ private:
 	void OnQmqpClientError(std::exception_ptr error) noexcept override;
 };
 
-EmailService::Job::Job(EmailService &_service, Email &&_email) noexcept
+EmailService::Job::Job(EmailService &_service, Email &&_email,
+		       std::string &&logger_domain) noexcept
 	:service(_service),
 	 email(std::move(_email)),
+	 logger(std::move(logger_domain)),
 	 connect(service.event_loop, *this),
 	 client(service.event_loop, *this)
 {
@@ -84,8 +88,7 @@ EmailService::Job::OnSocketConnectSuccess(UniqueSocketDescriptor _fd) noexcept
 void
 EmailService::Job::OnSocketConnectError(std::exception_ptr error) noexcept
 {
-	// TODO add context to log message
-	PrintException(error);
+	logger(1, "Failed to connect to QMQP server: ", error);
 	service.DeleteJob(*this);
 }
 
@@ -101,8 +104,7 @@ EmailService::Job::OnQmqpClientSuccess(std::string_view description) noexcept
 void
 EmailService::Job::OnQmqpClientError(std::exception_ptr error) noexcept
 {
-	// TODO add context to log message
-	PrintException(error);
+	logger(1, "QMQP server error: ", error);
 	service.DeleteJob(*this);
 }
 
@@ -121,11 +123,11 @@ EmailService::CancelAll() noexcept
 }
 
 void
-EmailService::Submit(Email &&email) noexcept
+EmailService::Submit(Email &&email, std::string &&logger_domain) noexcept
 {
 	assert(HasRelay());
 
-	auto *job = new Job(*this, std::move(email));
+	auto *job = new Job(*this, std::move(email), std::move(logger_domain));
 	jobs.push_front(*job);
 	job->Start();
 }
@@ -133,11 +135,11 @@ EmailService::Submit(Email &&email) noexcept
 void
 EmailService::Submit(UniqueSocketDescriptor qmqp_socket,
 		     DisposablePointer qmqp_socket_lease,
-		     Email &&email) noexcept
+		     Email &&email, std::string &&logger_domain) noexcept
 {
 	assert(qmqp_socket.IsDefined());
 
-	auto *job = new Job(*this, std::move(email));
+	auto *job = new Job(*this, std::move(email), std::move(logger_domain));
 	jobs.push_front(*job);
 	job->Start(std::move(qmqp_socket), std::move(qmqp_socket_lease));
 }

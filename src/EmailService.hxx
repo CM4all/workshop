@@ -46,10 +46,11 @@ public:
 
 	void CancelAll() noexcept;
 
-	void Submit(Email &&email) noexcept;
+	void Submit(Email &&email, std::string &&logger_domain) noexcept;
 	void Submit(UniqueSocketDescriptor qmqp_socket,
 		    DisposablePointer qmqp_socket_lease,
-		    Email &&email) noexcept;
+		    Email &&email,
+		    std::string &&logger_domain) noexcept;
 
 private:
 	void DeleteJob(Job &job) noexcept;

@@ -47,6 +47,7 @@ MakeNotificationEmail(std::string_view sender,
 void
 SendNotificationEmail(EmailService &service, bool use_qrelay, std::string_view sender,
 		      SpawnService &spawn_service, const ChildOptions &child_options,
+		      std::string &&logger_domain,
 		      const CronJob &job,
 		      const CronResult &result)
 {
@@ -60,9 +61,11 @@ SendNotificationEmail(EmailService &service, bool use_qrelay, std::string_view s
 							 child_options);
 		service.Submit(std::move(socket),
 			       ToDeletePointer(process.release()),
-			       MakeNotificationEmail(sender, job, result));
+			       MakeNotificationEmail(sender, job, result),
+			       std::move(logger_domain));
 	} else if (service.HasRelay())
-		service.Submit(MakeNotificationEmail(sender, job, result));
+		service.Submit(MakeNotificationEmail(sender, job, result),
+			       std::move(logger_domain));
 	else
 		throw std::invalid_argument{"No qmqp_server configured"};
 }

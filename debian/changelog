@@ -1,6 +1,6 @@
 cm4all-workshop (6.0.31) unstable; urgency=low
 
-  * 
+  * cron: log email notification errors with job id and site name
 
  --   
 
