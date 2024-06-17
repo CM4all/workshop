@@ -54,7 +54,7 @@ class WorkshopOperator final
 
 	std::chrono::microseconds cpu_usage_start = std::chrono::microseconds::min();
 
-	LazyDomainLogger logger;
+	const LazyDomainLogger logger;
 
 	FarTimerEvent timeout_event;
 

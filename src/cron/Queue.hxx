@@ -21,7 +21,7 @@ class CronQueue final : private Pg::AsyncConnectionHandler {
 
 	const std::string node_name;
 
-	ChildLogger logger;
+	const ChildLogger logger;
 
 	Pg::AsyncConnection db;
 

@@ -28,7 +28,7 @@ class CronSpawnOperator final
 
 	std::unique_ptr<PipeCaptureBuffer> output_capture;
 
-	LazyDomainLogger &logger;
+	const LazyDomainLogger &logger;
 
 public:
 	explicit CronSpawnOperator(LazyDomainLogger &_logger) noexcept;

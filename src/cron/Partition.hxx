@@ -28,7 +28,7 @@ class CronPartition final : ExitListener {
 
 	const SocketAddress translation_socket;
 
-	Logger logger;
+	const Logger logger;
 
 	EmailService email_service;
 
