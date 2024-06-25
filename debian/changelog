@@ -1,3 +1,9 @@
+cm4all-workshop (5.6) unstable; urgency=low
+
+  * 
+
+ --   
+
 cm4all-workshop (5.5) unstable; urgency=low
 
   * workshop: fix crash after failure to reaping finished jobs
