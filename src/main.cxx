@@ -52,6 +52,15 @@ bool debug_mode = false;
 #endif
 
 static void
+DropInheritableCapabilities()
+{
+	/* don't inherit any capabilities to spawned processes */
+	auto state = CapabilityState::Current();
+	state.ClearFlag(CAP_INHERITABLE);
+	state.Install();
+}
+
+static void
 Run(const Config &config)
 {
 	SetupProcess();
@@ -92,6 +101,8 @@ try {
 
 	ParseCommandLine(config, argc, argv);
 	LoadConfigFile(config, "/etc/cm4all/workshop/workshop.conf");
+
+	DropInheritableCapabilities();
 
 	if (config.partitions.empty()) {
 		/* compatibility with Workshop 1.0 */

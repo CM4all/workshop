@@ -1,6 +1,6 @@
 cm4all-workshop (5.6) unstable; urgency=low
 
-  * 
+  * drop inheritable capabilities
 
  --   
 
