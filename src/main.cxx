@@ -43,6 +43,17 @@ MakeLibrary()
 }
 
 static void
+DropInheritableCapabilities()
+{
+#ifdef HAVE_LIBCAP
+	/* don't inherit any capabilities to spawned processes */
+	auto state = CapabilityState::Current();
+	state.ClearFlag(CAP_INHERITABLE);
+	state.Install();
+#endif
+}
+
+static void
 Run(const Config &config)
 {
 	SetupProcess();
@@ -110,6 +121,8 @@ try {
 
 	ParseCommandLine(argc, argv);
 	LoadConfigFile(config, "/etc/cm4all/workshop/workshop.conf");
+
+	DropInheritableCapabilities();
 
 	config.Check();
 
