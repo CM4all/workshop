@@ -15,6 +15,7 @@ enum class HttpStatus : uint_least16_t;
 struct ChildOptions;
 class SpawnService;
 class ChildProcessHandle;
+namespace Co { template<typename T> class Task; }
 
 /**
  * A #CronJob which sends a HTTP GET request to a specific URL.
@@ -31,11 +32,13 @@ class CronCurlOperator final
 	HttpStatus status{};
 
 public:
+	[[nodiscard]]
 	CronCurlOperator(EventLoop &event_loop) noexcept;
 	~CronCurlOperator() noexcept override;
 
-	void Start(SpawnService &spawn_service, const char *name,
-		   const ChildOptions &options, const char *url);
+	[[nodiscard]]
+	Co::Task<void> Start(SpawnService &spawn_service, const char *name,
+			     const ChildOptions &options, const char *url);
 
 private:
 	void OnSocketReady(unsigned events) noexcept;

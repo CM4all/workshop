@@ -5,12 +5,15 @@
 #include "SpawnOperator.hxx"
 #include "Result.hxx"
 #include "PipePondAdapter.hxx"
+#include "spawn/CoEnqueue.hxx"
+#include "spawn/CoWaitSpawnCompletion.hxx"
 #include "spawn/Interface.hxx"
 #include "spawn/Prepared.hxx"
 #include "spawn/ProcessHandle.hxx"
 #include "io/Logger.hxx"
 #include "io/Pipe.hxx"
 #include "io/UniqueFileDescriptor.hxx"
+#include "co/Task.hxx"
 #include "util/UTF8.hxx"
 
 #include <unistd.h>
@@ -24,12 +27,14 @@ CronSpawnOperator::CronSpawnOperator(LazyDomainLogger &_logger) noexcept
 
 CronSpawnOperator::~CronSpawnOperator() noexcept = default;
 
-void
+Co::Task<void>
 CronSpawnOperator::Spawn(EventLoop &event_loop, SpawnService &spawn_service,
 			 const char *name, std::string_view site,
 			 PreparedChildProcess &&p,
 			 SocketDescriptor pond_socket)
 {
+	co_await CoEnqueueSpawner{spawn_service};
+
 	UniqueFileDescriptor stderr_w;
 
 	if (!p.stderr_fd.IsDefined()) {
@@ -60,6 +65,8 @@ CronSpawnOperator::Spawn(EventLoop &event_loop, SpawnService &spawn_service,
 
 	pid = spawn_service.SpawnChildProcess(name,
 					      std::move(p));
+	co_await CoWaitSpawnCompletion{*pid};
+
 	pid->SetExitListener(*this);
 
 	logger(2, "running");

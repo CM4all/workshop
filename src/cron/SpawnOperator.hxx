@@ -17,6 +17,7 @@ class PipeCaptureBuffer;
 class SocketDescriptor;
 class ChildProcessHandle;
 class LazyDomainLogger;
+namespace Co { template<typename T> class Task; }
 
 /**
  * A #CronJob being executed as a spawned child process.
@@ -31,12 +32,14 @@ class CronSpawnOperator final
 	const LazyDomainLogger &logger;
 
 public:
+	[[nodiscard]]
 	explicit CronSpawnOperator(LazyDomainLogger &_logger) noexcept;
 	~CronSpawnOperator() noexcept override;
 
-	void Spawn(EventLoop &event_loop, SpawnService &spawn_service,
-		   const char *name, std::string_view site,
-		   PreparedChildProcess &&p, SocketDescriptor pond_socket);
+	[[nodiscard]]
+	Co::Task<void> Spawn(EventLoop &event_loop, SpawnService &spawn_service,
+			     const char *name, std::string_view site,
+			     PreparedChildProcess &&p, SocketDescriptor pond_socket);
 
 public:
 	/* virtual methods from ExitListener */

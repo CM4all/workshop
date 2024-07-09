@@ -10,6 +10,8 @@
 #include "lib/curl/Handler.hxx"
 #include "lib/curl/Setup.hxx"
 #include "spawn/ChildOptions.hxx"
+#include "spawn/CoEnqueue.hxx"
+#include "spawn/CoWaitSpawnCompletion.hxx"
 #include "spawn/Interface.hxx"
 #include "spawn/Prepared.hxx"
 #include "spawn/ProcessHandle.hxx"
@@ -17,6 +19,7 @@
 #include "net/SocketPair.hxx"
 #include "net/SocketProtocolError.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
+#include "co/Task.hxx"
 #include "util/SpanCast.hxx"
 #include "util/StringCompare.hxx"
 
@@ -130,11 +133,15 @@ CronCurlOperator::~CronCurlOperator() noexcept
 	socket.Close();
 }
 
-void
+Co::Task<void>
 CronCurlOperator::Start(SpawnService &spawn_service, const char *name,
 			const ChildOptions &options, const char *url)
 {
+	co_await CoEnqueueSpawner{spawn_service};
+
 	auto [_socket, _pid] = SpawnCurl(spawn_service, name, options);
+
+	co_await CoWaitSpawnCompletion{*_pid};
 
 	if (_socket.Write(AsBytes(std::string_view{url})) < 0)
 		throw MakeSocketError("Failed to send");

@@ -170,7 +170,8 @@ IsURL(std::string_view command) noexcept
 		command.starts_with("https://"sv);
 }
 
-static std::unique_ptr<CronOperator>
+[[nodiscard]]
+static Co::Task<std::unique_ptr<CronOperator>>
 MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 		  SocketDescriptor pond_socket,
 		  LazyDomainLogger &logger,
@@ -227,20 +228,21 @@ MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 		site = response.site;
 
 	auto o = std::make_unique<CronSpawnOperator>(logger);
-	o->Spawn(event_loop, spawn_service,
-		 job.id.c_str(), site,
-		 std::move(p), pond_socket);
-	return o;
+	co_await o->Spawn(event_loop, spawn_service,
+			  job.id.c_str(), site,
+			  std::move(p), pond_socket);
+	co_return o;
 }
 
-static std::unique_ptr<CronOperator>
+[[nodiscard]]
+static Co::Task<std::unique_ptr<CronOperator>>
 MakeCurlOperator(EventLoop &event_loop, SpawnService &spawn_service,
 		 const CronJob &job, const char *url,
 		 const TranslateResponse &response)
 {
 	auto o = std::make_unique<CronCurlOperator>(event_loop);
-	o->Start(spawn_service, job.id.c_str(), response.child_options, url);
-	return o;
+	co_await o->Start(spawn_service, job.id.c_str(), response.child_options, url);
+	co_return o;
 }
 
 inline Co::Task<std::unique_ptr<CronOperator>>
@@ -279,19 +281,19 @@ CronWorkplace::Running::MakeOperator(SocketAddress translation_socket,
 	child_options = {ShallowCopy{}, response.child_options};
 
 	if (IsURL(job.command))
-		co_return MakeCurlOperator(GetEventLoop(),
-					   workplace.GetSpawnService(),
-					   job,
-					   job.command.c_str(),
-					   response);
+		co_return co_await MakeCurlOperator(GetEventLoop(),
+						    workplace.GetSpawnService(),
+						    job,
+						    job.command.c_str(),
+						    response);
 	else
-		co_return MakeSpawnOperator(GetEventLoop(),
-					    workplace.GetSpawnService(),
-					    workplace.GetPondSocket(),
-					    logger,
-					    job,
-					    uri == nullptr ? job.command.c_str() : nullptr,
-					    response);
+		co_return co_await MakeSpawnOperator(GetEventLoop(),
+						     workplace.GetSpawnService(),
+						     workplace.GetPondSocket(),
+						     logger,
+						     job,
+						     uri == nullptr ? job.command.c_str() : nullptr,
+						     response);
 }
 
 inline Co::InvokeTask
