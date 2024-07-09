@@ -230,7 +230,7 @@ MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 	o->Spawn(event_loop, spawn_service,
 		 job.id.c_str(), site,
 		 std::move(p), pond_socket);
-	return std::unique_ptr<CronOperator>(std::move(o));
+	return o;
 }
 
 static std::unique_ptr<CronOperator>
@@ -240,7 +240,7 @@ MakeCurlOperator(EventLoop &event_loop, SpawnService &spawn_service,
 {
 	auto o = std::make_unique<CronCurlOperator>(event_loop);
 	o->Start(spawn_service, job.id.c_str(), response.child_options, url);
-	return std::unique_ptr<CronOperator>(std::move(o));
+	return o;
 }
 
 inline Co::Task<std::unique_ptr<CronOperator>>
