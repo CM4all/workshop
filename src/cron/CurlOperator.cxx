@@ -28,9 +28,9 @@ using std::string_view_literals::operator""sv;
 namespace {
 
 class MyResponseHandler final : public CurlResponseHandler {
-	bool is_text = false;
 	const SocketDescriptor socket;
 	std::exception_ptr error;
+	bool is_text = false;
 
 public:
 	explicit MyResponseHandler(SocketDescriptor _socket) noexcept
