@@ -108,6 +108,10 @@ SpawnCurl(SpawnService &spawn_service, const char *name,
 	p.ns.enable_cgroup = false;
 	p.ns.enable_ipc = false;
 	p.ns.pid_namespace = nullptr;
+	p.ns.mount.mount_proc = false;
+	p.ns.mount.mount_dev = false;
+	p.ns.mount.mount_pts = false;
+	p.ns.mount.bind_mount_pts = false;
 	p.uid_gid = options.uid_gid;
 #ifdef HAVE_LIBSECCOMP
 	p.forbid_multicast = options.forbid_multicast;
