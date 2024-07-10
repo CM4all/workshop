@@ -28,8 +28,8 @@ using std::string_view_literals::operator""sv;
 namespace {
 
 class MyResponseHandler final : public CurlResponseHandler {
-	const SocketDescriptor socket;
 	std::exception_ptr error;
+	const SocketDescriptor socket;
 	bool is_text = false;
 
 public:
