@@ -33,6 +33,9 @@ public:
 	SocketDescriptor socket;
 	std::exception_ptr error;
 
+	explicit MyResponseHandler(SocketDescriptor _socket) noexcept
+		:socket(_socket) {}
+
 	void OnHeaders(HttpStatus status, Curl::Headers &&headers) override {
 		(void)socket.Write(ReferenceAsBytes(status));
 
@@ -80,7 +83,7 @@ SpawnCurlFunction(PreparedChildProcess &&)
 	auto easy = ReadRequest(control);
 	Curl::Setup(easy);
 
-	MyResponseHandler handler;
+	MyResponseHandler handler{control};
 	CurlResponseHandlerAdapter adapter{handler};
 	adapter.Install(easy);
 
