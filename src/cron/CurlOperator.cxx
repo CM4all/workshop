@@ -15,13 +15,18 @@
 #include "spawn/Interface.hxx"
 #include "spawn/Prepared.hxx"
 #include "spawn/ProcessHandle.hxx"
+#include "net/SendMessage.hxx"
 #include "net/SocketError.hxx"
 #include "net/SocketPair.hxx"
 #include "net/SocketProtocolError.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
+#include "io/Iovec.hxx"
 #include "co/Task.hxx"
 #include "util/SpanCast.hxx"
 #include "util/StringCompare.hxx"
+#include "CaptureBuffer.hxx"
+
+#include <array>
 
 using std::string_view_literals::operator""sv;
 
@@ -29,20 +34,31 @@ namespace {
 
 class MyResponseHandler final : public CurlResponseHandler {
 	std::exception_ptr error;
-	const SocketDescriptor socket;
+
+	std::size_t fill = 0;
+	std::array<std::byte, 8192> buffer;
+
+	HttpStatus status{};
+
 	bool is_text = false;
 
 public:
-	explicit MyResponseHandler(SocketDescriptor _socket) noexcept
-		:socket(_socket) {}
-
 	void CheckRethrowError() {
 		if (error)
 			std::rethrow_exception(error);
 	}
 
-	void OnHeaders(HttpStatus status, Curl::Headers &&headers) override {
-		(void)socket.Write(ReferenceAsBytes(status));
+	void Send(SocketDescriptor socket) {
+		const struct iovec v[] = {
+			MakeIovecT(status),
+			MakeIovec(std::span{buffer}.first(fill)),
+		};
+
+		SendMessage(socket, MessageHeader{v}, MSG_NOSIGNAL);
+	}
+
+	void OnHeaders(HttpStatus _status, Curl::Headers &&headers) override {
+		status = _status;
 
 		if (const auto i = headers.find("content-type"sv);
 		    i != headers.end())
@@ -53,8 +69,10 @@ public:
 		if (!is_text)
 			return;
 
-		if (socket.Write(data) < 0)
-			throw MakeSocketError("send() failed");
+		auto w = std::span{buffer}.subspan(fill);
+		const std::size_t n = std::min(data.size(), w.size());
+		std::copy_n(data.begin(), n, w.begin());
+		fill += n;
 	}
 
 	void OnEnd() override {}
@@ -88,7 +106,7 @@ SpawnCurlFunction(PreparedChildProcess &&)
 	auto easy = ReadRequest(control);
 	Curl::Setup(easy);
 
-	MyResponseHandler handler{control};
+	MyResponseHandler handler;
 	CurlResponseHandlerAdapter adapter{handler};
 	adapter.Install(easy);
 
@@ -96,6 +114,7 @@ SpawnCurlFunction(PreparedChildProcess &&)
 	adapter.Done(CURLE_OK);
 
 	handler.CheckRethrowError();
+	handler.Send(control);
 
 	return 0;
 }
@@ -166,22 +185,24 @@ CronCurlOperator::Start(SpawnService &spawn_service, const char *name,
 void
 CronCurlOperator::OnSocketReady(unsigned) noexcept
 {
-	if (status == HttpStatus{}) {
-		if (socket.GetSocket().ReadNoWait(ReferenceAsWritableBytes(status)) != static_cast<ssize_t>(sizeof(status)) ||
-		    status == HttpStatus{})
-			Finish(CronResult::Error("Failed to read status"));
+	HttpStatus status;
+	CaptureBuffer capture{8192};
 
+	const struct iovec v[] = {
+		MakeIovecT(status),
+		MakeIovec(capture.Write()),
+	};
+
+	auto nbytes = socket.GetSocket().Receive(v, 0);
+	if (nbytes < 0 || static_cast<std::size_t>(nbytes) < sizeof(status)) {
+		Finish(CronResult::Error("Failed to read status"));
 		return;
 	}
 
-	auto w = capture.Write();
-	const auto nbytes = socket.GetSocket().ReadNoWait(std::as_writable_bytes(w));
-	if (nbytes > 0) {
-		capture.Append(nbytes);
-	} else {
-		Finish(CronResult{
-				.log = std::move(capture).NormalizeASCII(),
-				.exit_status = static_cast<int>(status),
-			});
-	}
+	capture.Append(static_cast<std::size_t>(nbytes) - sizeof(status));
+
+	Finish(CronResult{
+		.log = std::move(capture).NormalizeASCII(),
+		.exit_status = static_cast<int>(status),
+	});
 }

@@ -6,12 +6,11 @@
 
 #include "Operator.hxx"
 #include "event/SocketEvent.hxx"
-#include "CaptureBuffer.hxx"
 
+#include <array>
 #include <cstdint>
 #include <memory>
 
-enum class HttpStatus : uint_least16_t;
 struct ChildOptions;
 class SpawnService;
 class ChildProcessHandle;
@@ -26,10 +25,6 @@ class CronCurlOperator final
 	SocketEvent socket;
 
 	std::unique_ptr<ChildProcessHandle> pid;
-
-	CaptureBuffer capture{8192};
-
-	HttpStatus status{};
 
 public:
 	[[nodiscard]]
