@@ -29,7 +29,7 @@ namespace {
 
 class MyResponseHandler final : public CurlResponseHandler {
 	bool is_text = false;
-	SocketDescriptor socket;
+	const SocketDescriptor socket;
 	std::exception_ptr error;
 
 public:
