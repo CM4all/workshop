@@ -32,6 +32,18 @@ using std::string_view_literals::operator""sv;
 
 namespace {
 
+static void
+SendHttpResponse(SocketDescriptor socket, const HttpStatus &status,
+		 std::span<const std::byte> body)
+{
+	const struct iovec v[] = {
+		MakeIovecT(status),
+		MakeIovec(body),
+	};
+
+	SendMessage(socket, MessageHeader{v}, MSG_NOSIGNAL);
+}
+
 class MyResponseHandler final : public CurlResponseHandler {
 	std::exception_ptr error;
 
@@ -49,12 +61,7 @@ public:
 	}
 
 	void Send(SocketDescriptor socket) {
-		const struct iovec v[] = {
-			MakeIovecT(status),
-			MakeIovec(std::span{buffer}.first(fill)),
-		};
-
-		SendMessage(socket, MessageHeader{v}, MSG_NOSIGNAL);
+		SendHttpResponse(socket, status, std::span{buffer}.first(fill));
 	}
 
 	void OnHeaders(HttpStatus _status, Curl::Headers &&headers) override {
