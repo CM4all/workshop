@@ -21,7 +21,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - id: checkout
         uses: actions/checkout@v4
@@ -34,6 +34,7 @@ jobs:
           sudo apt-get install -y --no-install-recommends \
             meson \
             ccache \
+            libfmt-dev \
             libsystemd-dev \
             libdbus-1-dev \
             libseccomp-dev \
@@ -52,7 +53,6 @@ jobs:
           meson setup \
             -Dauto_features=enabled \
             -Ddocumentation=disabled \
-             --force-fallback-for=fmt \
             -Dwrap_mode=nofallback \
             output
 
@@ -68,7 +68,7 @@ jobs:
         run: cat output/meson-logs/testlog.txt
 
   mini:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - id: checkout
         uses: actions/checkout@v4
@@ -81,6 +81,7 @@ jobs:
           sudo apt-get install -y --no-install-recommends \
             meson \
             ccache \
+            libfmt-dev \
             libcurl4-openssl-dev \
             libgtest-dev \
             libpq-dev
@@ -94,7 +95,6 @@ jobs:
         run: |
           meson setup \
             -Dauto_features=disabled \
-             --force-fallback-for=fmt \
             -Dwrap_mode=nofallback \
             output
 
