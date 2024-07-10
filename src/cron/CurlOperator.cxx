@@ -114,6 +114,7 @@ SpawnCurlFunction(PreparedChildProcess &&)
 	try {
 		auto easy = ReadRequest(control);
 		Curl::Setup(easy);
+		easy.SetTimeout(std::chrono::minutes{1});
 
 		MyResponseHandler handler;
 		CurlResponseHandlerAdapter adapter{handler};
