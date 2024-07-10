@@ -28,13 +28,18 @@ using std::string_view_literals::operator""sv;
 namespace {
 
 class MyResponseHandler final : public CurlResponseHandler {
-public:
 	bool is_text = false;
 	SocketDescriptor socket;
 	std::exception_ptr error;
 
+public:
 	explicit MyResponseHandler(SocketDescriptor _socket) noexcept
 		:socket(_socket) {}
+
+	void CheckRethrowError() {
+		if (error)
+			std::rethrow_exception(error);
+	}
 
 	void OnHeaders(HttpStatus status, Curl::Headers &&headers) override {
 		(void)socket.Write(ReferenceAsBytes(status));
@@ -90,8 +95,7 @@ SpawnCurlFunction(PreparedChildProcess &&)
 	easy.Perform();
 	adapter.Done(CURLE_OK);
 
-	if (handler.error)
-		std::rethrow_exception(handler.error);
+	handler.CheckRethrowError();
 
 	return 0;
 }
