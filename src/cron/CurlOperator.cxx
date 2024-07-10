@@ -22,6 +22,7 @@
 #include "net/UniqueSocketDescriptor.hxx"
 #include "io/Iovec.hxx"
 #include "co/Task.hxx"
+#include "util/Exception.hxx"
 #include "util/SpanCast.hxx"
 #include "util/StringCompare.hxx"
 #include "CaptureBuffer.hxx"
@@ -110,18 +111,23 @@ SpawnCurlFunction(PreparedChildProcess &&)
 {
 	SocketDescriptor control{3};
 
-	auto easy = ReadRequest(control);
-	Curl::Setup(easy);
+	try {
+		auto easy = ReadRequest(control);
+		Curl::Setup(easy);
 
-	MyResponseHandler handler;
-	CurlResponseHandlerAdapter adapter{handler};
-	adapter.Install(easy);
+		MyResponseHandler handler;
+		CurlResponseHandlerAdapter adapter{handler};
+		adapter.Install(easy);
 
-	easy.Perform();
-	adapter.Done(CURLE_OK);
+		easy.Perform();
+		adapter.Done(CURLE_OK);
 
-	handler.CheckRethrowError();
-	handler.Send(control);
+		handler.CheckRethrowError();
+		handler.Send(control);
+	} catch (...) {
+		SendHttpResponse(control, HttpStatus{}, AsBytes(GetFullMessage(std::current_exception())));
+		return 1;
+	}
 
 	return 0;
 }
@@ -210,6 +216,6 @@ CronCurlOperator::OnSocketReady(unsigned) noexcept
 
 	Finish(CronResult{
 		.log = std::move(capture).NormalizeASCII(),
-		.exit_status = static_cast<int>(status),
+		.exit_status = status == HttpStatus{} ? -1 : static_cast<int>(status),
 	});
 }
