@@ -55,12 +55,12 @@ CronSpawnOperator::Spawn(EventLoop &event_loop, SpawnService &spawn_service,
 								   site);
 	}
 
-	if (p.ns.mount.home != nullptr) {
+	if (p.HasHome()) {
 		/* change to home directory (if one was set) */
 		if (p.chdir == nullptr)
-			p.chdir = p.ns.mount.GetJailedHome();
+			p.chdir = p.GetJailedHome();
 
-		p.SetEnv("HOME", p.ns.mount.GetJailedHome());
+		p.SetEnv("HOME", p.GetJailedHome());
 	}
 
 	pid = spawn_service.SpawnChildProcess(name,
