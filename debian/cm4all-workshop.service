@@ -49,6 +49,9 @@ AmbientCapabilities=CAP_SETUID CAP_SETGID CAP_KILL
 # things that could probably be fixed)
 AmbientCapabilities=CAP_SYS_ADMIN
 
+# For the CAP_SYS_RESOURCE spawner option
+AmbientCapabilities=CAP_SYS_RESOURCE
+
 CPUSchedulingPolicy=batch
 RestrictRealtime=yes
 TimerSlackNSec=1s
