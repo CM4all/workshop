@@ -22,7 +22,7 @@ ProgressReader::PipeReady(unsigned) noexcept
 	unsigned new_progress = 0, p;
 
 	FileDescriptor fd(event.GetFileDescriptor());
-	nbytes = fd.Read(buffer, sizeof(buffer));
+	nbytes = fd.Read(std::as_writable_bytes(std::span{buffer}));
 	if (nbytes <= 0) {
 		event.Close();
 		return;

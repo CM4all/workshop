@@ -21,7 +21,7 @@ PipeCaptureBuffer::OnSocket(unsigned) noexcept
 
 	auto w = buffer.Write();
 	if (!w.empty()) {
-		ssize_t nbytes = fd.Read(w.data(), w.size());
+		ssize_t nbytes = fd.Read(std::as_writable_bytes(w));
 		if (nbytes <= 0) {
 			Close();
 			OnEnd();
@@ -36,8 +36,8 @@ PipeCaptureBuffer::OnSocket(unsigned) noexcept
 	} else {
 		/* buffer is full: discard data to keep the pipe from blocking
 		   the other end */
-		char discard[4096];
-		if (fd.Read(discard, sizeof(discard)) <= 0)
+		std::byte discard[4096];
+		if (fd.Read(discard) <= 0)
 			Close();
 	}
 }
