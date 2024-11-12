@@ -3,7 +3,7 @@ cm4all-workshop (6.2) unstable; urgency=low
   * spawn: do not log "failed to kill: No such process"
   * translation: add packets CAP_SYS_RESOURCE, CHROOT
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Tue, 12 Nov 2024 12:38:01 +0100
 
 cm4all-workshop (6.1) unstable; urgency=low
 
