@@ -15,6 +15,17 @@
 
 #include <assert.h>
 
+namespace {
+
+/**
+ * An exception class that is thrown when another node has already
+ * scheduled the job we were about to schedule.  This class exists
+ * only so this kind of error has a different log verbosity.
+ */
+struct LostRace {};
+
+}
+
 static bool
 IsSameInterval(const char *a, std::chrono::seconds b) noexcept
 {
@@ -64,7 +75,7 @@ MakeRandomDelay(Pg::Connection &db, const char *id, const char *schedule,
 				 id, schedule,
 				 delay.count(), range.count());
 	if (result.GetAffectedRows() == 0)
-		throw std::runtime_error("Lost race to schedule job");
+		throw LostRace{};
 
 	return delay;
 }
@@ -129,7 +140,9 @@ CalculateNextRun(const ChildLogger &logger, Pg::Connection &db)
 						  id, _schedule, _last_run,
 						  next_run_string);
 			if (r.GetAffectedRows() == 0)
-				throw std::runtime_error("Lost race to schedule job");
+				throw LostRace{};
+		} catch (LostRace) {
+			logger(3, "Lost race to schedule job '", id, "'");
 		} catch (...) {
 			logger(1, "Failed to schedule job '", id, "': ",
 			       std::current_exception());

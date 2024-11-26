@@ -2,6 +2,7 @@ cm4all-workshop (6.4) unstable; urgency=low
 
   * qmqp: fix buffer overflow in netstring header parser
   * spawn: mount `proc` with "hidepid=1,subset=pid"
+  * cron: do not log "lost race to schedule job" by default
 
  --   
 
