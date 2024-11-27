@@ -4,7 +4,7 @@ cm4all-workshop (6.4) unstable; urgency=low
   * spawn: mount `proc` with "hidepid=1,subset=pid"
   * cron: do not log "lost race to schedule job" by default
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Wed, 27 Nov 2024 16:17:16 +0100
 
 cm4all-workshop (6.3) unstable; urgency=low
 
