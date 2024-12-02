@@ -1,6 +1,6 @@
 cm4all-workshop (6.5) unstable; urgency=low
 
-  * 
+  * spawn: forbid the "listmount" and "statmount" system calls
 
  --   
 
