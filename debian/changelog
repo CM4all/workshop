@@ -2,7 +2,7 @@ cm4all-workshop (6.5) unstable; urgency=low
 
   * spawn: forbid the "listmount" and "statmount" system calls
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Mon, 09 Dec 2024 17:42:38 +0100
 
 cm4all-workshop (6.4) unstable; urgency=low
 
