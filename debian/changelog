@@ -2,7 +2,7 @@ cm4all-workshop (6.6) unstable; urgency=low
 
   * translation: add packets TMPFS_DIRS_READABLE, SYMLINK
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Wed, 05 Feb 2025 08:37:20 +0100
 
 cm4all-workshop (6.5) unstable; urgency=low
 
