@@ -8,7 +8,6 @@
 #include "util/IntrusiveList.hxx"
 
 struct CronJob;
-class Logger;
 class SpawnService;
 class EmailService;
 class CronQueue;
@@ -19,7 +18,6 @@ class CronWorkplace {
 	EmailService &email_service;
 	const std::string_view default_email_sender;
 	const SocketDescriptor pond_socket;
-	const Logger &logger;
 
 	ExitListener &exit_listener;
 
@@ -38,7 +36,6 @@ public:
 		      bool _use_qrelay,
 		      std::string_view _default_email_sender,
 		      SocketDescriptor _pond_socket,
-		      const Logger &_logger,
 		      ExitListener &_exit_listener,
 		      std::size_t _max_operators);
 
