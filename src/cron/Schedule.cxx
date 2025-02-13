@@ -6,13 +6,13 @@
 #include "lib/fmt/RuntimeError.hxx"
 #include "time/Convert.hxx"
 #include "time/Math.hxx"
+#include "util/StringAPI.hxx"
 #include "util/StringStrip.hxx"
 #include "util/Macros.hxx"
 
 #include <stdexcept>
 
 #include <assert.h>
-#include <string.h>
 #include <stdlib.h>
 #include <time.h>
 
@@ -56,7 +56,7 @@ LookupCronSymbol(const char *&s, const CronSymbol dictionary[])
 
 	for (const auto *i = dictionary; i->name != nullptr; ++i) {
 		size_t length = strlen(i->name);
-		if (strncmp(s, i->name, length) == 0) {
+		if (StringIsEqualIgnoreCase(s, i->name, length)) {
 			s += length;
 			return i;
 		}

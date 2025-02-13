@@ -144,6 +144,22 @@ TEST(CronSchedule, Parser)
 		ASSERT_TRUE(s.days_of_week.all());
 		ASSERT_EQ(s.delay_range, std::chrono::minutes(1));
 	}
+
+	// month + day names are case insensitive
+
+	{
+		const CronSchedule s("* * * feb,MAY TUE,tHu");
+		ASSERT_TRUE(s.minutes.all());
+		ASSERT_TRUE(s.hours.all());
+		ASSERT_TRUE(s.days_of_month.all());
+		ASSERT_EQ(s.months.count(), 2u);
+		ASSERT_TRUE(s.months[2]);
+		ASSERT_TRUE(s.months[5]);
+		ASSERT_EQ(s.days_of_week.count(), 2u);
+		ASSERT_TRUE(s.days_of_week[2]);
+		ASSERT_TRUE(s.days_of_week[4]);
+		ASSERT_EQ(s.delay_range, std::chrono::minutes(1));
+	}
 }
 
 static auto
