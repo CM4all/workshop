@@ -5,7 +5,7 @@ cm4all-workshop (6.7) unstable; urgency=low
   * spawn: allow HOME inside a BIND_MOUNT
   * translation: add packet BIND_MOUNT_RW_EXEC
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Thu, 13 Feb 2025 08:31:58 +0100
 
 cm4all-workshop (6.6) unstable; urgency=low
 
