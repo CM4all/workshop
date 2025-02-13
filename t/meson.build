@@ -18,6 +18,7 @@ TestCronSchedule = executable('TestCronSchedule',
   dependencies: [
     util_dep,
     time_dep,
+    fmt_dep,
     gtest,
   ])
 

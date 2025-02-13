@@ -3,6 +3,7 @@
 // author: Max Kellermann <mk@cm4all.com>
 
 #include "Schedule.hxx"
+#include "lib/fmt/RuntimeError.hxx"
 #include "time/Convert.hxx"
 #include "time/Math.hxx"
 #include "util/StringStrip.hxx"
@@ -179,8 +180,10 @@ TranslateSpecial(const char *s)
 	return nullptr;
 }
 
-CronSchedule::CronSchedule(const char *s)
-{
+CronSchedule::CronSchedule(const char *const _s)
+try {
+	const char *s = _s;
+
 	if (*s == '@') {
 		++s;
 
@@ -226,6 +229,8 @@ CronSchedule::CronSchedule(const char *s)
 	s = StripLeft(s);
 	if (*s != 0)
 		throw std::runtime_error("Garbage at end of schedule");
+} catch (...) {
+	std::throw_with_nested(FmtInvalidArgument("Failed to parse cron schedule {:?}", _s));
 }
 
 bool

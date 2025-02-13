@@ -1,5 +1,6 @@
 cm4all-workshop (6.7) unstable; urgency=low
 
+  * cron: improve schedule parser error message
   * spawn: allow HOME inside a BIND_MOUNT
   * translation: add packet BIND_MOUNT_RW_EXEC
 
