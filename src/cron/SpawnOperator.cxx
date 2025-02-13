@@ -20,6 +20,8 @@
 #include <string.h> // for strerror()
 #include <sys/wait.h>
 
+using std::string_view_literals::operator""sv;
+
 CronSpawnOperator::CronSpawnOperator(LazyDomainLogger &_logger) noexcept
 	:logger(_logger)
 {
@@ -56,11 +58,11 @@ CronSpawnOperator::Spawn(EventLoop &event_loop, SpawnService &spawn_service,
 	}
 
 	if (const char *home = p.GetJailedHome()) {
-		/* change to home directory (if one was set) */
+		if (!p.HasEnv("HOME"sv))
+			p.SetEnv("HOME"sv, home);
+
 		if (p.chdir == nullptr)
 			p.chdir = home;
-
-		p.SetEnv("HOME", home);
 	}
 
 	pid = spawn_service.SpawnChildProcess(name,
