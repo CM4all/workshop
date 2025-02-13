@@ -173,6 +173,7 @@ static Co::Task<std::unique_ptr<CronOperator>>
 MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 		  SocketDescriptor pond_socket,
 		  LazyDomainLogger &logger,
+		  AllocatorPtr alloc,
 		  const CronJob &job, const char *command,
 		  const TranslateResponse &response)
 {
@@ -226,7 +227,7 @@ MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 		site = response.site;
 
 	auto o = std::make_unique<CronSpawnOperator>(logger);
-	co_await o->Spawn(event_loop, spawn_service,
+	co_await o->Spawn(event_loop, spawn_service, alloc,
 			  job.id.c_str(), site,
 			  std::move(p), pond_socket);
 	co_return o;
@@ -289,6 +290,7 @@ CronWorkplace::Running::MakeOperator(SocketAddress translation_socket,
 						     workplace.GetSpawnService(),
 						     workplace.GetPondSocket(),
 						     logger,
+						     alloc,
 						     job,
 						     uri == nullptr ? job.command.c_str() : nullptr,
 						     response);

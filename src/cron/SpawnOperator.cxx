@@ -15,6 +15,7 @@
 #include "io/UniqueFileDescriptor.hxx"
 #include "co/Task.hxx"
 #include "util/UTF8.hxx"
+#include "AllocatorPtr.hxx"
 
 #include <unistd.h>
 #include <string.h> // for strerror()
@@ -31,6 +32,7 @@ CronSpawnOperator::~CronSpawnOperator() noexcept = default;
 
 Co::Task<void>
 CronSpawnOperator::Spawn(EventLoop &event_loop, SpawnService &spawn_service,
+			 AllocatorPtr alloc,
 			 const char *name, std::string_view site,
 			 PreparedChildProcess &&p,
 			 SocketDescriptor pond_socket)
@@ -57,12 +59,14 @@ CronSpawnOperator::Spawn(EventLoop &event_loop, SpawnService &spawn_service,
 								   site);
 	}
 
-	if (const char *home = p.GetJailedHome()) {
-		if (!p.HasEnv("HOME"sv))
-			p.SetEnv("HOME"sv, home);
+	if (p.HasHome()) {
+		if (const char *home = p.ToContainerPath(alloc, p.GetHome())) {
+			if (!p.HasEnv("HOME"sv))
+				p.SetEnv("HOME"sv, home);
 
-		if (p.chdir == nullptr)
-			p.chdir = home;
+			if (p.chdir == nullptr)
+				p.chdir = home;
+		}
 	}
 
 	pid = spawn_service.SpawnChildProcess(name,

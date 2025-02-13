@@ -11,6 +11,7 @@
 #include <string_view>
 
 struct PreparedChildProcess;
+class AllocatorPtr;
 class EventLoop;
 class SpawnService;
 class PipeCaptureBuffer;
@@ -38,6 +39,7 @@ public:
 
 	[[nodiscard]]
 	Co::Task<void> Spawn(EventLoop &event_loop, SpawnService &spawn_service,
+			     AllocatorPtr alloc,
 			     const char *name, std::string_view site,
 			     PreparedChildProcess &&p, SocketDescriptor pond_socket);
 
