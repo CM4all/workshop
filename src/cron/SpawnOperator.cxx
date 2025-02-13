@@ -55,12 +55,12 @@ CronSpawnOperator::Spawn(EventLoop &event_loop, SpawnService &spawn_service,
 								   site);
 	}
 
-	if (p.HasHome()) {
+	if (const char *home = p.GetJailedHome()) {
 		/* change to home directory (if one was set) */
 		if (p.chdir == nullptr)
-			p.chdir = p.GetJailedHome();
+			p.chdir = home;
 
-		p.SetEnv("HOME", p.GetJailedHome());
+		p.SetEnv("HOME", home);
 	}
 
 	pid = spawn_service.SpawnChildProcess(name,
