@@ -3,7 +3,7 @@ cm4all-workshop (6.8) unstable; urgency=low
   * translation: allow BIND_MOUNT from container
   * translation: add packet BIND_MOUNT_FILE_EXEC
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Tue, 18 Feb 2025 20:29:02 +0100
 
 cm4all-workshop (6.7) unstable; urgency=low
 
