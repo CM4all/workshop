@@ -1,3 +1,9 @@
+cm4all-workshop (6.8) unstable; urgency=low
+
+  * 
+
+ --   
+
 cm4all-workshop (6.7) unstable; urgency=low
 
   * cron: improve schedule parser error message
