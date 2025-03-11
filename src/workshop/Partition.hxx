@@ -10,8 +10,8 @@
 #include "event/FineTimerEvent.hxx"
 #include "event/CoarseTimerEvent.hxx"
 #include "io/Logger.hxx"
+#include "time/ExpiryMap.hxx"
 #include "util/BindMethod.hxx"
-#include "util/ExpiryMap.hxx"
 
 struct Config;
 struct WorkshopPartitionConfig;
