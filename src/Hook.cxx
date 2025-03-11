@@ -37,6 +37,10 @@ WorkshopSpawnHook::Verify(const PreparedChildProcess &p)
 		if (!plan)
 			throw FmtRuntimeError("No such plan: {}", plan_name);
 
+		if (p.uid_gid.real_uid != UidGid::UNSET_UID ||
+		    p.uid_gid.real_gid != UidGid::UNSET_GID)
+			throw std::runtime_error{"Real uid/gid not supported for plans"};
+
 		if (p.uid_gid.effective_uid != plan->uid)
 			throw FmtRuntimeError("Wrong uid {}, expected {} for plan {}",
 					      p.uid_gid.effective_uid, plan->uid, plan_name);
