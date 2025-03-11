@@ -133,7 +133,7 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 		p.uid_gid.gid = plan->gid;
 
 		std::copy(plan->groups.begin(), plan->groups.end(),
-			  p.uid_gid.groups.begin());
+			  p.uid_gid.supplementary_groups.begin());
 	}
 
 	if (!plan->chroot.empty())

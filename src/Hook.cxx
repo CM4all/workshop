@@ -45,7 +45,7 @@ WorkshopSpawnHook::Verify(const PreparedChildProcess &p)
 			throw FmtRuntimeError("Wrong gid {}, expected {} for plan {}",
 					      p.uid_gid.gid, plan->gid, plan_name);
 
-		if (!CompareGroups(plan->groups, p.uid_gid.groups))
+		if (!CompareGroups(plan->groups, p.uid_gid.supplementary_groups))
 			throw FmtRuntimeError("Supplementary group mismatch for plan {}",
 					      plan_name);
 
