@@ -37,13 +37,13 @@ WorkshopSpawnHook::Verify(const PreparedChildProcess &p)
 		if (!plan)
 			throw FmtRuntimeError("No such plan: {}", plan_name);
 
-		if (p.uid_gid.uid != plan->uid)
+		if (p.uid_gid.effective_uid != plan->uid)
 			throw FmtRuntimeError("Wrong uid {}, expected {} for plan {}",
-					      p.uid_gid.uid, plan->uid, plan_name);
+					      p.uid_gid.effective_uid, plan->uid, plan_name);
 
-		if (p.uid_gid.gid != plan->gid)
+		if (p.uid_gid.effective_gid != plan->gid)
 			throw FmtRuntimeError("Wrong gid {}, expected {} for plan {}",
-					      p.uid_gid.gid, plan->gid, plan_name);
+					      p.uid_gid.effective_gid, plan->gid, plan_name);
 
 		if (!CompareGroups(plan->groups, p.uid_gid.supplementary_groups))
 			throw FmtRuntimeError("Supplementary group mismatch for plan {}",

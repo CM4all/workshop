@@ -129,8 +129,8 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 		p.control_fd = control_child.ToFileDescriptor();
 
 	if (!debug_mode) {
-		p.uid_gid.uid = plan->uid;
-		p.uid_gid.gid = plan->gid;
+		p.uid_gid.effective_uid = plan->uid;
+		p.uid_gid.effective_gid = plan->gid;
 
 		std::copy(plan->groups.begin(), plan->groups.end(),
 			  p.uid_gid.supplementary_groups.begin());
