@@ -16,7 +16,7 @@ Building Workshop
 You need:
 
 - Linux kernel 5.12 or later
-- a C++20 compliant compiler (e.g. gcc or clang)
+- a C++23 compliant compiler (e.g. gcc or clang)
 - `libfmt <https://fmt.dev/>`__
 - `libpq <https://www.postgresql.org/>`__
 - `CURL <https://curl.haxx.se/>`__
