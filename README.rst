@@ -20,7 +20,7 @@ You need:
 - `libfmt <https://fmt.dev/>`__
 - `libpq <https://www.postgresql.org/>`__
 - `CURL <https://curl.haxx.se/>`__
-- `Meson 1.0 <http://mesonbuild.com/>`__ and `Ninja <https://ninja-build.org/>`__
+- `Meson 1.2 <http://mesonbuild.com/>`__ and `Ninja <https://ninja-build.org/>`__
 
 Optional dependencies:
 
