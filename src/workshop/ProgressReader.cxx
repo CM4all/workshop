@@ -5,6 +5,8 @@
 #include "ProgressReader.hxx"
 #include "io/UniqueFileDescriptor.hxx"
 
+#include <stdlib.h> // for strtoul()
+
 ProgressReader::ProgressReader(EventLoop &event_loop,
 			       UniqueFileDescriptor _fd,
 			       Callback _callback) noexcept
