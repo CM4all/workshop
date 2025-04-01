@@ -7,6 +7,8 @@
 #include "net/SocketDescriptor.hxx"
 #include "util/IntrusiveList.hxx"
 
+#include <string_view>
+
 struct CronJob;
 class SpawnService;
 class EmailService;
