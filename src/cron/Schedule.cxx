@@ -10,6 +10,7 @@
 #include "util/StringStrip.hxx"
 #include "util/Macros.hxx"
 
+#include <exception> // for std::throw_with_nested()
 #include <stdexcept>
 
 #include <assert.h>
