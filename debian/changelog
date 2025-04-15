@@ -6,7 +6,7 @@ cm4all-workshop (6.9) unstable; urgency=low
   * switch to C++23
   * require Meson 1.2
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Tue, 15 Apr 2025 12:01:37 +0200
 
 cm4all-workshop (6.8) unstable; urgency=low
 
