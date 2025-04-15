@@ -162,7 +162,7 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 		if (client->SupportsCgroups()) {
 			cgroup.name = job.plan_name.c_str();
 
-			std::tie(return_cgroup, p.return_cgroup) = CreateSocketPair(SOCK_DGRAM);
+			std::tie(return_cgroup, p.return_cgroup) = CreateSocketPair(SOCK_SEQPACKET);
 		}
 	}
 
@@ -218,6 +218,13 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 	       "') started");
 
 	if (return_cgroup.IsDefined()) {
+		/* close the other side of the socketpair if it's
+		   still open to avoid blocking the following receive
+		   call if the spawner has closed the socket without
+		   sending something */
+		if (p.return_cgroup.IsDefined())
+			p.return_cgroup.Close();
+
 		try {
 			o->SetCgroup(EasyReceiveMessageWithOneFD(return_cgroup));
 		} catch (...) {

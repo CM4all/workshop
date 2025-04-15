@@ -1,6 +1,7 @@
 cm4all-workshop (6.9) unstable; urgency=low
 
   * spawn: fix assertion failure with large payloads
+  * spawn: fix hanging main process after spawner failure
   * translation: add packet REAL_UID_GID
   * switch to C++23
   * require Meson 1.2

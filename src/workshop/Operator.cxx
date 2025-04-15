@@ -289,7 +289,7 @@ DoSpawn(SpawnService &service, AllocatorPtr alloc,
 		p.stderr_fd = p.stdout_fd = stderr_w;
 
 	UniqueSocketDescriptor return_pidfd;
-	std::tie(return_pidfd, p.return_pidfd) = CreateSocketPair(SOCK_DGRAM);
+	std::tie(return_pidfd, p.return_pidfd) = CreateSocketPair(SOCK_SEQPACKET);
 
 	for (const char *arg : response.args) {
 		if (p.args.size() >= 4096)
