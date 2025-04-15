@@ -217,11 +217,13 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 	logger(2, "job ", job.id, " (plan '", job.plan_name,
 	       "') started");
 
-	try {
-		o->SetCgroup(EasyReceiveMessageWithOneFD(return_cgroup));
-	} catch (...) {
-		logger(1, "Failed to receive cgroup fd: ",
-		       std::current_exception());
+	if (return_cgroup.IsDefined()) {
+		try {
+			o->SetCgroup(EasyReceiveMessageWithOneFD(return_cgroup));
+		} catch (...) {
+			logger(1, "Failed to receive cgroup fd: ",
+			       std::current_exception());
+		}
 	}
 
 	operators.push_back(*o.release());
