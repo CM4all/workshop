@@ -177,6 +177,8 @@ MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 		  const CronJob &job, const char *command,
 		  const TranslateResponse &response)
 {
+	assert(response.status == HttpStatus{});
+
 	/* prepare the child process */
 
 	FdHolder close_fds;
@@ -186,16 +188,6 @@ MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 		p.args.push_back("/bin/sh");
 		p.args.push_back("-c");
 		p.args.push_back(command);
-	}
-
-	if (response.status != HttpStatus{}) {
-		if (response.message != nullptr)
-			throw FmtRuntimeError("Status {} from translation server: {}",
-					      static_cast<unsigned>(response.status),
-					      response.message);
-
-		throw FmtRuntimeError("Status {} from translation server",
-				      static_cast<unsigned>(response.status));
 	}
 
 	if (response.child_options.uid_gid.IsEmpty() && !debug_mode)
@@ -266,6 +258,16 @@ CronWorkplace::Running::MakeOperator(SocketAddress translation_socket,
 				      : job.translate_param.c_str());
 	} catch (...) {
 		std::throw_with_nested(std::runtime_error("Translation failed"));
+	}
+
+	if (response.status != HttpStatus{}) {
+		if (response.message != nullptr)
+			throw FmtRuntimeError("Status {} from translation server: {}",
+					      static_cast<unsigned>(response.status),
+					      response.message);
+
+		throw FmtRuntimeError("Status {} from translation server",
+				      static_cast<unsigned>(response.status));
 	}
 
 	if (response.site != nullptr)

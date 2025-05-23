@@ -1,6 +1,6 @@
 cm4all-workshop (6.10) unstable; urgency=low
 
-  * 
+  * cron: check the translation status for HTTP jobs
 
  --   
 
