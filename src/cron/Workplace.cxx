@@ -237,10 +237,10 @@ MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 static Co::Task<std::unique_ptr<CronOperator>>
 MakeCurlOperator(EventLoop &event_loop, SpawnService &spawn_service,
 		 const CronJob &job, const char *url,
-		 const TranslateResponse &response)
+		 const ChildOptions &child_options)
 {
 	auto o = std::make_unique<CronCurlOperator>(event_loop);
-	co_await o->Start(spawn_service, job.id.c_str(), response.child_options, url);
+	co_await o->Start(spawn_service, job.id.c_str(), child_options, url);
 	co_return o;
 }
 
@@ -284,7 +284,7 @@ CronWorkplace::Running::MakeOperator(SocketAddress translation_socket,
 						    workplace.GetSpawnService(),
 						    job,
 						    job.command.c_str(),
-						    response);
+						    response.child_options);
 	else
 		co_return co_await MakeSpawnOperator(GetEventLoop(),
 						     workplace.GetSpawnService(),
