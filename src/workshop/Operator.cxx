@@ -11,6 +11,7 @@
 #include "Job.hxx"
 #include "LogBridge.hxx"
 #include "translation/Response.hxx"
+#include "translation/ExecuteOptions.hxx"
 #include "translation/SpawnClient.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "spawn/Interface.hxx"
@@ -275,15 +276,18 @@ DoSpawn(SpawnService &service, AllocatorPtr alloc,
 				      static_cast<unsigned>(response.status));
 	}
 
-	if (response.execute == nullptr)
+	if (response.execute_options == nullptr ||
+	    response.execute_options->execute == nullptr)
 		throw std::runtime_error("No EXECUTE from translation server");
 
-	if (response.child_options.uid_gid.IsEmpty())
+	const auto &options = *response.execute_options;
+
+	if (options.child_options.uid_gid.IsEmpty())
 		throw std::runtime_error("No UID_GID from translation server");
 
 	FdHolder close_fds;
 	PreparedChildProcess p;
-	p.args.push_back(alloc.Dup(response.execute));
+	p.args.push_back(alloc.Dup(options.execute));
 
 	if (stderr_w.IsDefined())
 		p.stderr_fd = p.stdout_fd = stderr_w;
@@ -291,14 +295,14 @@ DoSpawn(SpawnService &service, AllocatorPtr alloc,
 	UniqueSocketDescriptor return_pidfd;
 	std::tie(return_pidfd, p.return_pidfd) = CreateSocketPair(SOCK_SEQPACKET);
 
-	for (const char *arg : response.args) {
+	for (const char *arg : options.args) {
 		if (p.args.size() >= 4096)
 			throw std::runtime_error("Too many APPEND packets from translation server");
 
 		p.args.push_back(alloc.Dup(arg));
 	}
 
-	response.child_options.CopyTo(p, close_fds);
+	options.child_options.CopyTo(p, close_fds);
 
 	if (p.umask == -1)
 		p.umask = plan.umask;

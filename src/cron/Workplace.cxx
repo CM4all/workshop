@@ -12,6 +12,7 @@
 #include "AllocatorPtr.hxx"
 #include "translation/CronGlue.hxx"
 #include "translation/Response.hxx"
+#include "translation/ExecuteOptions.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "spawn/Prepared.hxx"
 #include "spawn/Interface.hxx"
@@ -175,10 +176,9 @@ MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 		  LazyDomainLogger &logger,
 		  AllocatorPtr alloc,
 		  const CronJob &job, const char *command,
-		  const TranslateResponse &response)
+		  const ExecuteOptions &options,
+		  const char *_site)
 {
-	assert(response.status == HttpStatus{});
-
 	/* prepare the child process */
 
 	FdHolder close_fds;
@@ -190,16 +190,16 @@ MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 		p.args.push_back(command);
 	}
 
-	if (response.child_options.uid_gid.IsEmpty() && !debug_mode)
+	if (options.child_options.uid_gid.IsEmpty() && !debug_mode)
 		throw std::runtime_error("No UID_GID from translation server");
 
 	if (command == nullptr) {
-		if (response.execute == nullptr)
+		if (options.execute == nullptr)
 			throw std::runtime_error("No EXECUTE from translation server");
 
-		p.args.push_back(response.execute);
+		p.args.push_back(options.execute);
 
-		for (const char *arg : response.args) {
+		for (const char *arg : options.args) {
 			if (p.args.size() >= 4096)
 				throw std::runtime_error("Too many APPEND packets from translation server");
 
@@ -207,7 +207,7 @@ MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 		}
 	}
 
-	response.child_options.CopyTo(p, close_fds);
+	options.child_options.CopyTo(p, close_fds);
 
 	if (p.cgroup != nullptr && p.cgroup->name != nullptr)
 		p.cgroup_session = job.id.c_str();
@@ -215,8 +215,8 @@ MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 	/* create operator object */
 
 	std::string_view site = job.account_id;
-	if (response.site != nullptr)
-		site = response.site;
+	if (_site != nullptr)
+		site = _site;
 
 	auto o = std::make_unique<CronSpawnOperator>(logger);
 	co_await o->Spawn(event_loop, spawn_service, alloc,
@@ -270,23 +270,28 @@ CronWorkplace::Running::MakeOperator(SocketAddress translation_socket,
 				      static_cast<unsigned>(response.status));
 	}
 
+	if (response.execute_options == nullptr)
+		throw std::runtime_error{"No spawner options from translation server"};
+
+	const auto &options = *response.execute_options;
+
 	if (response.site != nullptr)
 		site = response.site;
 
-	if (!response.child_options.tag.empty())
-		tag = response.child_options.tag;
+	if (!options.child_options.tag.empty())
+		tag = options.child_options.tag;
 
 	if (response.timeout.count() > 0)
 		timeout_event.Schedule(response.timeout);
 
-	child_options = {ShallowCopy{}, response.child_options};
+	child_options = {ShallowCopy{}, options.child_options};
 
 	if (IsURL(job.command))
 		co_return co_await MakeCurlOperator(GetEventLoop(),
 						    workplace.GetSpawnService(),
 						    job,
 						    job.command.c_str(),
-						    response.child_options);
+						    options.child_options);
 	else
 		co_return co_await MakeSpawnOperator(GetEventLoop(),
 						     workplace.GetSpawnService(),
@@ -295,7 +300,7 @@ CronWorkplace::Running::MakeOperator(SocketAddress translation_socket,
 						     alloc,
 						     job,
 						     uri == nullptr ? job.command.c_str() : nullptr,
-						     response);
+						     options, response.site);
 }
 
 inline Co::InvokeTask
