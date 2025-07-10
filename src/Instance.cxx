@@ -187,6 +187,7 @@ Instance::OnControlPacket([[maybe_unused]] BengControl::Server &control_server,
 	case Command::DISCARD_SESSION:
 	case Command::FLUSH_HTTP_CACHE:
 	case Command::DISCONNECT_DATABASE:
+	case Command::DISABLE_URING:
 		// not applicable
 		break;
 
