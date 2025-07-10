@@ -168,8 +168,11 @@ ResolveStreamConnect(const char *host, int default_port)
 		result.SetLocal(host);
 		return result;
 	} else {
-		static constexpr auto hints =
-			MakeAddrInfo(AI_ADDRCONFIG, AF_UNSPEC, SOCK_STREAM);
+		static constexpr struct addrinfo hints{
+			.ai_flags = AI_ADDRCONFIG,
+			.ai_family = AF_UNSPEC,
+			.ai_socktype = SOCK_STREAM,
+		};
 
 		return AllocatedSocketAddress(Resolve(host, default_port,
 						      &hints).GetBest());
