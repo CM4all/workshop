@@ -8,7 +8,6 @@
 #include "net/control/Builder.hxx"
 #include "net/control/Client.hxx"
 #include "util/ByteOrder.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/CRC32.hxx"
 #include "util/Macros.hxx"
 #include "util/SpanCast.hxx"
@@ -16,6 +15,8 @@
 #include "util/PrintException.hxx"
 
 #include <fmt/core.h>
+
+#include <span>
 
 #include <sys/socket.h>
 #include <stdlib.h>
@@ -28,7 +29,7 @@ struct Usage {
 };
 
 static void
-SimpleCommand(const char *server, ConstBuffer<const char *> args,
+SimpleCommand(const char *server, std::span<const char *const> args,
 	      Command cmd)
 {
 	if (!args.empty())
@@ -39,7 +40,7 @@ SimpleCommand(const char *server, ConstBuffer<const char *> args,
 }
 
 static void
-OptionalPayloadCommand(const char *server, ConstBuffer<const char *> args,
+OptionalPayloadCommand(const char *server, std::span<const char *const> args,
 		       Command cmd)
 {
 	Client client{server};
@@ -56,18 +57,19 @@ OptionalPayloadCommand(const char *server, ConstBuffer<const char *> args,
 }
 
 static void
-Nop(const char *server, ConstBuffer<const char *> args)
+Nop(const char *server, std::span<const char *const> args)
 {
 	SimpleCommand(server, args, Command::NOP);
 }
 
 static void
-Verbose(const char *server, ConstBuffer<const char *> args)
+Verbose(const char *server, std::span<const char *const> args)
 {
 	if (args.empty())
 		throw Usage{"Log level missing"};
 
-	const char *s = args.shift();
+	const char *s = args.front();
+	args = args.subspan(1);
 
 	if (!args.empty())
 		throw Usage{"Too many arguments"};
@@ -80,19 +82,19 @@ Verbose(const char *server, ConstBuffer<const char *> args)
 }
 
 static void
-DisableQueue(const char *server, ConstBuffer<const char *> args)
+DisableQueue(const char *server, std::span<const char *const> args)
 {
 	OptionalPayloadCommand(server, args, Command::DISABLE_QUEUE);
 }
 
 static void
-EnableQueue(const char *server, ConstBuffer<const char *> args)
+EnableQueue(const char *server, std::span<const char *const> args)
 {
 	OptionalPayloadCommand(server, args, Command::ENABLE_QUEUE);
 }
 
 static void
-TerminateChildren(const char *server, ConstBuffer<const char *> args)
+TerminateChildren(const char *server, std::span<const char *const> args)
 {
 	if (args.empty())
 		throw Usage{"Tag missing"};
@@ -109,12 +111,13 @@ TerminateChildren(const char *server, ConstBuffer<const char *> args)
 int
 main(int argc, char **argv)
 try {
-	ConstBuffer<const char *> args(argv + 1, argc - 1);
+	std::span<const char *const> args{argv + 1, static_cast<std::size_t>(argc - 1)};
 
 	const char *server = "@cm4all-workshop.control";
 
 	while (!args.empty() && args.front()[0] == '-') {
-		const char *option = args.shift();
+		const char *option = args.front();
+		args = args.subspan(1);
 		if (const char *new_server = StringAfterPrefix(option, "--server=")) {
 			server = new_server;
 		} else
@@ -124,7 +127,8 @@ try {
 	if (args.empty())
 		throw Usage();
 
-	const char *const command = args.shift();
+	const char *const command = args.front();
+	args = args.subspan(1);
 
 	if (StringIsEqual(command, "nop")) {
 		Nop(server, args);

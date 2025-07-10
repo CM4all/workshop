@@ -17,10 +17,11 @@
 #include "net/SocketPair.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "io/Pipe.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/PrintException.hxx"
 #include "util/StringCompare.hxx"
 #include "config.h"
+
+#include <span>
 
 #ifdef HAVE_LIBCAP
 #include "lib/cap/Glue.hxx"
@@ -49,10 +50,11 @@ struct RunJobCommandLine {
 };
 
 static void
-ParseCommandLine(RunJobCommandLine &cmdline, ConstBuffer<const char *> args)
+ParseCommandLine(RunJobCommandLine &cmdline, std::span<const char *const> args)
 {
 	while (!args.empty() && *args.front() == '-') {
-		const char *s = args.shift();
+		const char *s = args.front();
+		args = args.subspan(1);
 
 		if (StringIsEqual(s, "--help") || StringIsEqual(s, "-h")) {
 			throw Usage();
@@ -191,7 +193,7 @@ try {
 
 	{
 		RunJobCommandLine cmdline;
-		ParseCommandLine(cmdline, ConstBuffer<const char *>(argv + 1, argc - 1));
+		ParseCommandLine(cmdline, std::span<const char *const>{argv + 1, static_cast<std::size_t>(argc - 1)});
 		instance.Start(std::move(cmdline));
 	}
 

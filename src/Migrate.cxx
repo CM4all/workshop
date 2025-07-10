@@ -5,9 +5,9 @@
 #include "lib/fmt/RuntimeError.hxx"
 #include "pg/Connection.hxx"
 #include "pg/Reflection.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/PrintException.hxx"
 
+#include <span>
 #include <stdexcept>
 
 #include <string.h>
@@ -123,23 +123,24 @@ MigrateCronDatabase(Pg::Connection &c, const char *schema)
 int
 main(int argc, char **argv)
 try {
-	ConstBuffer<const char *> args(argv + 1, argc - 1);
+	std::span<const char *const> args{argv + 1, static_cast<std::size_t>(argc - 1)};
 
 	const char *set_role = nullptr;
 
 	while (!args.empty() && *args.front() == '-') {
 		if (strncmp(args.front(), "--set-role=", 11) == 0) {
-			set_role = args.shift() + 11;
+			set_role = args.front() + 11;
+			args = args.subspan(1);
 			if (*set_role == 0)
 				throw "Role name missing";
 		} else {
 			fmt::print(stderr, "Unknown option: {}\n\n", args.front());
 			/* clear the list to trigger printing the usage */
-			args.size = 0;
+			args = {};
 		}
 	}
 
-	if (args.size < 1 || args.size > 2) {
+	if (args.size() < 1 || args.size() > 2) {
 		fmt::print(stderr, "Usage: {} [OPTIONS] CONNINFO [SCHEMA]\n"
 			   "\n"
 			   "Options:\n"
@@ -148,8 +149,11 @@ try {
 		return EXIT_FAILURE;
 	}
 
-	const char *const conninfo = args.shift();
-	const char *const schema = args.empty() ? "public" : args.shift();
+	const char *const conninfo = args.front();
+	args = args.subspan(1);
+	const char *const schema = args.empty() ? "public" : args.front();
+	if (!args.empty())
+		args = args.subspan(1);
 	assert(args.empty());
 
 	Pg::Connection c(conninfo);
