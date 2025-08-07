@@ -91,8 +91,7 @@ private:
 	void RemoveIdlePartitions() noexcept;
 
 	/* virtual methods from BengControl::Handler */
-	void OnControlPacket(BengControl::Server &control_server,
-			     BengControl::Command command,
+	void OnControlPacket(BengControl::Command command,
 			     std::span<const std::byte> payload,
 			     std::span<UniqueFileDescriptor> fds,
 			     SocketAddress address, int uid) override;
