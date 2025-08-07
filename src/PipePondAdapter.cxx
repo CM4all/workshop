@@ -20,6 +20,9 @@ PipePondAdapter::OnLine(std::string_view line) noexcept
 		.type = Net::Log::Type::JOB,
 	};
 
+	/* truncate long lines */
+	d.TruncateMessage(1024);
+
 	if (!site.empty())
 		d.site = site.c_str();
 
