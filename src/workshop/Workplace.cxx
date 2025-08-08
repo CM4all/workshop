@@ -154,12 +154,13 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 	/* use a per-plan cgroup */
 
 	CgroupOptions cgroup;
-	p.cgroup = &cgroup;
 
 	UniqueSocketDescriptor return_cgroup;
 
 	if (auto *client = dynamic_cast<SpawnServerClient *>(&spawn_service)) {
 		if (client->SupportsCgroups()) {
+			p.cgroup = &cgroup;
+
 			cgroup.name = job.plan_name.c_str();
 
 			std::tie(return_cgroup, p.return_cgroup) = CreateSocketPair(SOCK_SEQPACKET);
