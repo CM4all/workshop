@@ -160,6 +160,7 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 	if (auto *client = dynamic_cast<SpawnServerClient *>(&spawn_service)) {
 		if (client->SupportsCgroups()) {
 			p.cgroup = &cgroup;
+			p.cgroup_session = job.id.c_str();
 
 			cgroup.name = job.plan_name.c_str();
 
