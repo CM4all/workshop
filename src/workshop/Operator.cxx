@@ -319,10 +319,15 @@ DoSpawn(SpawnService &service, AllocatorPtr alloc,
 
 	if (auto *client = dynamic_cast<SpawnServerClient *>(&service)) {
 		if (client->SupportsCgroups()) {
-			p.cgroup = &cgroup;
-			p.cgroup_session = job.id.c_str();
+			if (p.cgroup == nullptr || !p.cgroup->IsDefined()) {
+				/* the translation server did not specify a cgroup -
+				   fall back to the plan cgroup */
+				p.cgroup = &cgroup;
 
-			cgroup.name = job.plan_name.c_str();
+				cgroup.name = job.plan_name.c_str();
+			}
+
+			p.cgroup_session = job.id.c_str();
 		}
 	}
 
