@@ -14,6 +14,7 @@
 #include "translation/ExecuteOptions.hxx"
 #include "translation/SpawnClient.hxx"
 #include "lib/fmt/RuntimeError.hxx"
+#include "spawn/Client.hxx"
 #include "spawn/Interface.hxx"
 #include "spawn/Prepared.hxx"
 #include "spawn/ProcessHandle.hxx"
@@ -315,9 +316,14 @@ DoSpawn(SpawnService &service, AllocatorPtr alloc,
 	/* use the same per-plan cgroup as the orignal job process */
 
 	CgroupOptions cgroup;
-	cgroup.name = job.plan_name.c_str();
 
-	p.cgroup = &cgroup;
+	if (auto *client = dynamic_cast<SpawnServerClient *>(&service)) {
+		if (client->SupportsCgroups()) {
+			p.cgroup = &cgroup;
+
+			cgroup.name = job.plan_name.c_str();
+		}
+	}
 
 	return {
 		service.SpawnChildProcess(token, std::move(p)),
