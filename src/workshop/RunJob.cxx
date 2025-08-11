@@ -110,6 +110,7 @@ private:
 		fmt::print(stderr, "received AGAIN {}\n", d.count());
 	}
 
+	[[noreturn]]
 	UniqueFileDescriptor OnControlSpawn(const char *, const char *) override {
 		throw std::runtime_error{"spawn not implemented"};
 	}
