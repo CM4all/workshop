@@ -79,7 +79,8 @@ class WorkshopConfigParser final : public NestedConfigParser {
 		WorkshopPartitionConfig config;
 
 	public:
-		explicit Partition(Config &_parent):parent(_parent) {}
+		explicit Partition(Config &_parent) noexcept
+			:parent(_parent) {}
 
 	protected:
 		/* virtual methods from class ConfigParser */
@@ -92,8 +93,7 @@ class WorkshopConfigParser final : public NestedConfigParser {
 		CronPartitionConfig config;
 
 	public:
-		explicit CronPartition(Config &_parent,
-				       std::string &&name)
+		CronPartition(Config &_parent, std::string &&name) noexcept
 			:parent(_parent),
 			 config(std::move(name)) {}
 
@@ -108,7 +108,7 @@ class WorkshopConfigParser final : public NestedConfigParser {
 		Config::ControlListener config;
 
 	public:
-		explicit Control(WorkshopConfigParser &_parent)
+		explicit Control(WorkshopConfigParser &_parent) noexcept
 			:parent(_parent) {}
 
 	protected:
