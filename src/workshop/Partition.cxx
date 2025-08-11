@@ -9,10 +9,13 @@
 #include "Job.hxx"
 #include "Plan.hxx"
 #include "../Config.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
 #include "pg/Array.hxx"
 #include "util/Exception.hxx"
 
 #include <set>
+
+using std::string_view_literals::operator""sv;
 
 WorkshopPartition::WorkshopPartition(Instance &_instance,
 				     MultiLibrary &_library,
@@ -94,8 +97,8 @@ WorkshopPartition::StartJob(WorkshopJob &&job,
 		workplace.Start(instance.GetEventLoop(), job, std::move(plan),
 				max_log);
 	} catch (...) {
-		logger(1, "failed to start job '", job.id,
-		       "' plan '", job.plan_name, "': ", std::current_exception());
+		logger.Fmt(1, "failed to start job {:?} plan {:?}: {}"sv,
+			   job.id, job.plan_name, std::current_exception());
 
 		queue.SetJobDone(job, -1, nullptr);
 	}
@@ -118,8 +121,7 @@ WorkshopPartition::OnReapTimer() noexcept
 						    plan.reap_finished.c_str());
 		if (n > 0) {
 			found = true;
-			logger(5, "Reaped ", n, " jobs of plan '",
-			       name.c_str(), "'");
+			logger.Fmt(5, "Reaped {} jobs of plan {:?}"sv, n, name);
 		}
 	});
 
@@ -173,7 +175,7 @@ WorkshopPartition::CheckWorkshopJob(const WorkshopJob &job,
 
 	auto delta = CheckRateLimit(job.plan_name.c_str(), plan);
 	if (delta > std::chrono::seconds{}) {
-		logger(4, "Rate limit of '", job.plan_name, "' hit");
+		logger.Fmt(4, "Rate limit of {:?} hit"sv, job.plan_name);
 
 		rate_limited_plans.Set(job.plan_name,
 				       Expiry::Touched(GetEventLoop().SteadyNow(),
