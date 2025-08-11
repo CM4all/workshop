@@ -280,6 +280,13 @@ WorkshopQueue::Run() noexcept
 }
 
 void
+WorkshopQueue::CheckEnabled() noexcept
+{
+	if (IsEnabled() && db.IsReady())
+		Reschedule();
+}
+
+void
 WorkshopQueue::EnableAdmin() noexcept
 {
 	assert(!running);
@@ -289,8 +296,7 @@ WorkshopQueue::EnableAdmin() noexcept
 
 	enabled_admin = true;
 
-	if (IsEnabled() && db.IsReady())
-		Reschedule();
+	CheckEnabled();
 }
 
 void
@@ -303,8 +309,7 @@ WorkshopQueue::EnableFull() noexcept
 
 	disabled_full = false;
 
-	if (IsEnabled() && db.IsReady())
-		Reschedule();
+	CheckEnabled();
 }
 
 std::chrono::seconds

@@ -200,6 +200,13 @@ private:
 	}
 
 	/**
+	 * If the queue is enabled and ready, call Reschedule().  Call
+	 * this method when the queue was disabled, but might be
+	 * enabled now.
+	 */
+	void CheckEnabled() noexcept;
+
+	/**
 	 * Checks everything asynchronously: if the connection has failed,
 	 * schedule a reconnect.  If there are notifies, schedule a queue run.
 	 *
