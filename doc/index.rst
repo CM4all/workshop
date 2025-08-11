@@ -65,8 +65,9 @@ The following settings are recognized:
 * ``spawn``: opens a block (with curly braces), which
   configures the process spawner; see :ref:`config.spawn`.
 
-* ``workshop``: opens a block (with curly braces), which
-  configures a Workshop classic database:
+* ``workshop``: opens a block (with curly braces), which configures a
+  Workshop classic database.  It may optionally be followed by a
+  partition name (right before the opening curly brace).
 
   * ``database``: the PostgreSQL connect string (`PostgreSQL
     documentation

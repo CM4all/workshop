@@ -23,7 +23,7 @@ WorkshopPartition::WorkshopPartition(Instance &_instance,
 				     const Config &root_config,
 				     const WorkshopPartitionConfig &config,
 				     BoundMethod<void() noexcept> _idle_callback) noexcept
-	:logger("workshop"), // TODO: add partition name
+	:logger(fmt::format("workshop/{}"sv, config.name)),
 	 instance(_instance), library(_library),
 	 rate_limit_timer(instance.GetEventLoop(),
 			  BIND_THIS_METHOD(OnRateLimitTimer)),

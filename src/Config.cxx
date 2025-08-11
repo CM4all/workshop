@@ -79,8 +79,9 @@ class WorkshopConfigParser final : public NestedConfigParser {
 		WorkshopPartitionConfig config;
 
 	public:
-		explicit Partition(Config &_parent) noexcept
-			:parent(_parent) {}
+		Partition(Config &_parent, std::string &&name) noexcept
+			:parent(_parent),
+			 config(std::move(name)) {}
 
 	protected:
 		/* virtual methods from class ConfigParser */
@@ -268,8 +269,13 @@ WorkshopConfigParser::ParseLine2(FileLineParser &line)
 	const char *word = line.ExpectWord();
 
 	if (StringIsEqual(word, "workshop")) {
+		std::string name;
+
+		if (line.front() == '"')
+			name = line.ExpectValue();
+
 		line.ExpectSymbolAndEol('{');
-		SetChild(std::make_unique<Partition>(config));
+		SetChild(std::make_unique<Partition>(config, std::move(name)));
 	} else if (StringIsEqual(word, "cron")) {
 		std::string name;
 

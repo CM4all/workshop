@@ -9,6 +9,11 @@
 #include <string>
 
 struct WorkshopPartitionConfig {
+	/**
+	 * Partition name.  Empty when not specified.
+	 */
+	std::string name;
+
 	std::string database, database_schema;
 
 	LocalSocketAddress translation_socket;
@@ -23,7 +28,9 @@ struct WorkshopPartitionConfig {
 
 	bool enable_journal = false;
 
-	WorkshopPartitionConfig() noexcept {
+	explicit WorkshopPartitionConfig(std::string &&_name) noexcept
+		:name(std::move(_name))
+	{
 		translation_socket.Clear();
 	}
 
