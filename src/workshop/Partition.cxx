@@ -54,8 +54,8 @@ WorkshopPartition::UpdateFilter(bool library_modified) noexcept
 {
 	std::set<std::string_view, std::less<>> available_plans;
 	library.VisitAvailable(GetEventLoop().SteadyNow(),
-			       [&available_plans](const std::string_view name, const Plan &){
-				       available_plans.emplace(name);
+			       [&available_plans](const std::string_view plan_name, const Plan &){
+				       available_plans.emplace(plan_name);
 			       });
 
 	if (library_modified)
@@ -65,8 +65,8 @@ WorkshopPartition::UpdateFilter(bool library_modified) noexcept
 	const auto now = GetEventLoop().SteadyNow();
 	const auto earliest_expiry =
 		rate_limited_plans.ForEach(now,
-			[&available_plans](const std::string_view name){
-				auto i = available_plans.find(name);
+			[&available_plans](const std::string_view plan_name){
+				auto i = available_plans.find(plan_name);
 				if (i != available_plans.end())
 					available_plans.erase(i);
 			});
@@ -113,15 +113,15 @@ WorkshopPartition::OnReapTimer() noexcept
 
 	bool found = false;
 
-	library.VisitAvailable(GetEventLoop().SteadyNow(), [this, &found](const std::string &name, const Plan &plan){
+	library.VisitAvailable(GetEventLoop().SteadyNow(), [this, &found](const std::string &plan_name, const Plan &plan){
 		if (plan.reap_finished.empty())
 			return;
 
-		unsigned n = queue.ReapFinishedJobs(name.c_str(),
+		unsigned n = queue.ReapFinishedJobs(plan_name.c_str(),
 						    plan.reap_finished.c_str());
 		if (n > 0) {
 			found = true;
-			logger.Fmt(5, "Reaped {} jobs of plan {:?}"sv, n, name);
+			logger.Fmt(5, "Reaped {} jobs of plan {:?}"sv, n, plan_name);
 		}
 	});
 
@@ -142,9 +142,9 @@ WorkshopPartition::ScheduleReapFinished() noexcept
 }
 
 std::shared_ptr<Plan>
-WorkshopPartition::GetWorkshopPlan(const char *name) noexcept
+WorkshopPartition::GetWorkshopPlan(const char *plan_name) noexcept
 {
-	return library.Get(GetEventLoop().SteadyNow(), name);
+	return library.Get(GetEventLoop().SteadyNow(), plan_name);
 }
 
 inline std::chrono::seconds

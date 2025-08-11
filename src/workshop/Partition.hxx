@@ -98,7 +98,7 @@ private:
 	void ScheduleReapFinished() noexcept;
 
 	/* virtual methods from WorkshopQueueHandler */
-	std::shared_ptr<Plan> GetWorkshopPlan(const char *name) noexcept override;
+	std::shared_ptr<Plan> GetWorkshopPlan(const char *plan_name) noexcept override;
 	bool CheckWorkshopJob(const WorkshopJob &job,
 			      const Plan &plan) noexcept override;
 	void StartWorkshopJob(WorkshopJob &&job,
