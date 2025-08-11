@@ -134,17 +134,17 @@ WorkshopConfigParser::Partition::ParseLine(FileLineParser &line)
 {
 	const char *word = line.ExpectWord();
 
-	if (strcmp(word, "database") == 0) {
+	if (StringIsEqual(word, "database")) {
 		config.database = line.ExpectValueAndEnd();
-	} else if (strcmp(word, "database_schema") == 0) {
+	} else if (StringIsEqual(word, "database_schema")) {
 		config.database_schema = line.ExpectValueAndEnd();
 	} else if (StringIsEqual(word, "translation_server")) {
 		config.translation_socket.SetLocal(line.ExpectValueAndEnd());
 	} else if (StringIsEqual(word, "tag")) {
 		config.tag = line.ExpectValueAndEnd();
-	} else if (strcmp(word, "max_log") == 0) {
+	} else if (StringIsEqual(word, "max_log")) {
 		config.max_log = ParseSize(line.ExpectValueAndEnd());
-	} else if (strcmp(word, "journal") == 0) {
+	} else if (StringIsEqual(word, "journal")) {
 		config.enable_journal = line.NextBool();
 		line.ExpectEnd();
 	} else
@@ -184,23 +184,23 @@ WorkshopConfigParser::CronPartition::ParseLine(FileLineParser &line)
 {
 	const char *word = line.ExpectWord();
 
-	if (strcmp(word, "database") == 0) {
+	if (StringIsEqual(word, "database")) {
 		config.database = line.ExpectValueAndEnd();
-	} else if (strcmp(word, "database_schema") == 0) {
+	} else if (StringIsEqual(word, "database_schema")) {
 		config.database_schema = line.ExpectValueAndEnd();
-	} else if (strcmp(word, "translation_server") == 0) {
+	} else if (StringIsEqual(word, "translation_server")) {
 		config.translation_socket.SetLocal(line.ExpectValueAndEnd());
-	} else if (strcmp(word, "qmqp_server") == 0) {
+	} else if (StringIsEqual(word, "qmqp_server")) {
 		config.qmqp_server = ResolveStreamConnect(line.ExpectValueAndEnd(),
 							  628);
 	} else if (StringIsEqual(word, "default_email_sender")) {
 		config.default_email_sender = line.ExpectValueAndEnd();
 		if (!VerifyEmailAddress(config.default_email_sender))
 			throw LineParser::Error{"Bad email address"};
-	} else if (strcmp(word, "pond_server") == 0) {
+	} else if (StringIsEqual(word, "pond_server")) {
 		config.pond_server = ResolveStreamConnect(line.ExpectValueAndEnd(),
 							  Net::Log::DEFAULT_PORT);
-	} else if (strcmp(word, "tag") == 0) {
+	} else if (StringIsEqual(word, "tag")) {
 		config.tag = line.ExpectValueAndEnd();
 	} else if (StringIsEqual(word, "default_timeout")) {
 		const auto default_timeout = Pg::ParseIntervalS(line.ExpectValueAndEnd());
@@ -229,14 +229,14 @@ WorkshopConfigParser::Control::ParseLine(FileLineParser &line)
 {
 	const char *word = line.ExpectWord();
 
-	if (strcmp(word, "bind") == 0) {
+	if (StringIsEqual(word, "bind")) {
 		config.bind_address = ParseSocketAddress(line.ExpectValueAndEnd(),
 							 BengControl::DEFAULT_PORT,
 							 true);
-	} else if (strcmp(word, "multicast_group") == 0) {
+	} else if (StringIsEqual(word, "multicast_group")) {
 		config.multicast_group = ParseSocketAddress(line.ExpectValueAndEnd(),
 							    0, false);
-	} else if (strcmp(word, "interface") == 0) {
+	} else if (StringIsEqual(word, "interface")) {
 		config.interface = line.ExpectValueAndEnd();
 	} else
 		throw LineParser::Error("Unknown option");
@@ -267,10 +267,10 @@ WorkshopConfigParser::ParseLine2(FileLineParser &line)
 {
 	const char *word = line.ExpectWord();
 
-	if (strcmp(word, "workshop") == 0) {
+	if (StringIsEqual(word, "workshop")) {
 		line.ExpectSymbolAndEol('{');
 		SetChild(std::make_unique<Partition>(config));
-	} else if (strcmp(word, "cron") == 0) {
+	} else if (StringIsEqual(word, "cron")) {
 		std::string name;
 
 		if (line.front() == '"')
@@ -278,15 +278,15 @@ WorkshopConfigParser::ParseLine2(FileLineParser &line)
 
 		line.ExpectSymbolAndEol('{');
 		SetChild(std::make_unique<CronPartition>(config, std::move(name)));
-	} else if (strcmp(word, "node_name") == 0) {
+	} else if (StringIsEqual(word, "node_name")) {
 		config.node_name = line.ExpectValueAndEnd();
-	} else if (strcmp(word, "concurrency") == 0) {
+	} else if (StringIsEqual(word, "concurrency")) {
 		config.concurrency = ParsePositiveLong(line.ExpectValueAndEnd(),
 						       256);
-	} else if (strcmp(word, "spawn") == 0) {
+	} else if (StringIsEqual(word, "spawn")) {
 		line.ExpectSymbolAndEol('{');
 		SetChild(std::make_unique<SpawnConfigParser>(config.spawn));
-	} else if (strcmp(word, "control") == 0) {
+	} else if (StringIsEqual(word, "control")) {
 		CreateControl(line);
 	} else
 		throw LineParser::Error("Unknown option");

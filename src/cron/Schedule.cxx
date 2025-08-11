@@ -175,7 +175,7 @@ static const CronSpecialSchedule *
 TranslateSpecial(const char *s)
 {
 	for (const auto &i : cron_special_schedules)
-		if (strcmp(s, i.special) == 0)
+		if (StringIsEqual(s, i.special))
 			return &i;
 
 	return nullptr;
@@ -188,7 +188,7 @@ try {
 	if (*s == '@') {
 		++s;
 
-		if (strcmp(s, "once") == 0) {
+		if (StringIsEqual(s, "once")) {
 			assert(IsOnce());
 			/* don't delay "@once" jobs; they shall be executed as
 			   soon as they are added to the database */

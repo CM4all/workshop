@@ -6,11 +6,11 @@
 #include "pg/Connection.hxx"
 #include "pg/Reflection.hxx"
 #include "util/PrintException.hxx"
+#include "util/StringAPI.hxx"
 
 #include <span>
 #include <stdexcept>
 
-#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -165,7 +165,7 @@ try {
 	if (set_role != nullptr)
 		c.SetRole(set_role);
 
-	if (strcmp(schema, "public") != 0)
+	if (!StringIsEqual(schema, "public"))
 		c.SetSchema(schema);
 
 	bool found_table = false;

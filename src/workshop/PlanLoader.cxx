@@ -53,7 +53,7 @@ PlanLoader::ParseLine(FileLineParser &line)
 {
 	const char *key = line.ExpectWord();
 
-	if (strcmp(key, "exec") == 0) {
+	if (StringIsEqual(key, "exec")) {
 		if (!plan.args.empty())
 			throw std::runtime_error("'exec' already specified");
 
@@ -65,7 +65,7 @@ PlanLoader::ParseLine(FileLineParser &line)
 			plan.args.emplace_back(value);
 			value = line.NextRelaxedValue();
 		} while (value != nullptr);
-	} else if (strcmp(key, "control_channel") == 0) {
+	} else if (StringIsEqual(key, "control_channel")) {
 		/* previously, the "yes"/"no" parameter was mandatory, but
 		   that's deprecated since 2.0.36 */
 		plan.control_channel = line.IsEnd() || line.NextBool();
@@ -76,16 +76,16 @@ PlanLoader::ParseLine(FileLineParser &line)
 
 		plan.allow_spawn = true;
 		line.ExpectEnd();
-	} else if (strcmp(key, "timeout") == 0) {
+	} else if (StringIsEqual(key, "timeout")) {
 		plan.timeout = line.ExpectValueAndEnd();
 		plan.parsed_timeout = Pg::ParseIntervalS(plan.timeout.c_str());
-	} else if (strcmp(key, "reap_finished") == 0) {
+	} else if (StringIsEqual(key, "reap_finished")) {
 		plan.reap_finished = line.ExpectValueAndEnd();
 		auto d = Pg::ParseIntervalS(plan.reap_finished.c_str());
 		if (d.count() <= 0)
 			throw FmtRuntimeError("Not a positive duration: {}",
 					      plan.reap_finished);
-	} else if (strcmp(key, "chroot") == 0) {
+	} else if (StringIsEqual(key, "chroot")) {
 		const char *value = line.ExpectValueAndEnd();
 
 		int ret;
@@ -99,7 +99,7 @@ PlanLoader::ParseLine(FileLineParser &line)
 			throw FmtRuntimeError("not a directory: {}", value);
 
 		plan.chroot = value;
-	} else if (strcmp(key, "user") == 0) {
+	} else if (StringIsEqual(key, "user")) {
 		const char *value = line.ExpectValueAndEnd();
 
 		struct passwd *pw;
@@ -118,7 +118,7 @@ PlanLoader::ParseLine(FileLineParser &line)
 		plan.gid = pw->pw_gid;
 
 		plan.groups = get_user_groups(value, plan.gid);
-	} else if (strcmp(key, "umask") == 0) {
+	} else if (StringIsEqual(key, "umask")) {
 		const char *s = line.ExpectValueAndEnd();
 		if (*s != '0')
 			throw std::runtime_error("umask must be an octal value starting with '0'");
@@ -132,30 +132,30 @@ PlanLoader::ParseLine(FileLineParser &line)
 			throw std::runtime_error("umask is too large");
 
 		plan.umask = value;
-	} else if (strcmp(key, "nice") == 0) {
+	} else if (StringIsEqual(key, "nice")) {
 		plan.priority = atoi(line.ExpectValueAndEnd());
-	} else if (strcmp(key, "sched_idle") == 0) {
+	} else if (StringIsEqual(key, "sched_idle")) {
 		plan.sched_idle = true;
 		line.ExpectEnd();
-	} else if (strcmp(key, "ioprio_idle") == 0) {
+	} else if (StringIsEqual(key, "ioprio_idle")) {
 		plan.ioprio_idle = true;
 		line.ExpectEnd();
-	} else if (strcmp(key, "idle") == 0) {
+	} else if (StringIsEqual(key, "idle")) {
 		plan.sched_idle = plan.ioprio_idle = true;
 		line.ExpectEnd();
-	} else if (strcmp(key, "private_network") == 0) {
+	} else if (StringIsEqual(key, "private_network")) {
 		line.ExpectEnd();
 		plan.private_network = true;
-	} else if (strcmp(key, "private_tmp") == 0) {
+	} else if (StringIsEqual(key, "private_tmp")) {
 		line.ExpectEnd();
 		plan.private_tmp = true;
-	} else if (strcmp(key, "rlimits") == 0) {
+	} else if (StringIsEqual(key, "rlimits")) {
 		if (!plan.rlimits.Parse(line.ExpectValueAndEnd()))
 			throw std::runtime_error("Failed to parse rlimits");
-	} else if (strcmp(key, "concurrency") == 0) {
+	} else if (StringIsEqual(key, "concurrency")) {
 		plan.concurrency = line.NextPositiveInteger();
 		line.ExpectEnd();
-	} else if (strcmp(key, "rate_limit") == 0) {
+	} else if (StringIsEqual(key, "rate_limit")) {
 		plan.rate_limits.emplace_back(RateLimit::Parse(line.ExpectValueAndEnd()));
 	} else
 		throw FmtRuntimeError("unknown option '{}'", key);
