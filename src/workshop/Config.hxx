@@ -27,10 +27,5 @@ struct WorkshopPartitionConfig {
 		translation_socket.Clear();
 	}
 
-	explicit WorkshopPartitionConfig(const char *_database) noexcept
-		:database(_database) {
-		translation_socket.Clear();
-	}
-
 	void Check() const;
 };
