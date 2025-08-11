@@ -19,6 +19,8 @@ class Instance;
 class MultiLibrary;
 
 class WorkshopPartition final : WorkshopQueueHandler, ExitListener {
+	const std::string_view name;
+
 	const Logger logger;
 
 	Instance &instance;
@@ -60,6 +62,11 @@ public:
 	}
 
 	[[nodiscard]]
+	std::string_view GetName() const noexcept {
+		return name;
+	}
+
+	[[nodiscard]]
 	bool IsIdle() const noexcept {
 		return workplace.IsEmpty();
 	}
@@ -70,6 +77,10 @@ public:
 
 	void BeginShutdown() noexcept {
 		queue.DisableAdmin();
+	}
+
+	void SetStateEnabled(bool _enabled) noexcept {
+		queue.SetStateEnabled(_enabled);
 	}
 
 	void DisableQueue() noexcept {

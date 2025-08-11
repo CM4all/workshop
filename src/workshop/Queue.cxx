@@ -287,6 +287,18 @@ WorkshopQueue::CheckEnabled() noexcept
 }
 
 void
+WorkshopQueue::SetStateEnabled(bool _enabled) noexcept
+{
+	if (_enabled == enabled_state)
+		return;
+
+	logger.Fmt(2, "SetStateEnabled {}", _enabled);
+
+	enabled_state = _enabled;
+	CheckEnabled();
+}
+
+void
 WorkshopQueue::EnableAdmin() noexcept
 {
 	assert(!running);

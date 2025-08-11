@@ -691,6 +691,9 @@ The client is allowed to execute the following operations:
 State Directories
 -----------------
 
+- :file:`workshop/workshop/NAME/enabled` (boolean): enable or disable
+  the (classic) Workshop partition with the specified name.
+
 - :file:`workshop/cron/NAME/enabled` (boolean): enable or disable the
   Cron partition with the specified name.
 

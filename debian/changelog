@@ -1,6 +1,6 @@
 cm4all-workshop (6.11) unstable; urgency=low
 
-  * 
+  * workshop: use state directories to enable/disable the queue
 
  --   
 

@@ -117,6 +117,12 @@ Instance::OnExit() noexcept
 void
 Instance::ReloadState() noexcept
 {
+	for (auto &i : partitions) {
+		const auto path = fmt::format("workshop/workshop/{}/enabled"sv,
+					      i.GetName());
+		i.SetStateEnabled(state_directories.GetBool(path.c_str(), true));
+	}
+
 	for (auto &i : cron_partitions) {
 		const std::string_view name = i.GetName();
 		if (name.empty())

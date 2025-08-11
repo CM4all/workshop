@@ -40,6 +40,11 @@ class WorkshopQueue final : private Pg::AsyncConnectionHandler {
 	Pg::AsyncConnection db;
 
 	/**
+	 * Was the queue enabled by #StateDirectories?
+	 */
+	bool enabled_state = false;
+
+	/**
 	 * Was the queue enabled by the administrator?  Also used
 	 * during shutdown.
 	 */
@@ -101,8 +106,10 @@ public:
 		       std::string &&plans_lowprio) noexcept;
 
 	bool IsEnabled() const noexcept {
-		return enabled_admin && !disabled_full;
+		return enabled_state && enabled_admin && !disabled_full;
 	}
+
+	void SetStateEnabled(bool _enabled) noexcept;
 
 	/**
 	 * Disable the queue as an administrative decision (e.g. daemon
