@@ -6,7 +6,10 @@
 #include "Job.hxx"
 #include "../Config.hxx"
 #include "EmailService.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
 #include "net/ConnectSocket.hxx"
+
+using std::string_view_literals::operator""sv;
 
 CronPartition::CronPartition(EventLoop &event_loop,
 			     SpawnService &_spawn_service,
@@ -16,7 +19,7 @@ CronPartition::CronPartition(EventLoop &event_loop,
 	:name(config.name),
 	 tag(config.tag.empty() ? nullptr : config.tag.c_str()),
 	 translation_socket(config.translation_socket),
-	 logger("cron/" + config.name),
+	 logger(fmt::format("cron/{}"sv, config.name)),
 	 email_service(event_loop, config.qmqp_server),
 	 pond_socket(!config.pond_server.IsNull()
 	 ? CreateConnectDatagramSocket(config.pond_server)
@@ -47,7 +50,7 @@ CronPartition::BeginShutdown() noexcept
 void
 CronPartition::OnJob(CronJob &&job) noexcept
 {
-	logger(4, "OnJob ", job.id);
+	logger.Fmt(4, "OnJob {:?}"sv, job.id);
 
 	if (job.timeout.count() <= 0)
 		job.timeout = default_timeout;
@@ -60,8 +63,8 @@ CronPartition::OnJob(CronJob &&job) noexcept
 				name, tag,
 				std::move(job));
 	} catch (...) {
-		logger(1, "failed to start cronjob '", job.id, "': ",
-		       std::current_exception());
+		logger.Fmt(1, "failed to start cronjob {:?}: {}"sv,
+			   job.id, std::current_exception());
 	}
 
 	if (workplace.IsFull())
