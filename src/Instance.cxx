@@ -15,6 +15,8 @@
 
 #include <signal.h>
 
+using std::string_view_literals::operator""sv;
+
 Instance::Instance(const Config &config,
 		   UniqueSocketDescriptor spawner_socket,
 		   bool cgroups,
@@ -116,8 +118,12 @@ void
 Instance::ReloadState() noexcept
 {
 	for (auto &i : cron_partitions) {
-		const auto path = fmt::format("workshop/cron/{}/enabled",
-					      i.GetName());
+		const std::string_view name = i.GetName();
+		if (name.empty())
+			/* anonymous partitions cannot have state */
+			continue;
+
+		const auto path = fmt::format("workshop/cron/{}/enabled"sv, name);
 		i.SetStateEnabled(state_directories.GetBool(path.c_str(), true));
 	}
 }
