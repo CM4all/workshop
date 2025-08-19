@@ -20,6 +20,7 @@ ExecStart=/usr/sbin/cm4all-workshop
 KillMode=process
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=on-failure
+RestartPreventExitStatus=USAGE CONFIG
 
 User=cm4all-workshop
 

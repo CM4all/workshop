@@ -28,6 +28,7 @@
 #include <stdexcept>
 
 #include <stdlib.h>
+#include <sysexits.h> // for EX_*
 
 #ifndef NDEBUG
 bool debug_mode = false;
@@ -119,12 +120,23 @@ try {
 
 	/* configuration */
 
-	ParseCommandLine(argc, argv);
-	LoadConfigFile(config, "/etc/cm4all/workshop/workshop.conf");
+	try {
+		ParseCommandLine(argc, argv);
+	} catch (...) {
+		PrintException(std::current_exception());
+		return EX_USAGE;
+	}
 
-	DropInheritableCapabilities();
+	try {
+		LoadConfigFile(config, "/etc/cm4all/workshop/workshop.conf");
 
-	config.Check();
+		DropInheritableCapabilities();
+
+		config.Check();
+	} catch (...) {
+		PrintException(std::current_exception());
+		return EX_CONFIG;
+	}
 
 	/* set up */
 
