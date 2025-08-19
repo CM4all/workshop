@@ -4,7 +4,7 @@ cm4all-workshop (6.11) unstable; urgency=low
   * systemd: do not restart on configuration errors
   * debian: start daemon during initial installation, stop on uninstall
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Tue, 19 Aug 2025 13:29:35 +0200
 
 cm4all-workshop (6.10) unstable; urgency=low
 
