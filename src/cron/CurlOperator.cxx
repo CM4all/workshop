@@ -144,10 +144,9 @@ SpawnCurl(SpawnService &spawn_service, const char *name,
 	p.exec_function = SpawnCurlFunction;
 	p.args.push_back("dummy");
 	p.ns = {ShallowCopy{}, options.ns};
-	p.ns.enable_pid = false;
-	p.ns.enable_cgroup = false;
-	p.ns.enable_ipc = false;
-	p.ns.pid_namespace = nullptr;
+	p.ns.ClearPid();
+	p.ns.ClearCgroup();
+	p.ns.ClearIPC();
 	p.ns.mount.mount_proc = false;
 	p.ns.mount.mount_dev = false;
 	p.ns.mount.mount_pts = false;
