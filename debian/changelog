@@ -1,6 +1,6 @@
 cm4all-workshop (6.12) unstable; urgency=low
 
-  * 
+  * spawn: disable the PID namespace for the spawner process
 
  --   
 

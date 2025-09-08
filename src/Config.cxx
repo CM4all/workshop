@@ -35,6 +35,10 @@ Config::Config()
 	spawn.systemd_scope_description = "The cm4all-workshop child process spawner";
 	spawn.systemd_slice = "system-cm4all.slice";
 #endif
+
+	/* disable the PID namespace for the spawner process because
+	   it breaks PID_NAMESPACE_NAME */
+	spawn.pid_namespace = false;
 }
 
 void
