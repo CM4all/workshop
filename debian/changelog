@@ -4,7 +4,7 @@ cm4all-workshop (6.12) unstable; urgency=low
   * spawn: reassociate with existing user/IPC namespace (experimental)
   * spawn: hold a namespace lease
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Wed, 10 Sep 2025 09:00:31 +0200
 
 cm4all-workshop (6.11) unstable; urgency=low
 
