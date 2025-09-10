@@ -181,7 +181,7 @@ RunJobInstance::Start(RunJobCommandLine &&cmdline)
 
 	ExitListener &exit_listener = *this;
 	pid.emplace(event_loop,
-		    std::move(SpawnChildProcess(std::move(p), {}, false, is_sys_admin).first),
+		    std::move(SpawnChildProcess(std::move(p), {}, false, is_sys_admin).pidfd),
 		    "foo", exit_listener);
 }
 
