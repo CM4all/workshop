@@ -367,16 +367,16 @@ WorkshopOperator::OnControlSpawn(const char *token, const char *param)
 }
 
 void
-WorkshopOperator::OnControlTemporaryError(std::exception_ptr ep) noexcept
+WorkshopOperator::OnControlTemporaryError(std::exception_ptr &&error) noexcept
 {
-	logger(3, "error on control channel: ", ep);
+	logger(3, "error on control channel: ", std::move(error));
 }
 
 void
-WorkshopOperator::OnControlPermanentError(std::exception_ptr ep) noexcept
+WorkshopOperator::OnControlPermanentError(std::exception_ptr &&error) noexcept
 {
 	control_channel.reset();
-	logger(3, "error on control channel: ", ep);
+	logger(3, "error on control channel: ", std::move(error));
 }
 
 void

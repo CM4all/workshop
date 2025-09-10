@@ -23,7 +23,7 @@ public:
 	virtual UniqueFileDescriptor OnControlSpawn(const char *token,
 						    const char *param) = 0;
 
-	virtual void OnControlTemporaryError(std::exception_ptr e) noexcept = 0;
-	virtual void OnControlPermanentError(std::exception_ptr e) noexcept = 0;
+	virtual void OnControlTemporaryError(std::exception_ptr &&error) noexcept = 0;
+	virtual void OnControlPermanentError(std::exception_ptr &&error) noexcept = 0;
 	virtual void OnControlClosed() noexcept = 0;
 };

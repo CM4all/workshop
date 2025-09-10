@@ -115,13 +115,13 @@ private:
 		throw std::runtime_error{"spawn not implemented"};
 	}
 
-	void OnControlTemporaryError(std::exception_ptr e) noexcept override {
-		PrintException(e);
+	void OnControlTemporaryError(std::exception_ptr &&error) noexcept override {
+		PrintException(std::move(error));
 	}
 
-	void OnControlPermanentError(std::exception_ptr e) noexcept override {
+	void OnControlPermanentError(std::exception_ptr &&error) noexcept override {
 		control_channel.reset();
-		PrintException(e);
+		PrintException(std::move(error));
 	}
 
 	void OnControlClosed() noexcept override {

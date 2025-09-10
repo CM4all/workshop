@@ -138,8 +138,8 @@ private:
 	void OnControlAgain(std::chrono::seconds d) noexcept override;
 	UniqueFileDescriptor OnControlSpawn(const char *token,
 					    const char *param) override;
-	void OnControlTemporaryError(std::exception_ptr e) noexcept override;
-	void OnControlPermanentError(std::exception_ptr e) noexcept override;
+	void OnControlTemporaryError(std::exception_ptr &&error) noexcept override;
+	void OnControlPermanentError(std::exception_ptr &&error) noexcept override;
 	void OnControlClosed() noexcept override;
 };
 

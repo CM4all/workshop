@@ -165,7 +165,7 @@ WorkshopControlChannelServer::OnUdpDatagram(std::span<const std::byte> payload,
 }
 
 void
-WorkshopControlChannelServer::OnUdpError(std::exception_ptr e) noexcept
+WorkshopControlChannelServer::OnUdpError(std::exception_ptr &&error) noexcept
 {
-	handler.OnControlPermanentError(e);
+	handler.OnControlPermanentError(std::move(error));
 }
