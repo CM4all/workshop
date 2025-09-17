@@ -34,3 +34,6 @@ CREATE TABLE cronresults (
 );
 
 CREATE INDEX cronresults_job ON cronresults(cronjob_id);
+
+-- For pruning old rows
+CREATE INDEX cronresults_finished ON cronresults(finish_time);

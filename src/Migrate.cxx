@@ -116,6 +116,8 @@ MigrateCronDatabase(Pg::Connection &c, const char *schema)
 			  " ALTER COLUMN finish_time TYPE timestamp with time zone");
 	}
 
+	c.Execute("CREATE INDEX IF NOT EXISTS cronresults_finished ON cronresults(finish_time)");
+
 	c.Execute("ALTER TABLE cronjobs"
 		  " ADD COLUMN IF NOT EXISTS tz varchar(64) NULL");
 }
