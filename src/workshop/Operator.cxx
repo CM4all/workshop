@@ -23,6 +23,7 @@
 #include "net/SocketPair.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "io/FdHolder.hxx"
+#include "io/FileAt.hxx"
 #include "io/Open.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "util/UTF8.hxx"
@@ -136,7 +137,7 @@ WorkshopOperator::OnProgress(unsigned progress) noexcept
 void
 WorkshopOperator::SetCgroup(FileDescriptor fd) noexcept
 {
-	if (cgroup_cpu_stat.OpenReadOnly(fd, "cpu.stat")) {
+	if (cgroup_cpu_stat.OpenReadOnly({fd, "cpu.stat"})) {
 		try {
 			cpu_usage_start = ReadCgroupCpuUsage(cgroup_cpu_stat);
 		} catch (...) {
