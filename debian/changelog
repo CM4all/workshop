@@ -1,5 +1,6 @@
 cm4all-workshop (6.13) unstable; urgency=low
 
+  * translation: add packet ALLOW_PTRACE
   * sql: add index on "cronresults.finished" for pruning old rows
 
  --   
