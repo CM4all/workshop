@@ -603,6 +603,17 @@ Cron Schedule
 The ``schedule`` column follows the classic `cron` schedule
 syntax (see :manpage:`crontab(5)`).
 
+The following special time specification "nicknames" are supported:
+
+- :samp:`@yearly`
+- :samp:`@annually`
+- :samp:`@monthly`
+- :samp:`@weekly`
+- :samp:`@daily`
+- :samp:`@hourly`
+
+(:samp:`@reboot` is not supported.)
+
 The special schedule ":samp:`@once`" can be used to execute a job once
 instead of periodically.  It will be executed as soon as possible, and
 never again.
