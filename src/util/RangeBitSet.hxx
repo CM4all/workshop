@@ -43,7 +43,8 @@ public:
 		return b[pos - MIN];
 	}
 
-	constexpr typename BitSet::reference operator[](std::size_t pos) noexcept {
-		return b[pos - MIN];
+	constexpr auto &set(std::size_t pos, bool value=true) noexcept {
+		b.set(pos - MIN, value);
+		return *this;
 	}
 };

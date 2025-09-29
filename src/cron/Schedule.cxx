@@ -72,7 +72,7 @@ MakeRangeBitSet(RangeBitSet<MIN, MAX> &b,
 		unsigned first, unsigned last, unsigned step)
 {
 	for (unsigned i = first; i <= last; i += step)
-		b[i] = true;
+		b.set(i);
 }
 
 template<unsigned long MIN, unsigned long MAX>
@@ -222,10 +222,10 @@ try {
 	ParseNumericBitSet(_days_of_week, s, days_of_week_names);
 
 	for (unsigned i = 0; i < days_of_week.size(); ++i)
-		days_of_week[i] = _days_of_week[i];
+		days_of_week.set(i, _days_of_week[i]);
 
 	if (_days_of_week[days_of_week.size()])
-		days_of_week[0] = true;
+		days_of_week.set(0);
 
 	s = StripLeft(s);
 	if (*s != 0)
