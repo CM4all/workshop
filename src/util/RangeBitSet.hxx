@@ -17,7 +17,7 @@ class RangeBitSet {
 	BitSet b;
 
 public:
-	bool operator==(const RangeBitSet<MIN, MAX> &other) const noexcept = default;
+	constexpr bool operator==(const RangeBitSet<MIN, MAX> &other) const noexcept = default;
 
 	constexpr size_t size() const noexcept {
 		return b.size();
@@ -43,7 +43,7 @@ public:
 		return b[pos - MIN];
 	}
 
-	typename BitSet::reference operator[](size_t pos) noexcept {
+	constexpr typename BitSet::reference operator[](size_t pos) noexcept {
 		return b[pos - MIN];
 	}
 };
