@@ -4,7 +4,7 @@ cm4all-workshop (6.13) unstable; urgency=low
   * cron: allow multipliers for "@hourly"
   * sql: add index on "cronresults.finished" for pruning old rows
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Mon, 29 Sep 2025 12:40:05 +0200
 
 cm4all-workshop (6.12) unstable; urgency=low
 
