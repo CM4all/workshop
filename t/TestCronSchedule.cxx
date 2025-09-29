@@ -260,29 +260,83 @@ TEST(CronSchedule, Special)
 {
 	const CronSchedule yearly{"@yearly"};
 	ASSERT_EQ(yearly, CronSchedule("0 0 1 1 *"));
+	ASSERT_EQ(yearly.minutes.count(), 1);
+	ASSERT_TRUE(yearly.minutes[0]);
+	ASSERT_EQ(yearly.hours.count(), 1);
+	ASSERT_TRUE(yearly.hours[0]);
+	ASSERT_EQ(yearly.days_of_month.count(), 1);
+	ASSERT_TRUE(yearly.days_of_month[1]);
+	ASSERT_EQ(yearly.months.count(), 1);
+	ASSERT_TRUE(yearly.months[1]);
+	ASSERT_TRUE(yearly.days_of_week.all());
 	ASSERT_EQ(yearly.delay_range, std::chrono::hours{24 * 365});
 
 	const CronSchedule annually{"@annually"};
 	ASSERT_EQ(annually, CronSchedule("0 0 1 1 *"));
+	ASSERT_EQ(annually.minutes.count(), 1);
+	ASSERT_TRUE(annually.minutes[0]);
+	ASSERT_EQ(annually.hours.count(), 1);
+	ASSERT_TRUE(annually.hours[0]);
+	ASSERT_EQ(annually.days_of_month.count(), 1);
+	ASSERT_TRUE(annually.days_of_month[1]);
+	ASSERT_EQ(annually.months.count(), 1);
+	ASSERT_TRUE(annually.months[1]);
+	ASSERT_TRUE(annually.days_of_week.all());
 	ASSERT_EQ(annually.delay_range, std::chrono::hours(24 * 365));
 
 	const CronSchedule monthly{"@monthly"};
 	ASSERT_EQ(monthly, CronSchedule("0 0 1 * *"));
+	ASSERT_EQ(monthly.minutes.count(), 1);
+	ASSERT_TRUE(monthly.minutes[0]);
+	ASSERT_EQ(monthly.hours.count(), 1);
+	ASSERT_TRUE(monthly.hours[0]);
+	ASSERT_EQ(monthly.days_of_month.count(), 1);
+	ASSERT_TRUE(monthly.days_of_month[1]);
+	ASSERT_TRUE(monthly.months.all());
+	ASSERT_TRUE(monthly.days_of_week.all());
 	ASSERT_EQ(monthly.delay_range, std::chrono::hours(24 * 28));
 
 	const CronSchedule weekly{"@weekly"};
 	ASSERT_EQ(weekly, CronSchedule("0 0 * * 0"));
+	ASSERT_EQ(weekly.minutes.count(), 1);
+	ASSERT_TRUE(weekly.minutes[0]);
+	ASSERT_EQ(weekly.hours.count(), 1);
+	ASSERT_TRUE(weekly.hours[0]);
+	ASSERT_TRUE(weekly.days_of_month.all());
+	ASSERT_TRUE(weekly.months.all());
+	ASSERT_EQ(weekly.days_of_week.count(), 1);
+	ASSERT_TRUE(weekly.days_of_week[0]);
 	ASSERT_EQ(weekly.delay_range, std::chrono::hours(24 * 7));
 
 	const CronSchedule daily{"@daily"};
 	ASSERT_EQ(daily, CronSchedule("0 0 * * *"));
+	ASSERT_EQ(daily.minutes.count(), 1);
+	ASSERT_TRUE(daily.minutes[0]);
+	ASSERT_EQ(daily.hours.count(), 1);
+	ASSERT_TRUE(daily.hours[0]);
+	ASSERT_TRUE(daily.days_of_month.all());
+	ASSERT_TRUE(daily.months.all());
+	ASSERT_TRUE(daily.days_of_week.all());
 	ASSERT_EQ(daily.delay_range, std::chrono::hours(24));
 
 	const CronSchedule midnight{"@midnight"};
 	ASSERT_EQ(midnight, CronSchedule("0 0 * * *"));
+	ASSERT_EQ(midnight.minutes.count(), 1);
+	ASSERT_TRUE(midnight.minutes[0]);
+	ASSERT_EQ(midnight.hours.count(), 1);
+	ASSERT_TRUE(midnight.hours[0]);
+	ASSERT_TRUE(midnight.days_of_month.all());
+	ASSERT_TRUE(midnight.months.all());
+	ASSERT_TRUE(midnight.days_of_week.all());
 	ASSERT_EQ(midnight.delay_range, std::chrono::hours(1));
 
 	const CronSchedule hourly{"@hourly"};
 	ASSERT_EQ(hourly, CronSchedule("0 * * * *"));
+	ASSERT_EQ(hourly.minutes.count(), 1);
+	ASSERT_TRUE(hourly.minutes[0]);
+	ASSERT_TRUE(hourly.hours.all());
+	ASSERT_TRUE(hourly.days_of_month.all());
+	ASSERT_TRUE(hourly.months.all());
+	ASSERT_TRUE(hourly.days_of_week.all());
 	ASSERT_EQ(hourly.delay_range, std::chrono::hours(1));
 }
