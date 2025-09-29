@@ -258,11 +258,31 @@ TEST(CronSchedule, Once)
 
 TEST(CronSchedule, Special)
 {
-	ASSERT_EQ(CronSchedule("@yearly"), CronSchedule("0 0 1 1 *"));
-	ASSERT_EQ(CronSchedule("@annually"), CronSchedule("0 0 1 1 *"));
-	ASSERT_EQ(CronSchedule("@monthly"), CronSchedule("0 0 1 * *"));
-	ASSERT_EQ(CronSchedule("@weekly"), CronSchedule("0 0 * * 0"));
-	ASSERT_EQ(CronSchedule("@daily"), CronSchedule("0 0 * * *"));
-	ASSERT_EQ(CronSchedule("@midnight"), CronSchedule("0 0 * * *"));
-	ASSERT_EQ(CronSchedule("@hourly"), CronSchedule("0 * * * *"));
+	const CronSchedule yearly{"@yearly"};
+	ASSERT_EQ(yearly, CronSchedule("0 0 1 1 *"));
+	ASSERT_EQ(yearly.delay_range, std::chrono::hours{24 * 365});
+
+	const CronSchedule annually{"@annually"};
+	ASSERT_EQ(annually, CronSchedule("0 0 1 1 *"));
+	ASSERT_EQ(annually.delay_range, std::chrono::hours(24 * 365));
+
+	const CronSchedule monthly{"@monthly"};
+	ASSERT_EQ(monthly, CronSchedule("0 0 1 * *"));
+	ASSERT_EQ(monthly.delay_range, std::chrono::hours(24 * 28));
+
+	const CronSchedule weekly{"@weekly"};
+	ASSERT_EQ(weekly, CronSchedule("0 0 * * 0"));
+	ASSERT_EQ(weekly.delay_range, std::chrono::hours(24 * 7));
+
+	const CronSchedule daily{"@daily"};
+	ASSERT_EQ(daily, CronSchedule("0 0 * * *"));
+	ASSERT_EQ(daily.delay_range, std::chrono::hours(24));
+
+	const CronSchedule midnight{"@midnight"};
+	ASSERT_EQ(midnight, CronSchedule("0 0 * * *"));
+	ASSERT_EQ(midnight.delay_range, std::chrono::hours(1));
+
+	const CronSchedule hourly{"@hourly"};
+	ASSERT_EQ(hourly, CronSchedule("0 * * * *"));
+	ASSERT_EQ(hourly.delay_range, std::chrono::hours(1));
 }
