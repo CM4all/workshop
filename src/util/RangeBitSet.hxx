@@ -21,10 +21,6 @@ public:
 		return b == other.b;
 	}
 
-	bool operator!=(const RangeBitSet<MIN, MAX> &other) const noexcept {
-		return !(*this == other);
-	}
-
 	constexpr size_t size() const noexcept {
 		return b.size();
 	}
