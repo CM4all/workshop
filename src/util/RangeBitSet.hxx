@@ -12,7 +12,7 @@
  */
 template<size_t MIN, size_t MAX>
 class RangeBitSet {
-	typedef std::bitset<MAX - MIN + 1> BitSet;
+	using BitSet = std::bitset<MAX - MIN + 1>;
 
 	BitSet b;
 
