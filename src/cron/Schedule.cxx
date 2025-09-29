@@ -196,6 +196,25 @@ try {
 			return;
 		}
 
+		char *endptr;
+		unsigned long multiplier = strtoul(s, &endptr, 10);
+		if (endptr != s && StringIsEqual(endptr, "hourly")) {
+			if (multiplier < 1 || multiplier > 24)
+				throw std::runtime_error("Invalid '@hourly' multiplier");
+
+			minutes.set(0);
+
+			for (unsigned i = 0; i < 24; i += multiplier)
+				hours.set(i);
+
+			days_of_month.set();
+			months.set();
+			days_of_week.set();
+
+			delay_range = std::chrono::hours{multiplier};
+			return;
+		}
+
 		const auto *special = TranslateSpecial(s);
 		if (special == nullptr)
 			throw std::runtime_error("Unsupported 'special' cron schedule");

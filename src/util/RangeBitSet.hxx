@@ -47,4 +47,9 @@ public:
 		b.set(pos - MIN, value);
 		return *this;
 	}
+
+	constexpr auto &set() noexcept {
+		b.set();
+		return *this;
+	}
 };

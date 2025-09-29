@@ -614,6 +614,14 @@ The following special time specification "nicknames" are supported:
 
 (:samp:`@reboot` is not supported.)
 
+Additionally, :samp:`hourly` can be preceded by a positive integral
+number to multiply the interval; e.g. :samp:`@2hourly` runs every two
+hours and :samp:`@24hourly` is equal to :samp:`@daily`.  This allows
+running a job in custom intervals without having to hard-code the
+minute - e.g. :samp:`2hourly` is better than ":samp:`0 */2 * * *`"
+because it allows Workshop to choose an arbitrary delay within those
+two hours.
+
 The special schedule ":samp:`@once`" can be used to execute a job once
 instead of periodically.  It will be executed as soon as possible, and
 never again.

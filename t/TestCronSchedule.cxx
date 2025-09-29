@@ -1,7 +1,10 @@
 #include "cron/Schedule.hxx"
 #include "time/ISO8601.hxx"
 
+#include <fmt/core.h>
 #include <gtest/gtest.h>
+
+#include <stdexcept>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -339,4 +342,24 @@ TEST(CronSchedule, Special)
 	EXPECT_TRUE(hourly.months.all());
 	EXPECT_TRUE(hourly.days_of_week.all());
 	EXPECT_EQ(hourly.delay_range, std::chrono::hours(1));
+
+	for (unsigned multiplier = 1; multiplier <= 24; ++multiplier) {
+		const CronSchedule hourly2{fmt::format("@{}hourly", multiplier).c_str()};
+		EXPECT_EQ(hourly2.minutes.count(), 1);
+		EXPECT_TRUE(hourly2.minutes[0]);
+
+		EXPECT_EQ(hourly2.hours.count(), (24 + multiplier - 1) / multiplier);
+		for (unsigned i = 0; i < 24; i += multiplier) {
+			EXPECT_EQ(hourly2.hours[i], i % multiplier == 0);
+		}
+
+		EXPECT_TRUE(hourly2.days_of_month.all());
+		EXPECT_TRUE(hourly2.months.all());
+		EXPECT_TRUE(hourly2.days_of_week.all());
+		EXPECT_EQ(hourly2.delay_range, std::chrono::hours{multiplier});
+	}
+
+	EXPECT_THROW(CronSchedule{"@0hourly"}, std::invalid_argument);
+	EXPECT_THROW(CronSchedule{"@25hourly"}, std::invalid_argument);
+	EXPECT_THROW(CronSchedule{"@-1hourly"}, std::invalid_argument);
 }
