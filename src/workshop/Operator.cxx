@@ -96,8 +96,6 @@ WorkshopOperator::WorkshopOperator(EventLoop &_event_loop,
 WorkshopOperator::~WorkshopOperator() noexcept
 {
 	children.clear_and_dispose(DeleteDisposer{});
-
-	timeout_event.Cancel();
 }
 
 void
