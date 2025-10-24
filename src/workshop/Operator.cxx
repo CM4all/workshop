@@ -16,6 +16,8 @@
 #include "lib/fmt/ExceptionFormatter.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "spawn/Client.hxx"
+#include "spawn/CoEnqueue.hxx"
+#include "spawn/CoWaitSpawnCompletion.hxx"
 #include "spawn/Interface.hxx"
 #include "spawn/Prepared.hxx"
 #include "spawn/ProcessHandle.hxx"
@@ -130,7 +132,11 @@ inline Co::InvokeTask
 WorkshopOperator::Start2(std::size_t max_log_buffer,
 			 bool enable_journal)
 {
+	assert(!pid);
+
 	auto &spawn_service = workplace.GetSpawnService();
+
+	co_await CoEnqueueSpawner{spawn_service};
 
 	/* create stdout/stderr pipes */
 
@@ -226,8 +232,10 @@ WorkshopOperator::Start2(std::size_t max_log_buffer,
 
 	/* fork */
 
-	SetPid(spawn_service.SpawnChildProcess(job.id.c_str(),
-					       std::move(p)));
+	pid = spawn_service.SpawnChildProcess(job.id.c_str(), std::move(p));
+	co_await CoWaitSpawnCompletion{*pid};
+
+	pid->SetExitListener(*this);
 
 	logger(2, "job ", job.id, " (plan '", job.plan_name,
 	       "') started");
@@ -247,8 +255,6 @@ WorkshopOperator::Start2(std::size_t max_log_buffer,
 			       std::current_exception());
 		}
 	}
-
-	co_return;
 }
 
 inline void

@@ -115,11 +115,6 @@ private:
 	Co::InvokeTask Start2(std::size_t max_log_buffer,
 			      bool enable_journal);
 
-	void SetPid(std::unique_ptr<ChildProcessHandle> &&_pid) noexcept {
-		pid = std::move(_pid);
-		pid->SetExitListener(*this);
-	}
-
 	void SetCgroup(FileDescriptor fd) noexcept;
 
 	void SetOutput(UniqueFileDescriptor fd) noexcept;
