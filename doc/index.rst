@@ -287,10 +287,33 @@ text file for each plan.  Example::
 The program :command:`/usr/bin/my-plan` is executed as user `bar` with
 a CPU scheduler priority of 5 (10 is the default if not specified).
 
+Instead of ``exec``, you can use ``translate`` to let a translation
+server decide how to execute the job::
+
+  translate
+
 The following options are available:
 
 * :samp:`exec PROGRAM ARG1 ...`: Command line.  The program path must
   be absolute, because Workshop will not consider the :envvar:`PATH`.
+
+* :samp:`translate`: Can be used instead of ``exec``.  Queries the
+  configured translation server for information on how to execute the
+  job process.
+
+  This sends a translation request with the following packets:
+
+  - ``EXECUTE`` (no payload)
+  - ``SERVICE=workshop``
+  - ``PLAN=<name>``: name of the plan
+  - ``TAG=<tag>``: value of the ``tag`` configuration option (only if
+    one is configured
+  - ``APPEND=<arg>``: one packet for each ``jobs.args`` item
+
+  The plan may not contain any other process execute options, because
+  that will be decided by the translation server.
+
+  The ``control_channel`` option is allowed, but not ``allow_spawn``.
 
 * :samp:`control_channel`: see `Control Channel`_.
 

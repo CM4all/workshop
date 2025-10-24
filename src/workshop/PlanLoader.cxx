@@ -23,6 +23,8 @@
 class PlanLoader final : public ConfigParser {
 	Plan plan;
 
+	bool seen_exec_option = false;
+
 public:
 	Plan &&Release() {
 		return std::move(plan);
@@ -65,6 +67,10 @@ PlanLoader::ParseLine(FileLineParser &line)
 			plan.args.emplace_back(value);
 			value = line.NextRelaxedValue();
 		} while (value != nullptr);
+
+		seen_exec_option = true;
+	} else if (StringIsEqual(key, "translate")) {
+		plan.translate = true;
 	} else if (StringIsEqual(key, "control_channel")) {
 		/* previously, the "yes"/"no" parameter was mandatory, but
 		   that's deprecated since 2.0.36 */
@@ -99,6 +105,7 @@ PlanLoader::ParseLine(FileLineParser &line)
 			throw FmtRuntimeError("not a directory: {}", value);
 
 		plan.chroot = value;
+		seen_exec_option = true;
 	} else if (StringIsEqual(key, "user")) {
 		const char *value = line.ExpectValueAndEnd();
 
@@ -118,6 +125,8 @@ PlanLoader::ParseLine(FileLineParser &line)
 		plan.gid = pw->pw_gid;
 
 		plan.groups = get_user_groups(value, plan.gid);
+
+		seen_exec_option = true;
 	} else if (StringIsEqual(key, "umask")) {
 		const char *s = line.ExpectValueAndEnd();
 		if (*s != '0')
@@ -132,26 +141,34 @@ PlanLoader::ParseLine(FileLineParser &line)
 			throw std::runtime_error("umask is too large");
 
 		plan.umask = value;
+		seen_exec_option = true;
 	} else if (StringIsEqual(key, "nice")) {
 		plan.priority = atoi(line.ExpectValueAndEnd());
+		seen_exec_option = true;
 	} else if (StringIsEqual(key, "sched_idle")) {
 		plan.sched_idle = true;
 		line.ExpectEnd();
+		seen_exec_option = true;
 	} else if (StringIsEqual(key, "ioprio_idle")) {
 		plan.ioprio_idle = true;
 		line.ExpectEnd();
+		seen_exec_option = true;
 	} else if (StringIsEqual(key, "idle")) {
 		plan.sched_idle = plan.ioprio_idle = true;
 		line.ExpectEnd();
+		seen_exec_option = true;
 	} else if (StringIsEqual(key, "private_network")) {
 		line.ExpectEnd();
 		plan.private_network = true;
+		seen_exec_option = true;
 	} else if (StringIsEqual(key, "private_tmp")) {
 		line.ExpectEnd();
 		plan.private_tmp = true;
+		seen_exec_option = true;
 	} else if (StringIsEqual(key, "rlimits")) {
 		if (!plan.rlimits.Parse(line.ExpectValueAndEnd()))
 			throw std::runtime_error("Failed to parse rlimits");
+		seen_exec_option = true;
 	} else if (StringIsEqual(key, "concurrency")) {
 		plan.concurrency = line.NextPositiveInteger();
 		line.ExpectEnd();
@@ -164,8 +181,18 @@ PlanLoader::ParseLine(FileLineParser &line)
 void
 PlanLoader::Finish()
 {
-	if (plan.args.empty())
-		throw std::runtime_error("no 'exec'");
+	if (plan.translate) {
+		if (seen_exec_option)
+			throw std::runtime_error("Cannot use 'translate' with execute options");
+
+		if (plan.allow_spawn)
+			/* this is forbidden until we have a secure
+			   implementation */
+			throw std::runtime_error("Cannot use 'translate' with 'allow_spawn'");
+	} else {
+		if (plan.args.empty())
+			throw std::runtime_error("no 'exec'");
+	}
 
 	if (plan.timeout.empty())
 		plan.timeout = "10 minutes";

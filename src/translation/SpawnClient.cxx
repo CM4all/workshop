@@ -20,7 +20,8 @@ using std::string_view_literals::operator""sv;
 static void
 SendTranslateSpawn(SocketDescriptor s, const char *tag,
 		   const char *plan_name,
-		   const char *execute, const char *param)
+		   const char *execute, const char *param,
+		   const std::forward_list<std::string> &args)
 
 {
 	assert(execute != nullptr);
@@ -45,6 +46,9 @@ SendTranslateSpawn(SocketDescriptor s, const char *tag,
 	if (tag != nullptr)
 		m.Write(TranslationCommand::LISTENER_TAG, tag);
 
+	for (const auto &i : args)
+		m.Write(TranslationCommand::APPEND, i);
+
 	m.Write(TranslationCommand::END);
 
 	SendFull(s, m.Commit());
@@ -54,9 +58,10 @@ Co::Task<TranslateResponse>
 TranslateSpawn(EventLoop &event_loop,
 	       AllocatorPtr alloc, SocketDescriptor s,
 	       const char *tag,
-	       const char *plan_name, const char *execute, const char *param)
+	       const char *plan_name, const char *execute, const char *param,
+	       const std::forward_list<std::string> &args)
 {
-	SendTranslateSpawn(s, tag, plan_name, execute, param);
+	SendTranslateSpawn(s, tag, plan_name, execute, param, args);
 	co_await AwaitableSocketEvent(event_loop, s, SocketEvent::READ);
 	co_return ReceiveTranslateResponse(alloc, s);
 }

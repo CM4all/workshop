@@ -168,35 +168,44 @@ PrepareChildProcess(AllocatorPtr alloc,
 }
 
 static void
-PrepareChildProcess(PreparedChildProcess &p, const char *plan_name,
+PrepareChildProcess(AllocatorPtr alloc, PreparedChildProcess &p,
+		    const char *plan_name,
 		    const Plan &plan,
-		    FileDescriptor stderr_fd, SocketDescriptor control_fd)
+		    const TranslateResponse &translation,
+		    FileDescriptor stderr_fd, SocketDescriptor control_fd,
+		    FdHolder &close_fds)
 {
 	p.hook_info = plan_name;
 	p.stderr_fd = p.stdout_fd = stderr_fd;
 	p.control_fd = control_fd.ToFileDescriptor();
 
-	if (!debug_mode) {
-		p.uid_gid.effective_uid = plan.uid;
-		p.uid_gid.effective_gid = plan.gid;
+	if (plan.translate) {
+		PrepareChildProcess(alloc, p, translation, close_fds);
+	} else {
+		if (!debug_mode) {
+			p.uid_gid.effective_uid = plan.uid;
+			p.uid_gid.effective_gid = plan.gid;
 
-		std::copy(plan.groups.begin(), plan.groups.end(),
-			  p.uid_gid.supplementary_groups.begin());
+			std::copy(plan.groups.begin(), plan.groups.end(),
+				  p.uid_gid.supplementary_groups.begin());
+		}
+
+		if (!plan.chroot.empty())
+			p.chroot = plan.chroot.c_str();
+
+		p.umask = plan.umask;
+		p.rlimits = plan.rlimits;
+		p.priority = plan.priority;
+		p.sched_idle = plan.sched_idle;
+		p.ioprio_idle = plan.ioprio_idle;
+		p.ns.enable_network = plan.private_network;
+
+		if (plan.private_tmp)
+			p.ns.mount.mount_tmp_tmpfs = "";
+
+		p.no_new_privs = true;
 	}
 
-	if (!plan.chroot.empty())
-		p.chroot = plan.chroot.c_str();
-
-	p.umask = plan.umask;
-	p.rlimits = plan.rlimits;
-	p.priority = plan.priority;
-	p.ioprio_idle = plan.ioprio_idle;
-	p.ns.enable_network = plan.private_network;
-
-	if (plan.private_tmp)
-		p.ns.mount.mount_tmp_tmpfs = "";
-
-	p.no_new_privs = true;
 }
 
 void
@@ -215,6 +224,22 @@ WorkshopOperator::Start2(std::size_t max_log_buffer,
 {
 	assert(!pid);
 
+	Allocator alloc;
+	TranslateResponse translation;
+	if (plan->translate) {
+		const auto translation_socket = workplace.GetTranslationSocket();
+		if (translation_socket == nullptr)
+			throw std::runtime_error{"No 'translation_server' configured"};
+
+		translation = co_await
+			TranslateSpawn(event_loop, alloc,
+				       CreateConnectSocket(translation_socket, SOCK_STREAM),
+				       workplace.GetListenerTag(),
+				       job.plan_name.c_str(),
+				       "", nullptr,
+				       job.args);
+	}
+
 	auto &spawn_service = workplace.GetSpawnService();
 
 	co_await CoEnqueueSpawner{spawn_service};
@@ -227,9 +252,12 @@ WorkshopOperator::Start2(std::size_t max_log_buffer,
 
 	const auto control_child = InitControl();
 
+	FdHolder close_fds;
 	PreparedChildProcess p;
-	PrepareChildProcess(p, job.plan_name.c_str(), *plan,
-			    stderr_w, control_child);
+	PrepareChildProcess(alloc, p, job.plan_name.c_str(), *plan,
+			    translation,
+			    stderr_w, control_child,
+			    close_fds);
 
 	/* use a per-plan cgroup */
 
@@ -253,7 +281,7 @@ WorkshopOperator::Start2(std::size_t max_log_buffer,
 
 	UniqueFileDescriptor stdout_w;
 
-	if (!plan->control_channel) {
+	if (plan->translate || !plan->control_channel) {
 		/* if there is no control channel, read progress from the
 		   stdout pipe */
 		UniqueFileDescriptor stdout_r;
@@ -266,27 +294,31 @@ WorkshopOperator::Start2(std::size_t max_log_buffer,
 	/* build command line */
 
 	std::list<std::string> args;
-	args.insert(args.end(), plan->args.begin(), plan->args.end());
-	args.insert(args.end(), job.args.begin(), job.args.end());
 
-	Expand(args);
+	if (!plan->translate) {
+		args.insert(args.end(), plan->args.begin(), plan->args.end());
+		args.insert(args.end(), job.args.begin(), job.args.end());
 
-	for (const auto &i : args) {
-		if (p.args.size() >= 4096)
-			throw std::runtime_error("Too many command-line arguments");
+		Expand(args);
 
-		p.args.push_back(i.c_str());
-	}
+		for (const auto &i : args) {
+			if (p.args.size() >= 4096)
+				throw std::runtime_error("Too many command-line arguments");
 
-	for (const auto &i : job.env) {
-		if (p.env.size() >= 64)
-			throw std::runtime_error("Too many environment variables");
+			p.args.push_back(i.c_str());
+		}
 
-		if (StringStartsWith(i.c_str(), "LD_"))
-			/* reject - too dangerous */
-			continue;
+		// TODO do we want to allow job.env for "translate" plans?
+		for (const auto &i : job.env) {
+			if (p.env.size() >= 64)
+				throw std::runtime_error("Too many environment variables");
 
-		p.env.push_back(i.c_str());
+			if (StringStartsWith(i.c_str(), "LD_"))
+				/* reject - too dangerous */
+				continue;
+
+			p.env.push_back(i.c_str());
+		}
 	}
 
 	/* fork */
@@ -558,7 +590,8 @@ WorkshopOperator::OnControlSpawn(const char *token, const char *param)
 			       CreateConnectSocket(translation_socket, SOCK_STREAM),
 			       workplace.GetListenerTag(),
 			       job.plan_name.c_str(),
-			       token, param);
+			       token, param,
+			       {});
 
 	auto &spawn_service = workplace.GetSpawnService();
 

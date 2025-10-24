@@ -80,17 +80,19 @@ Library::ValidatePlan(PlanEntry &entry,
 	   package has been deinstalled, but the plan's config file is
 	   still there */
 
-	ret = stat(plan->GetExecutablePath().c_str(), &st);
-	if (ret < 0) {
-		const int e = errno;
-		if (e != ENOENT || !entry.deinstalled)
-			logger(2, "failed to stat '", plan->GetExecutablePath().c_str(),
-			       "': ", strerror(e));
-		if (e == ENOENT)
-			entry.deinstalled = true;
-		else
-			DisablePlan(entry, now, std::chrono::seconds(60));
-		return false;
+	if (!plan->translate) {
+		ret = stat(plan->GetExecutablePath().c_str(), &st);
+		if (ret < 0) {
+			const int e = errno;
+			if (e != ENOENT || !entry.deinstalled)
+				logger(2, "failed to stat '", plan->GetExecutablePath().c_str(),
+				       "': ", strerror(e));
+			if (e == ENOENT)
+				entry.deinstalled = true;
+			else
+				DisablePlan(entry, now, std::chrono::seconds(60));
+			return false;
+		}
 	}
 
 	entry.deinstalled = false;

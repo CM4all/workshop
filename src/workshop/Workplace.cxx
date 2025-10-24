@@ -89,7 +89,7 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 			 std::shared_ptr<Plan> plan,
 			 size_t max_log) noexcept
 {
-	assert(!plan->args.empty());
+	assert(plan->translate || !plan->args.empty());
 
 	/* create operator object */
 

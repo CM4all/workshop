@@ -4,6 +4,9 @@
 
 #pragma once
 
+#include <forward_list>
+#include <string>
+
 namespace Co { template<typename T> class Task; }
 struct TranslateResponse;
 class AllocatorPtr;
@@ -14,4 +17,5 @@ Co::Task<TranslateResponse>
 TranslateSpawn(EventLoop &event_loop,
 	       AllocatorPtr alloc, SocketDescriptor s,
 	       const char *tag,
-	       const char *plan_name, const char *execute, const char *param);
+	       const char *plan_name, const char *execute, const char *param,
+	       const std::forward_list<std::string> &args);

@@ -20,6 +20,16 @@ class Error;
 
 /** a plan describes how to perform a specific job */
 struct Plan {
+	enum class Type {
+		EXEC,
+		TRANSLATE,
+	};
+
+	/**
+	 * If non-empty, then this plan executes a process with these
+	 * command-line arguments; the first string is the path of the
+	 * executable.
+	 */
 	std::vector<std::string> args;
 
 	std::string timeout, chroot;
@@ -55,6 +65,8 @@ struct Plan {
 
 	bool allow_spawn = false;
 
+	bool translate = false;
+
 	Plan() = default;
 
 	Plan(Plan &&) = default;
@@ -63,6 +75,16 @@ struct Plan {
 
 	Plan &operator=(Plan &&other) = default;
 	Plan &operator=(const Plan &other) = delete;
+
+	[[gnu::pure]]
+	Type GetType() const noexcept {
+		if (translate)
+			return Type::TRANSLATE;
+
+		assert(!args.empty());
+
+		return Type::EXEC;
+	}
 
 	const std::string &GetExecutablePath() const {
 		assert(!args.empty());
