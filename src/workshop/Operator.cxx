@@ -456,7 +456,7 @@ DoSpawn(SpawnService &service, AllocatorPtr alloc,
 
 	const auto &options = *response.execute_options;
 
-	if (options.child_options.uid_gid.IsEmpty())
+	if (options.child_options.uid_gid.IsEmpty() && !debug_mode)
 		throw std::runtime_error("No UID_GID from translation server");
 
 	FdHolder close_fds;
