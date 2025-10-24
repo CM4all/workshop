@@ -169,8 +169,11 @@ WorkshopOperator::Expand(std::list<std::string> &args) const noexcept
 	vars.emplace("JOB"sv, job.id);
 	vars.emplace("PLAN"sv, job.plan_name);
 
-	for (auto &i : args)
-		::Expand(i, vars);
+	/* expand all parameters, but not the program name; this
+	   wouldn't work because a pointer to it is in the "vars"
+	   map */
+	for (auto i = std::next(args.begin()); i != args.end(); ++i)
+		::Expand(*i, vars);
 }
 
 void

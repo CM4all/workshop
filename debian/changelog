@@ -1,5 +1,6 @@
 cm4all-workshop (6.14) unstable; urgency=low
 
+  * workshop: fix use-after-free bug in "${0}" expansion
   * no delay for first PostgreSQL auto-reconnect
 
  --   
