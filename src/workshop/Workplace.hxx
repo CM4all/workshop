@@ -94,7 +94,7 @@ public:
 	 */
 	void Start(EventLoop &event_loop, const WorkshopJob &job,
 		   std::shared_ptr<Plan> plan,
-		   size_t max_log);
+		   size_t max_log) noexcept;
 
 	void OnExit(WorkshopOperator *o) noexcept;
 	void OnTimeout(WorkshopOperator *o) noexcept;

@@ -12,8 +12,10 @@
 #include "event/FarTimerEvent.hxx"
 #include "io/Logger.hxx"
 #include "io/UniqueFileDescriptor.hxx"
+#include "co/InvokeTask.hxx"
 #include "util/IntrusiveList.hxx"
 
+#include <exception>
 #include <memory>
 #include <optional>
 #include <string>
@@ -84,6 +86,8 @@ class WorkshopOperator final
 	 */
 	IntrusiveList<SpawnedProcess> children;
 
+	Co::InvokeTask task;
+
 public:
 	WorkshopOperator(EventLoop &_event_loop,
 			 WorkshopWorkplace &_workplace, const WorkshopJob &_job,
@@ -104,9 +108,13 @@ public:
 	}
 
 	void Start(std::size_t max_log_buffer,
-		   bool enable_journal);
+		   bool enable_journal) noexcept;
 
 private:
+	[[nodiscard]]
+	Co::InvokeTask Start2(std::size_t max_log_buffer,
+			      bool enable_journal);
+
 	void SetPid(std::unique_ptr<ChildProcessHandle> &&_pid) noexcept {
 		pid = std::move(_pid);
 		pid->SetExitListener(*this);
@@ -121,6 +129,8 @@ private:
 	void ScheduleTimeout() noexcept;
 	void OnTimeout() noexcept;
 	void OnProgress(unsigned progress) noexcept;
+
+	void OnTaskCompletion(std::exception_ptr &&error) noexcept;
 
 	/* virtual methods from ExitListener */
 	void OnChildProcessExit(int status) noexcept override;

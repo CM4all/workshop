@@ -9,9 +9,7 @@
 #include "Job.hxx"
 #include "Plan.hxx"
 #include "../Config.hxx"
-#include "lib/fmt/ExceptionFormatter.hxx"
 #include "pg/Array.hxx"
-#include "util/Exception.hxx"
 
 #include <set>
 
@@ -88,23 +86,6 @@ void
 WorkshopPartition::UpdateLibraryAndFilter(bool force) noexcept
 {
 	instance.UpdateLibraryAndFilter(force);
-}
-
-bool
-WorkshopPartition::StartJob(WorkshopJob &&job,
-			    std::shared_ptr<Plan> plan) noexcept
-{
-	try {
-		workplace.Start(instance.GetEventLoop(), job, std::move(plan),
-				max_log);
-	} catch (...) {
-		logger.Fmt(1, "failed to start job {:?} plan {:?}: {}"sv,
-			   job.id, job.plan_name, std::current_exception());
-
-		queue.SetJobDone(job, -1, nullptr);
-	}
-
-	return true;
 }
 
 void
@@ -193,7 +174,8 @@ void
 WorkshopPartition::StartWorkshopJob(WorkshopJob &&job,
 				    std::shared_ptr<Plan> plan) noexcept
 {
-	if (!StartJob(std::move(job), std::move(plan)) || workplace.IsFull())
+	workplace.Start(instance.GetEventLoop(), std::move(job), std::move(plan), max_log);
+	if (workplace.IsFull())
 		queue.DisableFull();
 
 	UpdateFilter();

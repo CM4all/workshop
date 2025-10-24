@@ -101,10 +101,6 @@ private:
 	std::chrono::seconds CheckRateLimit(const char *plan_name,
 					    const Plan &plan) noexcept;
 
-	[[nodiscard]]
-	bool StartJob(WorkshopJob &&job,
-		      std::shared_ptr<Plan> plan) noexcept;
-
 	void OnReapTimer() noexcept;
 	void ScheduleReapFinished() noexcept;
 

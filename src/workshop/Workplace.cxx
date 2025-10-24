@@ -87,16 +87,15 @@ WorkshopWorkplace::GetFullPlanNames() const noexcept
 void
 WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 			 std::shared_ptr<Plan> plan,
-			 size_t max_log)
+			 size_t max_log) noexcept
 {
 	assert(!plan->args.empty());
 
 	/* create operator object */
 
-	auto o = std::make_unique<WorkshopOperator>(event_loop, *this, job, std::move(plan));
+	auto *o = new WorkshopOperator(event_loop, *this, job, std::move(plan));
+	operators.push_back(*o);
 	o->Start(max_log, enable_journal);
-
-	operators.push_back(*o.release());
 }
 
 void

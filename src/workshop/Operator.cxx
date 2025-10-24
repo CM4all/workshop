@@ -13,6 +13,7 @@
 #include "translation/Response.hxx"
 #include "translation/ExecuteOptions.hxx"
 #include "translation/SpawnClient.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "spawn/Client.hxx"
 #include "spawn/Interface.hxx"
@@ -117,7 +118,17 @@ PrepareChildProcess(PreparedChildProcess &p, const char *plan_name,
 
 void
 WorkshopOperator::Start(std::size_t max_log_buffer,
-			bool enable_journal)
+			bool enable_journal) noexcept
+{
+	assert(!task);
+
+	task = Start2(max_log_buffer, enable_journal);
+	task.Start(BIND_THIS_METHOD(OnTaskCompletion));
+}
+
+inline Co::InvokeTask
+WorkshopOperator::Start2(std::size_t max_log_buffer,
+			 bool enable_journal)
 {
 	auto &spawn_service = workplace.GetSpawnService();
 
@@ -235,6 +246,17 @@ WorkshopOperator::Start(std::size_t max_log_buffer,
 			logger(1, "Failed to receive cgroup fd: ",
 			       std::current_exception());
 		}
+	}
+
+	co_return;
+}
+
+inline void
+WorkshopOperator::OnTaskCompletion(std::exception_ptr &&error) noexcept
+{
+	if (error) {
+		logger.Fmt(1, "Failed to start job: {}"sv, std::move(error));
+		workplace.OnExit(this);
 	}
 }
 
