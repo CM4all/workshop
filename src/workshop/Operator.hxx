@@ -31,9 +31,9 @@ class ChildProcessHandle;
 /** an operator is a job being executed */
 class WorkshopOperator final
 	: public IntrusiveListHook<IntrusiveHookMode::NORMAL>,
-	  public ExitListener,
-	WorkshopControlChannelHandler,
-	LoggerDomainFactory
+	  ExitListener,
+	  WorkshopControlChannelHandler,
+	  LoggerDomainFactory
 {
 	EventLoop &event_loop;
 
@@ -106,6 +106,7 @@ public:
 	void Start(std::size_t max_log_buffer,
 		   bool enable_journal);
 
+private:
 	void SetPid(std::unique_ptr<ChildProcessHandle> &&_pid) noexcept {
 		pid = std::move(_pid);
 		pid->SetExitListener(*this);
@@ -117,16 +118,13 @@ public:
 
 	void Expand(std::list<std::string> &args) const noexcept;
 
-private:
 	void ScheduleTimeout() noexcept;
 	void OnTimeout() noexcept;
 	void OnProgress(unsigned progress) noexcept;
 
-public:
 	/* virtual methods from ExitListener */
 	void OnChildProcessExit(int status) noexcept override;
 
-private:
 	/* virtual methods from LoggerDomainFactory */
 	std::string MakeLoggerDomain() const noexcept override;
 
