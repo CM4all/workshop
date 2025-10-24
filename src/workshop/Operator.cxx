@@ -86,6 +86,29 @@ WorkshopOperator::~WorkshopOperator() noexcept
 	children.clear_and_dispose(DeleteDisposer{});
 }
 
+inline UniqueFileDescriptor
+WorkshopOperator::InitLog(std::size_t max_log_buffer,
+			  bool enable_journal)
+{
+	assert(!log);
+
+	auto [stderr_r, stderr_w] = CreatePipe();
+	stderr_r.SetNonBlocking();
+
+	log.emplace(event_loop, job.plan_name, job.id, std::move(stderr_r));
+
+	if (max_log_buffer > 0)
+		log->EnableBuffer(max_log_buffer);
+
+	if (enable_journal)
+		log->EnableJournal();
+
+	if (plan->control_channel && plan->allow_spawn)
+		stderr_write_pipe = stderr_w.Duplicate();
+
+	return std::move(stderr_w);
+}
+
 static void
 PrepareChildProcess(PreparedChildProcess &p, const char *plan_name,
 		    const Plan &plan,
@@ -141,19 +164,7 @@ WorkshopOperator::Start2(std::size_t max_log_buffer,
 
 	/* create stdout/stderr pipes */
 
-	auto [stderr_r, stderr_w] = CreatePipe();
-	stderr_r.SetNonBlocking();
-
-	log.emplace(event_loop, job.plan_name, job.id, std::move(stderr_r));
-
-	if (max_log_buffer > 0)
-		log->EnableBuffer(max_log_buffer);
-
-	if (enable_journal)
-		log->EnableJournal();
-
-	if (plan->control_channel && plan->allow_spawn)
-		stderr_write_pipe = stderr_w.Duplicate();
+	const auto stderr_w = InitLog(max_log_buffer, enable_journal);
 
 	/* create control socket */
 

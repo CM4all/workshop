@@ -115,6 +115,9 @@ private:
 	Co::InvokeTask Start2(std::size_t max_log_buffer,
 			      bool enable_journal);
 
+	UniqueFileDescriptor InitLog(std::size_t max_log_buffer,
+				     bool enable_journal);
+
 	void SetCgroup(FileDescriptor fd) noexcept;
 
 	void SetOutput(UniqueFileDescriptor fd) noexcept;
