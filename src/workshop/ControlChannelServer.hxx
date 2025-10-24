@@ -34,6 +34,7 @@ public:
 private:
 	void InvokeTemporaryError(const char *msg) noexcept;
 
+	bool OnSpawn(std::vector<std::string> &&args);
 	bool OnControl(std::vector<std::string> &&args) noexcept;
 
 	/* virtual methods from UdpHandler */

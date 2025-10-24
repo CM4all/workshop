@@ -33,6 +33,53 @@ WorkshopControlChannelServer::InvokeTemporaryError(const char *msg) noexcept
 }
 
 inline bool
+WorkshopControlChannelServer::OnSpawn(std::vector<std::string> &&args)
+{
+	if (args.size() < 2 || args.size() > 3) {
+		InvokeTemporaryError("malformed 'spawn' command on control channel");
+		return true;
+	}
+
+	const char *token = args[1].c_str();
+	const char *param = args.size() >= 3
+		? args[2].c_str()
+		: nullptr;
+
+	try {
+		auto pidfd = handler.OnControlSpawn(token, param);
+		assert(pidfd.IsDefined());
+
+		const struct iovec v[]{MakeIovec(AsBytes("ok"sv))};
+		MessageHeader msg{std::span{v}};
+		ScmRightsBuilder<1> b(msg);
+
+		b.push_back(pidfd.Get());
+
+		b.Finish(msg);
+		SendMessage(socket.GetSocket(), msg, MSG_NOSIGNAL);
+	} catch (...) {
+		const auto msg = GetFullMessage(std::current_exception());
+		InvokeTemporaryError(msg.c_str());
+
+		const struct iovec v[] = {
+			MakeIovec(AsBytes("error "sv)),
+			MakeIovec(AsBytes(msg)),
+		};
+
+		try {
+			SendMessage(socket.GetSocket(), MessageHeader{v},
+				    MSG_NOSIGNAL);
+		} catch (...) {
+			socket.Close();
+			handler.OnControlPermanentError(std::current_exception());
+			return false;
+		}
+	}
+
+	return true;
+}
+
+inline bool
 WorkshopControlChannelServer::OnControl(std::vector<std::string> &&args) noexcept
 {
 	const auto &cmd = args.front();
@@ -87,48 +134,7 @@ WorkshopControlChannelServer::OnControl(std::vector<std::string> &&args) noexcep
 		(void)socket.GetSocket().WriteNoWait(AsBytes(payload));
 		return true;
 	} else if (cmd == "spawn"sv) {
-		if (args.size() < 2 || args.size() > 3) {
-			InvokeTemporaryError("malformed 'spawn' command on control channel");
-			return true;
-		}
-
-		const char *token = args[1].c_str();
-		const char *param = args.size() >= 3
-			? args[2].c_str()
-			: nullptr;
-
-		try {
-			auto pidfd = handler.OnControlSpawn(token, param);
-			assert(pidfd.IsDefined());
-
-			const struct iovec v[]{MakeIovec(AsBytes("ok"sv))};
-			MessageHeader msg{std::span{v}};
-			ScmRightsBuilder<1> b(msg);
-
-			b.push_back(pidfd.Get());
-
-			b.Finish(msg);
-			SendMessage(socket.GetSocket(), msg, MSG_NOSIGNAL);
-		} catch (...) {
-			const auto msg = GetFullMessage(std::current_exception());
-			InvokeTemporaryError(msg.c_str());
-
-			const struct iovec v[] = {
-				MakeIovec(AsBytes("error "sv)),
-				MakeIovec(AsBytes(msg)),
-			};
-
-			try {
-				SendMessage(socket.GetSocket(), MessageHeader{v},
-					    MSG_NOSIGNAL);
-			} catch (...) {
-				socket.Close();
-				handler.OnControlPermanentError(std::current_exception());
-				return false;
-			}
-		}
-
-		return true;
+		return OnSpawn(std::move(args));
 	} else {
 		InvokeTemporaryError("unknown command on control channel");
 		return true;
