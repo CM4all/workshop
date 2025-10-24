@@ -179,15 +179,14 @@ WorkshopOperator::Start2(std::size_t max_log_buffer,
 
 	UniqueSocketDescriptor return_cgroup;
 
-	if (auto *client = dynamic_cast<SpawnServerClient *>(&spawn_service)) {
-		if (client->SupportsCgroups()) {
-			p.cgroup = &cgroup;
-			p.cgroup_session = job.id.c_str();
+	if (auto *client = dynamic_cast<SpawnServerClient *>(&spawn_service);
+	    client != nullptr && client->SupportsCgroups()) {
+		p.cgroup = &cgroup;
+		p.cgroup_session = job.id.c_str();
 
-			cgroup.name = job.plan_name.c_str();
+		cgroup.name = job.plan_name.c_str();
 
-			std::tie(return_cgroup, p.return_cgroup) = CreateSocketPair(SOCK_SEQPACKET);
-		}
+		std::tie(return_cgroup, p.return_cgroup) = CreateSocketPair(SOCK_SEQPACKET);
 	}
 
 	/* create stdout/stderr pipes */
