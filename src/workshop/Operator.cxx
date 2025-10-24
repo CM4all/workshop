@@ -70,14 +70,12 @@ WorkshopOperator::WorkshopOperator(EventLoop &_event_loop,
 				   const WorkshopJob &_job,
 				   const std::shared_ptr<Plan> &_plan,
 				   UniqueFileDescriptor stderr_read_pipe,
-				   UniqueFileDescriptor _stderr_write_pipe,
 				   size_t max_log_buffer,
 				   bool enable_journal) noexcept
 	:event_loop(_event_loop),
 	 workplace(_workplace), job(_job), plan(_plan),
 	 logger(*this),
 	 timeout_event(event_loop, BIND_THIS_METHOD(OnTimeout)),
-	 stderr_write_pipe(std::move(_stderr_write_pipe)),
 	 log(event_loop, job.plan_name, job.id,
 	     std::move(stderr_read_pipe))
 {
@@ -132,6 +130,9 @@ void
 WorkshopOperator::Start(FileDescriptor stderr_w)
 {
 	auto &spawn_service = workplace.GetSpawnService();
+
+	if (plan->control_channel && plan->allow_spawn)
+		stderr_write_pipe = stderr_w.Duplicate();
 
 	/* create control socket */
 

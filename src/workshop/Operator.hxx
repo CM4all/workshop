@@ -89,7 +89,6 @@ public:
 			 WorkshopWorkplace &_workplace, const WorkshopJob &_job,
 			 const std::shared_ptr<Plan> &_plan,
 			 UniqueFileDescriptor stderr_read_pipe,
-			 UniqueFileDescriptor _stderr_write_pipe,
 			 size_t max_log_buffer,
 			 bool enable_journal) noexcept;
 
