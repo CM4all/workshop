@@ -129,6 +129,45 @@ WorkshopOperator::InitControl()
 }
 
 static void
+PrepareChildProcess(AllocatorPtr alloc,
+		    PreparedChildProcess &p, const TranslateResponse &response,
+		    FdHolder &close_fds)
+{
+	if (response.status != HttpStatus{}) {
+		if (response.message != nullptr)
+			throw FmtRuntimeError("Status {} from translation server: {}",
+					      static_cast<unsigned>(response.status),
+					      response.message);
+
+		throw FmtRuntimeError("Status {} from translation server",
+				      static_cast<unsigned>(response.status));
+	}
+
+	if (response.execute_options == nullptr ||
+	    response.execute_options->execute == nullptr)
+		throw std::runtime_error("No EXECUTE from translation server");
+
+	const auto &options = *response.execute_options;
+
+	if (options.child_options.uid_gid.IsEmpty() && !debug_mode)
+		throw std::runtime_error("No UID_GID from translation server");
+
+
+	p.args.push_back(alloc.Dup(options.execute));
+
+	for (const char *arg : options.args) {
+		if (p.args.size() >= 4096)
+			throw std::runtime_error("Too many APPEND packets from translation server");
+
+		p.args.push_back(alloc.Dup(arg));
+	}
+
+	options.child_options.CopyTo(p, close_fds);
+
+	p.no_new_privs = true;
+}
+
+static void
 PrepareChildProcess(PreparedChildProcess &p, const char *plan_name,
 		    const Plan &plan,
 		    FileDescriptor stderr_fd, SocketDescriptor control_fd)
@@ -151,7 +190,6 @@ PrepareChildProcess(PreparedChildProcess &p, const char *plan_name,
 	p.umask = plan.umask;
 	p.rlimits = plan.rlimits;
 	p.priority = plan.priority;
-	p.sched_idle = plan.sched_idle;
 	p.ioprio_idle = plan.ioprio_idle;
 	p.ns.enable_network = plan.private_network;
 
@@ -460,28 +498,9 @@ DoSpawn(SpawnService &service, AllocatorPtr alloc,
 	FileDescriptor stderr_w,
 	const TranslateResponse &response)
 {
-	if (response.status != HttpStatus{}) {
-		if (response.message != nullptr)
-			throw FmtRuntimeError("Status {} from translation server: {}",
-					      static_cast<unsigned>(response.status),
-					      response.message);
-
-		throw FmtRuntimeError("Status {} from translation server",
-				      static_cast<unsigned>(response.status));
-	}
-
-	if (response.execute_options == nullptr ||
-	    response.execute_options->execute == nullptr)
-		throw std::runtime_error("No EXECUTE from translation server");
-
-	const auto &options = *response.execute_options;
-
-	if (options.child_options.uid_gid.IsEmpty() && !debug_mode)
-		throw std::runtime_error("No UID_GID from translation server");
-
 	FdHolder close_fds;
 	PreparedChildProcess p;
-	p.args.push_back(alloc.Dup(options.execute));
+	PrepareChildProcess(alloc, p, response, close_fds);
 
 	if (stderr_w.IsDefined())
 		p.stderr_fd = p.stdout_fd = stderr_w;
@@ -489,22 +508,11 @@ DoSpawn(SpawnService &service, AllocatorPtr alloc,
 	UniqueSocketDescriptor return_pidfd;
 	std::tie(return_pidfd, p.return_pidfd) = CreateSocketPair(SOCK_SEQPACKET);
 
-	for (const char *arg : options.args) {
-		if (p.args.size() >= 4096)
-			throw std::runtime_error("Too many APPEND packets from translation server");
-
-		p.args.push_back(alloc.Dup(arg));
-	}
-
-	options.child_options.CopyTo(p, close_fds);
-
 	if (p.umask == -1)
 		p.umask = plan.umask;
 
 	p.priority = plan.priority;
 	p.sched_idle = plan.sched_idle;
-	p.ioprio_idle = plan.ioprio_idle;
-	p.no_new_privs = true;
 
 	/* use the same per-plan cgroup as the orignal job process */
 
