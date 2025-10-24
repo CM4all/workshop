@@ -9,7 +9,9 @@
 #include "translation/Protocol.hxx"
 #include "translation/Response.hxx"
 #include "AllocatorPtr.hxx"
+#include "event/AwaitableSocketEvent.hxx"
 #include "net/SocketDescriptor.hxx"
+#include "co/Task.hxx"
 
 #include <stdexcept>
 
@@ -48,10 +50,13 @@ SendTranslateSpawn(SocketDescriptor s, const char *tag,
 	SendFull(s, m.Commit());
 }
 
-TranslateResponse
-TranslateSpawn(AllocatorPtr alloc, SocketDescriptor s, const char *tag,
+Co::Task<TranslateResponse>
+TranslateSpawn(EventLoop &event_loop,
+	       AllocatorPtr alloc, SocketDescriptor s,
+	       const char *tag,
 	       const char *plan_name, const char *execute, const char *param)
 {
 	SendTranslateSpawn(s, tag, plan_name, execute, param);
-	return ReceiveTranslateResponse(alloc, s);
+	co_await AwaitableSocketEvent(event_loop, s, SocketEvent::READ);
+	co_return ReceiveTranslateResponse(alloc, s);
 }

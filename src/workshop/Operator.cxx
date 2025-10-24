@@ -526,8 +526,8 @@ WorkshopOperator::OnControlSpawn(const char *token, const char *param)
 		throw std::runtime_error{"Main process has already exited"};
 
 	Allocator alloc;
-	const auto response =
-		TranslateSpawn(alloc,
+	const auto response = co_await
+		TranslateSpawn(event_loop, alloc,
 			       CreateConnectSocket(translation_socket, SOCK_STREAM),
 			       workplace.GetListenerTag(),
 			       job.plan_name.c_str(),
