@@ -24,20 +24,20 @@ class LogBridge final : PipeLineReaderHandler {
 public:
 	LogBridge(EventLoop &event_loop,
 		  std::string_view _plan_name, std::string_view _job_id,
-		  UniqueFileDescriptor read_pipe_fd);
-	~LogBridge();
+		  UniqueFileDescriptor read_pipe_fd) noexcept;
+	~LogBridge() noexcept;
 
-	void EnableBuffer(size_t max_size) {
+	void EnableBuffer(size_t max_size) noexcept {
 		max_buffer_size = max_size;
 	}
 
-	const char *GetBuffer() const {
+	const char *GetBuffer() const noexcept {
 		return max_buffer_size > 0
 			? buffer.c_str()
 			: nullptr;
 	}
 
-	void EnableJournal() {
+	void EnableJournal() noexcept {
 #ifdef HAVE_LIBSYSTEMD
 		enable_journal = true;
 #endif

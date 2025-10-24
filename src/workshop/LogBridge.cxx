@@ -14,13 +14,13 @@
 LogBridge::LogBridge(EventLoop &event_loop,
 		     std::string_view _plan_name,
 		     std::string_view _job_id,
-		     UniqueFileDescriptor read_pipe_fd)
+		     UniqueFileDescriptor read_pipe_fd) noexcept
 	:plan_name(_plan_name), job_id(_job_id),
 	 reader(event_loop, std::move(read_pipe_fd), *this)
 {
 }
 
-LogBridge::~LogBridge() = default;
+LogBridge::~LogBridge() noexcept = default;
 
 bool
 LogBridge::OnPipeLine(std::span<char> line) noexcept
