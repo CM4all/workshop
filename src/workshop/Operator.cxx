@@ -521,6 +521,9 @@ WorkshopOperator::OnControlSpawn(const char *token, const char *param)
 	if (translation_socket == nullptr)
 		throw std::runtime_error{"No 'translation_server' configured"};
 
+	if (exited)
+		throw std::runtime_error{"Main process has already exited"};
+
 	Allocator alloc;
 	const auto response =
 		TranslateSpawn(alloc,
