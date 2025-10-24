@@ -81,7 +81,7 @@ WorkshopOperator::WorkshopOperator(EventLoop &_event_loop,
 							    *this)
 			 : nullptr),
 	 stderr_write_pipe(std::move(_stderr_write_pipe)),
-	 log(event_loop, job.plan_name.c_str(), job.id.c_str(),
+	 log(event_loop, job.plan_name, job.id,
 	     std::move(stderr_read_pipe))
 {
 	ScheduleTimeout();

@@ -12,7 +12,8 @@
 #endif // HAVE_LIBSYSTEMD
 
 LogBridge::LogBridge(EventLoop &event_loop,
-		     const char *_plan_name, const char *_job_id,
+		     std::string_view _plan_name,
+		     std::string_view _job_id,
 		     UniqueFileDescriptor read_pipe_fd)
 	:plan_name(_plan_name), job_id(_job_id),
 	 reader(event_loop, std::move(read_pipe_fd), *this)

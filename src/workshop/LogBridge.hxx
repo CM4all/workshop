@@ -23,7 +23,7 @@ class LogBridge final : PipeLineReaderHandler {
 
 public:
 	LogBridge(EventLoop &event_loop,
-		  const char *_plan_name, const char *_job_id,
+		  std::string_view _plan_name, std::string_view _job_id,
 		  UniqueFileDescriptor read_pipe_fd);
 	~LogBridge();
 
