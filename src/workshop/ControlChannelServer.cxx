@@ -124,6 +124,7 @@ WorkshopControlChannelServer::OnControl(std::vector<std::string> &&args) noexcep
 			} catch (...) {
 				socket.Close();
 				handler.OnControlPermanentError(std::current_exception());
+				return false;
 			}
 		}
 
