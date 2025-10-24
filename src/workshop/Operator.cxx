@@ -29,6 +29,7 @@
 #include "io/FileAt.hxx"
 #include "io/Open.hxx"
 #include "io/Pipe.hxx"
+#include "co/Task.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "util/StringCompare.hxx"
 #include "util/UTF8.hxx"
@@ -510,7 +511,7 @@ DoSpawn(SpawnService &service, AllocatorPtr alloc,
 	};
 }
 
-UniqueFileDescriptor
+Co::Task<UniqueFileDescriptor>
 WorkshopOperator::OnControlSpawn(const char *token, const char *param)
 {
 	if (!plan->allow_spawn)
@@ -539,7 +540,7 @@ WorkshopOperator::OnControlSpawn(const char *token, const char *param)
 
 	children.push_front(*new SpawnedProcess(std::move(handle)));
 
-	return EasyReceiveMessageWithOneFD(return_pidfd);
+	co_return EasyReceiveMessageWithOneFD(return_pidfd);
 }
 
 void

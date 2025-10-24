@@ -8,6 +8,7 @@
 #include <exception>
 
 class UniqueFileDescriptor;
+namespace Co { template<typename t> class Task; }
 
 class WorkshopControlChannelHandler {
 public:
@@ -20,8 +21,8 @@ public:
 	 *
 	 * @return a pidfd
 	 */
-	virtual UniqueFileDescriptor OnControlSpawn(const char *token,
-						    const char *param) = 0;
+	virtual Co::Task<UniqueFileDescriptor> OnControlSpawn(const char *token,
+							      const char *param) = 0;
 
 	virtual void OnControlTemporaryError(std::exception_ptr &&error) noexcept = 0;
 	virtual void OnControlPermanentError(std::exception_ptr &&error) noexcept = 0;

@@ -10,6 +10,7 @@
 #include "net/SendMessage.hxx"
 #include "io/Iovec.hxx"
 #include "io/UniqueFileDescriptor.hxx"
+#include "co/Task.hxx"
 #include "util/Exception.hxx"
 #include "util/IterableSplitString.hxx"
 #include "util/SpanCast.hxx"
@@ -32,12 +33,33 @@ WorkshopControlChannelServer::InvokeTemporaryError(const char *msg) noexcept
 	handler.OnControlTemporaryError(std::make_exception_ptr(std::runtime_error(msg)));
 }
 
-inline bool
-WorkshopControlChannelServer::OnSpawn(std::vector<std::string> &&args)
+inline void
+WorkshopControlChannelServer::StartTask(Co::InvokeTask &&_task) noexcept
+{
+	assert(!task);
+
+	task = std::move(_task);
+	task.Start(BIND_THIS_METHOD(OnTaskFinished));
+}
+
+inline void
+WorkshopControlChannelServer::OnTaskFinished(std::exception_ptr &&error) noexcept
+{
+	if (error) {
+		socket.Close();
+		handler.OnControlPermanentError(std::move(error));
+	} else {
+		/* ready to handle more control packets now */
+		socket.Enable();
+	}
+}
+
+inline Co::InvokeTask
+WorkshopControlChannelServer::OnSpawn(std::vector<std::string> args)
 {
 	if (args.size() < 2 || args.size() > 3) {
 		InvokeTemporaryError("malformed 'spawn' command on control channel");
-		return true;
+		co_return;
 	}
 
 	const char *token = args[1].c_str();
@@ -46,7 +68,7 @@ WorkshopControlChannelServer::OnSpawn(std::vector<std::string> &&args)
 		: nullptr;
 
 	try {
-		auto pidfd = handler.OnControlSpawn(token, param);
+		auto pidfd = co_await handler.OnControlSpawn(token, param);
 		assert(pidfd.IsDefined());
 
 		const struct iovec v[]{MakeIovec(AsBytes("ok"sv))};
@@ -66,22 +88,15 @@ WorkshopControlChannelServer::OnSpawn(std::vector<std::string> &&args)
 			MakeIovec(AsBytes(msg)),
 		};
 
-		try {
-			SendMessage(socket.GetSocket(), MessageHeader{v},
-				    MSG_NOSIGNAL);
-		} catch (...) {
-			socket.Close();
-			handler.OnControlPermanentError(std::current_exception());
-			return false;
-		}
+		SendMessage(socket.GetSocket(), MessageHeader{v}, MSG_NOSIGNAL);
 	}
-
-	return true;
 }
 
 inline bool
 WorkshopControlChannelServer::OnControl(std::vector<std::string> &&args) noexcept
 {
+	assert(!task);
+
 	const auto &cmd = args.front();
 
 	if (cmd == "progress"sv) {
@@ -134,7 +149,16 @@ WorkshopControlChannelServer::OnControl(std::vector<std::string> &&args) noexcep
 		(void)socket.GetSocket().WriteNoWait(AsBytes(payload));
 		return true;
 	} else if (cmd == "spawn"sv) {
-		return OnSpawn(std::move(args));
+		StartTask(OnSpawn(std::move(args)));
+
+		if (task) {
+			/* the task is still running - wait for it to
+			   finish before we handle more requests */
+			socket.Disable();
+			return false;
+		}
+
+		return true;
 	} else {
 		InvokeTemporaryError("unknown command on control channel");
 		return true;

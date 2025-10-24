@@ -6,6 +6,7 @@
 
 #include "event/net/UdpHandler.hxx"
 #include "event/net/UdpListener.hxx"
+#include "co/InvokeTask.hxx"
 
 #include <string>
 #include <vector>
@@ -22,6 +23,8 @@ class WorkshopControlChannelServer final : UdpHandler {
 
 	WorkshopControlChannelHandler &handler;
 
+	Co::InvokeTask task;
+
 public:
 	WorkshopControlChannelServer(EventLoop &_event_loop,
 				     UniqueSocketDescriptor &&_socket,
@@ -34,7 +37,10 @@ public:
 private:
 	void InvokeTemporaryError(const char *msg) noexcept;
 
-	bool OnSpawn(std::vector<std::string> &&args);
+	void StartTask(Co::InvokeTask &&_task) noexcept;
+	void OnTaskFinished(std::exception_ptr &&error) noexcept;
+
+	Co::InvokeTask OnSpawn(std::vector<std::string> args);
 	bool OnControl(std::vector<std::string> &&args) noexcept;
 
 	/* virtual methods from UdpHandler */

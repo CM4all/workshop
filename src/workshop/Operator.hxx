@@ -137,8 +137,8 @@ private:
 	void OnControlProgress(unsigned progress) noexcept override;
 	void OnControlSetEnv(const char *s) noexcept override;
 	void OnControlAgain(std::chrono::seconds d) noexcept override;
-	UniqueFileDescriptor OnControlSpawn(const char *token,
-					    const char *param) override;
+	Co::Task<UniqueFileDescriptor> OnControlSpawn(const char *token,
+						      const char *param) override;
 	void OnControlTemporaryError(std::exception_ptr &&error) noexcept override;
 	void OnControlPermanentError(std::exception_ptr &&error) noexcept override;
 	void OnControlClosed() noexcept override;

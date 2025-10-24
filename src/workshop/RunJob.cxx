@@ -17,6 +17,7 @@
 #include "net/SocketPair.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
 #include "io/Pipe.hxx"
+#include "co/Task.hxx"
 #include "util/PrintException.hxx"
 #include "util/StringCompare.hxx"
 #include "config.h"
@@ -111,7 +112,7 @@ private:
 	}
 
 	[[noreturn]]
-	UniqueFileDescriptor OnControlSpawn(const char *, const char *) override {
+	Co::Task<UniqueFileDescriptor> OnControlSpawn(const char *, const char *) override {
 		throw std::runtime_error{"spawn not implemented"};
 	}
 
