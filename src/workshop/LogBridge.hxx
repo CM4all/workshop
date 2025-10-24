@@ -43,7 +43,8 @@ public:
 	}
 
 	void Flush() noexcept {
-		reader.Flush();
+		if (reader.IsDefined())
+			reader.Flush();
 	}
 
 private:
