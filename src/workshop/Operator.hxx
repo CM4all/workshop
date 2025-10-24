@@ -90,7 +90,6 @@ public:
 			 const std::shared_ptr<Plan> &_plan,
 			 UniqueFileDescriptor stderr_read_pipe,
 			 UniqueFileDescriptor _stderr_write_pipe,
-			 UniqueSocketDescriptor control_socket,
 			 size_t max_log_buffer,
 			 bool enable_journal) noexcept;
 
@@ -108,8 +107,7 @@ public:
 		return job.plan_name;
 	}
 
-	void Start(FileDescriptor stderr_w,
-		   SocketDescriptor control_child);
+	void Start(FileDescriptor stderr_w);
 
 	void SetPid(std::unique_ptr<ChildProcessHandle> &&_pid) noexcept {
 		pid = std::move(_pid);

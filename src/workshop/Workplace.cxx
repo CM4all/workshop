@@ -96,15 +96,6 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 	auto [stderr_r, stderr_w] = CreatePipe();
 	stderr_r.SetNonBlocking();
 
-	/* create control socket */
-
-	UniqueSocketDescriptor control_parent, control_child;
-	if (plan->control_channel) {
-		std::tie(control_parent, control_child) = CreateSocketPair(SOCK_SEQPACKET);
-
-		control_parent.SetNonBlocking();
-	}
-
 	/* create operator object */
 
 	UniqueFileDescriptor stderr_w_for_operator =
@@ -115,10 +106,9 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 	auto o = std::make_unique<WorkshopOperator>(event_loop, *this, job, std::move(plan),
 						    std::move(stderr_r),
 						    std::move(stderr_w_for_operator),
-						    std::move(control_parent),
 						    max_log,
 						    enable_journal);
-	o->Start(stderr_w, control_child);
+	o->Start(stderr_w);
 
 	operators.push_back(*o.release());
 }

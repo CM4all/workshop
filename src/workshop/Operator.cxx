@@ -71,18 +71,12 @@ WorkshopOperator::WorkshopOperator(EventLoop &_event_loop,
 				   const std::shared_ptr<Plan> &_plan,
 				   UniqueFileDescriptor stderr_read_pipe,
 				   UniqueFileDescriptor _stderr_write_pipe,
-				   UniqueSocketDescriptor control_socket,
 				   size_t max_log_buffer,
 				   bool enable_journal) noexcept
 	:event_loop(_event_loop),
 	 workplace(_workplace), job(_job), plan(_plan),
 	 logger(*this),
 	 timeout_event(event_loop, BIND_THIS_METHOD(OnTimeout)),
-	 control_channel(control_socket.IsDefined()
-			 ? new WorkshopControlChannelServer(event_loop,
-							    std::move(control_socket),
-							    *this)
-			 : nullptr),
 	 stderr_write_pipe(std::move(_stderr_write_pipe)),
 	 log(event_loop, job.plan_name, job.id,
 	     std::move(stderr_read_pipe))
@@ -135,10 +129,24 @@ PrepareChildProcess(PreparedChildProcess &p, const char *plan_name,
 }
 
 void
-WorkshopOperator::Start(FileDescriptor stderr_w,
-			SocketDescriptor control_child)
+WorkshopOperator::Start(FileDescriptor stderr_w)
 {
 	auto &spawn_service = workplace.GetSpawnService();
+
+	/* create control socket */
+
+	UniqueSocketDescriptor control_child;
+	if (plan->control_channel) {
+		UniqueSocketDescriptor control_parent;
+		std::tie(control_parent, control_child) = CreateSocketPair(SOCK_SEQPACKET);
+
+		control_parent.SetNonBlocking();
+
+		WorkshopControlChannelHandler &handler = *this;
+		control_channel = std::make_unique<WorkshopControlChannelServer>(event_loop,
+										 std::move(control_parent),
+										 handler);
+	}
 
 	PreparedChildProcess p;
 	PrepareChildProcess(p, job.plan_name.c_str(), *plan,
