@@ -86,6 +86,39 @@ WorkshopWorkplace::GetFullPlanNames() const noexcept
 	return Pg::EncodeArray(list);
 }
 
+static void
+PrepareChildProcess(PreparedChildProcess &p, const char *plan_name,
+		    const Plan &plan,
+		    FileDescriptor stderr_fd, SocketDescriptor control_fd)
+{
+	p.hook_info = plan_name;
+	p.stderr_fd = p.stdout_fd = stderr_fd;
+	p.control_fd = control_fd.ToFileDescriptor();
+
+	if (!debug_mode) {
+		p.uid_gid.effective_uid = plan.uid;
+		p.uid_gid.effective_gid = plan.gid;
+
+		std::copy(plan.groups.begin(), plan.groups.end(),
+			  p.uid_gid.supplementary_groups.begin());
+	}
+
+	if (!plan.chroot.empty())
+		p.chroot = plan.chroot.c_str();
+
+	p.umask = plan.umask;
+	p.rlimits = plan.rlimits;
+	p.priority = plan.priority;
+	p.sched_idle = plan.sched_idle;
+	p.ioprio_idle = plan.ioprio_idle;
+	p.ns.enable_network = plan.private_network;
+
+	if (plan.private_tmp)
+		p.ns.mount.mount_tmp_tmpfs = "";
+
+	p.no_new_privs = true;
+}
+
 void
 WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 			 std::shared_ptr<Plan> plan,
@@ -122,34 +155,8 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 						    enable_journal);
 
 	PreparedChildProcess p;
-	p.hook_info = job.plan_name.c_str();
-	p.stderr_fd = stderr_w;
-
-	if (control_child.IsDefined())
-		p.control_fd = control_child.ToFileDescriptor();
-
-	if (!debug_mode) {
-		p.uid_gid.effective_uid = plan->uid;
-		p.uid_gid.effective_gid = plan->gid;
-
-		std::copy(plan->groups.begin(), plan->groups.end(),
-			  p.uid_gid.supplementary_groups.begin());
-	}
-
-	if (!plan->chroot.empty())
-		p.chroot = plan->chroot.c_str();
-
-	p.umask = plan->umask;
-	p.rlimits = plan->rlimits;
-	p.priority = plan->priority;
-	p.sched_idle = plan->sched_idle;
-	p.ioprio_idle = plan->ioprio_idle;
-	p.ns.enable_network = plan->private_network;
-
-	if (plan->private_tmp)
-		p.ns.mount.mount_tmp_tmpfs = "";
-
-	p.no_new_privs = true;
+	PrepareChildProcess(p, job.plan_name.c_str(), *plan,
+			    stderr_w, control_child);
 
 	/* use a per-plan cgroup */
 
@@ -172,10 +179,7 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 
 	UniqueFileDescriptor stdout_w;
 
-	if (plan->control_channel) {
-		/* copy stdout to stderr into the "log" column */
-		p.stdout_fd = p.stderr_fd;
-	} else {
+	if (!plan->control_channel) {
 		/* if there is no control channel, read progress from the
 		   stdout pipe */
 		UniqueFileDescriptor stdout_r;
