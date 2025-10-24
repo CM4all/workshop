@@ -108,6 +108,9 @@ public:
 		return job.plan_name;
 	}
 
+	void Start(FileDescriptor stderr_w,
+		   SocketDescriptor control_child);
+
 	void SetPid(std::unique_ptr<ChildProcessHandle> &&_pid) noexcept {
 		pid = std::move(_pid);
 		pid->SetExitListener(*this);

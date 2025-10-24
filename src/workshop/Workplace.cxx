@@ -4,7 +4,6 @@
 
 #include "Workplace.hxx"
 #include "Operator.hxx"
-#include "debug.h"
 #include "Plan.hxx"
 #include "Job.hxx"
 #include "pg/Array.hxx"
@@ -17,7 +16,6 @@
 #include "net/UniqueSocketDescriptor.hxx"
 #include "io/Pipe.hxx"
 #include "util/DeleteDisposer.hxx"
-#include "util/StringCompare.hxx"
 
 #include <cassert>
 #include <string>
@@ -86,39 +84,6 @@ WorkshopWorkplace::GetFullPlanNames() const noexcept
 	return Pg::EncodeArray(list);
 }
 
-static void
-PrepareChildProcess(PreparedChildProcess &p, const char *plan_name,
-		    const Plan &plan,
-		    FileDescriptor stderr_fd, SocketDescriptor control_fd)
-{
-	p.hook_info = plan_name;
-	p.stderr_fd = p.stdout_fd = stderr_fd;
-	p.control_fd = control_fd.ToFileDescriptor();
-
-	if (!debug_mode) {
-		p.uid_gid.effective_uid = plan.uid;
-		p.uid_gid.effective_gid = plan.gid;
-
-		std::copy(plan.groups.begin(), plan.groups.end(),
-			  p.uid_gid.supplementary_groups.begin());
-	}
-
-	if (!plan.chroot.empty())
-		p.chroot = plan.chroot.c_str();
-
-	p.umask = plan.umask;
-	p.rlimits = plan.rlimits;
-	p.priority = plan.priority;
-	p.sched_idle = plan.sched_idle;
-	p.ioprio_idle = plan.ioprio_idle;
-	p.ns.enable_network = plan.private_network;
-
-	if (plan.private_tmp)
-		p.ns.mount.mount_tmp_tmpfs = "";
-
-	p.no_new_privs = true;
-}
-
 void
 WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 			 std::shared_ptr<Plan> plan,
@@ -147,97 +112,13 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 		? stderr_w.Duplicate()
 		: UniqueFileDescriptor{};
 
-	auto o = std::make_unique<WorkshopOperator>(event_loop, *this, job, plan,
+	auto o = std::make_unique<WorkshopOperator>(event_loop, *this, job, std::move(plan),
 						    std::move(stderr_r),
 						    std::move(stderr_w_for_operator),
 						    std::move(control_parent),
 						    max_log,
 						    enable_journal);
-
-	PreparedChildProcess p;
-	PrepareChildProcess(p, job.plan_name.c_str(), *plan,
-			    stderr_w, control_child);
-
-	/* use a per-plan cgroup */
-
-	CgroupOptions cgroup;
-
-	UniqueSocketDescriptor return_cgroup;
-
-	if (auto *client = dynamic_cast<SpawnServerClient *>(&spawn_service)) {
-		if (client->SupportsCgroups()) {
-			p.cgroup = &cgroup;
-			p.cgroup_session = job.id.c_str();
-
-			cgroup.name = job.plan_name.c_str();
-
-			std::tie(return_cgroup, p.return_cgroup) = CreateSocketPair(SOCK_SEQPACKET);
-		}
-	}
-
-	/* create stdout/stderr pipes */
-
-	UniqueFileDescriptor stdout_w;
-
-	if (!plan->control_channel) {
-		/* if there is no control channel, read progress from the
-		   stdout pipe */
-		UniqueFileDescriptor stdout_r;
-		std::tie(stdout_r, stdout_w) = CreatePipe();
-
-		o->SetOutput(std::move(stdout_r));
-		p.stdout_fd = stdout_w;
-	}
-
-	/* build command line */
-
-	std::list<std::string> args;
-	args.insert(args.end(), plan->args.begin(), plan->args.end());
-	args.insert(args.end(), job.args.begin(), job.args.end());
-
-	o->Expand(args);
-
-	for (const auto &i : args) {
-		if (p.args.size() >= 4096)
-			throw std::runtime_error("Too many command-line arguments");
-
-		p.args.push_back(i.c_str());
-	}
-
-	for (const auto &i : job.env) {
-		if (p.env.size() >= 64)
-			throw std::runtime_error("Too many environment variables");
-
-		if (StringStartsWith(i.c_str(), "LD_"))
-			/* reject - too dangerous */
-			continue;
-
-		p.env.push_back(i.c_str());
-	}
-
-	/* fork */
-
-	o->SetPid(spawn_service.SpawnChildProcess(job.id.c_str(),
-						  std::move(p)));
-
-	logger(2, "job ", job.id, " (plan '", job.plan_name,
-	       "') started");
-
-	if (return_cgroup.IsDefined()) {
-		/* close the other side of the socketpair if it's
-		   still open to avoid blocking the following receive
-		   call if the spawner has closed the socket without
-		   sending something */
-		if (p.return_cgroup.IsDefined())
-			p.return_cgroup.Close();
-
-		try {
-			o->SetCgroup(EasyReceiveMessageWithOneFD(return_cgroup));
-		} catch (...) {
-			logger(1, "Failed to receive cgroup fd: ",
-			       std::current_exception());
-		}
-	}
+	o->Start(stderr_w, control_child);
 
 	operators.push_back(*o.release());
 }
