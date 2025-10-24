@@ -32,7 +32,7 @@ WorkshopControlChannelServer::InvokeTemporaryError(const char *msg) noexcept
 	handler.OnControlTemporaryError(std::make_exception_ptr(std::runtime_error(msg)));
 }
 
-bool
+inline bool
 WorkshopControlChannelServer::OnControl(std::vector<std::string> &&args) noexcept
 {
 	const auto &cmd = args.front();
