@@ -307,18 +307,17 @@ WorkshopOperator::Start2(std::size_t max_log_buffer,
 
 			p.args.push_back(i.c_str());
 		}
+	}
 
-		// TODO do we want to allow job.env for "translate" plans?
-		for (const auto &i : job.env) {
-			if (p.env.size() >= 64)
-				throw std::runtime_error("Too many environment variables");
+	for (const auto &i : job.env) {
+		if (p.env.size() >= 64)
+			throw std::runtime_error("Too many environment variables");
 
-			if (StringStartsWith(i.c_str(), "LD_"))
-				/* reject - too dangerous */
-				continue;
+		if (StringStartsWith(i.c_str(), "LD_"))
+			/* reject - too dangerous */
+			continue;
 
-			p.env.push_back(i.c_str());
-		}
+		p.env.push_back(i.c_str());
 	}
 
 	/* fork */
