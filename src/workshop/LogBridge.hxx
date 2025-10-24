@@ -7,7 +7,6 @@
 #include "event/PipeLineReader.hxx"
 #include "config.h"
 
-#include <memory>
 #include <string>
 
 class LogBridge final : PipeLineReaderHandler {
