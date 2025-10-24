@@ -200,6 +200,8 @@ Instance::OnControlPacket(BengControl::Command command,
 	case Command::DISCONNECT_DATABASE:
 	case Command::DISABLE_URING:
 	case Command::RESET_LIMITER:
+	case Command::REJECT_CLIENT:
+	case Command::TARPIT_CLIENT:
 		// not applicable
 		break;
 
