@@ -93,10 +93,10 @@ private:
 			       std::string_view partition_name,
 			       const char *listener_tag);
 
-	void OnCompletion(std::exception_ptr error) noexcept {
+	void OnCompletion(std::exception_ptr &&error) noexcept {
 		if (error) {
 			logger(1, error);
-			SetResult(CronResult::Error(error));
+			SetResult(CronResult::Error(std::move(error)));
 		}
 
 		workplace.OnCompletion(*this);
