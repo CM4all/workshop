@@ -4,6 +4,8 @@
 
 #include "Expand.hxx"
 
+using std::string_view_literals::operator""sv;
+
 void
 Expand(std::string &p, const StringMap &vars) noexcept
 {
@@ -11,7 +13,7 @@ Expand(std::string &p, const StringMap &vars) noexcept
 	p.clear();
 
 	std::string::size_type start = 0, pos;
-	while ((pos = src.find("${", start)) != src.npos) {
+	while ((pos = src.find("${"sv, start)) != src.npos) {
 		std::string::size_type end = src.find('}', start + 2);
 		if (end == src.npos)
 			break;
