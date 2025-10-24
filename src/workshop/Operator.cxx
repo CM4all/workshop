@@ -533,10 +533,15 @@ WorkshopOperator::OnControlSpawn(const char *token, const char *param)
 			       job.plan_name.c_str(),
 			       token, param);
 
+	auto &spawn_service = workplace.GetSpawnService();
+
+	co_await CoEnqueueSpawner{spawn_service};
 
 	auto [handle, return_pidfd] =
-		DoSpawn(workplace.GetSpawnService(), alloc, job, *plan,
+		DoSpawn(spawn_service, alloc, job, *plan,
 			token, stderr_write_pipe, response);
+
+	co_await CoWaitSpawnCompletion{*handle};
 
 	children.push_front(*new SpawnedProcess(std::move(handle)));
 
