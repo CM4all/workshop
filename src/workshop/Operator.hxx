@@ -2,8 +2,7 @@
 // Copyright CM4all GmbH
 // author: Max Kellermann <mk@cm4all.com>
 
-#ifndef WORKSHOP_OPERATOR_HXX
-#define WORKSHOP_OPERATOR_HXX
+#pragma once
 
 #include "Job.hxx"
 #include "LogBridge.hxx"
@@ -16,6 +15,7 @@
 #include "util/IntrusiveList.hxx"
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <list>
 #include <chrono>
@@ -74,7 +74,7 @@ class WorkshopOperator final
 	 */
 	UniqueFileDescriptor cgroup_cpu_stat;
 
-	LogBridge log;
+	std::optional<LogBridge> log;
 
 	class SpawnedProcess;
 
@@ -87,10 +87,7 @@ class WorkshopOperator final
 public:
 	WorkshopOperator(EventLoop &_event_loop,
 			 WorkshopWorkplace &_workplace, const WorkshopJob &_job,
-			 const std::shared_ptr<Plan> &_plan,
-			 UniqueFileDescriptor stderr_read_pipe,
-			 size_t max_log_buffer,
-			 bool enable_journal) noexcept;
+			 const std::shared_ptr<Plan> &_plan) noexcept;
 
 	WorkshopOperator(const WorkshopOperator &other) = delete;
 
@@ -106,7 +103,8 @@ public:
 		return job.plan_name;
 	}
 
-	void Start(FileDescriptor stderr_w);
+	void Start(std::size_t max_log_buffer,
+		   bool enable_journal);
 
 	void SetPid(std::unique_ptr<ChildProcessHandle> &&_pid) noexcept {
 		pid = std::move(_pid);
@@ -142,5 +140,3 @@ private:
 	void OnControlPermanentError(std::exception_ptr &&error) noexcept override;
 	void OnControlClosed() noexcept override;
 };
-
-#endif

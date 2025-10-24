@@ -91,18 +91,10 @@ WorkshopWorkplace::Start(EventLoop &event_loop, const WorkshopJob &job,
 {
 	assert(!plan->args.empty());
 
-	/* create stdout/stderr pipes */
-
-	auto [stderr_r, stderr_w] = CreatePipe();
-	stderr_r.SetNonBlocking();
-
 	/* create operator object */
 
-	auto o = std::make_unique<WorkshopOperator>(event_loop, *this, job, std::move(plan),
-						    std::move(stderr_r),
-						    max_log,
-						    enable_journal);
-	o->Start(stderr_w);
+	auto o = std::make_unique<WorkshopOperator>(event_loop, *this, job, std::move(plan));
+	o->Start(max_log, enable_journal);
 
 	operators.push_back(*o.release());
 }

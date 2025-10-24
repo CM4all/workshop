@@ -68,24 +68,13 @@ private:
 WorkshopOperator::WorkshopOperator(EventLoop &_event_loop,
 				   WorkshopWorkplace &_workplace,
 				   const WorkshopJob &_job,
-				   const std::shared_ptr<Plan> &_plan,
-				   UniqueFileDescriptor stderr_read_pipe,
-				   size_t max_log_buffer,
-				   bool enable_journal) noexcept
+				   const std::shared_ptr<Plan> &_plan) noexcept
 	:event_loop(_event_loop),
 	 workplace(_workplace), job(_job), plan(_plan),
 	 logger(*this),
-	 timeout_event(event_loop, BIND_THIS_METHOD(OnTimeout)),
-	 log(event_loop, job.plan_name, job.id,
-	     std::move(stderr_read_pipe))
+	 timeout_event(event_loop, BIND_THIS_METHOD(OnTimeout))
 {
 	ScheduleTimeout();
-
-	if (max_log_buffer > 0)
-		log.EnableBuffer(max_log_buffer);
-
-	if (enable_journal)
-		log.EnableJournal();
 }
 
 WorkshopOperator::~WorkshopOperator() noexcept
@@ -127,9 +116,23 @@ PrepareChildProcess(PreparedChildProcess &p, const char *plan_name,
 }
 
 void
-WorkshopOperator::Start(FileDescriptor stderr_w)
+WorkshopOperator::Start(std::size_t max_log_buffer,
+			bool enable_journal)
 {
 	auto &spawn_service = workplace.GetSpawnService();
+
+	/* create stdout/stderr pipes */
+
+	auto [stderr_r, stderr_w] = CreatePipe();
+	stderr_r.SetNonBlocking();
+
+	log.emplace(event_loop, job.plan_name, job.id, std::move(stderr_r));
+
+	if (max_log_buffer > 0)
+		log->EnableBuffer(max_log_buffer);
+
+	if (enable_journal)
+		log->EnableJournal();
 
 	if (plan->control_channel && plan->allow_spawn)
 		stderr_write_pipe = stderr_w.Duplicate();
@@ -314,6 +317,8 @@ WorkshopOperator::Expand(std::list<std::string> &args) const noexcept
 void
 WorkshopOperator::OnChildProcessExit(int status) noexcept
 {
+	assert(log);
+
 	exited = true;
 
 	if (control_channel) {
@@ -325,7 +330,7 @@ WorkshopOperator::OnChildProcessExit(int status) noexcept
 		}
 	}
 
-	log.Flush();
+	log->Flush();
 
 	int exit_status = WEXITSTATUS(status);
 
@@ -342,7 +347,7 @@ WorkshopOperator::OnChildProcessExit(int status) noexcept
 	else
 		logger(2, "exited with status ", exit_status);
 
-	const char *log_text = log.GetBuffer();
+	const char *log_text = log->GetBuffer();
 	if (log_text != nullptr && !ValidateUTF8(log_text)) {
 		/* TODO: purge illegal UTF-8 sequences instead of
 		   replacing the log text? */
