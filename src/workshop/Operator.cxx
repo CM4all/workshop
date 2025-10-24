@@ -109,6 +109,25 @@ WorkshopOperator::InitLog(std::size_t max_log_buffer,
 	return std::move(stderr_w);
 }
 
+inline UniqueSocketDescriptor
+WorkshopOperator::InitControl()
+{
+	assert(!control_channel);
+
+	if (!plan->control_channel)
+		return {};
+
+	auto [control_parent, control_child] = CreateSocketPair(SOCK_SEQPACKET);
+	control_parent.SetNonBlocking();
+
+	WorkshopControlChannelHandler &handler = *this;
+	control_channel = std::make_unique<WorkshopControlChannelServer>(event_loop,
+									 std::move(control_parent),
+									 handler);
+
+	return std::move(control_child);
+}
+
 static void
 PrepareChildProcess(PreparedChildProcess &p, const char *plan_name,
 		    const Plan &plan,
@@ -168,18 +187,7 @@ WorkshopOperator::Start2(std::size_t max_log_buffer,
 
 	/* create control socket */
 
-	UniqueSocketDescriptor control_child;
-	if (plan->control_channel) {
-		UniqueSocketDescriptor control_parent;
-		std::tie(control_parent, control_child) = CreateSocketPair(SOCK_SEQPACKET);
-
-		control_parent.SetNonBlocking();
-
-		WorkshopControlChannelHandler &handler = *this;
-		control_channel = std::make_unique<WorkshopControlChannelServer>(event_loop,
-										 std::move(control_parent),
-										 handler);
-	}
+	const auto control_child = InitControl();
 
 	PreparedChildProcess p;
 	PrepareChildProcess(p, job.plan_name.c_str(), *plan,

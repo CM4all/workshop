@@ -117,6 +117,7 @@ private:
 
 	UniqueFileDescriptor InitLog(std::size_t max_log_buffer,
 				     bool enable_journal);
+	UniqueSocketDescriptor InitControl();
 
 	void SetCgroup(FileDescriptor fd) noexcept;
 
