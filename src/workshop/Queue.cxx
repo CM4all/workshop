@@ -14,6 +14,8 @@
 #include "util/StringAPI.hxx"
 #include "util/StringCompare.hxx"
 
+#include <fmt/core.h>
+
 #include <stdexcept>
 
 #include <sys/types.h>
@@ -480,8 +482,7 @@ WorkshopQueue::OnConnect()
 	if (!StringIsEqual(schema, "public"))
 		/* for compatibility with future Workshop versions with
 		   improved schema support */
-		db.Execute(("LISTEN \"" + db.Escape(schema)
-			    + ":new_job\"").c_str());
+		db.Execute(fmt::format("LISTEN \"{}:new_job\"", schema).c_str());
 
 	unsigned ret = pg_release_jobs(db, node_name.c_str());
 	if (ret > 0) {
