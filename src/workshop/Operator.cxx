@@ -281,7 +281,7 @@ WorkshopOperator::Start2(std::size_t max_log_buffer,
 
 	UniqueFileDescriptor stdout_w;
 
-	if (plan->translate || !plan->control_channel) {
+	if (!plan->translate && !plan->control_channel) {
 		/* if there is no control channel, read progress from the
 		   stdout pipe */
 		UniqueFileDescriptor stdout_r;
