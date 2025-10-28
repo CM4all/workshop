@@ -6,8 +6,7 @@
  * SQL to C wrappers.
  */
 
-#ifndef __QUEUE_PG_H
-#define __QUEUE_PG_H
+#pragma once
 
 #include <chrono>
 
@@ -15,6 +14,12 @@ namespace Pg {
 class Connection;
 class Result;
 }
+
+/**
+ * Initialize the database connection after it has been established.
+ */
+void
+pg_init(Pg::Connection &db);
 
 /**
  * Throws on error.
@@ -118,5 +123,3 @@ PgAddJobCpuUsage(Pg::Connection &db, const char *id,
 unsigned
 PgReapFinishedJobs(Pg::Connection &db, const char *plan_name,
 		   const char *reap_finished);
-
-#endif

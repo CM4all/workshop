@@ -15,6 +15,45 @@
 using std::string_view_literals::operator""sv;
 
 void
+pg_init(Pg::Connection &db)
+{
+	db.Prepare("select_new_jobs", R"SQL(
+SELECT id,plan_name,args,env,stdin
+  FROM jobs
+WHERE node_name IS NULL
+  AND time_done IS NULL AND exit_status IS NULL
+  AND (scheduled_time IS NULL OR now() >= scheduled_time)
+  AND plan_name = ANY ($1::TEXT[])
+  AND plan_name <> ALL ($2::TEXT[] || $3::TEXT[])
+  AND enabled
+ORDER BY priority, time_created
+LIMIT $4
+)SQL",
+		   4);
+
+	db.Prepare("claim_job", R"SQL(
+UPDATE jobs
+SET node_name=$1, node_timeout=now()+$3::INTERVAL, time_started=now()
+WHERE id=$2 AND node_name IS NULL AND enabled
+)SQL",
+		   3);
+
+	db.Prepare("set_job_progress", R"SQL(
+UPDATE jobs
+SET progress=$2, node_timeout=now()+$3::INTERVAL
+WHERE id=$1
+)SQL",
+		   3);
+
+	db.Prepare("set_job_done", R"SQL(
+UPDATE jobs
+SET time_done=now(), progress=100, exit_status=$2, log=$3
+WHERE id=$1
+)SQL",
+		   3);
+}
+
+void
 pg_notify(Pg::Connection &db)
 {
 	db.Execute("NOTIFY new_job");
@@ -86,20 +125,9 @@ pg_select_new_jobs(Pg::Connection &db,
 	assert(plans_exclude != nullptr && *plans_exclude == '{');
 	assert(plans_lowprio != nullptr && *plans_lowprio == '{');
 
-	const char *sql = "SELECT id,plan_name,args,env,stdin "
-		"FROM jobs "
-		"WHERE node_name IS NULL "
-		"AND time_done IS NULL AND exit_status IS NULL "
-		"AND (scheduled_time IS NULL OR now() >= scheduled_time) "
-		"AND plan_name = ANY ($1::TEXT[]) "
-		"AND plan_name <> ALL ($2::TEXT[] || $3::TEXT[]) "
-		"AND enabled "
-		"ORDER BY priority, time_created "
-		"LIMIT $4";
-
-	return db.ExecuteParams(sql,
-				plans_include, plans_exclude, plans_lowprio,
-				limit);
+	return db.ExecutePrepared("select_new_jobs",
+				  plans_include, plans_exclude, plans_lowprio,
+				  limit);
 }
 
 std::chrono::seconds
@@ -125,12 +153,7 @@ pg_claim_job(Pg::Connection &db,
 	     const char *job_id, const char *node_name,
 	     const char *timeout)
 {
-	const char *sql = "UPDATE jobs "
-		"SET node_name=$1, node_timeout=now()+$3::INTERVAL, time_started=now() "
-		"WHERE id=$2 AND node_name IS NULL"
-		" AND enabled";
-
-	const auto result = db.ExecuteParams(sql, node_name, job_id, timeout);
+	const auto result = db.ExecutePrepared("claim_job", node_name, job_id, timeout);
 	return result.GetAffectedRows() > 0;
 }
 
@@ -139,10 +162,8 @@ pg_set_job_progress(Pg::Connection &db, const char *job_id,
 		    unsigned progress, const char *timeout)
 {
 	const auto result =
-		db.ExecuteParams("UPDATE jobs "
-				 "SET progress=$2, node_timeout=now()+$3::INTERVAL "
-				 "WHERE id=$1",
-				 job_id, progress, timeout);
+		db.ExecutePrepared("set_job_progress",
+				   job_id, progress, timeout);
 	if (result.GetAffectedRows() < 1)
 		throw std::runtime_error("No matching job");
 }
@@ -202,11 +223,7 @@ void
 pg_set_job_done(Pg::Connection &db, const char *id, int status,
 		const char *log)
 {
-	const auto result =
-		db.ExecuteParams("UPDATE jobs "
-				 "SET time_done=now(), progress=100, exit_status=$2, log=$3 "
-				 "WHERE id=$1",
-				 id, status, log);
+	const auto result = db.ExecutePrepared("set_job_done", id, status, log);
 	if (result.GetAffectedRows() < 1)
 		throw std::runtime_error("No matching job");
 }

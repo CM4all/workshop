@@ -477,6 +477,8 @@ WorkshopQueue::OnConnect()
 			throw FmtRuntimeError("No column 'jobs.{}'; please migrate the database",
 					      name);
 
+	pg_init(db);
+
 	db.Execute("LISTEN new_job");
 
 	if (!StringIsEqual(schema, "public"))
