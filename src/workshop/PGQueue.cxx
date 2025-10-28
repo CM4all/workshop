@@ -4,6 +4,7 @@
 
 #include "PGQueue.hxx"
 #include "pg/Connection.hxx"
+#include "pg/Reflection.hxx"
 #include "lib/fmt/ToBuffer.hxx"
 
 #include <fmt/core.h>
@@ -15,10 +16,16 @@
 using std::string_view_literals::operator""sv;
 
 void
-pg_init(Pg::Connection &db)
+pg_init(Pg::Connection &db, const char *schema)
 {
-	db.Prepare("select_new_jobs", R"SQL(
-SELECT id,plan_name,args,env,stdin
+	/* if the "stdin" column does not exist, assume it's all
+	   NULL */
+	const std::string_view stdin_column = Pg::ColumnExists(db, schema, "jobs", "stdin")
+		? "stdin"sv
+		: "NULL"sv;
+
+	db.Prepare("select_new_jobs", fmt::format(R"SQL(
+SELECT id,plan_name,args,env,{}
   FROM jobs
 WHERE node_name IS NULL
   AND time_done IS NULL AND exit_status IS NULL
@@ -28,7 +35,7 @@ WHERE node_name IS NULL
   AND enabled
 ORDER BY priority, time_created
 LIMIT $4
-)SQL",
+)SQL", stdin_column).c_str(),
 		   4);
 
 	db.Prepare("claim_job", R"SQL(

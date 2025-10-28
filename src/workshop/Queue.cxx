@@ -465,7 +465,6 @@ WorkshopQueue::OnConnect()
 	static constexpr const char *const required_jobs_columns[] = {
 		"enabled",
 		"log",
-		"stdin",
 	};
 
 	const char *schema = db.GetSchemaName().empty()
@@ -477,7 +476,7 @@ WorkshopQueue::OnConnect()
 			throw FmtRuntimeError("No column 'jobs.{}'; please migrate the database",
 					      name);
 
-	pg_init(db);
+	pg_init(db, schema);
 
 	db.Execute("LISTEN new_job");
 
