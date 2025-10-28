@@ -2,8 +2,7 @@
 // Copyright CM4all GmbH
 // author: Max Kellermann <mk@cm4all.com>
 
-#ifndef _WORKSHOP_CONFIG_HXX
-#define _WORKSHOP_CONFIG_HXX
+#pragma once
 
 #include "workshop/Config.hxx"
 #include "cron/Config.hxx"
@@ -52,5 +51,3 @@ struct Config {
  */
 void
 LoadConfigFile(Config &config, const char *path);
-
-#endif

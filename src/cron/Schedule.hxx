@@ -2,8 +2,7 @@
 // Copyright CM4all GmbH
 // author: Max Kellermann <mk@cm4all.com>
 
-#ifndef WORKSHOP_CRON_SCHEDULE_HXX
-#define WORKSHOP_CRON_SCHEDULE_HXX
+#pragma once
 
 #include "util/RangeBitSet.hxx"
 
@@ -71,5 +70,3 @@ struct CronSchedule {
 	std::chrono::system_clock::time_point Next(std::chrono::system_clock::time_point last,
 						   std::chrono::system_clock::time_point now) const noexcept;
 };
-
-#endif

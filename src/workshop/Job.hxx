@@ -2,8 +2,7 @@
 // Copyright CM4all GmbH
 // author: Max Kellermann <mk@cm4all.com>
 
-#ifndef WORKSHOP_JOB_HXX
-#define WORKSHOP_JOB_HXX
+#pragma once
 
 #include <chrono>
 #include <string>
@@ -61,5 +60,3 @@ struct WorkshopJob {
 
 	void AddCpuUsage(std::chrono::microseconds cpu_usage) noexcept;
 };
-
-#endif

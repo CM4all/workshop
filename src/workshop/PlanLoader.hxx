@@ -2,8 +2,7 @@
 // Copyright CM4all GmbH
 // author: Max Kellermann <mk@cm4all.com>
 
-#ifndef WORKSHOP_PLAN_LOADER_HXX
-#define WORKSHOP_PLAN_LOADER_HXX
+#pragma once
 
 #include <filesystem>
 
@@ -14,5 +13,3 @@ struct Plan;
  */
 Plan
 LoadPlanFile(const std::filesystem::path &path);
-
-#endif

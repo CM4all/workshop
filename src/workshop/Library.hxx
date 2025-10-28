@@ -2,8 +2,7 @@
 // Copyright CM4all GmbH
 // author: Max Kellermann <mk@cm4all.com>
 
-#ifndef WORKSHOP_LIBRARY_HXX
-#define WORKSHOP_LIBRARY_HXX
+#pragma once
 
 #include "io/Logger.hxx"
 
@@ -133,5 +132,3 @@ private:
 	 */
 	bool UpdatePlans(std::chrono::steady_clock::time_point now);
 };
-
-#endif

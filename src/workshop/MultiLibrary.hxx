@@ -2,8 +2,7 @@
 // Copyright CM4all GmbH
 // author: Max Kellermann <mk@cm4all.com>
 
-#ifndef WORKSHOP_MULTI_LIBRARY_HXX
-#define WORKSHOP_MULTI_LIBRARY_HXX
+#pragma once
 
 #include "Library.hxx"
 
@@ -39,5 +38,3 @@ public:
 	std::shared_ptr<Plan> Get(std::chrono::steady_clock::time_point now,
 				  const char *name);
 };
-
-#endif

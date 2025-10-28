@@ -2,8 +2,7 @@
 // Copyright CM4all GmbH
 // author: Max Kellermann <mk@cm4all.com>
 
-#ifndef WORKSHOP_PLAN_HXX
-#define WORKSHOP_PLAN_HXX
+#pragma once
 
 #include "RateLimit.hxx"
 #include "spawn/ResourceLimits.hxx"
@@ -92,5 +91,3 @@ struct Plan {
 		return args.front();
 	}
 };
-
-#endif

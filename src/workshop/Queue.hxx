@@ -2,8 +2,7 @@
 // Copyright CM4all GmbH
 // author: Max Kellermann <mk@cm4all.com>
 
-#ifndef WORKSHOP_QUEUE_HXX
-#define WORKSHOP_QUEUE_HXX
+#pragma once
 
 #include "event/DeferEvent.hxx"
 #include "event/FineTimerEvent.hxx"
@@ -240,5 +239,3 @@ private:
 	void OnNotify(const char *name) override;
 	void OnError(std::exception_ptr e) noexcept override;
 };
-
-#endif

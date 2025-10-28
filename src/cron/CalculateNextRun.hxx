@@ -2,8 +2,7 @@
 // Copyright CM4all GmbH
 // author: Max Kellermann <mk@cm4all.com>
 
-#ifndef WORKSHOP_CRON_CALCULATE_NEXT_RUN_HXX
-#define WORKSHOP_CRON_CALCULATE_NEXT_RUN_HXX
+#pragma once
 
 namespace Pg { class Connection; }
 class ChildLogger;
@@ -18,5 +17,3 @@ class ChildLogger;
  */
 bool
 CalculateNextRun(const ChildLogger &logger, Pg::Connection &db);
-
-#endif
