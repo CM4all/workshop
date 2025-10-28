@@ -86,7 +86,7 @@ pg_select_new_jobs(Pg::Connection &db,
 	assert(plans_exclude != nullptr && *plans_exclude == '{');
 	assert(plans_lowprio != nullptr && *plans_lowprio == '{');
 
-	const char *sql = "SELECT id,plan_name,args,env "
+	const char *sql = "SELECT id,plan_name,args,env,stdin "
 		"FROM jobs "
 		"WHERE node_name IS NULL "
 		"AND time_done IS NULL AND exit_status IS NULL "

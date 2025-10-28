@@ -47,6 +47,9 @@ MigrateWorkshopDatabase(Pg::Connection &c, const char *schema)
 
 	/* since Workshop 6.0.1 */
 	c.Execute("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS cpu_usage interval NULL");
+
+	/* since Workshop 7.1 */
+	c.Execute("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS stdin bytea NULL");
 }
 
 static void

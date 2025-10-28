@@ -536,6 +536,8 @@ The `jobs` table
 * ``env``: Additional environment variables.  Some dangerous
   environment variables cannot be set, though, for example
   ``LD_PRELOAD``.
+* ``stdin``: If not ``NULL``, then the process is started with a file
+  handle on standard input that reads this data.
 * ``node_name``: Name of the node which is currently executing
   this job, or :samp:`NULL`.
 * ``node_timeout``: When this time stamp has passed, then the

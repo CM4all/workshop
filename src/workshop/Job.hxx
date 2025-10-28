@@ -4,7 +4,10 @@
 
 #pragma once
 
+#include "util/AllocatedArray.hxx"
+
 #include <chrono>
+#include <cstddef>
 #include <string>
 #include <forward_list>
 
@@ -18,6 +21,8 @@ struct WorkshopJob {
 	std::forward_list<std::string> args;
 
 	std::forward_list<std::string> env;
+
+	AllocatedArray<std::byte> stdin;
 
 	explicit WorkshopJob(WorkshopQueue &_queue):queue(_queue) {}
 

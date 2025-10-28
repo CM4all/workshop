@@ -8,6 +8,7 @@
 #include "Plan.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "pg/Array.hxx"
+#include "pg/Hex.hxx"
 #include "pg/Reflection.hxx"
 #include "event/Loop.hxx"
 #include "util/StringAPI.hxx"
@@ -87,6 +88,9 @@ MakeJob(WorkshopQueue &queue,
 
 	job.args = Pg::DecodeArray(result.GetValue(row, 2));
 	job.env = Pg::DecodeArray(result.GetValue(row, 3));
+
+	if (!result.IsValueNull(row, 4))
+		job.stdin = Pg::DecodeHex(result.GetValueView(row, 4));
 
 	if (job.id.empty())
 		throw std::runtime_error("Job has no id");
@@ -459,6 +463,7 @@ WorkshopQueue::OnConnect()
 	static constexpr const char *const required_jobs_columns[] = {
 		"enabled",
 		"log",
+		"stdin",
 	};
 
 	const char *schema = db.GetSchemaName().empty()

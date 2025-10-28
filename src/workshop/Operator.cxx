@@ -25,6 +25,7 @@
 #include "net/EasyMessage.hxx"
 #include "net/SocketPair.hxx"
 #include "net/UniqueSocketDescriptor.hxx"
+#include "io/linux/MemFD.hxx"
 #include "io/FdHolder.hxx"
 #include "io/FileAt.hxx"
 #include "io/Open.hxx"
@@ -258,6 +259,9 @@ WorkshopOperator::Start2(std::size_t max_log_buffer,
 			    translation,
 			    stderr_w, control_child,
 			    close_fds);
+
+	if (job.stdin != nullptr)
+		p.stdin_fd = close_fds.Insert(CreateMemFD("stdin", job.stdin));
 
 	/* use a per-plan cgroup */
 
