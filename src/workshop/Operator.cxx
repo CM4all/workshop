@@ -279,16 +279,13 @@ WorkshopOperator::Start2(std::size_t max_log_buffer,
 
 	/* create stdout/stderr pipes */
 
-	UniqueFileDescriptor stdout_w;
-
 	if (!plan->translate && !plan->control_channel) {
 		/* if there is no control channel, read progress from the
 		   stdout pipe */
-		UniqueFileDescriptor stdout_r;
-		std::tie(stdout_r, stdout_w) = CreatePipe();
+		auto [stdout_r, stdout_w] = CreatePipe();
 
 		SetOutput(std::move(stdout_r));
-		p.stdout_fd = stdout_w;
+		p.stdout_fd = close_fds.Insert(std::move(stdout_w));
 	}
 
 	/* build command line */
