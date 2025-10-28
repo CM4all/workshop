@@ -6,9 +6,13 @@
 #include "pg/Connection.hxx"
 #include "lib/fmt/ToBuffer.hxx"
 
+#include <fmt/core.h>
+
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
+
+using std::string_view_literals::operator""sv;
 
 void
 pg_notify(Pg::Connection &db)
@@ -150,10 +154,11 @@ PgSetEnv(Pg::Connection &db, const char *job_id, const char *more_env)
 	if (eq == nullptr || eq == more_env)
 		throw std::runtime_error("Malformed environment variable");
 
+	const std::string_view name{more_env, eq};
+
 	/* for filtering out old environment variables with the same
 	   name */
-	std::string like(more_env, eq + 1);
-	like.push_back('%');
+	const auto like = fmt::format("{}=%"sv, name);
 
 	const auto result =
 		db.ExecuteParams("UPDATE jobs "
