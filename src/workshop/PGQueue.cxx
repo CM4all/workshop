@@ -24,6 +24,19 @@ pg_init(Pg::Connection &db, const char *schema)
 		? "stdin"sv
 		: "NULL"sv;
 
+	/* ignore jobs which are scheduled deep into the future; some
+	   Workshop clients (such as URO) do this, and it slows down
+	   the PostgreSQL query */
+	db.Prepare("next_scheduled_job", R"SQL(
+SELECT EXTRACT(EPOCH FROM (MIN(scheduled_time) - now()))
+FROM jobs
+WHERE node_name IS NULL AND time_done IS NULL AND exit_status IS NULL
+  AND scheduled_time IS NOT NULL
+  AND scheduled_time < now() + '1 year'::interval
+  AND plan_name = ANY ($1::TEXT[])
+  AND enabled
+)SQL", 1);
+
 	db.Prepare("select_new_jobs", fmt::format(R"SQL(
 SELECT id,plan_name,args,env,{}
   FROM jobs
@@ -37,6 +50,14 @@ ORDER BY priority, time_created
 LIMIT $4
 )SQL", stdin_column).c_str(),
 		   4);
+
+	db.Prepare("check_rate_limit", R"SQL(
+SELECT EXTRACT(EPOCH FROM time_started + $2::interval - now()) FROM jobs
+WHERE plan_name=$1 AND time_started >= now() - $2::interval
+ORDER BY time_started DESC
+LIMIT 1 OFFSET $3
+)SQL",
+		   3);
 
 	db.Prepare("claim_job", R"SQL(
 UPDATE jobs
@@ -58,6 +79,61 @@ SET time_done=now(), progress=100, exit_status=$2, log=$3
 WHERE id=$1
 )SQL",
 		   3);
+
+	db.Prepare("add_cpu_usage", R"SQL(
+UPDATE jobs
+SET cpu_usage=COALESCE(cpu_usage, '0'::interval)+$2::interval
+WHERE id=$1
+)SQL",
+		   2);
+
+	db.Prepare("release_jobs", R"SQL(
+UPDATE jobs
+SET node_name=NULL, node_timeout=NULL, progress=0
+WHERE node_name=$1 AND time_done IS NULL AND exit_status IS NULL
+)SQL",
+		   1);
+
+	db.Prepare("expire_jobs", R"SQL(
+UPDATE jobs
+SET node_name=NULL, node_timeout=NULL, progress=0
+WHERE time_done IS NULL AND exit_status IS NULL AND
+node_name IS NOT NULL AND node_name <> $1 AND
+node_timeout IS NOT NULL AND now() > node_timeout
+)SQL",
+		   1);
+
+	db.Prepare("set_env", R"SQL(
+UPDATE jobs
+SET env=ARRAY(SELECT x FROM (SELECT unnest(env) as x) AS y WHERE x NOT LIKE $3)||ARRAY[$2]::varchar[]
+WHERE id=$1
+)SQL",
+		   3);
+
+	db.Prepare("rollback_job", R"SQL(
+UPDATE jobs
+SET node_name=NULL, node_timeout=NULL, progress=0
+WHERE id=$1 AND node_name IS NOT NULL
+AND time_done IS NULL
+)SQL",
+		   1);
+
+	db.Prepare("again_job", R"SQL(
+UPDATE jobs
+SET node_name=NULL, node_timeout=NULL, progress=0
+, log=$3
+, scheduled_time=NOW() + $2 * '1 second'::interval
+WHERE id=$1 AND node_name IS NOT NULL
+AND time_done IS NULL
+)SQL",
+		   3);
+
+	db.Prepare("reap_finished_jobs", R"SQL(
+DELETE FROM jobs
+WHERE plan_name=$1
+ AND time_done IS NOT NULL AND time_done < now() - $2::interval
+)SQL",
+		   2);
 }
 
 void
@@ -69,24 +145,14 @@ pg_notify(Pg::Connection &db)
 unsigned
 pg_release_jobs(Pg::Connection &db, const char *node_name)
 {
-	const auto result =
-		db.ExecuteParams("UPDATE jobs "
-				 "SET node_name=NULL, node_timeout=NULL, progress=0 "
-				 "WHERE node_name=$1 AND time_done IS NULL AND exit_status IS NULL",
-				 node_name);
+	const auto result = db.ExecutePrepared("release_jobs", node_name);
 	return result.GetAffectedRows();
 }
 
 unsigned
 pg_expire_jobs(Pg::Connection &db, const char *except_node_name)
 {
-	const auto result =
-		db.ExecuteParams("UPDATE jobs "
-				 "SET node_name=NULL, node_timeout=NULL, progress=0 "
-				 "WHERE time_done IS NULL AND exit_status IS NULL AND "
-				 "node_name IS NOT NULL AND node_name <> $1 AND "
-				 "node_timeout IS NOT NULL AND now() > node_timeout",
-				 except_node_name);
+	const auto result = db.ExecutePrepared("expire_jobs", except_node_name);
 	return result.GetAffectedRows();
 }
 
@@ -97,20 +163,7 @@ pg_next_scheduled_job(Pg::Connection &db,
 {
 	assert(plans_include != nullptr && *plans_include == '{');
 
-	const char *sql = "SELECT EXTRACT(EPOCH FROM (MIN(scheduled_time) - now())) "
-		"FROM jobs WHERE node_name IS NULL AND time_done IS NULL AND exit_status IS NULL "
-		"AND scheduled_time IS NOT NULL "
-
-		/* ignore jobs which are scheduled deep into
-		   the future; some Workshop clients (such as
-		   URO) do this, and it slows down the
-		   PostgreSQL query */
-		"AND scheduled_time < now() + '1 year'::interval "
-
-		"AND plan_name = ANY ($1::TEXT[]) "
-		"AND enabled";
-
-	const auto result = db.ExecuteParams(sql, plans_include);
+	const auto result = db.ExecutePrepared("next_scheduled_job", plans_include);
 	if (result.IsEmpty())
 		return false;
 
@@ -141,13 +194,8 @@ std::chrono::seconds
 PgCheckRateLimit(Pg::Connection &db, const char *plan_name,
 		 std::chrono::seconds duration, unsigned max_count)
 {
-	const char *sql = "SELECT EXTRACT(EPOCH FROM time_started + $2::interval - now()) FROM jobs "
-		" WHERE plan_name=$1 AND time_started >= now() - $2::interval"
-		" ORDER BY time_started DESC"
-		" LIMIT 1 OFFSET $3";
-
-	const auto value = db.ExecuteParams(sql, plan_name, duration.count(),
-					    max_count - 1)
+	const auto value = db.ExecutePrepared("check_rate_limit", plan_name, duration.count(),
+					      max_count - 1)
 		.GetOnlyStringChecked();
 	if (value.empty())
 		return {};
@@ -188,11 +236,7 @@ PgSetEnv(Pg::Connection &db, const char *job_id, const char *more_env)
 	   name */
 	const auto like = fmt::format("{}=%"sv, name);
 
-	const auto result =
-		db.ExecuteParams("UPDATE jobs "
-				 "SET env=ARRAY(SELECT x FROM (SELECT unnest(env) as x) AS y WHERE x NOT LIKE $3)||ARRAY[$2]::varchar[] "
-				 "WHERE id=$1",
-				 job_id, more_env, like.c_str());
+	const auto result = db.ExecutePrepared("set_env", job_id, more_env, like.c_str());
 	if (result.GetAffectedRows() < 1)
 		throw std::runtime_error("No matching job");
 }
@@ -200,12 +244,7 @@ PgSetEnv(Pg::Connection &db, const char *job_id, const char *more_env)
 void
 pg_rollback_job(Pg::Connection &db, const char *id)
 {
-	const auto result =
-		db.ExecuteParams("UPDATE jobs "
-				 "SET node_name=NULL, node_timeout=NULL, progress=0 "
-				 "WHERE id=$1 AND node_name IS NOT NULL "
-				 "AND time_done IS NULL",
-				 id);
+	const auto result = db.ExecutePrepared("rollback_job", id);
 	if (result.GetAffectedRows() < 1)
 		throw std::runtime_error("No matching job");
 }
@@ -214,14 +253,7 @@ void
 pg_again_job(Pg::Connection &db, const char *id, const char *log,
 	     std::chrono::seconds delay)
 {
-	const auto result =
-		db.ExecuteParams("UPDATE jobs "
-				 "SET node_name=NULL, node_timeout=NULL, progress=0 "
-				 ", log=$3"
-				 ", scheduled_time=NOW() + $2 * '1 second'::interval "
-				 "WHERE id=$1 AND node_name IS NOT NULL "
-				 "AND time_done IS NULL",
-				 id, delay.count(), log);
+	const auto result = db.ExecutePrepared("again_job", id, delay.count(), log);
 	if (result.GetAffectedRows() < 1)
 		throw std::runtime_error("No matching job");
 }
@@ -241,11 +273,8 @@ PgAddJobCpuUsage(Pg::Connection &db, const char *id,
 {
 	const auto cpu_usage_s = FmtBuffer<64>("{} microseconds", cpu_usage.count());
 
-	const auto result =
-		db.ExecuteParams("UPDATE jobs "
-				 "SET cpu_usage=COALESCE(cpu_usage, '0'::interval)+$2::interval "
-				 "WHERE id=$1",
-				 id, cpu_usage_s.c_str());
+	const auto result = db.ExecutePrepared("add_cpu_usage",
+					       id, cpu_usage_s.c_str());
 	if (result.GetAffectedRows() < 1)
 		throw std::runtime_error("No matching job");
 }
@@ -254,12 +283,6 @@ unsigned
 PgReapFinishedJobs(Pg::Connection &db, const char *plan_name,
 		   const char *reap_finished)
 {
-	const char *const sql = R"SQL(
-DELETE FROM jobs
-WHERE plan_name=$1
- AND time_done IS NOT NULL AND time_done < now() - $2::interval
-)SQL";
-
-	return db.ExecuteParams(sql, plan_name, reap_finished)
+	return db.ExecutePrepared("reap_finished_jobs", plan_name, reap_finished)
 		.GetAffectedRows();
 }
