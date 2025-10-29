@@ -176,13 +176,14 @@ PrepareChildProcess(AllocatorPtr alloc, PreparedChildProcess &p,
 		    FileDescriptor stderr_fd, SocketDescriptor control_fd,
 		    FdHolder &close_fds)
 {
-	p.hook_info = plan_name;
 	p.stderr_fd = p.stdout_fd = stderr_fd;
 	p.control_fd = control_fd.ToFileDescriptor();
 
 	if (plan.translate) {
 		PrepareChildProcess(alloc, p, translation, close_fds);
 	} else {
+		p.hook_info = plan_name;
+
 		if (!debug_mode) {
 			p.uid_gid.effective_uid = plan.uid;
 			p.uid_gid.effective_gid = plan.gid;
