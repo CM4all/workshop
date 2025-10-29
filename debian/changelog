@@ -3,7 +3,7 @@ cm4all-workshop (7.1) unstable; urgency=low
   * workshop: disable progress pipe if "translate" is enabled
   * workshop: read remaining output after job process exits
   * workshop: add "stdin" column
-  * workshop: prepare SQL statements
+  * prepare SQL statements
 
  --   
 

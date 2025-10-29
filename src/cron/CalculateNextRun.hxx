@@ -8,6 +8,12 @@ namespace Pg { class Connection; }
 class ChildLogger;
 
 /**
+ * Prepare SQL statements used by CalculateNextRun().
+ */
+void
+InitCalculateNextRun(Pg::Connection &db);
+
+/**
  * Calculate the "next_run" column for all rows where it's missing.
  *
  * Throws on error.

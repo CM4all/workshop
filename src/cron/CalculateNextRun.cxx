@@ -52,6 +52,37 @@ RandomInt64(int64_t range)
 	return dis(gen);
 }
 
+void
+InitCalculateNextRun(Pg::Connection &db)
+{
+	db.Prepare("make_random_delay", R"SQL(
+UPDATE cronjobs
+ SET delay=$3::interval, delay_range=$4::interval
+ WHERE id=$1 AND schedule=$2 AND enabled AND next_run IS NULL
+)SQL",
+		   4);
+
+	db.Prepare("update_next_run", R"SQL(
+UPDATE cronjobs SET
+ next_run=$4::timestamp AT TIME ZONE COALESCE(tz, 'UTC')
+WHERE id=$1 AND schedule=$2 AND
+ (last_run AT TIME ZONE COALESCE(tz, 'UTC')=$3 OR last_run IS NULL)
+ AND enabled AND
+ next_run IS NULL
+)SQL",
+		   4);
+
+	db.Prepare("select_jobs_for_scheduling", R"SQL(
+SELECT id, schedule,
+ last_run AT TIME ZONE COALESCE(tz, 'UTC'),
+ delay, delay_range,
+ NOW() AT TIME ZONE COALESCE(tz, 'UTC')
+FROM cronjobs WHERE enabled AND next_run IS NULL
+LIMIT 1000
+)SQL",
+		   0);
+}
+
 static std::chrono::seconds
 RandomSeconds(std::chrono::seconds range)
 {
@@ -68,12 +99,8 @@ MakeRandomDelay(Pg::Connection &db, const char *id, const char *schedule,
 {
 	const auto delay = RandomSeconds(range);
 
-	const auto result =
-		db.ExecuteParams("UPDATE cronjobs"
-				 " SET delay=$3::interval, delay_range=$4::interval"
-				 " WHERE id=$1 AND schedule=$2 AND enabled AND next_run IS NULL",
-				 id, schedule,
-				 delay.count(), range.count());
+	const auto result = db.ExecutePrepared("make_random_delay", id, schedule,
+					       delay.count(), range.count());
 	if (result.GetAffectedRows() == 0)
 		throw LostRace{};
 
@@ -83,13 +110,7 @@ MakeRandomDelay(Pg::Connection &db, const char *id, const char *schedule,
 bool
 CalculateNextRun(const ChildLogger &logger, Pg::Connection &db)
 {
-	const auto result =
-		db.Execute("SELECT id, schedule,"
-			   " last_run AT TIME ZONE COALESCE(tz, 'UTC'),"
-			   " delay, delay_range, "
-			   " NOW() AT TIME ZONE COALESCE(tz, 'UTC')"
-			   "FROM cronjobs WHERE enabled AND next_run IS NULL "
-			   "LIMIT 1000");
+	const auto result = db.ExecutePrepared("select_jobs_for_scheduling");
 	if (result.IsEmpty())
 		return true;
 
@@ -131,14 +152,8 @@ CalculateNextRun(const ChildLogger &logger, Pg::Connection &db)
 				? "infinity" /* never again execute the "@once" job */
 				: (next_run_buffer = Pg::FormatTimestamp(next_run)).c_str();
 
-			auto r = db.ExecuteParams("UPDATE cronjobs SET"
-						  " next_run=$4::timestamp AT TIME ZONE COALESCE(tz, 'UTC') "
-						  "WHERE id=$1 AND schedule=$2 AND"
-						  " (last_run AT TIME ZONE COALESCE(tz, 'UTC')=$3 OR last_run IS NULL)"
-						  " AND enabled AND"
-						  " next_run IS NULL",
-						  id, _schedule, _last_run,
-						  next_run_string);
+			auto r = db.ExecutePrepared("update_next_run", id, _schedule, _last_run,
+						    next_run_string);
 			if (r.GetAffectedRows() == 0)
 				throw LostRace{};
 		} catch (LostRace) {

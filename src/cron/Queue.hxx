@@ -140,6 +140,7 @@ private:
 		check_notify_event.Schedule();
 	}
 
+	void Prepare();
 	void ReleaseStale();
 
 	void RunScheduler() noexcept;

@@ -30,6 +30,54 @@ CronQueue::CronQueue(const Logger &parent_logger,
 
 CronQueue::~CronQueue() noexcept = default;
 
+inline void
+CronQueue::Prepare()
+{
+	db.Prepare("release_stale", R"SQL(
+UPDATE cronjobs
+SET node_name=NULL, node_timeout=NULL, next_run=NULL
+WHERE node_name=$1
+)SQL",
+		   1);
+
+	db.Prepare("claim_job", R"SQL(
+UPDATE cronjobs
+SET node_name=$2, node_timeout=now()+$3::INTERVAL
+WHERE id=$1 AND enabled AND node_name IS NULL
+)SQL",
+		   3);
+
+	db.Prepare("finish_job", R"SQL(
+UPDATE cronjobs
+SET node_name=NULL, node_timeout=NULL, last_run=now(), next_run=NULL
+WHERE id=$1 AND node_name=$2
+)SQL",
+		   2);
+
+	db.Prepare("insert_result", R"SQL(
+INSERT INTO cronresults(cronjob_id, node_name, start_time, exit_status, log)
+VALUES($1, $2, $3, $4, $5)
+)SQL",
+		   5);
+
+	db.Prepare("find_earliest_pending", R"SQL(
+SELECT EXTRACT(EPOCH FROM (MIN(next_run) - now())) FROM cronjobs
+WHERE enabled AND next_run IS NOT NULL AND next_run != 'infinity' AND node_name IS NULL
+)SQL",
+		   0);
+
+	db.Prepare("check_pending", R"SQL(
+SELECT id, account_id, command, translate_param, notification
+FROM cronjobs WHERE enabled AND next_run<=now()
+AND node_name IS NULL
+ORDER BY next_run
+LIMIT 1
+)SQL",
+		   0);
+
+	InitCalculateNextRun(db);
+}
+
 void
 CronQueue::CheckEnabled() noexcept
 {
@@ -81,10 +129,7 @@ CronQueue::EnableFull() noexcept
 void
 CronQueue::ReleaseStale()
 {
-	const auto result = db.ExecuteParams("UPDATE cronjobs "
-					     "SET node_name=NULL, node_timeout=NULL, next_run=NULL "
-					     "WHERE node_name=$1",
-					     node_name.c_str());
+	const auto result = db.ExecutePrepared("release_stale", node_name.c_str());
 
 	unsigned n = result.GetAffectedRows();
 	if (n > 0)
@@ -124,9 +169,7 @@ CronQueue::ScheduleScheduler(bool immediately) noexcept
 static std::chrono::seconds
 FindEarliestPending(Pg::Connection &db)
 {
-	const auto result =
-		db.Execute("SELECT EXTRACT(EPOCH FROM (MIN(next_run) - now())) FROM cronjobs "
-			   "WHERE enabled AND next_run IS NOT NULL AND next_run != 'infinity' AND node_name IS NULL");
+	const auto result = db.ExecutePrepared("find_earliest_pending");
 
 	if (result.IsEmpty() || result.IsValueNull(0, 0))
 		/* no matching cronjob; disable the timer, and wait for the
@@ -188,13 +231,8 @@ CronQueue::Claim(const CronJob &job) noexcept
 try {
 	const char *timeout = "5 minutes";
 
-	const auto r =
-		db.ExecuteParams("UPDATE cronjobs "
-				 "SET node_name=$2, node_timeout=now()+$3::INTERVAL "
-				 "WHERE id=$1 AND enabled AND node_name IS NULL",
-				 job.id.c_str(),
-				 node_name.c_str(),
-				 timeout);
+	const auto r = db.ExecutePrepared("claim_job", job.id.c_str(),
+					  node_name.c_str(), timeout);
 	if (r.GetAffectedRows() == 0) {
 		logger(3, "Lost race to run job '", job.id, "'");
 		return false;
@@ -211,12 +249,7 @@ CronQueue::Finish(const CronJob &job) noexcept
 try {
 	ScheduleCheckNotify();
 
-	const auto r =
-		db.ExecuteParams("UPDATE cronjobs "
-				 "SET node_name=NULL, node_timeout=NULL, last_run=now(), next_run=NULL "
-				 "WHERE id=$1 AND node_name=$2",
-				 job.id.c_str(),
-				 node_name.c_str());
+	const auto r = db.ExecutePrepared("finish_job", job.id.c_str(), node_name.c_str());
 	if (r.GetAffectedRows() == 0) {
 		logger(3, "Lost race to finish job '", job.id, "'");
 		return;
@@ -231,13 +264,12 @@ CronQueue::InsertResult(const CronJob &job, const char *start_time,
 try {
 	ScheduleCheckNotify();
 
-	db.ExecuteParams("INSERT INTO cronresults(cronjob_id, node_name, start_time, exit_status, log) "
-			 "VALUES($1, $2, $3, $4, $5)",
-			 job.id.c_str(),
-			 node_name.c_str(),
-			 start_time,
-			 result.exit_status,
-			 result.log.c_str());
+	db.ExecutePrepared("insert_result",
+			   job.id.c_str(),
+			   node_name.c_str(),
+			   start_time,
+			   result.exit_status,
+			   result.log.c_str());
 } catch (...) {
 	db.CheckError(std::current_exception());
 }
@@ -248,12 +280,7 @@ CronQueue::CheckPending()
 	if (!IsEnabled())
 		return false;
 
-	const auto result =
-		db.Execute("SELECT id, account_id, command, translate_param, notification "
-			   "FROM cronjobs WHERE enabled AND next_run<=now() "
-			   "AND node_name IS NULL "
-			   "ORDER BY next_run "
-			   "LIMIT 1");
+	const auto result = db.ExecutePrepared("check_pending");
 	if (result.IsEmpty())
 		return false;
 
@@ -281,6 +308,8 @@ CronQueue::OnConnect()
 	if (db.GetServerVersion() < 90600)
 		throw FmtRuntimeError("PostgreSQL version {:?} is too old, need at least 9.6",
 				      db.GetParameterStatus("server_version"));
+
+	Prepare();
 
 	db.Execute("LISTEN cronjobs_modified");
 	db.Execute("LISTEN cronjobs_scheduled");
