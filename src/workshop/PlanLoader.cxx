@@ -99,7 +99,7 @@ PlanLoader::ParseLine(FileLineParser &line)
 
 		ret = stat(value, &st);
 		if (ret < 0)
-			throw FmtErrno("failed to stat '{}'", value);
+			throw FmtErrno("failed to stat {:?}", value);
 
 		if (!S_ISDIR(st.st_mode))
 			throw FmtRuntimeError("not a directory: {}", value);
@@ -113,7 +113,7 @@ PlanLoader::ParseLine(FileLineParser &line)
 
 		pw = getpwnam(value);
 		if (pw == nullptr)
-			throw FmtRuntimeError("no such user '{}'", value);
+			throw FmtRuntimeError("no such user {:?}", value);
 
 		if (pw->pw_uid == 0)
 			throw std::runtime_error("user 'root' is forbidden");
@@ -175,7 +175,7 @@ PlanLoader::ParseLine(FileLineParser &line)
 	} else if (StringIsEqual(key, "rate_limit")) {
 		plan.rate_limits.emplace_back(RateLimit::Parse(line.ExpectValueAndEnd()));
 	} else
-		throw FmtRuntimeError("unknown option '{}'", key);
+		throw FmtRuntimeError("unknown option {:?}", key);
 }
 
 void

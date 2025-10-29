@@ -279,7 +279,7 @@ void
 CronQueue::OnConnect()
 {
 	if (db.GetServerVersion() < 90600)
-		throw FmtRuntimeError("PostgreSQL version '{}' is too old, need at least 9.6",
+		throw FmtRuntimeError("PostgreSQL version {:?} is too old, need at least 9.6",
 				      db.GetParameterStatus("server_version"));
 
 	db.Execute("LISTEN cronjobs_modified");

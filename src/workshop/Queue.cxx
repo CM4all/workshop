@@ -98,7 +98,7 @@ MakeJob(WorkshopQueue &queue,
 		throw std::runtime_error("Job has no id");
 
 	if (job.plan_name.empty())
-		throw FmtRuntimeError("Job '{}' has no plan", job.id);
+		throw FmtRuntimeError("Job {:?} has no plan", job.id);
 
 	return job;
 }
@@ -459,7 +459,7 @@ void
 WorkshopQueue::OnConnect()
 {
 	if (db.GetServerVersion() < 90600)
-		throw FmtRuntimeError("PostgreSQL version '{}' is too old, need at least 9.6",
+		throw FmtRuntimeError("PostgreSQL version {:?} is too old, need at least 9.6",
 				      db.GetParameterStatus("server_version"));
 
 	static constexpr const char *const required_jobs_columns[] = {

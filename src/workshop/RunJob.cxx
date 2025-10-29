@@ -104,7 +104,7 @@ private:
 	}
 
 	void OnControlSetEnv(const char *s) noexcept override {
-		fmt::print(stderr, "received SETENV '{}'\n", s);
+		fmt::print(stderr, "received SETENV {:?}\n", s);
 	}
 
 	void OnControlAgain(std::chrono::seconds d) noexcept override {

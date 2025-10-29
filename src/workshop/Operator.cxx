@@ -574,7 +574,7 @@ Co::Task<UniqueFileDescriptor>
 WorkshopOperator::OnControlSpawn(const char *token, const char *param)
 {
 	if (!plan->allow_spawn)
-		throw FmtRuntimeError("Plan '{}' does not have the 'allow_spawn' flag",
+		throw FmtRuntimeError("Plan {:?} does not have the 'allow_spawn' flag",
 				      job.plan_name);
 
 	const auto translation_socket = workplace.GetTranslationSocket();

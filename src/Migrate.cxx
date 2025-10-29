@@ -164,7 +164,7 @@ try {
 	Pg::Connection c(conninfo);
 
 	if (c.GetServerVersion() < 90600)
-		throw FmtRuntimeError("PostgreSQL version '{}' is too old, need at least 9.6",
+		throw FmtRuntimeError("PostgreSQL version {:?} is too old, need at least 9.6",
 				      c.GetParameterStatus("server_version"));
 
 	if (set_role != nullptr)
