@@ -91,6 +91,10 @@ public:
 		queue.EnableAdmin();
 	}
 
+	void CancelJob(std::string_view id) noexcept {
+		workplace.CancelJob(id);
+	}
+
 	void TerminateChildren(std::string_view child_tag) noexcept {
 		workplace.CancelTag(child_tag);
 	}

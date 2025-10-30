@@ -99,5 +99,6 @@ public:
 	void OnExit(WorkshopOperator *o) noexcept;
 	void OnTimeout(WorkshopOperator *o) noexcept;
 
+	void CancelJob(std::string_view id) noexcept;
 	void CancelTag(std::string_view tag) noexcept;
 };

@@ -4,6 +4,7 @@ cm4all-workshop (7.2) unstable; urgency=low
   * workshop: implement TERMINATE_CHILDREN for "translate" and "spawn"
   * cron: support multiple CHILD_TAGs for TERMINATE_CHILDREN
   * control: allow enabling/disabling Workshop partitions by name
+  * control: add packet CANCEL_JOB
 
  --   
 

@@ -114,6 +114,20 @@ WorkshopWorkplace::OnTimeout(WorkshopOperator *o) noexcept
 }
 
 void
+WorkshopWorkplace::CancelJob(std::string_view id) noexcept
+{
+	const auto n = operators.remove_and_dispose_if([id](const auto &o){
+		return o.IsId(id);
+	}, [](auto *o) {
+		o->Cancel();
+		delete o;
+	});
+
+	if (n > 0)
+		exit_listener.OnChildProcessExit(-1);
+}
+
+void
 WorkshopWorkplace::CancelTag(std::string_view tag) noexcept
 {
 	const auto n = operators.remove_and_dispose_if([tag](const auto &o){

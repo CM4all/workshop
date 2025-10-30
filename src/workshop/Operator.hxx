@@ -113,6 +113,10 @@ public:
 		return job.plan_name;
 	}
 
+	bool IsId(std::string_view id) const noexcept {
+		return job.id == id;
+	}
+
 	[[gnu::pure]]
 	bool IsChildTag(std::string_view value) const noexcept;
 

@@ -10,6 +10,7 @@
 #include "cron/Partition.hxx"
 #include "spawn/Client.hxx"
 #include "util/SpanCast.hxx"
+#include "util/StringSplit.hxx"
 
 #include <fmt/core.h>
 
@@ -284,6 +285,16 @@ Instance::OnControlPacket(BengControl::Command command,
 	case Command::RELOAD_STATE:
 		if (is_privileged)
 			ReloadState();
+		break;
+
+	case Command::CANCEL_JOB:
+		if (const auto [partition_name, job_id] = Split(ToStringView(payload), '\0');
+		    !job_id.empty()) {
+			for (auto &i : partitions)
+				if (partition_name == i.GetName())
+					i.CancelJob(job_id);
+		}
+
 		break;
 	}
 }
