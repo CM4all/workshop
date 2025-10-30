@@ -1,5 +1,5 @@
 /*
- * author: Max Kellermann <mk@cm4all.com>
+ * author: Max Kellermann <max.kellermann@ionos.com>
  */
 
 #include "lib/curl/Request.hxx"

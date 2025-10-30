@@ -1,7 +1,7 @@
 --
 --  Create the "jobs" table
 --
---  author: Max Kellermann <mk@cm4all.com>
+--  author: Max Kellermann <max.kellermann@ionos.com>
 --
 
 -- DROP TABLE jobs;
