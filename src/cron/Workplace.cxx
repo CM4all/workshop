@@ -24,6 +24,7 @@
 #include "co/Task.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "util/StringCompare.hxx"
+#include "util/StringList.hxx"
 #include "EmailService.hxx"
 #include "debug.h"
 
@@ -66,7 +67,7 @@ public:
 	}
 
 	bool IsTag(std::string_view _tag) const noexcept {
-		return tag == _tag;
+		return StringListContains(tag, '\0', _tag);
 	}
 
 	void Start(SocketAddress translation_socket,
