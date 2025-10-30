@@ -91,6 +91,10 @@ public:
 		queue.EnableAdmin();
 	}
 
+	void TerminateChildren(std::string_view child_tag) noexcept {
+		workplace.CancelTag(child_tag);
+	}
+
 	void UpdateFilter(bool library_modified=false) noexcept;
 	void UpdateLibraryAndFilter(bool force) noexcept;
 

@@ -112,3 +112,17 @@ WorkshopWorkplace::OnTimeout(WorkshopOperator *o) noexcept
 {
 	OnExit(o);
 }
+
+void
+WorkshopWorkplace::CancelTag(std::string_view tag) noexcept
+{
+	const auto n = operators.remove_and_dispose_if([tag](const auto &o){
+		return o.IsChildTag(tag);
+	}, [](auto *o) {
+		o->Cancel();
+		delete o;
+	});
+
+	if (n > 0)
+		exit_listener.OnChildProcessExit(-1);
+}

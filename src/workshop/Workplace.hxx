@@ -98,4 +98,6 @@ public:
 
 	void OnExit(WorkshopOperator *o) noexcept;
 	void OnTimeout(WorkshopOperator *o) noexcept;
+
+	void CancelTag(std::string_view tag) noexcept;
 };

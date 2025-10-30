@@ -33,6 +33,7 @@
 #include "co/Task.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "util/StringCompare.hxx"
+#include "util/StringList.hxx"
 #include "util/UTF8.hxx"
 #include "AllocatorPtr.hxx"
 #include "CgroupAccounting.hxx"
@@ -85,6 +86,12 @@ WorkshopOperator::WorkshopOperator(EventLoop &_event_loop,
 WorkshopOperator::~WorkshopOperator() noexcept
 {
 	children.clear_and_dispose(DeleteDisposer{});
+}
+
+bool
+WorkshopOperator::IsChildTag(std::string_view value) const noexcept
+{
+	return StringListContains(child_tag, '\0', value);
 }
 
 inline UniqueFileDescriptor
@@ -240,6 +247,11 @@ WorkshopOperator::Start2(std::size_t max_log_buffer,
 				       job.plan_name.c_str(),
 				       "", nullptr,
 				       job.args);
+
+		if (translation.execute_options != nullptr &&
+		    !translation.execute_options->child_options.tag.empty() &&
+		    child_tag.empty())
+			child_tag = translation.execute_options->child_options.tag;
 	}
 
 	auto &spawn_service = workplace.GetSpawnService();
@@ -347,6 +359,17 @@ WorkshopOperator::Start2(std::size_t max_log_buffer,
 			       std::current_exception());
 		}
 	}
+}
+
+void
+WorkshopOperator::Cancel() noexcept
+{
+	logger(2, "cancel");
+
+	job.SetDone(-1, "Canceled");
+
+	/* we do not kill the process because this will be done
+	   implicitly by our destructor */
 }
 
 inline void
@@ -593,6 +616,11 @@ WorkshopOperator::OnControlSpawn(const char *token, const char *param)
 			       job.plan_name.c_str(),
 			       token, param,
 			       {});
+
+	if (response.execute_options != nullptr &&
+	    !response.execute_options->child_options.tag.empty() &&
+	    child_tag.empty())
+		child_tag = response.execute_options->child_options.tag;
 
 	auto &spawn_service = workplace.GetSpawnService();
 

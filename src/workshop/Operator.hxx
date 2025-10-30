@@ -58,6 +58,12 @@ class WorkshopOperator final
 
 	const LazyDomainLogger logger;
 
+	/**
+	 * The CHILD_TAG value from the translation response.  Used to
+	 * implement the control command TERMINATE_CHILDREN.
+	 */
+	std::string child_tag;
+
 	FarTimerEvent timeout_event;
 
 	std::unique_ptr<ProgressReader> progress_reader;
@@ -107,8 +113,22 @@ public:
 		return job.plan_name;
 	}
 
+	[[gnu::pure]]
+	bool IsChildTag(std::string_view value) const noexcept;
+
 	void Start(std::size_t max_log_buffer,
 		   bool enable_journal) noexcept;
+
+	/**
+	 * Kill the process and put the database record in a complete
+	 * and failed state, but do not invoke the #WorkshopWorkplace
+	 * (because that is supposed to be the caller who already
+	 * knows the job completes).
+	 *
+	 * After this method returns, the caller is supposed to delete
+	 * this object.
+	 */
+	void Cancel() noexcept;
 
 private:
 	[[nodiscard]]

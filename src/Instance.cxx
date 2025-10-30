@@ -216,9 +216,13 @@ Instance::OnControlPacket(BengControl::Command command,
 		break;
 
 	case Command::TERMINATE_CHILDREN:
-		if (const auto tag = ToStringView(payload); !tag.empty())
+		if (const auto tag = ToStringView(payload); !tag.empty()) {
+			for (auto &i : partitions)
+				i.TerminateChildren(tag);
 			for (auto &i : cron_partitions)
 				i.TerminateChildren(tag);
+		}
+
 		break;
 
 	case Command::DISABLE_QUEUE:
