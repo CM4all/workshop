@@ -237,6 +237,12 @@ Instance::OnControlPacket(BengControl::Command command,
 				i.DisableQueue();
 		} else {
 			const std::string_view name = ToStringView(payload);
+			for (auto &i : partitions) {
+				if (name == i.GetName()) {
+					logger.Fmt(2, "Disabling queue {:?}", name);
+					i.DisableQueue();
+				}
+			}
 			for (auto &i : cron_partitions) {
 				if (name == i.GetName()) {
 					logger.Fmt(2, "Disabling queue {:?}", name);
@@ -259,6 +265,12 @@ Instance::OnControlPacket(BengControl::Command command,
 				i.EnableQueue();
 		} else {
 			const std::string_view name = ToStringView(payload);
+			for (auto &i : partitions) {
+				if (name == i.GetName()) {
+					logger.Fmt(2, "Enabling queue {:?}", name);
+					i.EnableQueue();
+				}
+			}
 			for (auto &i : cron_partitions) {
 				if (name == i.GetName()) {
 					logger.Fmt(2, "Enabling queue {:?}", name);
