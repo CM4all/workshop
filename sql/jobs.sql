@@ -7,12 +7,24 @@
 -- DROP TABLE jobs;
 
 CREATE TABLE jobs (
+    --------------------------------
+    -- Internal PostgreSQL columns
+    --------------------------------
+
     id SERIAL PRIMARY KEY,
+
+    --------------------------------
+    -- UI columns (not used by Workshop)
+    --------------------------------
 
     -- non-unique name of the job
     name varchar(64) NULL,
     -- human readable long description of this job
     description varchar(4096) NULL,
+
+    --------------------------------
+    -- Execution parameters
+    --------------------------------
 
     -- the time this job was created
     time_created timestamp NOT NULL DEFAULT now(),
@@ -32,10 +44,18 @@ CREATE TABLE jobs (
     -- optional data fed into stdin
     stdin bytea NULL,
 
+    --------------------------------
+    -- Scheduler control (Workshop internal)
+    --------------------------------
+
     -- which cm4all-workshop node is executing this job?
     node_name varchar(256) NULL,
     -- which time can we assume the node is dead?
     node_timeout timestamp NULL,
+
+    --------------------------------
+    -- State / Result / Completion
+    --------------------------------
 
     -- how much is done? 0 to 100 percent
     progress int NOT NULL DEFAULT 0,
