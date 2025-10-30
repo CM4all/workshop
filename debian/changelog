@@ -6,7 +6,7 @@ cm4all-workshop (7.2) unstable; urgency=low
   * control: allow enabling/disabling Workshop partitions by name
   * control: add packet CANCEL_JOB
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Thu, 30 Oct 2025 20:27:19 +0100
 
 cm4all-workshop (7.1) unstable; urgency=low
 
