@@ -467,9 +467,7 @@ WorkshopQueue::OnConnect()
 		"log",
 	};
 
-	const char *schema = db.GetSchemaName().empty()
-		? "public"
-		: db.GetSchemaName().c_str();
+	const char *const schema = db.GetEffectiveSchemaName();
 
 	for (const char *name : required_jobs_columns)
 		if (!Pg::ColumnExists(db, schema, "jobs", name))
