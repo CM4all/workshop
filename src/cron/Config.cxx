@@ -9,7 +9,7 @@
 void
 CronPartitionConfig::Check() const
 {
-	if (database.empty())
+	if (database.connect.empty())
 		throw std::runtime_error("Missing 'database' setting");
 
 	if (!translation_socket.IsDefined())

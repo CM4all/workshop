@@ -9,6 +9,6 @@
 void
 WorkshopPartitionConfig::Check() const
 {
-	if (database.empty())
+	if (database.connect.empty())
 		throw std::runtime_error("Missing 'database' setting");
 }

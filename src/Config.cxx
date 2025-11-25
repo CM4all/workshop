@@ -140,9 +140,9 @@ WorkshopConfigParser::Partition::ParseLine(FileLineParser &line)
 	const char *word = line.ExpectWord();
 
 	if (StringIsEqual(word, "database")) {
-		config.database = line.ExpectValueAndEnd();
+		config.database.connect = line.ExpectValueAndEnd();
 	} else if (StringIsEqual(word, "database_schema")) {
-		config.database_schema = line.ExpectValueAndEnd();
+		config.database.schema = line.ExpectValueAndEnd();
 	} else if (StringIsEqual(word, "translation_server")) {
 		config.translation_socket.SetLocal(line.ExpectValueAndEnd());
 	} else if (StringIsEqual(word, "tag")) {
@@ -190,9 +190,9 @@ WorkshopConfigParser::CronPartition::ParseLine(FileLineParser &line)
 	const char *word = line.ExpectWord();
 
 	if (StringIsEqual(word, "database")) {
-		config.database = line.ExpectValueAndEnd();
+		config.database.connect = line.ExpectValueAndEnd();
 	} else if (StringIsEqual(word, "database_schema")) {
-		config.database_schema = line.ExpectValueAndEnd();
+		config.database.schema = line.ExpectValueAndEnd();
 	} else if (StringIsEqual(word, "translation_server")) {
 		config.translation_socket.SetLocal(line.ExpectValueAndEnd());
 	} else if (StringIsEqual(word, "qmqp_server")) {

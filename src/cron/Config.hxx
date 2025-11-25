@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "pg/Config.hxx"
 #include "event/Chrono.hxx"
 #include "net/AllocatedSocketAddress.hxx"
 #include "net/LocalSocketAddress.hxx"
@@ -22,7 +23,7 @@ struct CronPartitionConfig {
 	 */
 	std::string tag;
 
-	std::string database, database_schema;
+	Pg::Config database;
 
 	LocalSocketAddress translation_socket;
 

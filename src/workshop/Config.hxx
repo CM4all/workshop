@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "pg/Config.hxx"
 #include "net/LocalSocketAddress.hxx"
 
 #include <string>
@@ -14,7 +15,7 @@ struct WorkshopPartitionConfig {
 	 */
 	std::string name;
 
-	std::string database, database_schema;
+	Pg::Config database;
 
 	LocalSocketAddress translation_socket;
 

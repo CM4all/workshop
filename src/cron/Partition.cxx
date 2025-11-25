@@ -25,7 +25,7 @@ CronPartition::CronPartition(EventLoop &event_loop,
 	 ? CreateConnectDatagramSocket(config.pond_server)
 	 : UniqueSocketDescriptor()),
 	 queue(logger, event_loop, root_config.node_name.c_str(),
-		       config.database.c_str(), config.database_schema.c_str(),
+		       config.database.connect.c_str(), config.database.schema.c_str(),
 		       [this](CronJob &&job){ OnJob(std::move(job)); }),
 	 workplace(_spawn_service,
 		   email_service, config.use_qrelay, config.default_email_sender,
