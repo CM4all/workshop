@@ -16,5 +16,11 @@ struct CronJob {
 	 */
 	std::string notification;
 
+	/**
+	 * An opaque string for rendezvous-hashing which determines
+	 * the Workshop node that shall execute this job.
+	 */
+	std::string sticky_id;
+
 	Event::Duration timeout{};
 };

@@ -75,6 +75,10 @@ public:
 		return result.GetOnlyStringChecked();
 	}
 
+	bool IsEnabledOrFull() const noexcept {
+		return enabled_state && enabled_admin;
+	}
+
 	bool IsEnabled() const noexcept {
 		return enabled_state && enabled_admin && !disabled_full;
 	}
@@ -105,6 +109,9 @@ public:
 	 * Enable the queue after it has been disabled with DisableFull().
 	 */
 	void EnableFull() noexcept;
+
+	void InsertStickyNonLocal(const char *sticky_id) noexcept;
+	void FlushSticky() noexcept;
 
 	bool Claim(const CronJob &job) noexcept;
 	void Finish(const CronJob &job) noexcept;

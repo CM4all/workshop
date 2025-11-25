@@ -16,11 +16,14 @@
 #include "net/log/Protocol.hxx"
 #include "uri/EmailAddress.hxx" // for VerifyEmailAddress()
 #include "util/StringAPI.hxx"
+#include "util/StringCompare.hxx"
 #include "util/StringParser.hxx"
 #include "config.h"
 
 #include <string.h>
 #include <unistd.h> // for gethostname()
+
+using std::string_view_literals::operator""sv;
 
 Config::Config()
 {
@@ -216,6 +219,16 @@ WorkshopConfigParser::CronPartition::ParseLine(FileLineParser &line)
 	} else if (StringIsEqual(word, "use_qrelay")) {
 		config.use_qrelay = line.NextBool();
 		line.ExpectEnd();
+#ifdef HAVE_AVAHI
+	} else if (StringIsEqual(word, "sticky")) {
+		config.sticky = line.NextBool();
+		line.ExpectEnd();
+	} else if (config.zeroconf.ParseLine(word, line)) {
+#else
+	} else if (StringIsEqual(word, "sticky") ||
+		   StringStartsWith(word, "zeroconf_"sv)) {
+		throw LineParser::Error{"Zeroconf support is disabled at compile time"};
+#endif // HAVE_AVAHI
 	} else
 		throw LineParser::Error("Unknown option");
 }

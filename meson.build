@@ -176,6 +176,9 @@ endif
 
 subdir('libcommon/src/pg')
 
+libcommon_require_avahi = get_option('zeroconf')
+subdir('libcommon/src/lib/avahi')
+
 alloc = static_library(
   'alloc',
   'src/AllocatorPtr.cxx',
@@ -210,6 +213,12 @@ translation_dep = declare_dependency(
     translation_dep,
   ],
 )
+
+workshop_sources = []
+
+if avahi_dep.found()
+  workshop_sources += 'src/cron/Sticky.cxx'
+endif
 
 executable('cm4all-workshop',
   'src/main.cxx',
@@ -249,8 +258,10 @@ executable('cm4all-workshop',
   'src/workshop/LogBridge.cxx',
   'src/workshop/Operator.cxx',
   'src/workshop/Workplace.cxx',
+  workshop_sources,
   include_directories: inc,
   dependencies: [
+    avahi_dep,
     coroutines_dep,
     event_net_dep,
     event_net_djb_dep,
@@ -309,6 +320,7 @@ executable(
 )
 
 conf = configuration_data()
+conf.set('HAVE_AVAHI', avahi_dep.found())
 conf.set('HAVE_LIBCAP', cap_dep.found())
 conf.set('HAVE_LIBSYSTEMD', libsystemd.found())
 configure_file(output: 'config.h', configuration: conf)

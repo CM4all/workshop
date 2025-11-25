@@ -6,6 +6,7 @@
 #include "Job.hxx"
 #include "Result.hxx"
 #include "CalculateNextRun.hxx"
+#include "pg/Reflection.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "util/StringAPI.hxx"
 
@@ -13,6 +14,8 @@
 
 #include <string.h>
 #include <stdlib.h>
+
+using std::string_view_literals::operator""sv;
 
 CronQueue::CronQueue(const Logger &parent_logger,
 		     EventLoop &event_loop, const char *_node_name,
@@ -33,6 +36,19 @@ CronQueue::~CronQueue() noexcept = default;
 inline void
 CronQueue::Prepare()
 {
+	const char *const schema = db.GetEffectiveSchemaName();
+	const bool have_sticky_id = Pg::ColumnExists(db, schema, "cronjobs", "sticky_id");
+
+	db.Execute(R"SQL(
+CREATE TEMPORARY TABLE sticky_non_local (
+  sticky_id varchar(256) NOT NULL
+)
+)SQL");
+
+	db.Execute(R"SQL(
+CREATE UNIQUE INDEX sticky_non_local_sticky_id ON sticky_non_local(sticky_id)
+)SQL");
+
 	db.Prepare("release_stale", R"SQL(
 UPDATE cronjobs
 SET node_name=NULL, node_timeout=NULL, next_run=NULL
@@ -60,20 +76,36 @@ VALUES($1, $2, $3, $4, $5)
 )SQL",
 		   5);
 
-	db.Prepare("find_earliest_pending", R"SQL(
+	const std::string_view sticky_id_check = have_sticky_id
+		? "(sticky_id IS NULL OR NOT EXISTS (SELECT 1 FROM sticky_non_local WHERE sticky_non_local.sticky_id=cronjobs.sticky_id))"sv
+		: "TRUE"sv;
+
+	db.Prepare("find_earliest_pending", fmt::format(R"SQL(
 SELECT EXTRACT(EPOCH FROM (MIN(next_run) - now())) FROM cronjobs
 WHERE enabled AND next_run IS NOT NULL AND next_run != 'infinity' AND node_name IS NULL
-)SQL",
+ AND {}
+)SQL", sticky_id_check).c_str(),
 		   0);
 
-	db.Prepare("check_pending", R"SQL(
-SELECT id, account_id, command, translate_param, notification
-FROM cronjobs WHERE enabled AND next_run<=now()
-AND node_name IS NULL
+	const std::string_view sticky_id_column = have_sticky_id
+		? "sticky_id"sv
+		: "NULL"sv;
+
+	db.Prepare("check_pending", fmt::format(R"SQL(
+SELECT id, account_id, command, translate_param, notification, {}
+FROM cronjobs
+WHERE enabled AND next_run<=now()
+ AND node_name IS NULL
+ AND {}
 ORDER BY next_run
 LIMIT 1
-)SQL",
+)SQL", sticky_id_column, sticky_id_check).c_str(),
 		   0);
+
+	db.Prepare("insert_sticky_non_local", R"SQL(
+INSERT INTO sticky_non_local(sticky_id) VALUES($1)
+)SQL",
+		   1);
 
 	InitCalculateNextRun(db);
 }
@@ -134,6 +166,28 @@ CronQueue::ReleaseStale()
 	unsigned n = result.GetAffectedRows();
 	if (n > 0)
 		logger(3, "Released ", n, " stale cronjobs");
+}
+
+void
+CronQueue::InsertStickyNonLocal(const char *sticky_id) noexcept
+try {
+	if (!db.IsReady())
+		return;
+
+	db.ExecutePrepared("insert_sticky_non_local", sticky_id);
+} catch (...) {
+	db.CheckError(std::current_exception());
+}
+
+void
+CronQueue::FlushSticky() noexcept
+try {
+	if (!db.IsReady())
+		return;
+
+	db.Execute("TRUNCATE sticky_non_local");
+} catch (...) {
+	db.CheckError(std::current_exception());
 }
 
 void
@@ -286,6 +340,7 @@ CronQueue::CheckPending()
 		COMMAND,
 		TRANSLATE_PARAM,
 		NOTIFICATION,
+		STICKY_ID,
 	};
 
 	const auto result = db.ExecutePrepared("check_pending");
@@ -299,6 +354,7 @@ CronQueue::CheckPending()
 			.command = std::string{row.GetValueView(COMMAND)},
 			.translate_param = std::string{row.GetValueView(TRANSLATE_PARAM)},
 			.notification = std::string{row.GetValueView(NOTIFICATION)},
+			.sticky_id = std::string{row.GetValueView(STICKY_ID)},
 		};
 
 		callback(std::move(job));

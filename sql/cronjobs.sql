@@ -18,6 +18,11 @@ CREATE TABLE cronjobs (
     -- the owner's account id
     account_id varchar(32) NOT NULL,
 
+    -- if not NULL, then use this string to calculate stickiness for
+    -- this job (i.e. execute all jobs with the same sticky_id on the
+    -- same cluster node)
+    sticky_id varchar(256) NULL,
+
     -- the schedule in crontab(5) syntax
     schedule varchar(256) NOT NULL,
 

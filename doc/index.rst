@@ -99,6 +99,26 @@ The following settings are recognized:
     documentation
     <https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING>`_)
   * ``database_schema``: the PostgreSQL schema name (optional)
+
+  * ``sticky``: if ``yes``, then jobs with the same ``sticky_id``
+    value are always executed on the same server.  This requires that
+    all Workshop processes on all servers know each others via
+    Zeroconf (i.e. at least ``zeroconv_service`` must be configured).
+    See :ref:`cron.sticky` for more information.
+
+  * ``zeroconf_service``: discover other Workshop instances with this
+    Zeroconf service name (for ``sticky``).
+  * ``zeroconf_domain``: The name of the Zeroconf domain.
+  * ``zeroconf_interface``: publish the Zeroconf service only on the
+    given interface.
+  * ``zeroconf_protocol``: Publish only protocol ``inet`` or
+    ``inet6``.
+  * ``zeroconf_weight``: publish the Zeroconf service with the
+    specified "weight", i.e. accept less or more jobs on this host.
+    The value is a decimal number; the implied default value is
+    :samp:`1.0`.  For example, if you specify :samp:`0.5`, you expect
+    this node to get only half as many jobs as others.
+
   * ``translation_server``: address the translation server is
     listening to; must start with :file:`/` (absolute path) or
     :file:`@` (abstract socket)
@@ -429,6 +449,31 @@ A cron job consists of a row in the PostgreSQL table.  Example::
 
 During job execution, the column `node_name` is set.
 
+.. _cron.sticky:
+
+Stickiness
+----------
+
+It might be favorable to run all processes (cron jobs, HTTP
+responders, SSH sessions) of a certain account on the same host.
+Doing so would, for example, improve file cache effectiveness when
+using a networked filesystem such as NFS or Ceph; Ceph performance
+suffers a lot when two different hosts write the same file.
+
+Stickiness requires:
+
+- enabling the ``sticky`` option in the ``cron`` partition
+  configuration
+- enabling Zeroconf (at least ``zeroconf_service``) to make all
+  Workshop processes on all servers aware of each others
+- filling the ``sticky_id`` column in ``cronjobs`` records
+
+Workshop uses the same set of algorithms as `beng-proxy
+<https://github.com/CM4all/beng-proxy>`__ and `Lukko
+<https://github.com/CM4all/lukko>`__ for stickiness (Rendezvous
+Hashing with FNV1a).  They must be configured with the same Zeroconf
+settings to achieve stickiness across all of them.
+
 
 Controlling the Daemon
 ======================
@@ -633,6 +678,8 @@ The `cronjobs` table
 * ``account_id``: The user account which owns this job.  This
   gets passed to the translation server to determine the process
   parameters.
+* ``sticky_id``: An opaque string which is used to calculate
+  :ref:`stickiness <cron.sticky>`.
 * ``schedule``: A :manpage:`crontab(5)`-like schedule.
 * ``tz``: A time zone which is used to calculate the given
   schedule.  This can be any `time zone understood by PostgreSQL

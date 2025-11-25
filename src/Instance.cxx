@@ -12,6 +12,11 @@
 #include "util/SpanCast.hxx"
 #include "util/StringSplit.hxx"
 
+#ifdef HAVE_AVAHI
+#include "lib/avahi/Client.hxx"
+#include "lib/avahi/Publisher.hxx"
+#endif
+
 #include <fmt/core.h>
 
 #include <signal.h>
@@ -37,6 +42,15 @@ Instance::Instance(const Config &config,
 	shutdown_listener.Enable();
 	sighup_event.Enable();
 
+#ifdef HAVE_AVAHI
+	Avahi::ErrorHandler &avahi_error_handler = *this;
+	if (config.UsesZeroconf()) {
+		avahi_client.reset(new Avahi::Client(event_loop, *this));
+		avahi_publisher.reset(new Avahi::Publisher(*avahi_client, config.node_name.c_str(),
+							   avahi_error_handler));
+	}
+#endif // HAVE_AVAHI
+
 	for (const auto &i : config.partitions)
 		partitions.emplace_front(*this, *library, *spawn_service,
 					 config, i,
@@ -44,6 +58,11 @@ Instance::Instance(const Config &config,
 
 	for (const auto &i : config.cron_partitions)
 		cron_partitions.emplace_front(event_loop, *spawn_service,
+#ifdef HAVE_AVAHI
+					      avahi_client.get(),
+					      avahi_publisher.get(),
+					      avahi_error_handler,
+#endif // HAVE_AVAHI
 					      config, i,
 					      BIND_THIS_METHOD(OnPartitionIdle));
 
@@ -113,6 +132,11 @@ Instance::OnExit() noexcept
 		logger(1, "waiting for jobs to finish");
 
 	control_servers.clear();
+
+#ifdef HAVE_AVAHI
+	avahi_publisher.reset();
+	avahi_client.reset();
+#endif // HAVE_AVAHI
 }
 
 void
@@ -304,3 +328,14 @@ Instance::OnControlError(std::exception_ptr &&error) noexcept
 {
 	logger(1, "Control error: ", std::move(error));
 }
+
+#ifdef HAVE_AVAHI
+
+bool
+Instance::OnAvahiError(std::exception_ptr error) noexcept
+{
+	logger(1, "Avahi error: ", std::move(error));
+	return true;
+}
+
+#endif // HAVE_AVAHI

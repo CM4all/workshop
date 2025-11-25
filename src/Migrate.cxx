@@ -127,6 +127,9 @@ MigrateCronDatabase(Pg::Connection &c, const char *schema)
 
 	c.Execute("ALTER TABLE cronjobs"
 		  " ADD COLUMN IF NOT EXISTS tz varchar(64) NULL");
+
+	// since Workshop 7.4
+	c.Execute("ALTER TABLE cronjobs ADD COLUMN IF NOT EXISTS sticky_id varchar(256) NULL");
 }
 
 int

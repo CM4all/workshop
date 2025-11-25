@@ -19,17 +19,27 @@
 #include "event/systemd/Watchdog.hxx"
 #endif
 
+#ifdef HAVE_AVAHI
+#include "lib/avahi/ErrorHandler.hxx"
+#endif
+
 #include <forward_list>
 
 struct Config;
 class UniqueSocketDescriptor;
 class SpawnServerClient;
 class MultiLibrary;
+namespace Avahi { class Client; class Publisher; }
 namespace BengControl { class Server; }
 class WorkshopPartition;
 class CronPartition;
 
-class Instance final : BengControl::Handler {
+class Instance final
+	: BengControl::Handler
+#ifdef HAVE_AVAHI
+	, Avahi::ErrorHandler
+#endif
+{
 	const RootLogger logger;
 
 	EventLoop event_loop;
@@ -49,6 +59,11 @@ class Instance final : BengControl::Handler {
 	ScopeCurlInit curl_init;
 
 	const StateDirectories state_directories;
+
+#ifdef HAVE_AVAHI
+	std::unique_ptr<Avahi::Client> avahi_client;
+	std::unique_ptr<Avahi::Publisher> avahi_publisher;
+#endif
 
 	std::unique_ptr<MultiLibrary> library;
 
@@ -96,4 +111,9 @@ private:
 			     std::span<UniqueFileDescriptor> fds,
 			     SocketAddress address, int uid) override;
 	void OnControlError(std::exception_ptr &&error) noexcept override;
+
+#ifdef HAVE_AVAHI
+	/* virtual methods from Avahi::ErrorHandler */
+	bool OnAvahiError(std::exception_ptr error) noexcept override;
+#endif // HAVE_AVAHI
 };

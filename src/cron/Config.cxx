@@ -17,4 +17,9 @@ CronPartitionConfig::Check() const
 
 	if (!qmqp_server.IsNull() && use_qrelay)
 		throw std::runtime_error{"Cannot configure both 'qmqp_server' and 'use_qrelay'"};
+
+#ifdef HAVE_AVAHI
+	if (sticky && !zeroconf.IsEnabled())
+		throw std::runtime_error{"Must configure Zeroconf if 'sticky' is enabled"};
+#endif
 }

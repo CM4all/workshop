@@ -8,6 +8,11 @@
 #include "event/Chrono.hxx"
 #include "net/AllocatedSocketAddress.hxx"
 #include "net/LocalSocketAddress.hxx"
+#include "config.h"
+
+#ifdef HAVE_AVAHI
+#include "lib/avahi/ServiceConfig.hxx"
+#endif
 
 #include <string>
 
@@ -22,6 +27,10 @@ struct CronPartitionConfig {
 	 * specified.
 	 */
 	std::string tag;
+
+#ifdef HAVE_AVAHI
+	Avahi::ServiceConfig zeroconf;
+#endif
 
 	Pg::Config database;
 
@@ -38,6 +47,10 @@ struct CronPartitionConfig {
 
 	Event::Duration default_timeout = std::chrono::minutes{5};
 
+#ifdef HAVE_AVAHI
+	bool sticky = false;
+#endif
+
 	bool use_qrelay = false;
 
 	explicit CronPartitionConfig(std::string &&_name):name(std::move(_name)) {
@@ -45,4 +58,11 @@ struct CronPartitionConfig {
 	}
 
 	void Check() const;
+
+#ifdef HAVE_AVAHI
+	[[gnu::pure]]
+	bool UsesZeroconf() const noexcept {
+		return sticky;
+	}
+#endif
 };

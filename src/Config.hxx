@@ -9,6 +9,7 @@
 #include "spawn/Config.hxx"
 #include "net/SocketConfig.hxx"
 
+#include <algorithm> // for std::any_of()
 #include <string>
 #include <forward_list>
 
@@ -43,6 +44,14 @@ struct Config {
 	Config();
 
 	void Check();
+
+#ifdef HAVE_AVAHI
+	[[gnu::pure]]
+	bool UsesZeroconf() const noexcept {
+		return std::any_of(cron_partitions.begin(), cron_partitions.end(),
+				   [](const auto &i) { return i.UsesZeroconf(); });
+	}
+#endif
 };
 
 /**
