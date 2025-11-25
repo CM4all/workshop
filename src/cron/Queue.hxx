@@ -55,7 +55,7 @@ class CronQueue final : private Pg::AsyncConnectionHandler {
 public:
 	CronQueue(const Logger &parent_logger,
 		  EventLoop &event_loop, const char *_node_name,
-		  const char *conninfo, const char *schema,
+		  Pg::Config &&_db_config,
 		  Callback _callback) noexcept;
 	~CronQueue() noexcept;
 

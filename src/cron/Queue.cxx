@@ -16,11 +16,11 @@
 
 CronQueue::CronQueue(const Logger &parent_logger,
 		     EventLoop &event_loop, const char *_node_name,
-		     const char *conninfo, const char *schema,
+		     Pg::Config &&_db_config,
 		     Callback _callback) noexcept
 	:node_name(_node_name),
 	 logger(parent_logger, "queue"),
-	 db(event_loop, conninfo, schema, *this),
+	 db(event_loop, std::move(_db_config), *this),
 	 callback(_callback),
 	 check_notify_event(event_loop, BIND_THIS_METHOD(CheckNotify)),
 	 scheduler_timer(event_loop, BIND_THIS_METHOD(RunScheduler)),

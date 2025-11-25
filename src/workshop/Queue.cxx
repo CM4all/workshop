@@ -27,10 +27,10 @@
 WorkshopQueue::WorkshopQueue(const Logger &parent_logger,
 			     EventLoop &event_loop,
 			     const char *_node_name,
-			     const char *conninfo, const char *schema,
+			     Pg::Config &&_db_config,
 			     WorkshopQueueHandler &_handler) noexcept
 	:logger(parent_logger, "queue"), node_name(_node_name),
-	 db(event_loop, conninfo, schema, *this),
+	 db(event_loop, std::move(_db_config), *this),
 	 check_notify_event(event_loop, BIND_THIS_METHOD(CheckNotify)),
 	 timer_event(event_loop, BIND_THIS_METHOD(OnTimer)),
 	 handler(_handler)
