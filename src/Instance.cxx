@@ -109,8 +109,8 @@ Instance::OnExit() noexcept
 
 	RemoveIdlePartitions();
 
-	if (!partitions.empty())
-		logger(1, "waiting for operators to finish");
+	if (!partitions.empty() || !cron_partitions.empty())
+		logger(1, "waiting for jobs to finish");
 
 	control_servers.clear();
 }
