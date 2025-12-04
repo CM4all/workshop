@@ -528,6 +528,8 @@ The `jobs` table
 * ``description``: Human readable description.  Not used by
   Workshop.
 * ``time_created``: The time stamp when this job was created.
+* ``time_modified``: The time stamp when this job was most recently
+  modified (e.g. progress update, completion).
 * ``scheduled_time``: The time when the job will be executed.
   The database server's clock is the authoritative reference.
 * ``enabled``: If :samp:`FALSE`, this job will not be scheduled

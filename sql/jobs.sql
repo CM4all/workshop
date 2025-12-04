@@ -28,6 +28,8 @@ CREATE TABLE jobs (
 
     -- the time this job was created
     time_created timestamp NOT NULL DEFAULT now(),
+    -- the time this record was last modified
+    time_modified timestamp NOT NULL DEFAULT now(),
     -- the job will not be executed before this time
     scheduled_time timestamp NULL,
     -- is this job enabled?

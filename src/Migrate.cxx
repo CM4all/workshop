@@ -50,6 +50,9 @@ MigrateWorkshopDatabase(Pg::Connection &c, const char *schema)
 
 	/* since Workshop 7.1 */
 	c.Execute("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS stdin bytea NULL");
+
+	// since Workshop 7.3
+	c.Execute("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS time_modified timestamp NOT NULL DEFAULT now()");
 }
 
 static void

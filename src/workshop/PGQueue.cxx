@@ -24,6 +24,10 @@ pg_init(Pg::Connection &db, const char *schema)
 		? "stdin"sv
 		: "NULL"sv;
 
+	const std::string_view set_time_modified = Pg::ColumnExists(db, schema, "jobs", "time_modified")
+		? ", time_modified=now()"sv
+		: ""sv;
+
 	/* ignore jobs which are scheduled deep into the future; some
 	   Workshop clients (such as URO) do this, and it slows down
 	   the PostgreSQL query */
@@ -59,25 +63,28 @@ LIMIT 1 OFFSET $3
 )SQL",
 		   3);
 
-	db.Prepare("claim_job", R"SQL(
+	db.Prepare("claim_job", fmt::format(R"SQL(
 UPDATE jobs
 SET node_name=$1, node_timeout=now()+$3::INTERVAL, time_started=now()
+ {}
 WHERE id=$2 AND node_name IS NULL AND enabled
-)SQL",
+)SQL", set_time_modified).c_str(),
 		   3);
 
-	db.Prepare("set_job_progress", R"SQL(
+	db.Prepare("set_job_progress", fmt::format(R"SQL(
 UPDATE jobs
 SET progress=$2, node_timeout=now()+$3::INTERVAL
+ {}
 WHERE id=$1
-)SQL",
+)SQL", set_time_modified).c_str(),
 		   3);
 
-	db.Prepare("set_job_done", R"SQL(
+	db.Prepare("set_job_done", fmt::format(R"SQL(
 UPDATE jobs
 SET time_done=now(), progress=100, exit_status=$2, log=$3
+ {}
 WHERE id=$1
-)SQL",
+)SQL", set_time_modified).c_str(),
 		   3);
 
 	db.Prepare("add_cpu_usage", R"SQL(
@@ -87,20 +94,22 @@ WHERE id=$1
 )SQL",
 		   2);
 
-	db.Prepare("release_jobs", R"SQL(
+	db.Prepare("release_jobs", fmt::format(R"SQL(
 UPDATE jobs
 SET node_name=NULL, node_timeout=NULL, progress=0
+ {}
 WHERE node_name=$1 AND time_done IS NULL AND exit_status IS NULL
-)SQL",
+)SQL", set_time_modified).c_str(),
 		   1);
 
-	db.Prepare("expire_jobs", R"SQL(
+	db.Prepare("expire_jobs", fmt::format(R"SQL(
 UPDATE jobs
 SET node_name=NULL, node_timeout=NULL, progress=0
+ {}
 WHERE time_done IS NULL AND exit_status IS NULL AND
 node_name IS NOT NULL AND node_name <> $1 AND
 node_timeout IS NOT NULL AND now() > node_timeout
-)SQL",
+)SQL", set_time_modified).c_str(),
 		   1);
 
 	db.Prepare("set_env", R"SQL(
@@ -110,22 +119,24 @@ WHERE id=$1
 )SQL",
 		   3);
 
-	db.Prepare("rollback_job", R"SQL(
+	db.Prepare("rollback_job", fmt::format(R"SQL(
 UPDATE jobs
 SET node_name=NULL, node_timeout=NULL, progress=0
+ {}
 WHERE id=$1 AND node_name IS NOT NULL
 AND time_done IS NULL
-)SQL",
+)SQL", set_time_modified).c_str(),
 		   1);
 
-	db.Prepare("again_job", R"SQL(
+	db.Prepare("again_job", fmt::format(R"SQL(
 UPDATE jobs
 SET node_name=NULL, node_timeout=NULL, progress=0
 , log=$3
 , scheduled_time=NOW() + $2 * '1 second'::interval
+ {}
 WHERE id=$1 AND node_name IS NOT NULL
 AND time_done IS NULL
-)SQL",
+)SQL", set_time_modified).c_str(),
 		   3);
 
 	db.Prepare("reap_finished_jobs", R"SQL(
