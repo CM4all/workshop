@@ -33,6 +33,7 @@ WorkshopQueue::WorkshopQueue(const Logger &parent_logger,
 	 db(event_loop, std::move(_db_config), *this),
 	 check_notify_event(event_loop, BIND_THIS_METHOD(CheckNotify)),
 	 timer_event(event_loop, BIND_THIS_METHOD(OnTimer)),
+	 progress_notify_timer(event_loop, BIND_THIS_METHOD(OnProgressNotifyTimer)),
 	 handler(_handler)
 {
 }
@@ -46,6 +47,19 @@ void
 WorkshopQueue::OnTimer() noexcept
 {
 	Run();
+}
+
+void
+WorkshopQueue::OnProgressNotifyTimer() noexcept
+{
+	try {
+		for (std::string_view plan_name : progress_notify_plans)
+			db.Execute(fmt::format("NOTIFY \"job_progress:{}\"", plan_name).c_str());
+	} catch (...) {
+		db.CheckError(std::current_exception());
+	}
+
+	progress_notify_plans.clear();
 }
 
 bool
@@ -345,13 +359,18 @@ WorkshopQueue::CheckRateLimit(const char *plan_name,
 
 bool
 WorkshopQueue::SetJobProgress(const WorkshopJob &job, unsigned progress,
-			      const char *timeout) noexcept
+			      const char *timeout, bool notify) noexcept
 {
 	assert(&job.queue == this);
 
 	logger(5, "job ", job.id, " progress=", progress);
 
 	ScheduleCheckNotify();
+
+	if (notify)
+		if (auto [it, inserted] = progress_notify_plans.emplace(job.plan_name);
+		    inserted && !progress_notify_timer.IsPending())
+			progress_notify_timer.Schedule(std::chrono::milliseconds{250});
 
 	try {
 		pg_set_job_progress(db, job.id.c_str(), progress, timeout);
@@ -497,6 +516,7 @@ WorkshopQueue::OnDisconnect() noexcept
 {
 	logger(4, "disconnected from database");
 
+	progress_notify_timer.Cancel();
 	timer_event.Cancel();
 	check_notify_event.Cancel();
 }

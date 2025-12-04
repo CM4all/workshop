@@ -409,7 +409,7 @@ WorkshopOperator::OnProgress(unsigned progress) noexcept
 		   LogBridge::Flush() call */
 		return;
 
-	job.SetProgress(progress, plan->timeout.c_str());
+	job.SetProgress(progress, plan->timeout.c_str(), plan->notify_progress);
 
 	/* refresh the timeout */
 	ScheduleTimeout();

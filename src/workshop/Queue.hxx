@@ -9,6 +9,7 @@
 #include "pg/AsyncConnection.hxx"
 #include "io/Logger.hxx"
 
+#include <set>
 #include <string>
 #include <chrono>
 
@@ -71,6 +72,19 @@ class WorkshopQueue final : private Pg::AsyncConnectionHandler {
 	 * Timer event which runs the queue.
 	 */
 	FineTimerEvent timer_event;
+
+	/**
+	 * This timer delays the submission of progress notifies by
+	 * some time to allow merging several notifies into one.
+	 */
+	FineTimerEvent progress_notify_timer;
+
+	/**
+	 * The list of plan names that have seen progress updates, to
+	 * be handled by #progress_notify_timer /
+	 * OnProgressNotifyTimer().
+	 */
+	std::set<std::string, std::less<>> progress_notify_plans;
 
 	std::string plans_include, plans_exclude, plans_lowprio;
 	std::chrono::steady_clock::time_point next_expire_check =
@@ -147,10 +161,11 @@ public:
 					    unsigned max_count) noexcept;
 
 	/**
+	 * @param notify send a PostgreSQL NOTIFY?
 	 * @return true on success
 	 */
 	bool SetJobProgress(const WorkshopJob &job, unsigned progress,
-			    const char *timeout) noexcept;
+			    const char *timeout, bool notify) noexcept;
 
 	void SetJobEnv(const WorkshopJob &job, const char *more_env);
 
@@ -196,6 +211,8 @@ private:
 	void ScheduleTimer(Event::Duration d) noexcept {
 		timer_event.Schedule(d);
 	}
+
+	void OnProgressNotifyTimer() noexcept;
 
 	/**
 	 * Schedule a queue run.  It will occur "very soon" (in a few

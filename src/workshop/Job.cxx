@@ -6,9 +6,9 @@
 #include "Queue.hxx"
 
 bool
-WorkshopJob::SetProgress(unsigned progress, const char *timeout) noexcept
+WorkshopJob::SetProgress(unsigned progress, const char *timeout, bool notify) noexcept
 {
-	return queue.SetJobProgress(*this, progress, timeout);
+	return queue.SetJobProgress(*this, progress, timeout, notify);
 }
 
 void

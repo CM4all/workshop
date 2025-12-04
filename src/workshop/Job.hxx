@@ -39,7 +39,7 @@ struct WorkshopJob {
 	 * string that is understood by PostgreSQL)
 	 * @return true on success
 	 */
-	bool SetProgress(unsigned progress, const char *timeout) noexcept;
+	bool SetProgress(unsigned progress, const char *timeout, bool notify) noexcept;
 
 	/**
 	 * Add more environment variables to the record in the "jobs"

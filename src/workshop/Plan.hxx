@@ -66,6 +66,8 @@ struct Plan {
 
 	bool translate = false;
 
+	bool notify_progress = false;
+
 	Plan() = default;
 
 	Plan(Plan &&) = default;

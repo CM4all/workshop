@@ -315,6 +315,10 @@ The following options are available:
 
   The ``control_channel`` option is allowed, but not ``allow_spawn``.
 
+* :samp:`notify_progress`: send a PostgreSQL notify
+  ``job_progress:PLAN_NAME`` after the ``progress`` column of a job
+  was updated.
+
 * :samp:`control_channel`: see `Control Channel`_.
 
 .. _allow_spawn:

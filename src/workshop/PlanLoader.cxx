@@ -71,6 +71,8 @@ PlanLoader::ParseLine(FileLineParser &line)
 		seen_exec_option = true;
 	} else if (StringIsEqual(key, "translate")) {
 		plan.translate = true;
+	} else if (StringIsEqual(key, "notify_progress")) {
+		plan.notify_progress = true;
 	} else if (StringIsEqual(key, "control_channel")) {
 		/* previously, the "yes"/"no" parameter was mandatory, but
 		   that's deprecated since 2.0.36 */
