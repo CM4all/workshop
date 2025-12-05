@@ -4,7 +4,7 @@ cm4all-workshop (7.3) unstable; urgency=low
   * workshop: add column "jobs.time_modified"
   * pond: discard lines with a null byte
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Fri, 05 Dec 2025 13:36:48 +0100
 
 cm4all-workshop (7.2) unstable; urgency=low
 
