@@ -53,6 +53,7 @@ MigrateWorkshopDatabase(Pg::Connection &c, const char *schema)
 
 	// since Workshop 7.3
 	c.Execute("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS time_modified timestamp NOT NULL DEFAULT now()");
+	c.Execute("CREATE INDEX IF NOT EXISTS jobs_modified ON jobs(plan_name, time_modified)");
 }
 
 static void

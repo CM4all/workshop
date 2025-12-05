@@ -86,6 +86,9 @@ CREATE INDEX jobs_scheduled2 ON jobs(scheduled_time)
 CREATE INDEX jobs_release ON jobs(node_name, node_timeout)
     WHERE node_name IS NOT NULL AND time_done IS NULL AND exit_status IS NULL;
 
+-- for finding modified jobs
+CREATE INDEX IF NOT EXISTS jobs_modified ON jobs(plan_name, time_modified);
+
 -- for finding a job by its name
 CREATE INDEX jobs_name ON jobs(name);
 
