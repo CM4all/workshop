@@ -9,11 +9,26 @@
 
 #include <string.h>
 
+static constexpr bool
+HasNullByte(std::string_view s) noexcept
+{
+	return s.find('\0') != s.npos;
+}
+
 void
 PipePondAdapter::OnLine(std::string_view line) noexcept
 {
 	if (line.empty())
 		return;
+
+	if (HasNullByte(line)) {
+		/* stop Pond submissions when a null byte was seen -
+		   the logging protocol requires null-terminated
+		   strings, and if a line contains a null byte, it's
+		   likely to be garbage anyway */
+		pond_socket.SetUndefined();
+		return;
+	}
 
 	Net::Log::Datagram d{
 		.message = line,
