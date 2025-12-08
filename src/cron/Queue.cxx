@@ -280,17 +280,25 @@ CronQueue::CheckPending()
 	if (!IsEnabled())
 		return false;
 
+	enum Columns {
+		ID,
+		ACCOUNT_ID,
+		COMMAND,
+		TRANSLATE_PARAM,
+		NOTIFICATION,
+	};
+
 	const auto result = db.ExecutePrepared("check_pending");
 	if (result.IsEmpty())
 		return false;
 
 	for (const auto &row : result) {
 		CronJob job{
-			.id = std::string{row.GetValueView(0)},
-			.account_id = std::string{row.GetValueView(1)},
-			.command = std::string{row.GetValueView(2)},
-			.translate_param = std::string{row.GetValueView(3)},
-			.notification = std::string{row.GetValueView(4)},
+			.id = std::string{row.GetValueView(ID)},
+			.account_id = std::string{row.GetValueView(ACCOUNT_ID)},
+			.command = std::string{row.GetValueView(COMMAND)},
+			.translate_param = std::string{row.GetValueView(TRANSLATE_PARAM)},
+			.notification = std::string{row.GetValueView(NOTIFICATION)},
 		};
 
 		callback(std::move(job));
