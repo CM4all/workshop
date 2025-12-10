@@ -467,6 +467,9 @@ Stickiness requires:
 - enabling Zeroconf (at least ``zeroconf_service``) to make all
   Workshop processes on all servers aware of each others
 - filling the ``sticky_id`` column in ``cronjobs`` records
+- Workshop requires permission to create temporary table in the
+  PostgreSQL database (e.g. ``GRANT TEMPORARY ON DATABASE
+  database_name TO "cm4all-workshop"``);
 
 Workshop uses the same set of algorithms as `beng-proxy
 <https://github.com/CM4all/beng-proxy>`__ and `Lukko
