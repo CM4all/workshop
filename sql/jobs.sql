@@ -22,6 +22,12 @@ CREATE TABLE jobs (
     -- human readable long description of this job
     description varchar(4096) NULL,
 
+    -- the owner's account id; not used by Workshop, but might be
+    -- useful for applications managing jobs on behalf of an account;
+    -- the account id usually occurs somewhere in "args" as well, but
+    -- the management application might not know where/how exactly
+    account_id varchar(64) NULL,
+
     --------------------------------
     -- Execution parameters
     --------------------------------
@@ -88,6 +94,7 @@ CREATE INDEX jobs_release ON jobs(node_name, node_timeout)
 
 -- for finding modified jobs
 CREATE INDEX IF NOT EXISTS jobs_modified ON jobs(plan_name, time_modified);
+CREATE INDEX IF NOT EXISTS jobs_account_modified ON jobs(account_id, plan_name, time_modified);
 
 -- for finding a job by its name
 CREATE INDEX jobs_name ON jobs(name);
