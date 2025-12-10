@@ -35,6 +35,8 @@ class CronQueue final : private Pg::AsyncConnectionHandler {
 
 	FineTimerEvent scheduler_timer, claim_timer;
 
+	const bool sticky;
+
 	/**
 	 * Was the queue enabled by #StateDirectories?
 	 */
@@ -56,6 +58,7 @@ public:
 	CronQueue(const Logger &parent_logger,
 		  EventLoop &event_loop, const char *_node_name,
 		  Pg::Config &&_db_config,
+		  bool _sticky,
 		  Callback _callback) noexcept;
 	~CronQueue() noexcept;
 

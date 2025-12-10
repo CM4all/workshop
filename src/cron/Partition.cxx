@@ -42,6 +42,11 @@ CronPartition::CronPartition(EventLoop &event_loop,
 	 : UniqueSocketDescriptor()),
 	 queue(logger, event_loop, root_config.node_name.c_str(),
 	       Pg::Config{config.database},
+#ifdef HAVE_AVAHI
+	       config.sticky,
+#else
+	       false,
+#endif
 	       [this](CronJob &&job){ OnJob(std::move(job)); }),
 	 workplace(_spawn_service,
 		   email_service, config.use_qrelay, config.default_email_sender,

@@ -20,6 +20,7 @@ using std::string_view_literals::operator""sv;
 CronQueue::CronQueue(const Logger &parent_logger,
 		     EventLoop &event_loop, const char *_node_name,
 		     Pg::Config &&_db_config,
+		     bool _sticky,
 		     Callback _callback) noexcept
 	:node_name(_node_name),
 	 logger(parent_logger, "queue"),
@@ -27,7 +28,8 @@ CronQueue::CronQueue(const Logger &parent_logger,
 	 callback(_callback),
 	 check_notify_event(event_loop, BIND_THIS_METHOD(CheckNotify)),
 	 scheduler_timer(event_loop, BIND_THIS_METHOD(RunScheduler)),
-	 claim_timer(event_loop, BIND_THIS_METHOD(RunClaim))
+	 claim_timer(event_loop, BIND_THIS_METHOD(RunClaim)),
+	 sticky(_sticky)
 {
 }
 
@@ -37,17 +39,19 @@ inline void
 CronQueue::Prepare()
 {
 	const char *const schema = db.GetEffectiveSchemaName();
-	const bool have_sticky_id = Pg::ColumnExists(db, schema, "cronjobs", "sticky_id");
+	const bool have_sticky_id = sticky && Pg::ColumnExists(db, schema, "cronjobs", "sticky_id");
 
-	db.Execute(R"SQL(
+	if (have_sticky_id) {
+		db.Execute(R"SQL(
 CREATE TEMPORARY TABLE sticky_non_local (
   sticky_id varchar(256) NOT NULL
 )
 )SQL");
 
-	db.Execute(R"SQL(
+		db.Execute(R"SQL(
 CREATE UNIQUE INDEX sticky_non_local_sticky_id ON sticky_non_local(sticky_id)
 )SQL");
+	}
 
 	db.Prepare("release_stale", R"SQL(
 UPDATE cronjobs
@@ -102,10 +106,11 @@ LIMIT 1
 )SQL", sticky_id_column, sticky_id_check).c_str(),
 		   0);
 
-	db.Prepare("insert_sticky_non_local", R"SQL(
+	if (have_sticky_id)
+		db.Prepare("insert_sticky_non_local", R"SQL(
 INSERT INTO sticky_non_local(sticky_id) VALUES($1)
 )SQL",
-		   1);
+			   1);
 
 	InitCalculateNextRun(db);
 }
