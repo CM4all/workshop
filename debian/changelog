@@ -2,7 +2,7 @@ cm4all-workshop (7.5) unstable; urgency=low
 
   * cron: create temporary table only if "sticky" is enabled
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Fri, 12 Dec 2025 16:20:55 +0100
 
 cm4all-workshop (7.4) unstable; urgency=low
 
