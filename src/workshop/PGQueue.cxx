@@ -16,7 +16,7 @@
 using std::string_view_literals::operator""sv;
 
 void
-pg_init(Pg::Connection &db, const char *schema)
+pg_init(Pg::Connection &db, const char *schema, bool sticky)
 {
 	/* if the "stdin" column does not exist, assume it's all
 	   NULL */
@@ -28,10 +28,18 @@ pg_init(Pg::Connection &db, const char *schema)
 		? ", time_modified=now()"sv
 		: ""sv;
 
+	const std::string_view sticky_id_column = sticky
+		? "sticky_id"sv
+		: "NULL"sv;
+
+	const std::string_view sticky_id_check = sticky
+		? "(sticky_id IS NULL OR NOT EXISTS (SELECT 1 FROM sticky_non_local WHERE sticky_non_local.sticky_id=jobs.sticky_id))"sv
+		: "TRUE"sv;
+
 	/* ignore jobs which are scheduled deep into the future; some
 	   Workshop clients (such as URO) do this, and it slows down
 	   the PostgreSQL query */
-	db.Prepare("next_scheduled_job", R"SQL(
+	db.Prepare("next_scheduled_job", fmt::format(R"SQL(
 SELECT EXTRACT(EPOCH FROM (MIN(scheduled_time) - now()))
 FROM jobs
 WHERE node_name IS NULL AND time_done IS NULL AND exit_status IS NULL
@@ -39,10 +47,11 @@ WHERE node_name IS NULL AND time_done IS NULL AND exit_status IS NULL
   AND scheduled_time < now() + '1 year'::interval
   AND plan_name = ANY ($1::TEXT[])
   AND enabled
-)SQL", 1);
+  AND {}
+)SQL", sticky_id_check).c_str(), 1);
 
 	db.Prepare("select_new_jobs", fmt::format(R"SQL(
-SELECT id,plan_name,args,env,{}
+SELECT id,plan_name,{},args,env,{}
   FROM jobs
 WHERE node_name IS NULL
   AND time_done IS NULL AND exit_status IS NULL
@@ -50,9 +59,10 @@ WHERE node_name IS NULL
   AND plan_name = ANY ($1::TEXT[])
   AND plan_name <> ALL ($2::TEXT[] || $3::TEXT[])
   AND enabled
+  AND {}
 ORDER BY priority, time_created
 LIMIT $4
-)SQL", stdin_column).c_str(),
+)SQL", sticky_id_column, stdin_column, sticky_id_check).c_str(),
 		   4);
 
 	db.Prepare("check_rate_limit", R"SQL(

@@ -11,4 +11,9 @@ WorkshopPartitionConfig::Check() const
 {
 	if (database.connect.empty())
 		throw std::runtime_error("Missing 'database' setting");
+
+#ifdef HAVE_AVAHI
+	if (sticky && !zeroconf.IsEnabled())
+		throw std::runtime_error{"Must configure Zeroconf if 'sticky' is enabled"};
+#endif
 }

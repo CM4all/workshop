@@ -48,8 +48,10 @@ struct Config {
 #ifdef HAVE_AVAHI
 	[[gnu::pure]]
 	bool UsesZeroconf() const noexcept {
-		return std::any_of(cron_partitions.begin(), cron_partitions.end(),
-				   [](const auto &i) { return i.UsesZeroconf(); });
+		return std::any_of(partitions.begin(), partitions.end(),
+				   [](const auto &i) { return i.UsesZeroconf(); }) ||
+			 std::any_of(cron_partitions.begin(), cron_partitions.end(),
+				     [](const auto &i) { return i.UsesZeroconf(); });
 	}
 #endif
 };

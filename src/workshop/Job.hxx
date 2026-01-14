@@ -18,6 +18,12 @@ struct WorkshopJob {
 
 	std::string id, plan_name;
 
+	/**
+	 * An opaque string for rendezvous-hashing which determines
+	 * the Workshop node that shall execute this job.
+	 */
+	std::string sticky_id;
+
 	std::forward_list<std::string> args;
 
 	std::forward_list<std::string> env;

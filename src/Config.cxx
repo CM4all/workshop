@@ -155,6 +155,16 @@ WorkshopConfigParser::Partition::ParseLine(FileLineParser &line)
 	} else if (StringIsEqual(word, "journal")) {
 		config.enable_journal = line.NextBool();
 		line.ExpectEnd();
+#ifdef HAVE_AVAHI
+	} else if (StringIsEqual(word, "sticky")) {
+		config.sticky = line.NextBool();
+		line.ExpectEnd();
+	} else if (config.zeroconf.ParseLine(word, line)) {
+#else
+	} else if (StringIsEqual(word, "sticky") ||
+		   StringStartsWith(word, "zeroconf_"sv)) {
+		throw LineParser::Error{"Zeroconf support is disabled at compile time"};
+#endif // HAVE_AVAHI
 	} else
 		throw LineParser::Error("Unknown option");
 }

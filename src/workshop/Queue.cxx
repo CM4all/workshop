@@ -6,6 +6,7 @@
 #include "PGQueue.hxx"
 #include "Job.hxx"
 #include "Plan.hxx"
+#include "StickyTable.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "pg/Array.hxx"
 #include "pg/Hex.hxx"
@@ -28,9 +29,11 @@ WorkshopQueue::WorkshopQueue(const Logger &parent_logger,
 			     EventLoop &event_loop,
 			     const char *_node_name,
 			     Pg::Config &&_db_config,
+			     bool _sticky,
 			     WorkshopQueueHandler &_handler) noexcept
 	:logger(parent_logger, "queue"), node_name(_node_name),
 	 db(event_loop, std::move(_db_config), *this),
+	 sticky(_sticky),
 	 check_notify_event(event_loop, BIND_THIS_METHOD(CheckNotify)),
 	 timer_event(event_loop, BIND_THIS_METHOD(OnTimer)),
 	 progress_notify_timer(event_loop, BIND_THIS_METHOD(OnProgressNotifyTimer)),
@@ -98,6 +101,7 @@ MakeJob(WorkshopQueue &queue, const Pg::Result::Row &row)
 	enum Columns {
 		ID,
 		PLAN_NAME,
+		STICKY_ID,
 		ARGS,
 		ENV,
 		STDIN,
@@ -106,6 +110,7 @@ MakeJob(WorkshopQueue &queue, const Pg::Result::Row &row)
 	WorkshopJob job(queue);
 	job.id = row.GetValue(ID);
 	job.plan_name = row.GetValue(PLAN_NAME);
+	job.sticky_id = row.GetValue(STICKY_ID);
 
 	job.args = Pg::DecodeArray(row.GetValue(ARGS));
 	job.env = Pg::DecodeArray(row.GetValue(ENV));
@@ -351,6 +356,28 @@ WorkshopQueue::EnableFull() noexcept
 	CheckEnabled();
 }
 
+void
+WorkshopQueue::InsertStickyNonLocal(const char *sticky_id) noexcept
+try {
+	if (!db.IsReady())
+		return;
+
+	StickyTable::InsertNonLocal(db, sticky_id);
+} catch (...) {
+	db.CheckError(std::current_exception());
+}
+
+void
+WorkshopQueue::FlushSticky() noexcept
+try {
+	if (!db.IsReady())
+		return;
+
+	StickyTable::Flush(db);
+} catch (...) {
+	db.CheckError(std::current_exception());
+}
+
 std::chrono::seconds
 WorkshopQueue::CheckRateLimit(const char *plan_name,
 			      std::chrono::seconds duration,
@@ -500,7 +527,11 @@ WorkshopQueue::OnConnect()
 			throw FmtRuntimeError("No column 'jobs.{}'; please migrate the database",
 					      name);
 
-	pg_init(db, schema);
+	const bool have_sticky_id = sticky && Pg::ColumnExists(db, schema, "jobs", "sticky_id");
+	if (have_sticky_id)
+		StickyTable::Init(db);
+
+	pg_init(db, schema, have_sticky_id);
 
 	db.Execute("LISTEN new_job");
 

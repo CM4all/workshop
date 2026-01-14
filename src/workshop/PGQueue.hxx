@@ -19,7 +19,7 @@ class Result;
  * Initialize the database connection after it has been established.
  */
 void
-pg_init(Pg::Connection &db, const char *schema);
+pg_init(Pg::Connection &db, const char *schema, bool sticky);
 
 /**
  * Throws on error.

@@ -12,11 +12,14 @@
 #include "io/Logger.hxx"
 #include "time/ExpiryMap.hxx"
 #include "util/BindMethod.hxx"
+#include "config.h"
 
+namespace Avahi { class Client; class ErrorHandler; class Publisher; }
 struct Config;
 struct WorkshopPartitionConfig;
 class Instance;
 class MultiLibrary;
+class StickyManager;
 
 class WorkshopPartition final : WorkshopQueueHandler, ExitListener {
 	const std::string_view name;
@@ -25,6 +28,10 @@ class WorkshopPartition final : WorkshopQueueHandler, ExitListener {
 
 	Instance &instance;
 	MultiLibrary &library;
+
+#ifdef HAVE_AVAHI
+	const std::unique_ptr<StickyManager> sticky;
+#endif
 
 	ExpiryMap<std::string> rate_limited_plans;
 
@@ -52,9 +59,16 @@ public:
 	WorkshopPartition(Instance &instance,
 			  MultiLibrary &_library,
 			  SpawnService &_spawn_service,
+#ifdef HAVE_AVAHI
+			  Avahi::Client *avahi_client,
+			  Avahi::Publisher *avahi_publisher,
+			  Avahi::ErrorHandler &avahi_error_handler,
+#endif
 			  const Config &root_config,
 			  const WorkshopPartitionConfig &config,
 			  BoundMethod<void() noexcept> _idle_callback) noexcept;
+
+	~WorkshopPartition() noexcept;
 
 	[[nodiscard]]
 	auto &GetEventLoop() const noexcept {
@@ -75,20 +89,21 @@ public:
 		queue.Connect();
 	}
 
-	void BeginShutdown() noexcept {
-		queue.DisableAdmin();
-	}
+	void BeginShutdown() noexcept;
 
 	void SetStateEnabled(bool _enabled) noexcept {
 		queue.SetStateEnabled(_enabled);
+		EnableDisableSticky();
 	}
 
 	void DisableQueue() noexcept {
 		queue.DisableAdmin();
+		EnableDisableSticky();
 	}
 
 	void EnableQueue() noexcept {
 		queue.EnableAdmin();
+		EnableDisableSticky();
 	}
 
 	void CancelJob(std::string_view id) noexcept {
@@ -103,6 +118,13 @@ public:
 	void UpdateLibraryAndFilter(bool force) noexcept;
 
 private:
+#ifdef HAVE_AVAHI
+	void EnableDisableSticky() noexcept;
+	void OnStickyChanged() noexcept;
+#else
+	void EnableDisableSticky() noexcept {}
+#endif
+
 	void OnRateLimitTimer() noexcept;
 
 	[[nodiscard]]

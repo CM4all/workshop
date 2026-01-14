@@ -6,6 +6,11 @@
 
 #include "pg/Config.hxx"
 #include "net/LocalSocketAddress.hxx"
+#include "config.h"
+
+#ifdef HAVE_AVAHI
+#include "lib/avahi/ServiceConfig.hxx"
+#endif
 
 #include <string>
 
@@ -14,6 +19,10 @@ struct WorkshopPartitionConfig {
 	 * Partition name.  Empty when not specified.
 	 */
 	std::string name;
+
+#ifdef HAVE_AVAHI
+	Avahi::ServiceConfig zeroconf;
+#endif
 
 	Pg::Config database;
 
@@ -29,6 +38,10 @@ struct WorkshopPartitionConfig {
 
 	bool enable_journal = false;
 
+#ifdef HAVE_AVAHI
+	bool sticky = false;
+#endif
+
 	explicit WorkshopPartitionConfig(std::string &&_name) noexcept
 		:name(std::move(_name))
 	{
@@ -36,4 +49,11 @@ struct WorkshopPartitionConfig {
 	}
 
 	void Check() const;
+
+#ifdef HAVE_AVAHI
+	[[gnu::pure]]
+	bool UsesZeroconf() const noexcept {
+		return sticky;
+	}
+#endif
 };

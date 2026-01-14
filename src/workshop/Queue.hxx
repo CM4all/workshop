@@ -39,6 +39,8 @@ class WorkshopQueue final : private Pg::AsyncConnectionHandler {
 
 	Pg::AsyncConnection db;
 
+	const bool sticky;
+
 	/**
 	 * Was the queue enabled by #StateDirectories?
 	 */
@@ -96,6 +98,7 @@ public:
 	WorkshopQueue(const Logger &parent_logger, EventLoop &event_loop,
 		      const char *_node_name,
 		      Pg::Config &&_db_config,
+		      bool _sticky,
 		      WorkshopQueueHandler &handler) noexcept;
 	~WorkshopQueue() noexcept;
 
@@ -117,6 +120,10 @@ public:
 	 */
 	void SetFilter(std::string &&plans_include, std::string &&plans_exclude,
 		       std::string &&plans_lowprio) noexcept;
+
+	bool IsEnabledOrFull() const noexcept {
+		return enabled_state && enabled_admin;
+	}
 
 	bool IsEnabled() const noexcept {
 		return enabled_state && enabled_admin && !disabled_full;
@@ -148,6 +155,9 @@ public:
 	 * Enable the queue after it has been disabled with DisableFull().
 	 */
 	void EnableFull() noexcept;
+
+	void InsertStickyNonLocal(const char *sticky_id) noexcept;
+	void FlushSticky() noexcept;
 
 	/**
 	 * Checks if the given rate limit was reached/exceeded.

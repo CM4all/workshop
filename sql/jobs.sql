@@ -28,6 +28,11 @@ CREATE TABLE jobs (
     -- the management application might not know where/how exactly
     account_id varchar(64) NULL,
 
+    -- if not NULL, then use this string to calculate stickiness for
+    -- this job (i.e. execute all jobs with the same sticky_id on the
+    -- same cluster node)
+    sticky_id varchar(256) NULL,
+
     --------------------------------
     -- Execution parameters
     --------------------------------

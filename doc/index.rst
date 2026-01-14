@@ -78,6 +78,25 @@ The following settings are recognized:
   * ``journal``: set to :samp:`yes` to send structured log
     messages to the systemd journal
 
+  * ``sticky``: if ``yes``, then jobs with the same ``sticky_id``
+    value are always executed on the same server.  This requires that
+    all Workshop processes on all servers know each others via
+    Zeroconf (i.e. at least ``zeroconf_service`` must be configured).
+    See :ref:`cron.sticky` for more information.
+
+  * ``zeroconf_service``: discover other Workshop instances with this
+    Zeroconf service name (for ``sticky``).
+  * ``zeroconf_domain``: The name of the Zeroconf domain.
+  * ``zeroconf_interface``: publish the Zeroconf service only on the
+    given interface.
+  * ``zeroconf_protocol``: Publish only protocol ``inet`` or
+    ``inet6``.
+  * ``zeroconf_weight``: publish the Zeroconf service with the
+    specified "weight", i.e. accept less or more jobs on this host.
+    The value is a decimal number; the implied default value is
+    :samp:`1.0`.  For example, if you specify :samp:`0.5`, you expect
+    this node to get only half as many jobs as others.
+
 .. _workshop_translation_server:
 
   * ``translation_server``: address the translation server is
@@ -535,6 +554,8 @@ The `jobs` table
 ----------------
 
 * ``id``: The primary key.
+* ``sticky_id``: An opaque string which is used to calculate
+  :ref:`stickiness <cron.sticky>`.
 * ``name``: An optional name assigned by the job creator.  Not
   used by Workshop.
 * ``description``: Human readable description.  Not used by

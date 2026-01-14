@@ -53,6 +53,11 @@ Instance::Instance(const Config &config,
 
 	for (const auto &i : config.partitions)
 		partitions.emplace_front(*this, *library, *spawn_service,
+#ifdef HAVE_AVAHI
+					 avahi_client.get(),
+					 avahi_publisher.get(),
+					 avahi_error_handler,
+#endif // HAVE_AVAHI
 					 config, i,
 					 BIND_THIS_METHOD(OnPartitionIdle));
 
