@@ -23,7 +23,7 @@ class EventLoop;
 class SpawnService;
 namespace Avahi { class Client; class ErrorHandler; class Publisher; }
 class EmailService;
-class CronSticky;
+class StickyManager;
 
 class CronPartition final : ExitListener {
 	const std::string_view name;
@@ -34,7 +34,7 @@ class CronPartition final : ExitListener {
 	const Logger logger;
 
 #ifdef HAVE_AVAHI
-	const std::unique_ptr<CronSticky> sticky;
+	const std::unique_ptr<StickyManager> sticky;
 #endif
 
 	EmailService email_service;

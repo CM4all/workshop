@@ -10,7 +10,7 @@
 #include "net/ConnectSocket.hxx"
 
 #ifdef HAVE_AVAHI
-#include "Sticky.hxx"
+#include "StickyManager.hxx"
 #endif
 
 using std::string_view_literals::operator""sv;
@@ -31,9 +31,9 @@ CronPartition::CronPartition(EventLoop &event_loop,
 	 logger(fmt::format("cron/{}"sv, config.name)),
 #ifdef HAVE_AVAHI
 	 sticky(config.sticky
-		? new CronSticky(*avahi_client, *avahi_publisher, avahi_error_handler,
-				 config.zeroconf,
-				 BIND_THIS_METHOD(OnStickyChanged))
+		? new StickyManager(*avahi_client, *avahi_publisher, avahi_error_handler,
+				    config.zeroconf,
+				    BIND_THIS_METHOD(OnStickyChanged))
 		: nullptr),
 #endif
 	 email_service(event_loop, config.qmqp_server),

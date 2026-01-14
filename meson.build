@@ -217,7 +217,7 @@ translation_dep = declare_dependency(
 workshop_sources = []
 
 if avahi_dep.found()
-  workshop_sources += 'src/cron/Sticky.cxx'
+  workshop_sources += 'src/StickyManager.cxx'
 endif
 
 executable('cm4all-workshop',

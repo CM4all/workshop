@@ -27,7 +27,7 @@ class ServiceExplorer;
  * other Workshop nodes.  The "local" check uses Rendezvous Hashing to
  * see if this node is the top-most one.
  */
-class CronSticky final : Avahi::ServiceExplorerListener {
+class StickyManager final : Avahi::ServiceExplorerListener {
 	static constexpr uint_least16_t DUMMY_PORT = 1234;
 
 	Avahi::Publisher &publisher;
@@ -44,12 +44,12 @@ class CronSticky final : Avahi::ServiceExplorerListener {
 	bool is_published = false;
 
 public:
-	CronSticky(Avahi::Client &avahi_client,
+	StickyManager(Avahi::Client &avahi_client,
 		   Avahi::Publisher &_publisher,
 		   Avahi::ErrorHandler &error_handler,
 		   const Avahi::ServiceConfig &config,
 		   ChangedCallback _changed_callback) noexcept;
-	~CronSticky() noexcept;
+	~StickyManager() noexcept;
 
 	void BeginShutdown() noexcept;
 

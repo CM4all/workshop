@@ -2,7 +2,7 @@
 // Copyright CM4all GmbH
 // author: Max Kellermann <max.kellermann@ionos.com>
 
-#include "Sticky.hxx"
+#include "StickyManager.hxx"
 #include "lib/avahi/Explorer.hxx"
 #include "lib/avahi/Publisher.hxx"
 #include "lib/avahi/ServiceConfig.hxx"
@@ -61,7 +61,7 @@ UintToDouble(const I i) noexcept
 	}
 }
 
-struct CronSticky::Node {
+struct StickyManager::Node {
 	/**
 	 * The weight of this node (received in a Zeroconf TXT
 	 * record).  We store the negative value because this
@@ -95,7 +95,7 @@ struct CronSticky::Node {
 	}
 };
 
-CronSticky::CronSticky(Avahi::Client &avahi_client,
+StickyManager::StickyManager(Avahi::Client &avahi_client,
 		       Avahi::Publisher &_publisher,
 		       Avahi::ErrorHandler &error_handler,
 		       const Avahi::ServiceConfig &config,
@@ -112,20 +112,20 @@ CronSticky::CronSticky(Avahi::Client &avahi_client,
 	assert(config.IsEnabled());
 }
 
-CronSticky::~CronSticky() noexcept
+StickyManager::~StickyManager() noexcept
 {
 	assert(!is_published);
 }
 
 void
-CronSticky::BeginShutdown() noexcept
+StickyManager::BeginShutdown() noexcept
 {
 	Disable();
 	explorer.reset();
 }
 
 void
-CronSticky::Enable() noexcept
+StickyManager::Enable() noexcept
 {
 	if (!is_published) {
 		publisher.AddService(service);
@@ -134,7 +134,7 @@ CronSticky::Enable() noexcept
 }
 
 void
-CronSticky::Disable() noexcept
+StickyManager::Disable() noexcept
 {
 	if (is_published) {
 		is_published = false;
@@ -143,7 +143,7 @@ CronSticky::Disable() noexcept
 }
 
 std::pair<std::string_view, bool>
-CronSticky::IsLocal(std::string_view id) const noexcept
+StickyManager::IsLocal(std::string_view id) const noexcept
 {
 	const auto sticky_source = AsBytes(id);
 
@@ -189,7 +189,7 @@ GetWeightFromTxt(AvahiStringList *txt) noexcept
 }
 
 void
-CronSticky::OnAvahiNewObject(const std::string &key,
+StickyManager::OnAvahiNewObject(const std::string &key,
 			     const InetAddress &address,
 			     AvahiStringList *txt,
 			     Flags flags) noexcept
@@ -204,13 +204,13 @@ CronSticky::OnAvahiNewObject(const std::string &key,
 }
 
 void
-CronSticky::OnAvahiRemoveObject(const std::string &key) noexcept
+StickyManager::OnAvahiRemoveObject(const std::string &key) noexcept
 {
 	nodes.erase(key);
 }
 
 void
-CronSticky::OnAvahiAllForNow() noexcept
+StickyManager::OnAvahiAllForNow() noexcept
 {
 	changed_callback();
 }
