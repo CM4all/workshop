@@ -93,8 +93,7 @@ WorkshopQueue::GetNextScheduled(int *span_r)
 }
 
 static WorkshopJob
-MakeJob(WorkshopQueue &queue,
-	const Pg::Result &result, unsigned row)
+MakeJob(WorkshopQueue &queue, const Pg::Result::Row &row)
 {
 	enum Columns {
 		ID,
@@ -104,17 +103,15 @@ MakeJob(WorkshopQueue &queue,
 		STDIN,
 	};
 
-	assert(row < result.GetRowCount());
-
 	WorkshopJob job(queue);
-	job.id = result.GetValue(row, ID);
-	job.plan_name = result.GetValue(row, PLAN_NAME);
+	job.id = row.GetValue(ID);
+	job.plan_name = row.GetValue(PLAN_NAME);
 
-	job.args = Pg::DecodeArray(result.GetValue(row, ARGS));
-	job.env = Pg::DecodeArray(result.GetValue(row, ENV));
+	job.args = Pg::DecodeArray(row.GetValue(ARGS));
+	job.env = Pg::DecodeArray(row.GetValue(ENV));
 
-	if (!result.IsValueNull(row, STDIN))
-		job.stdin = Pg::DecodeHex(result.GetValueView(row, STDIN));
+	if (!row.IsValueNull(STDIN))
+		job.stdin = Pg::DecodeHex(row.GetValueView(STDIN));
 
 	if (job.id.empty())
 		throw std::runtime_error("Job has no id");
@@ -177,9 +174,11 @@ WorkshopQueue::SetFilter(std::string &&_plans_include,
 void
 WorkshopQueue::RunResult(const Pg::Result &result)
 {
-	for (unsigned row = 0, end = result.GetRowCount();
-	     row != end && IsEnabled() && !interrupt; ++row) {
-		auto job = MakeJob(*this, result, row);
+	for (const auto &row : result) {
+		if (!IsEnabled() || interrupt)
+			break;
+
+		auto job = MakeJob(*this, row);
 		auto plan = handler.GetWorkshopPlan(job.plan_name.c_str());
 
 		if (plan &&
