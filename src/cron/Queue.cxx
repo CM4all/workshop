@@ -6,6 +6,7 @@
 #include "Job.hxx"
 #include "Result.hxx"
 #include "CalculateNextRun.hxx"
+#include "StickyTable.hxx"
 #include "pg/Reflection.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "util/StringAPI.hxx"
@@ -41,17 +42,8 @@ CronQueue::Prepare()
 	const char *const schema = db.GetEffectiveSchemaName();
 	const bool have_sticky_id = sticky && Pg::ColumnExists(db, schema, "cronjobs", "sticky_id");
 
-	if (have_sticky_id) {
-		db.Execute(R"SQL(
-CREATE TEMPORARY TABLE sticky_non_local (
-  sticky_id varchar(256) NOT NULL
-)
-)SQL");
-
-		db.Execute(R"SQL(
-CREATE UNIQUE INDEX sticky_non_local_sticky_id ON sticky_non_local(sticky_id)
-)SQL");
-	}
+	if (have_sticky_id)
+		StickyTable::Init(db);
 
 	db.Prepare("release_stale", R"SQL(
 UPDATE cronjobs
@@ -105,12 +97,6 @@ ORDER BY next_run
 LIMIT 1
 )SQL", sticky_id_column, sticky_id_check).c_str(),
 		   0);
-
-	if (have_sticky_id)
-		db.Prepare("insert_sticky_non_local", R"SQL(
-INSERT INTO sticky_non_local(sticky_id) VALUES($1)
-)SQL",
-			   1);
 
 	InitCalculateNextRun(db);
 }
@@ -179,7 +165,7 @@ try {
 	if (!db.IsReady())
 		return;
 
-	db.ExecutePrepared("insert_sticky_non_local", sticky_id);
+	StickyTable::InsertNonLocal(db, sticky_id);
 } catch (...) {
 	db.CheckError(std::current_exception());
 }
@@ -190,7 +176,7 @@ try {
 	if (!db.IsReady())
 		return;
 
-	db.Execute("TRUNCATE sticky_non_local");
+	StickyTable::Flush(db);
 } catch (...) {
 	db.CheckError(std::current_exception());
 }
