@@ -96,17 +96,25 @@ static WorkshopJob
 MakeJob(WorkshopQueue &queue,
 	const Pg::Result &result, unsigned row)
 {
+	enum Columns {
+		ID,
+		PLAN_NAME,
+		ARGS,
+		ENV,
+		STDIN,
+	};
+
 	assert(row < result.GetRowCount());
 
 	WorkshopJob job(queue);
-	job.id = result.GetValue(row, 0);
-	job.plan_name = result.GetValue(row, 1);
+	job.id = result.GetValue(row, ID);
+	job.plan_name = result.GetValue(row, PLAN_NAME);
 
-	job.args = Pg::DecodeArray(result.GetValue(row, 2));
-	job.env = Pg::DecodeArray(result.GetValue(row, 3));
+	job.args = Pg::DecodeArray(result.GetValue(row, ARGS));
+	job.env = Pg::DecodeArray(result.GetValue(row, ENV));
 
-	if (!result.IsValueNull(row, 4))
-		job.stdin = Pg::DecodeHex(result.GetValueView(row, 4));
+	if (!result.IsValueNull(row, STDIN))
+		job.stdin = Pg::DecodeHex(result.GetValueView(row, STDIN));
 
 	if (job.id.empty())
 		throw std::runtime_error("Job has no id");
