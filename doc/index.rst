@@ -103,7 +103,7 @@ The following settings are recognized:
   * ``sticky``: if ``yes``, then jobs with the same ``sticky_id``
     value are always executed on the same server.  This requires that
     all Workshop processes on all servers know each others via
-    Zeroconf (i.e. at least ``zeroconv_service`` must be configured).
+    Zeroconf (i.e. at least ``zeroconf_service`` must be configured).
     See :ref:`cron.sticky` for more information.
 
   * ``zeroconf_service``: discover other Workshop instances with this
