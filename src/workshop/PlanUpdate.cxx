@@ -8,6 +8,7 @@
 #include "util/Exception.hxx"
 
 #include <assert.h>
+#include <fcntl.h> // for AT_*
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -28,11 +29,13 @@ Library::CheckPlanModified(const char *name, PlanEntry &entry,
 			   std::chrono::steady_clock::time_point now) noexcept
 {
 	int ret;
-	struct stat st;
 
 	const auto plan_path = GetPath() / name;
 
-	ret = stat(plan_path.c_str(), &st);
+	struct statx stx;
+	ret = statx(-1, plan_path.c_str(), AT_STATX_FORCE_SYNC,
+		    STATX_TYPE,
+		    &stx);
 	if (ret < 0) {
 		if (ret != ENOENT)
 			logger(2, "failed to stat '", plan_path.c_str(), "': ",
@@ -43,7 +46,7 @@ Library::CheckPlanModified(const char *name, PlanEntry &entry,
 		return false;
 	}
 
-	if (!S_ISREG(st.st_mode)) {
+	if (!S_ISREG(stx.stx_mode)) {
 		entry.Clear();
 
 		DisablePlan(entry, now, std::chrono::seconds(60));
