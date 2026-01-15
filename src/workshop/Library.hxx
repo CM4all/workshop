@@ -5,9 +5,9 @@
 #pragma once
 
 #include "io/Logger.hxx"
+#include "io/UniqueFileDescriptor.hxx"
 
 #include <chrono>
-#include <filesystem>
 #include <memory>
 #include <string>
 #include <map>
@@ -53,7 +53,8 @@ class Library {
 
 	const LLogger logger;
 
-	const std::filesystem::path path;
+	const std::string path;
+	const UniqueFileDescriptor directory_fd;
 
 	std::map<std::string, PlanEntry, std::less<>> plans;
 
@@ -63,14 +64,12 @@ class Library {
 	struct statx_timestamp mtime{};
 
 public:
-	explicit Library(std::filesystem::path &&_path) noexcept
-		:logger("library"),
-		 path(std::move(_path)) {}
+	explicit Library(const char *path);
 
 	Library(const Library &other) = delete;
 
-	const std::filesystem::path &GetPath() const noexcept {
-		return path;
+	const FileDescriptor GetDirectory() const noexcept {
+		return directory_fd;
 	}
 
 	/**

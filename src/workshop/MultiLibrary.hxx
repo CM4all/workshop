@@ -16,8 +16,8 @@ class MultiLibrary {
 	std::forward_list<Library> libraries;
 
 public:
-	void InsertPath(std::filesystem::path &&_path) {
-		libraries.emplace_front(std::move(_path));
+	void InsertPath(const char *_path) {
+		libraries.emplace_front(_path);
 	}
 
 	bool Update(std::chrono::steady_clock::time_point now, bool force) {

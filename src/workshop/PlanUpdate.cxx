@@ -9,8 +9,6 @@
 #include "lib/fmt/ExceptionFormatter.hxx"
 #include "util/Exception.hxx"
 
-#include <fmt/std.h>
-
 #include <assert.h>
 #include <fcntl.h> // for AT_*
 #include <stdlib.h>
@@ -33,16 +31,14 @@ Library::CheckPlanModified(const char *name, PlanEntry &entry,
 {
 	int ret;
 
-	const auto plan_path = GetPath() / name;
-
 	struct statx stx;
-	ret = statx(-1, plan_path.c_str(), AT_STATX_FORCE_SYNC,
+	ret = statx(directory_fd.Get(), name, AT_STATX_FORCE_SYNC,
 		    STATX_TYPE|STATX_MTIME,
 		    &stx);
 	if (ret < 0) {
 		if (ret != ENOENT)
-			logger.Fmt(2, "failed to stat {:?}: {}",
-				   plan_path, strerror(errno));
+			logger.Fmt(2, "failed to stat {:?}/{:?}: {}",
+				   path, name, strerror(errno));
 
 		entry.Clear();
 
@@ -114,7 +110,7 @@ Library::LoadPlan(const char *name, PlanEntry &entry,
 
 	logger.Fmt(6, "loading plan {:?}", name);
 
-	const auto plan_path = GetPath() / name;
+	const auto plan_path = fmt::format("{}/{}", path, name);
 
 	try {
 		entry.plan.reset(new Plan(LoadPlanFile(plan_path)));

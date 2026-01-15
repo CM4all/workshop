@@ -6,9 +6,11 @@
 #include "Plan.hxx"
 #include "StatxTimestamp.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
+#include "io/DirectoryReader.hxx"
+#include "io/FileAt.hxx"
+#include "io/FileName.hxx"
+#include "io/Open.hxx"
 #include "util/CharUtil.hxx"
-
-#include <fmt/std.h>
 
 #include <assert.h>
 #include <fcntl.h> // for AT_*
@@ -19,6 +21,11 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <time.h>
+
+Library::Library(const char *_path)
+	:logger("library"),
+	 path(_path),
+	 directory_fd(OpenPath(_path, O_DIRECTORY)) {}
 
 static constexpr bool
 is_valid_plan_name_char(char ch) noexcept
@@ -52,29 +59,29 @@ Library::UpdatePlans(std::chrono::steady_clock::time_point now)
 
 	bool modified = false;
 
-	for (const auto &entry : std::filesystem::directory_iterator(path)) {
-		const auto name = entry.path().filename();
-		if (!is_valid_plan_name(name.c_str()))
+	DirectoryReader dr{OpenDirectory({directory_fd, "."})};
+	while (const char *filename = dr.Read()) {
+		if (IsSpecialFilename(filename) || !is_valid_plan_name(filename))
 			continue;
 
-		auto old_i = old_plans.find(name.native());
+		auto old_i = old_plans.find(filename);
 		decltype(old_i) i;
 
 		if (old_i != old_plans.end()) {
 			i = plans.emplace(std::piecewise_construct,
-					  std::forward_as_tuple(name.native()),
+					  std::forward_as_tuple(filename),
 					  std::forward_as_tuple(std::move(old_i->second)))
 				.first;
 			old_plans.erase(old_i);
 		} else {
 			i = plans.emplace(std::piecewise_construct,
-					  std::forward_as_tuple(name.native()),
+					  std::forward_as_tuple(filename),
 					  std::forward_as_tuple())
 				.first;
 			modified = true;
 		}
 
-		if (UpdatePlan(name.c_str(), i->second, now))
+		if (UpdatePlan(filename, i->second, now))
 			modified = true;
 	}
 
