@@ -4,17 +4,20 @@
 
 #include "Library.hxx"
 #include "Plan.hxx"
+#include "StatxTimestamp.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
 #include "util/CharUtil.hxx"
 
 #include <fmt/std.h>
 
 #include <assert.h>
+#include <fcntl.h> // for AT_*
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/stat.h>
 #include <time.h>
 
 static constexpr bool
@@ -92,12 +95,20 @@ Library::Update(std::chrono::steady_clock::time_point now, bool force) noexcept
 try {
 	/* check directory time stamp */
 
-	if (!std::filesystem::is_directory(path)) {
+	struct statx stx;
+	if (statx(-1, path.c_str(), AT_STATX_FORCE_SYNC,
+		  STATX_TYPE|STATX_MTIME,
+		  &stx) < 0) {
+		logger.Fmt(2, "Failed to stat {:?}: {}", path, strerror(errno));
+		return false;
+	}
+
+	if (!S_ISDIR(stx.stx_mode)) {
 		logger.Fmt(2, "not a directory: {}", path);
 		return false;
 	}
 
-	const auto new_mtime = std::filesystem::last_write_time(path);
+	const auto new_mtime = stx.stx_mtime;
 
 	if (!force && new_mtime == mtime && now < next_plans_check)
 		return false;

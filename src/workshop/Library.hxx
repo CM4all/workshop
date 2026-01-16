@@ -12,7 +12,7 @@
 #include <string>
 #include <map>
 
-#include <sys/types.h>
+#include <sys/stat.h>
 
 struct Plan;
 
@@ -24,7 +24,7 @@ class Library {
 	struct PlanEntry {
 		std::shared_ptr<Plan> plan;
 		bool deinstalled = false;
-		std::filesystem::file_time_type mtime{};
+		struct statx_timestamp mtime{};
 		std::chrono::steady_clock::time_point disabled_until =
 			std::chrono::steady_clock::time_point::min();
 
@@ -60,7 +60,7 @@ class Library {
 	std::chrono::steady_clock::time_point next_plans_check =
 		std::chrono::steady_clock::time_point::min();
 
-	std::filesystem::file_time_type mtime{};
+	struct statx_timestamp mtime{};
 
 public:
 	explicit Library(std::filesystem::path &&_path) noexcept

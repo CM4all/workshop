@@ -5,6 +5,7 @@
 #include "Library.hxx"
 #include "Plan.hxx"
 #include "PlanLoader.hxx"
+#include "StatxTimestamp.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
 #include "util/Exception.hxx"
 
@@ -17,7 +18,6 @@
 #include <time.h>
 #include <errno.h>
 #include <string.h>
-#include <sys/stat.h>
 
 void
 Library::DisablePlan(PlanEntry &entry,
@@ -37,7 +37,7 @@ Library::CheckPlanModified(const char *name, PlanEntry &entry,
 
 	struct statx stx;
 	ret = statx(-1, plan_path.c_str(), AT_STATX_FORCE_SYNC,
-		    STATX_TYPE,
+		    STATX_TYPE|STATX_MTIME,
 		    &stx);
 	if (ret < 0) {
 		if (ret != ENOENT)
@@ -57,7 +57,7 @@ Library::CheckPlanModified(const char *name, PlanEntry &entry,
 	}
 
 	// TODO: use st.st_mtime instead of doing another stat()?
-	const auto new_mtime = std::filesystem::last_write_time(plan_path);
+	const auto new_mtime = stx.stx_mtime;
 	if (new_mtime != entry.mtime) {
 		entry.Enable();
 		entry.plan.reset();
