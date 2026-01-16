@@ -4,7 +4,10 @@
 
 #include "Library.hxx"
 #include "Plan.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
 #include "util/CharUtil.hxx"
+
+#include <fmt/std.h>
 
 #include <assert.h>
 #include <unistd.h>
@@ -75,7 +78,7 @@ Library::UpdatePlans(std::chrono::steady_clock::time_point now)
 	/* remove all plans */
 
 	for (const auto &i : old_plans)
-		logger(3, "removed plan '", i.first, "'");
+		logger.Fmt(3, "removed plan {:?}", i.first);
 
 	if (!old_plans.empty()) {
 		modified = true;
@@ -90,7 +93,7 @@ try {
 	/* check directory time stamp */
 
 	if (!std::filesystem::is_directory(path)) {
-		logger(2, "not a directory: ", path.c_str());
+		logger.Fmt(2, "not a directory: {}", path);
 		return false;
 	}
 
@@ -110,8 +113,8 @@ try {
 
 	return modified;
 } catch (...) {
-	logger(2, "Failed to load plans from ", path.c_str(), ": ",
-	       std::current_exception());
+	logger.Fmt(2, "Failed to load plans from {:?}: {}",
+		   path, std::current_exception());
 	return false;
 }
 

@@ -5,7 +5,10 @@
 #include "Library.hxx"
 #include "Plan.hxx"
 #include "PlanLoader.hxx"
+#include "lib/fmt/ExceptionFormatter.hxx"
 #include "util/Exception.hxx"
+
+#include <fmt/std.h>
 
 #include <assert.h>
 #include <fcntl.h> // for AT_*
@@ -38,8 +41,8 @@ Library::CheckPlanModified(const char *name, PlanEntry &entry,
 		    &stx);
 	if (ret < 0) {
 		if (ret != ENOENT)
-			logger(2, "failed to stat '", plan_path.c_str(), "': ",
-			       strerror(errno));
+			logger.Fmt(2, "failed to stat {:?}: {}",
+				   plan_path, strerror(errno));
 
 		entry.Clear();
 
@@ -88,8 +91,8 @@ Library::ValidatePlan(PlanEntry &entry,
 		if (ret < 0) {
 			const int e = errno;
 			if (e != ENOENT || !entry.deinstalled)
-				logger(2, "failed to stat '", plan->GetExecutablePath().c_str(),
-				       "': ", strerror(e));
+				logger.Fmt(2, "failed to stat {:?}: {}'",
+					   plan->GetExecutablePath(), strerror(e));
 			if (e == ENOENT)
 				entry.deinstalled = true;
 			else
@@ -109,15 +112,15 @@ Library::LoadPlan(const char *name, PlanEntry &entry,
 {
 	assert(entry.plan == nullptr);
 
-	logger(6, "loading plan '", name, "'");
+	logger.Fmt(6, "loading plan {:?}", name);
 
 	const auto plan_path = GetPath() / name;
 
 	try {
 		entry.plan.reset(new Plan(LoadPlanFile(plan_path)));
 	} catch (...) {
-		logger(1, "failed to load plan '", name, "': ",
-		       std::current_exception());
+		logger.Fmt(1, "failed to load plan {:?}: {}",
+			   name, std::current_exception());
 		DisablePlan(entry, now, std::chrono::seconds(600));
 		return false;
 	}
