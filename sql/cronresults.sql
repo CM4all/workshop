@@ -4,7 +4,7 @@
 --  author: Max Kellermann <max.kellermann@ionos.com>
 --
 
-CREATE TABLE cronresults (
+CREATE TABLE IF NOT EXISTS cronresults (
     --------------------------------
     -- Internal PostgreSQL columns
     --------------------------------
@@ -33,7 +33,7 @@ CREATE TABLE cronresults (
     log text NULL
 );
 
-CREATE INDEX cronresults_job ON cronresults(cronjob_id);
+CREATE INDEX IF NOT EXISTS cronresults_job ON cronresults(cronjob_id);
 
 -- For pruning old rows
-CREATE INDEX cronresults_finished ON cronresults(finish_time);
+CREATE INDEX IF NOT EXISTS cronresults_finished ON cronresults(finish_time);

@@ -4,7 +4,7 @@
 --  author: Max Kellermann <max.kellermann@ionos.com>
 --
 
-CREATE TABLE cronjobs (
+CREATE TABLE IF NOT EXISTS cronjobs (
     --------------------------------
     -- Internal PostgreSQL columns
     --------------------------------
@@ -75,12 +75,12 @@ CREATE TABLE cronjobs (
 );
 
 -- find scheduled jobs
-CREATE INDEX cronjobs_scheduled2 ON cronjobs(next_run)
+CREATE INDEX IF NOT EXISTS cronjobs_scheduled2 ON cronjobs(next_run)
     WHERE enabled AND node_name IS NULL
     AND next_run IS NOT NULL AND next_run != 'infinity';
 
 -- for finding jobs to release
-CREATE INDEX cronjobs_release ON cronjobs(node_name, node_timeout)
+CREATE INDEX IF NOT EXISTS cronjobs_release ON cronjobs(node_name, node_timeout)
     WHERE node_name IS NOT NULL;
 
 -- notify all nodes when a new cronjob is added or edited

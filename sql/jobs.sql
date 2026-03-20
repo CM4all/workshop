@@ -6,7 +6,7 @@
 
 -- DROP TABLE jobs;
 
-CREATE TABLE jobs (
+CREATE TABLE IF NOT EXISTS jobs (
     --------------------------------
     -- Internal PostgreSQL columns
     --------------------------------
@@ -86,15 +86,15 @@ CREATE TABLE jobs (
 );
 
 -- this index is used when determining the next free job
-CREATE INDEX jobs_sorted2 ON jobs(priority, time_created)
+CREATE INDEX IF NOT EXISTS jobs_sorted2 ON jobs(priority, time_created)
     WHERE enabled AND node_name IS NULL AND time_done IS NULL AND exit_status IS NULL;
 
 -- find scheduled jobs
-CREATE INDEX jobs_scheduled2 ON jobs(scheduled_time)
+CREATE INDEX IF NOT EXISTS jobs_scheduled2 ON jobs(scheduled_time)
     WHERE enabled AND node_name IS NULL AND time_done IS NULL AND exit_status IS NULL AND scheduled_time IS NOT NULL;
 
 -- for finding jobs to release
-CREATE INDEX jobs_release ON jobs(node_name, node_timeout)
+CREATE INDEX IF NOT EXISTS jobs_release ON jobs(node_name, node_timeout)
     WHERE node_name IS NOT NULL AND time_done IS NULL AND exit_status IS NULL;
 
 -- for finding modified jobs
@@ -102,13 +102,13 @@ CREATE INDEX IF NOT EXISTS jobs_modified ON jobs(plan_name, time_modified);
 CREATE INDEX IF NOT EXISTS jobs_account_modified ON jobs(account_id, plan_name, time_modified);
 
 -- for finding a job by its name
-CREATE INDEX jobs_name ON jobs(name);
+CREATE INDEX IF NOT EXISTS jobs_name ON jobs(name);
 
 -- find recently executed jobs, for checking rate limits
 CREATE INDEX IF NOT EXISTS jobs_rate_limit ON jobs(plan_name, time_started);
 
 -- notify all cm4all-workshop daemons when a new job is added
-CREATE RULE new_job AS ON INSERT TO jobs DO NOTIFY new_job;
+CREATE OR REPLACE RULE new_job AS ON INSERT TO jobs DO NOTIFY new_job;
 
 -- notify all cm4all-workshop daemons when a job was enabled (requires PostgreSQL 9.x+)
 CREATE OR REPLACE RULE job_enabled AS ON UPDATE TO jobs
