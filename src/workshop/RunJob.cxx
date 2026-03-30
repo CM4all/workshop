@@ -9,7 +9,6 @@
 #include "spawn/Direct.hxx"
 #include "spawn/ExitListener.hxx"
 #include "spawn/Prepared.hxx"
-#include "spawn/Registry.hxx"
 #include "spawn/PidfdEvent.hxx"
 #include "event/Loop.hxx"
 #include "lib/fmt/RuntimeError.hxx"
@@ -76,7 +75,6 @@ class RunJobInstance final
 	: WorkshopControlChannelHandler, ExitListener
 {
 	EventLoop event_loop;
-	ChildProcessRegistry child_process_registry;
 
 	std::unique_ptr<ProgressReader> progress_reader;
 	std::unique_ptr<WorkshopControlChannelServer> control_channel;

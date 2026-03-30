@@ -9,7 +9,6 @@
 #include "event/ShutdownListener.hxx"
 #include "event/SignalEvent.hxx"
 #include "event/DeferEvent.hxx"
-#include "spawn/Registry.hxx"
 #include "lib/curl/Init.hxx"
 #include "io/Logger.hxx"
 #include "io/StateDirectories.hxx"
@@ -51,8 +50,6 @@ class Instance final
 	ShutdownListener shutdown_listener;
 	SignalEvent sighup_event;
 	DeferEvent defer_idle_check;
-
-	ChildProcessRegistry child_process_registry;
 
 	std::unique_ptr<SpawnServerClient> spawn_service;
 
