@@ -6,7 +6,6 @@
 #include "lib/avahi/Explorer.hxx"
 #include "lib/avahi/Publisher.hxx"
 #include "lib/avahi/ServiceConfig.hxx"
-#include "lib/avahi/Weight.hxx"
 #include "system/Arch.hxx"
 #include "net/InetAddress.hxx"
 #include "net/rh/Node.hxx"
@@ -21,8 +20,8 @@ using std::string_view_literals::operator""sv;
 struct StickyManager::Node final : RendezvousHashing::Node {
 	bool is_our_own;
 
-	void Update(const InetAddress &address, double weight, bool _is_our_own) noexcept {
-		RendezvousHashing::Node::Update(address, Arch::NONE, weight);
+	void Update(const InetAddress &address, AvahiStringList *txt, bool _is_our_own) noexcept {
+		RendezvousHashing::Node::Update(address, txt);
 		is_our_own = _is_our_own;
 	}
 
@@ -108,10 +107,8 @@ StickyManager::OnAvahiNewObject(const std::string &key,
 				AvahiStringList *txt,
 				Avahi::ObjectFlags flags) noexcept
 {
-	const auto weight = Avahi::GetWeightFromTxt(txt);
-
 	auto [it, inserted] = nodes.try_emplace(key);
-	it->second.Update(address, weight, flags.is_our_own);
+	it->second.Update(address, txt, flags.is_our_own);
 }
 
 void
