@@ -6,14 +6,13 @@
 #include "lib/avahi/Explorer.hxx"
 #include "lib/avahi/Publisher.hxx"
 #include "lib/avahi/ServiceConfig.hxx"
+#include "lib/avahi/Weight.hxx"
 #include "net/InetAddress.hxx"
 #include "util/FNVHash.hxx"
 #include "util/SpanCast.hxx"
 
 #include <cassert>
 #include <cmath> // for std::log()
-
-#include <stdlib.h> // for strtod()
 
 using std::string_view_literals::operator""sv;
 
@@ -168,33 +167,13 @@ StickyManager::IsLocal(std::string_view id) const noexcept
 	return {best->first, best->second.is_our_own};
 }
 
-[[gnu::pure]]
-static double
-GetWeightFromTxt(AvahiStringList *txt) noexcept
-{
-	constexpr std::string_view prefix = "weight="sv;
-	txt = avahi_string_list_find(txt, "weight");
-	if (txt == nullptr)
-		/* there's no "weight" record */
-		return 1.0;
-
-	const char *s = reinterpret_cast<const char *>(txt->text) + prefix.size();
-	char *endptr;
-	double value = strtod(s, &endptr);
-	if (endptr == s || *endptr != '\0' || value <= 0 || value > 1e6)
-		/* parser failed: fall back to default value */
-		return 1.0;
-
-	return value;
-}
-
 void
 StickyManager::OnAvahiNewObject(const std::string &key,
 				const InetAddress &address,
 				AvahiStringList *txt,
 				Flags flags) noexcept
 {
-	const auto weight = GetWeightFromTxt(txt);
+	const auto weight = Avahi::GetWeightFromTxt(txt);
 
 	auto [it, inserted] = nodes.try_emplace(key, address, weight, flags.is_our_own);
 	if (!inserted) {
