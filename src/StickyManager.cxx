@@ -106,7 +106,7 @@ void
 StickyManager::OnAvahiNewObject(const std::string &key,
 				const InetAddress &address,
 				AvahiStringList *txt,
-				Flags flags) noexcept
+				Avahi::ObjectFlags flags) noexcept
 {
 	const auto weight = Avahi::GetWeightFromTxt(txt);
 
