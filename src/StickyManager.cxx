@@ -96,10 +96,10 @@ struct StickyManager::Node {
 };
 
 StickyManager::StickyManager(Avahi::Client &avahi_client,
-		       Avahi::Publisher &_publisher,
-		       Avahi::ErrorHandler &error_handler,
-		       const Avahi::ServiceConfig &config,
-		       ChangedCallback _changed_callback) noexcept
+			     Avahi::Publisher &_publisher,
+			     Avahi::ErrorHandler &error_handler,
+			     const Avahi::ServiceConfig &config,
+			     ChangedCallback _changed_callback) noexcept
 	:publisher(_publisher),
 	 service(config, nullptr, IPv4Address{DUMMY_PORT}, false, true),
 	 explorer(new Avahi::ServiceExplorer(avahi_client, *this,
@@ -190,9 +190,9 @@ GetWeightFromTxt(AvahiStringList *txt) noexcept
 
 void
 StickyManager::OnAvahiNewObject(const std::string &key,
-			     const InetAddress &address,
-			     AvahiStringList *txt,
-			     Flags flags) noexcept
+				const InetAddress &address,
+				AvahiStringList *txt,
+				Flags flags) noexcept
 {
 	const auto weight = GetWeightFromTxt(txt);
 

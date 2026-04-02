@@ -45,10 +45,10 @@ class StickyManager final : Avahi::ServiceExplorerListener {
 
 public:
 	StickyManager(Avahi::Client &avahi_client,
-		   Avahi::Publisher &_publisher,
-		   Avahi::ErrorHandler &error_handler,
-		   const Avahi::ServiceConfig &config,
-		   ChangedCallback _changed_callback) noexcept;
+		      Avahi::Publisher &_publisher,
+		      Avahi::ErrorHandler &error_handler,
+		      const Avahi::ServiceConfig &config,
+		      ChangedCallback _changed_callback) noexcept;
 	~StickyManager() noexcept;
 
 	void BeginShutdown() noexcept;
