@@ -13,7 +13,12 @@
 
 using std::string_view_literals::operator""sv;
 
-struct StickyManager::Node final : RendezvousHashing::Node {};
+struct StickyManager::Node final : RendezvousHashing::Node {
+	const std::string host_name;
+
+	explicit Node(const std::string_view _host_name) noexcept
+		:host_name(_host_name) {}
+};
 
 StickyManager::StickyManager(Avahi::Client &avahi_client,
 			     Avahi::Publisher &_publisher,
@@ -90,11 +95,12 @@ StickyManager::IsLocal(std::string_view id) const noexcept
 
 void
 StickyManager::OnAvahiNewObject(const std::string &key,
+				const char *host_name,
 				const InetAddress &address,
 				AvahiStringList *txt,
 				Avahi::ObjectFlags flags) noexcept
 {
-	auto [it, inserted] = nodes.try_emplace(key);
+	auto [it, inserted] = nodes.try_emplace(key, host_name);
 	it->second.Update(address, txt, flags);
 }
 
