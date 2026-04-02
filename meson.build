@@ -179,6 +179,12 @@ subdir('libcommon/src/pg')
 libcommon_require_avahi = get_option('zeroconf')
 subdir('libcommon/src/lib/avahi')
 
+if avahi_dep.found()
+  subdir('libcommon/src/net/rh')
+else
+  net_rh_dep = avahi_dep
+endif
+
 alloc = static_library(
   'alloc',
   'src/AllocatorPtr.cxx',
@@ -263,6 +269,7 @@ executable('cm4all-workshop',
   include_directories: inc,
   dependencies: [
     avahi_dep,
+    net_rh_dep,
     coroutines_dep,
     event_net_dep,
     event_net_djb_dep,
