@@ -6,14 +6,10 @@
 #include "lib/avahi/Explorer.hxx"
 #include "lib/avahi/Publisher.hxx"
 #include "lib/avahi/ServiceConfig.hxx"
-#include "system/Arch.hxx"
-#include "net/InetAddress.hxx"
 #include "net/rh/Node.hxx"
-#include "util/FNVHash.hxx"
 #include "util/SpanCast.hxx"
 
 #include <cassert>
-#include <cmath> // for std::log()
 
 using std::string_view_literals::operator""sv;
 
