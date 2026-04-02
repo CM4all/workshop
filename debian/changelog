@@ -3,6 +3,8 @@ cm4all-workshop (7.7) unstable; urgency=low
   * workshop: implement stickiness
   * spawn: fix rlimits EPERM with PID_NAMESPACE_NAME
   * translation: add packet MOUNT_TMP_TMPFS_EXEC
+  * avahi: pass "Workshop" as Zeroconf service name; fixes error "Invalid
+    service name"
   * fix build with glibc 2.43
 
  --   

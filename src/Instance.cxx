@@ -46,7 +46,7 @@ Instance::Instance(const Config &config,
 	Avahi::ErrorHandler &avahi_error_handler = *this;
 	if (config.UsesZeroconf()) {
 		avahi_client.reset(new Avahi::Client(event_loop, *this));
-		avahi_publisher.reset(new Avahi::Publisher(*avahi_client, config.node_name.c_str(),
+		avahi_publisher.reset(new Avahi::Publisher(*avahi_client, "Workshop",
 							   avahi_error_handler));
 	}
 #endif // HAVE_AVAHI
