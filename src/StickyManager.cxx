@@ -21,10 +21,6 @@ using std::string_view_literals::operator""sv;
 struct StickyManager::Node final : RendezvousHashing::Node {
 	bool is_our_own;
 
-	explicit Node(const InetAddress &address, double weight, bool _is_our_own) noexcept
-		:RendezvousHashing::Node(address, Arch::NONE, weight),
-		 is_our_own(_is_our_own) {}
-
 	void Update(const InetAddress &address, double weight, bool _is_our_own) noexcept {
 		RendezvousHashing::Node::Update(address, Arch::NONE, weight);
 		is_our_own = _is_our_own;
@@ -114,11 +110,8 @@ StickyManager::OnAvahiNewObject(const std::string &key,
 {
 	const auto weight = Avahi::GetWeightFromTxt(txt);
 
-	auto [it, inserted] = nodes.try_emplace(key, address, weight, flags.is_our_own);
-	if (!inserted) {
-		/* update existing member */
-		it->second.Update(address, weight, flags.is_our_own);
-	}
+	auto [it, inserted] = nodes.try_emplace(key);
+	it->second.Update(address, weight, flags.is_our_own);
 }
 
 void
