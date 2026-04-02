@@ -17,16 +17,7 @@
 
 using std::string_view_literals::operator""sv;
 
-struct StickyManager::Node final : RendezvousHashing::Node {
-	bool is_our_own;
-
-	void Update(const InetAddress &address, AvahiStringList *txt, bool _is_our_own) noexcept {
-		RendezvousHashing::Node::Update(address, txt);
-		is_our_own = _is_our_own;
-	}
-
-	using RendezvousHashing::Node::CalculateRendezvousScore;
-};
+struct StickyManager::Node final : RendezvousHashing::Node {};
 
 StickyManager::StickyManager(Avahi::Client &avahi_client,
 			     Avahi::Publisher &_publisher,
@@ -98,7 +89,7 @@ StickyManager::IsLocal(std::string_view id) const noexcept
 			best = i;
 	}
 
-	return {best->first, best->second.is_our_own};
+	return {best->first, best->second.GetFlags().is_our_own};
 }
 
 void
@@ -108,7 +99,7 @@ StickyManager::OnAvahiNewObject(const std::string &key,
 				Avahi::ObjectFlags flags) noexcept
 {
 	auto [it, inserted] = nodes.try_emplace(key);
-	it->second.Update(address, txt, flags.is_our_own);
+	it->second.Update(address, txt, flags);
 }
 
 void
