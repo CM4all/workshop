@@ -366,7 +366,7 @@ WorkshopOperator::Cancel() noexcept
 {
 	logger(2, "cancel");
 
-	job.SetDone(-1, "Canceled");
+	job.SetDone(-ECANCELED, "Canceled");
 
 	/* we do not kill the process because this will be done
 	   implicitly by our destructor */
@@ -394,7 +394,7 @@ WorkshopOperator::OnTimeout() noexcept
 {
 	logger(2, "timed out; sending SIGTERM");
 
-	job.SetDone(-1, "Timeout");
+	job.SetDone(-ETIMEDOUT, "Timeout");
 
 	workplace.OnTimeout(this);
 }
