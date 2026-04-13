@@ -247,6 +247,25 @@ TEST(CronSchedule, Next5)
 	EXPECT_EQ(s.Next(ParseTime("2016-10-14T14:41:00Z"), now), ParseTime("2016-10-15T06:00:00Z"));
 }
 
+TEST(CronSchedule, NextUsesClassicDayOfMonthOrDayOfWeekSemantics)
+{
+	const CronSchedule s("30 6 13 * 5");
+	const auto now = std::chrono::system_clock::from_time_t(1485800000);
+	EXPECT_EQ(s.delay_range, std::chrono::minutes(1));
+	EXPECT_EQ(s.Next(ParseTime("2015-12-29T05:29:00Z"), now), ParseTime("2016-01-01T06:30:00Z"));
+	EXPECT_EQ(s.Next(ParseTime("2016-01-01T06:30:00Z"), now), ParseTime("2016-01-08T06:30:00Z"));
+	EXPECT_EQ(s.Next(ParseTime("2016-01-08T06:30:00Z"), now), ParseTime("2016-01-13T06:30:00Z"));
+}
+
+TEST(CronSchedule, NextTreatsSteppedDayFieldsAsRestricted)
+{
+	const CronSchedule s("30 6 */2 * 5");
+	const auto now = std::chrono::system_clock::from_time_t(1485800000);
+	EXPECT_EQ(s.delay_range, std::chrono::minutes(1));
+	EXPECT_EQ(s.Next(ParseTime("2016-01-07T06:30:00Z"), now), ParseTime("2016-01-08T06:30:00Z"));
+	EXPECT_EQ(s.Next(ParseTime("2016-01-08T06:30:00Z"), now), ParseTime("2016-01-09T06:30:00Z"));
+}
+
 TEST(CronSchedule, Once)
 {
 	const CronSchedule s("@once");
