@@ -14,7 +14,9 @@ test(
   'TestWorkshop',
   executable(
     'TestWorkshop',
+    'TestExpand.cxx',
     'TestCronSchedule.cxx',
+    '../src/Expand.cxx',
     '../src/cron/Schedule.cxx',
     include_directories: inc,
     install: false,
