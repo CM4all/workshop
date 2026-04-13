@@ -363,3 +363,11 @@ TEST(CronSchedule, Special)
 	EXPECT_THROW(CronSchedule{"@25hourly"}, std::invalid_argument);
 	EXPECT_THROW(CronSchedule{"@-1hourly"}, std::invalid_argument);
 }
+
+TEST(CronSchedule, RejectsInvalidNamedFields)
+{
+	EXPECT_THROW(CronSchedule{"* * * nope *"}, std::invalid_argument);
+	EXPECT_THROW(CronSchedule{"* * * * someday"}, std::invalid_argument);
+	EXPECT_THROW(CronSchedule{"* * * janx *"}, std::invalid_argument);
+	EXPECT_THROW(CronSchedule{"* * * * monx"}, std::invalid_argument);
+}
