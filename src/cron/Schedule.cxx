@@ -109,7 +109,8 @@ ParseNumber(const char *&s,
 template<size_t MIN, size_t MAX>
 static void
 ParseNumericRangeBitSet(RangeBitSet<MIN, MAX> &b, const char *&schedule,
-			const CronSymbol dictionary[])
+			const CronSymbol dictionary[]=nullptr,
+			bool *wildcard=nullptr)
 {
 	unsigned first, last;
 
@@ -117,6 +118,9 @@ ParseNumericRangeBitSet(RangeBitSet<MIN, MAX> &b, const char *&schedule,
 		++schedule;
 		first = MIN;
 		last = MAX;
+
+		if (wildcard != nullptr && *schedule != '/')
+			*wildcard = true;
 	} else {
 		first = last = ParseNumber<MIN, MAX>(schedule, dictionary);
 
@@ -143,12 +147,12 @@ ParseNumericRangeBitSet(RangeBitSet<MIN, MAX> &b, const char *&schedule,
 template<size_t MIN, size_t MAX>
 static void
 ParseNumericBitSet(RangeBitSet<MIN, MAX> &b, const char *&schedule,
-		   const CronSymbol dictionary[]=nullptr)
+		   const CronSymbol dictionary[]=nullptr, bool *wildcard=nullptr)
 {
 	schedule = StripLeft(schedule);
 
 	while (true) {
-		ParseNumericRangeBitSet<MIN, MAX>(b, schedule, dictionary);
+		ParseNumericRangeBitSet<MIN, MAX>(b, schedule, dictionary, wildcard);
 		assert(b.count() > 0);
 		if (*schedule != ',')
 			break;
@@ -212,6 +216,7 @@ try {
 			days_of_month.set();
 			months.set();
 			days_of_week.set();
+			days_any_wildcard = true;
 
 			delay_range = std::chrono::hours{multiplier};
 			return;
@@ -236,11 +241,13 @@ try {
 
 	ParseNumericBitSet(minutes, s);
 	ParseNumericBitSet(hours, s);
-	ParseNumericBitSet(days_of_month, s);
+
+	ParseNumericBitSet(days_of_month, s, nullptr, &days_any_wildcard);
+
 	ParseNumericBitSet(months, s, month_names);
 
 	RangeBitSet<0, 7> _days_of_week;
-	ParseNumericBitSet(_days_of_week, s, days_of_week_names);
+	ParseNumericBitSet(_days_of_week, s, days_of_week_names, &days_any_wildcard);
 
 	for (unsigned i = 0; i < days_of_week.size(); ++i)
 		days_of_week.set(i, _days_of_week[i]);
@@ -258,9 +265,13 @@ try {
 bool
 CronSchedule::CheckDate(const struct tm &tm) const noexcept
 {
-	return days_of_month[tm.tm_mday] &&
-		months[tm.tm_mon + 1] &&
-		days_of_week[tm.tm_wday];
+	const bool day_of_month_match = days_of_month[tm.tm_mday];
+	const bool day_of_week_match = days_of_week[tm.tm_wday];
+
+	return months[tm.tm_mon + 1] &&
+		(days_any_wildcard
+		 ? day_of_month_match && day_of_week_match
+		 : day_of_month_match || day_of_week_match);
 }
 
 template<size_t MIN, size_t MAX>

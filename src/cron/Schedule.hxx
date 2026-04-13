@@ -30,6 +30,13 @@ struct CronSchedule {
 	std::chrono::seconds delay_range = std::chrono::minutes(1);
 
 	/**
+	 * Is either #days_of_month and #days_of_week the wildcard?
+	 * If not, then they are checked with logical "or" instead of
+	 * "and".
+	 */
+	bool days_any_wildcard = false;
+
+	/**
 	 * Parse a crontab(5) schedule specification.
 	 *
 	 * Throws std::runtime_error if the string cannot be parsed.
@@ -41,7 +48,8 @@ struct CronSchedule {
 			hours == other.hours &&
 			days_of_month == other.days_of_month &&
 			months == other.months &&
-			days_of_week == other.days_of_week;
+			days_of_week == other.days_of_week &&
+			days_any_wildcard == other.days_any_wildcard;
 	}
 
 	/**
