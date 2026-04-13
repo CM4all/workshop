@@ -14,13 +14,13 @@ Expand(std::string &p, const StringMap &vars) noexcept
 
 	std::string::size_type start = 0, pos;
 	while ((pos = src.find("${"sv, start)) != src.npos) {
-		std::string::size_type end = src.find('}', start + 2);
+		std::string::size_type end = src.find('}', pos + 2);
 		if (end == src.npos)
 			break;
 
 		p.append(src.begin() + start, src.begin() + pos);
 
-		const std::string_view key(src.begin() + start + 2, src.begin() + end);
+		const std::string_view key(src.begin() + pos + 2, src.begin() + end);
 		auto i = vars.find(key);
 		if (i != vars.end())
 			p.append(i->second);
