@@ -80,7 +80,7 @@ StickyManager::IsLocal(std::string_view id) const noexcept
 	const auto second = std::next(best);
 	if (second == nodes.end())
 		// it's only us - skip the score calculation
-		return {second->second.host_name, true};
+		return {best->second.host_name, true};
 
 	double best_score = best->second.CalculateRendezvousScore(sticky_source);
 

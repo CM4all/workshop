@@ -1,6 +1,7 @@
 cm4all-workshop (7.8) unstable; urgency=low
 
   * workshop: fix variable expansion bug
+  * fix crash bug with "sticky" and only one node
 
  --   
 
