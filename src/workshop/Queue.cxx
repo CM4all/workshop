@@ -346,8 +346,6 @@ WorkshopQueue::EnableAdmin() noexcept
 void
 WorkshopQueue::EnableFull() noexcept
 {
-	assert(!running);
-
 	if (!disabled_full)
 		return;
 
