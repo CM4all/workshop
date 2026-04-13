@@ -13,7 +13,6 @@
 #include "translation/Response.hxx"
 #include "translation/ExecuteOptions.hxx"
 #include "translation/SpawnClient.hxx"
-#include "lib/fmt/ExceptionFormatter.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "spawn/Client.hxx"
 #include "spawn/CoEnqueue.hxx"
@@ -32,6 +31,7 @@
 #include "io/Pipe.hxx"
 #include "co/Task.hxx"
 #include "util/DeleteDisposer.hxx"
+#include "util/Exception.hxx" // for GetFullMessage()
 #include "util/StringCompare.hxx"
 #include "util/StringList.hxx"
 #include "util/UTF8.hxx"
@@ -376,7 +376,9 @@ inline void
 WorkshopOperator::OnTaskCompletion(std::exception_ptr &&error) noexcept
 {
 	if (error) {
-		logger.Fmt(1, "Failed to start job: {}"sv, std::move(error));
+		const auto msg = GetFullMessage(std::move(error));
+		logger.Fmt(1, "Failed to start job: {:?}"sv, msg);
+		job.SetDone(-EIO, msg.c_str());
 		workplace.OnExit(this);
 	}
 }

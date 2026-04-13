@@ -2,6 +2,7 @@ cm4all-workshop (7.8) unstable; urgency=low
 
   * workshop: fix variable expansion bug
   * workshop: fix assertion failure
+  * workshop: fix hanging job records after early startup error
   * cron: fix crash on invalid month/wday name
   * cron: combine day-of-month and day-of-week with logical "or"
   * fix crash bug with "sticky" and only one node
