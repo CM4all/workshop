@@ -333,7 +333,7 @@ conf.set('HAVE_LIBCAP', cap_dep.found())
 conf.set('HAVE_LIBSYSTEMD', libsystemd.found())
 configure_file(output: 'config.h', configuration: conf)
 
-subdir('t')
+subdir('test')
 subdir('libcommon/test/util')
 subdir('libcommon/test/net')
 subdir('libcommon/test/pg')
