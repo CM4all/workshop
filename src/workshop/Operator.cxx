@@ -484,7 +484,7 @@ WorkshopOperator::OnChildProcessExit(int status) noexcept
 		logger(1, "died from signal ",
 		       WTERMSIG(status),
 		       WCOREDUMP(status) ? " (core dumped)" : "");
-		exit_status = -1;
+		exit_status = -EINTR;
 	} else if (exit_status == 0)
 		logger(3, "exited with success");
 	else

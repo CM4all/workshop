@@ -92,7 +92,7 @@ CronSpawnOperator::OnChildProcessExit(int status) noexcept
 		logger(1, "died from signal ",
 		       WTERMSIG(status),
 		       WCOREDUMP(status) ? " (core dumped)" : "");
-		result.exit_status = -1;
+		result.exit_status = -EINTR;
 	} else if (result.exit_status == 0)
 		logger(3, "exited with success");
 	else
