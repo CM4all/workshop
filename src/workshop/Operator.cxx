@@ -475,7 +475,7 @@ WorkshopOperator::OnChildProcessExit(int status) noexcept
 
 	log->Flush();
 
-	int exit_status = WEXITSTATUS(status);
+	int exit_status;
 
 	if (status < 0) {
 		logger(2, "exited with errno ", strerror(-status));
@@ -485,10 +485,14 @@ WorkshopOperator::OnChildProcessExit(int status) noexcept
 		       WTERMSIG(status),
 		       WCOREDUMP(status) ? " (core dumped)" : "");
 		exit_status = -EINTR;
-	} else if (exit_status == 0)
-		logger(3, "exited with success");
-	else
-		logger(2, "exited with status ", exit_status);
+	} else if (WIFEXITED(status)) {
+		exit_status = WEXITSTATUS(status);
+		if (exit_status == 0)
+			logger(3, "exited with success");
+		else
+			logger(2, "exited with status ", exit_status);
+	} else
+		exit_status = -ECHILD;
 
 	const char *log_text = log->GetBuffer();
 	if (log_text != nullptr && !ValidateUTF8(log_text)) {

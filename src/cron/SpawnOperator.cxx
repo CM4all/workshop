@@ -81,9 +81,7 @@ CronSpawnOperator::Spawn(EventLoop &event_loop, SpawnService &spawn_service,
 void
 CronSpawnOperator::OnChildProcessExit(int status) noexcept
 {
-	CronResult result{
-		.exit_status = WEXITSTATUS(status),
-	};
+	CronResult result;
 
 	if (status < 0) {
 		logger(2, "exited with errno ", strerror(-status));
@@ -93,10 +91,15 @@ CronSpawnOperator::OnChildProcessExit(int status) noexcept
 		       WTERMSIG(status),
 		       WCOREDUMP(status) ? " (core dumped)" : "");
 		result.exit_status = -EINTR;
-	} else if (result.exit_status == 0)
-		logger(3, "exited with success");
-	else
-		logger(2, "exited with status ", result.exit_status);
+		result.exit_status = -1;
+	} else if (WIFEXITED(status)) {
+		result.exit_status = WEXITSTATUS(status);
+		if (result.exit_status == 0)
+			logger(3, "exited with success");
+		else
+			logger(2, "exited with status ", result.exit_status);
+	} else
+		result.exit_status = -ECHILD;
 
 	if (output_capture)
 		result.log = std::move(*output_capture).NormalizeASCII();
