@@ -35,6 +35,7 @@ static constexpr CronSymbol month_names[] = {
 	{ "oct", 10 },
 	{ "nov", 11 },
 	{ "dec", 12 },
+	{ nullptr, 0 },
 };
 
 static constexpr CronSymbol days_of_week_names[] = {
@@ -45,9 +46,10 @@ static constexpr CronSymbol days_of_week_names[] = {
 	{ "fri", 5 },
 	{ "sat", 6 },
 	{ "sun", 7 },
+	{ nullptr, 0 },
 };
 
-static_assert(ARRAY_SIZE(month_names) == 12, "Wrong number of months");
+static_assert(ARRAY_SIZE(month_names) == 13, "Wrong number of month table entries");
 
 static const CronSymbol *
 LookupCronSymbol(const char *&s, const CronSymbol dictionary[])
