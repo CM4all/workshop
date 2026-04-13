@@ -424,22 +424,6 @@ WorkshopQueue::SetJobEnv(const WorkshopJob &job, const char *more_env)
 }
 
 void
-WorkshopQueue::RollbackJob(const WorkshopJob &job) noexcept
-{
-	assert(&job.queue == this);
-
-	logger(6, "rolling back job ", job.id);
-
-	try {
-		pg_rollback_job(db, job.id.c_str());
-		pg_notify(db);
-		ScheduleCheckNotify();
-	} catch (...) {
-		db.CheckError(std::current_exception());
-	}
-}
-
-void
 WorkshopQueue::AgainJob(const WorkshopJob &job,
 			const char *log,
 			std::chrono::seconds delay) noexcept

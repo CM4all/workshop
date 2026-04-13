@@ -94,6 +94,9 @@ void
 PgSetEnv(Pg::Connection &db, const char *job_id, const char *more_env);
 
 /**
+ * Disassociate from the job, act as if this node had never claimed
+ * it.  It will notify the other Workshop nodes.
+ *
  * Throws on error.
  */
 void

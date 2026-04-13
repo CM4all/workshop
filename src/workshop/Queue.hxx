@@ -180,12 +180,6 @@ public:
 	void SetJobEnv(const WorkshopJob &job, const char *more_env);
 
 	/**
-	 * Disassociate from the job, act as if this node had never
-	 * claimed it.  It will notify the other workshop nodes.
-	 */
-	void RollbackJob(const WorkshopJob &job) noexcept;
-
-	/**
 	 * Reschedule the given job after it has been executed already.
 	 *
 	 * @param delay don't execute this job until the given duration
