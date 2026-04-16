@@ -86,8 +86,10 @@ StickyManager::IsLocal(std::string_view id) const noexcept
 
 	for (auto i = second; i != nodes.end(); ++i) {
 		double score = i->second.CalculateRendezvousScore(sticky_source);
-		if (score > best_score)
+		if (score > best_score) {
 			best = i;
+			best_score = score;
+		}
 	}
 
 	return {best->second.host_name, best->second.GetFlags().is_our_own};
