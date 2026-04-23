@@ -1,5 +1,6 @@
 cm4all-workshop (7.9) unstable; urgency=low
 
+  * delay PostgreSQL reconnect after repeated errors
   * fix "sticky" score calculation bug
 
  --   
