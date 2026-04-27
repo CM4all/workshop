@@ -3,6 +3,7 @@
 // author: Max Kellermann <max.kellermann@ionos.com>
 
 #include "PipePondAdapter.hxx"
+#include "event/Loop.hxx"
 #include "net/log/Send.hxx"
 #include "net/log/Datagram.hxx"
 #include "util/PrintException.hxx"
@@ -31,6 +32,7 @@ PipePondAdapter::OnLine(std::string_view line) noexcept
 	}
 
 	Net::Log::Datagram d{
+		.timestamp = Net::Log::FromSystem(GetEventLoop().SystemNow()),
 		.message = line,
 		.type = Net::Log::Type::JOB,
 	};

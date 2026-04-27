@@ -1,6 +1,6 @@
 cm4all-workshop (7.10) unstable; urgency=low
 
-  * 
+  * cron: set the TIMESTAMP attribute on Pond datagrams
 
  --   
 

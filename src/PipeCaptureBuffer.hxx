@@ -27,6 +27,10 @@ public:
 		Close();
 	}
 
+	auto &GetEventLoop() const noexcept {
+		return event.GetEventLoop();
+	}
+
 	bool IsFull() const noexcept {
 		return buffer.IsFull();
 	}
