@@ -32,6 +32,8 @@ class CronWorkplace {
 
 	const bool use_qrelay;
 
+	bool shutting_down = false;
+
 public:
 	CronWorkplace(SpawnService &_spawn_service,
 		      EmailService &_email_service,
@@ -52,6 +54,11 @@ public:
 
 	SocketDescriptor GetPondSocket() const noexcept {
 		return pond_socket;
+	}
+
+	void BeginShutdown() noexcept {
+		shutting_down = true;
+		CancelAll();
 	}
 
 	bool IsEmpty() const {

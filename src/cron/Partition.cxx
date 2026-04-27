@@ -69,7 +69,7 @@ CronPartition::BeginShutdown() noexcept
 #endif
 
 	queue.DisableAdmin();
-	workplace.CancelAll();
+	workplace.BeginShutdown();
 	email_service.CancelAll();
 }
 

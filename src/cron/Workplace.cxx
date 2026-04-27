@@ -120,7 +120,11 @@ private:
 void
 CronWorkplace::Running::SetResult(const CronResult &result) noexcept
 {
-	if (!job.notification.empty()) {
+	if (!job.notification.empty() &&
+	    /* after BeginShutdown(), we can't connect to
+	       cm4all-qrelay anymore because the spawner is now
+	       defunct */
+	    (!workplace.use_qrelay || !workplace.shutting_down)) {
 		try {
 			SendNotificationEmail(workplace.email_service,
 					      workplace.use_qrelay,
