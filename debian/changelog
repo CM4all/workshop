@@ -1,6 +1,6 @@
 cm4all-workshop (7.11) unstable; urgency=low
 
-  * 
+  * debian: add missing build-dependency on pkg-config
 
  --   
 
