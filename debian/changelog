@@ -3,7 +3,7 @@ cm4all-workshop (7.10) unstable; urgency=low
   * cron: set the TIMESTAMP attribute on Pond datagrams
   * cron: fix assertion failure during shutdown
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Mon, 27 Apr 2026 19:12:20 +0200
 
 cm4all-workshop (7.9) unstable; urgency=low
 
