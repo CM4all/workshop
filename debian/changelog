@@ -5,7 +5,7 @@ cm4all-workshop (7.11) unstable; urgency=low
   * spawn: fix SYMLINK conflict in virtual directories
   * debian: add missing build-dependency on pkg-config
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Mon, 18 May 2026 18:54:09 +0200
 
 cm4all-workshop (7.10) unstable; urgency=low
 
