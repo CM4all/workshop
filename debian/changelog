@@ -2,6 +2,7 @@ cm4all-workshop (7.11) unstable; urgency=low
 
   * cron: limit the total length and the local-part length of notification
     email addresses
+  * spawn: fix SYMLINK conflict in virtual directories
   * debian: add missing build-dependency on pkg-config
 
  --   
