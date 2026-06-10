@@ -17,6 +17,7 @@
 #include "net/UniqueSocketDescriptor.hxx"
 #include "io/Pipe.hxx"
 #include "co/Task.hxx"
+#include "co/InvokeTask.hxx"
 #include "util/PrintException.hxx"
 #include "util/StringCompare.hxx"
 #include "config.h"
@@ -76,6 +77,8 @@ class RunJobInstance final
 {
 	EventLoop event_loop;
 
+	Co::InvokeTask invoke_task;
+
 	std::unique_ptr<ProgressReader> progress_reader;
 	std::unique_ptr<WorkshopControlChannelServer> control_channel;
 
@@ -92,6 +95,9 @@ public:
 	}
 
 private:
+	Co::InvokeTask Start(PreparedChildProcess &&p);
+	void OnStartComplete(std::exception_ptr &&error) noexcept;
+
 	void OnProgress(unsigned progress) noexcept {
 		fmt::print(stderr, "received PROGRESS {}\n", progress);
 	}
@@ -172,6 +178,14 @@ RunJobInstance::Start(RunJobCommandLine &&cmdline)
 								   BIND_THIS_METHOD(OnProgress));
 	}
 
+	invoke_task = Start(std::move(p));
+	invoke_task.Start(BIND_THIS_METHOD(OnStartComplete));
+}
+
+inline Co::InvokeTask
+RunJobInstance::Start(PreparedChildProcess &&p)
+{
+
 #ifdef HAVE_LIBCAP
 	const bool is_sys_admin = IsSysAdmin();
 #else
@@ -180,8 +194,17 @@ RunJobInstance::Start(RunJobCommandLine &&cmdline)
 
 	ExitListener &exit_listener = *this;
 	pid.emplace(event_loop,
-		    std::move(SpawnChildProcess(std::move(p), {}, false, is_sys_admin).pidfd),
+		    std::move((co_await SpawnChildProcess(event_loop, std::move(p), {}, false, is_sys_admin)).pidfd),
 		    "foo", exit_listener);
+}
+
+inline void
+RunJobInstance::OnStartComplete(std::exception_ptr &&error) noexcept
+{
+	if (error) {
+		PrintException(std::move(error));
+		event_loop.Break();
+	}
 }
 
 int

@@ -1,6 +1,7 @@
 cm4all-workshop (7.12) unstable; urgency=low
 
   * spawn: eliminate epoll_wait() roundtrip
+  * spawn: asynchronous waits, parallelize execve()
 
  --   
 
