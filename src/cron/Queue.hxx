@@ -35,6 +35,9 @@ class CronQueue final : private Pg::AsyncConnectionHandler {
 
 	FineTimerEvent scheduler_timer, claim_timer;
 
+	std::chrono::steady_clock::time_point next_expire_check =
+		std::chrono::steady_clock::time_point::min();
+
 	const bool sticky;
 
 	/**
@@ -152,6 +155,7 @@ private:
 
 	void Prepare();
 	void ReleaseStale();
+	void Expire();
 
 	void RunScheduler() noexcept;
 	void ScheduleScheduler(bool immediately) noexcept;

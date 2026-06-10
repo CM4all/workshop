@@ -9,6 +9,7 @@
 #include "StickyTable.hxx"
 #include "pg/Reflection.hxx"
 #include "lib/fmt/RuntimeError.hxx"
+#include "event/Loop.hxx"
 #include "util/StringAPI.hxx"
 
 #include <chrono>
@@ -49,6 +50,15 @@ CronQueue::Prepare()
 UPDATE cronjobs
 SET node_name=NULL, node_timeout=NULL, next_run=NULL
 WHERE node_name=$1
+)SQL",
+		   1);
+
+	db.Prepare("expire_jobs", R"SQL(
+UPDATE cronjobs
+SET node_name=NULL, node_timeout=NULL, next_run=NULL
+WHERE
+  node_name IS NOT NULL AND node_name <> $1 AND
+  node_timeout IS NOT NULL AND now() > node_timeout
 )SQL",
 		   1);
 
@@ -159,6 +169,14 @@ CronQueue::ReleaseStale()
 		logger(3, "Released ", n, " stale cronjobs");
 }
 
+inline void
+CronQueue::Expire()
+{
+	const unsigned n = db.ExecutePrepared("expire_jobs", node_name.c_str()).GetAffectedRows();
+	if (n > 0)
+		logger(2, "released ", n, " expired cronjobs");
+}
+
 void
 CronQueue::InsertStickyNonLocal(const char *sticky_id) noexcept
 try {
@@ -187,6 +205,13 @@ CronQueue::RunScheduler() noexcept
 	logger(4, "scheduler");
 
 	try {
+		/* check expired jobs from all other nodes except us */
+
+		if (const auto now = GetEventLoop().SteadyNow(); now >= next_expire_check) {
+			next_expire_check = now + std::chrono::minutes{1};
+			Expire();
+		}
+
 		if (!CalculateNextRun(logger, db))
 			ScheduleScheduler(false);
 
