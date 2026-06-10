@@ -17,12 +17,16 @@
 #include "spawn/Prepared.hxx"
 #include "spawn/Interface.hxx"
 #include "event/FarTimerEvent.hxx"
+#include "event/Loop.hxx"
 #include "system/Error.hxx"
 #include "net/SocketAddress.hxx"
+#include "net/log/Send.hxx"
+#include "net/log/Datagram.hxx"
 #include "io/FdHolder.hxx"
 #include "co/InvokeTask.hxx"
 #include "co/Task.hxx"
 #include "util/DeleteDisposer.hxx"
+#include "util/PrintException.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringList.hxx"
 #include "EmailService.hxx"
@@ -41,6 +45,8 @@ class CronWorkplace::Running final
 	const CronJob job;
 	const std::string start_time;
 
+	const Event::TimePoint start_time2;
+
 	FarTimerEvent timeout_event;
 
 	Allocator alloc;
@@ -58,6 +64,7 @@ public:
 		:queue(_queue), workplace(_workplace),
 		 job(std::move(_job)),
 		 start_time(std::move(_start_time)),
+		 start_time2(queue.GetEventLoop().SteadyNow()),
 		 timeout_event(queue.GetEventLoop(),
 			       BIND_THIS_METHOD(OnTimeout)),
 		 site(job.account_id) {}
@@ -136,6 +143,28 @@ CronWorkplace::Running::SetResult(const CronResult &result) noexcept
 		} catch (...) {
 			logger(1, "Failed to send email notification: ",
 			       std::current_exception());
+		}
+	}
+
+	if (workplace.pond_socket.IsDefined()) {
+		const auto message = fmt::format("Finished cron job {:?}"sv,
+						 job.id, job.command);
+		Net::Log::Datagram d{
+			.timestamp = Net::Log::FromSystem(GetEventLoop().SystemNow()),
+			.site = site.empty() ? job.account_id.c_str() : site.c_str(),
+			.message = message.c_str(),
+			.type = Net::Log::Type::JOB,
+		};
+
+		/* truncate long lines */
+		d.TruncateMessage(1024);
+
+		d.SetDuration(std::chrono::duration_cast<Net::Log::Duration>(GetEventLoop().SteadyNow() - start_time2));
+
+		try {
+			Net::Log::Send(workplace.pond_socket, d);
+		} catch (...) {
+			PrintException(std::current_exception());
 		}
 	}
 

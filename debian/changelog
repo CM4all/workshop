@@ -1,6 +1,7 @@
 cm4all-workshop (7.12) unstable; urgency=low
 
   * cron: clear execution status after a timeout
+  * cron: log job completion to Pond
   * spawn: eliminate epoll_wait() roundtrip
   * spawn: asynchronous waits, parallelize execve()
 
