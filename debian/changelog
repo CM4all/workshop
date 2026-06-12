@@ -1,6 +1,6 @@
 cm4all-workshop (7.13) unstable; urgency=low
 
-  * 
+  * spawn: eliminate redundant open("/proc/PID")
 
  --   
 
