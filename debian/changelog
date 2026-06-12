@@ -3,7 +3,7 @@ cm4all-workshop (7.13) unstable; urgency=low
   * spawn: eliminate redundant open("/proc/PID")
   * spawn: fix stuck spawner due to pressure miscalculation
 
- --   
+ -- Max Kellermann <mk@cm4all.com>  Fri, 12 Jun 2026 21:03:34 +0200
 
 cm4all-workshop (7.12) unstable; urgency=low
 
