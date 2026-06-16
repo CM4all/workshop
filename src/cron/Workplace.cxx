@@ -148,7 +148,7 @@ CronWorkplace::Running::SetResult(const CronResult &result) noexcept
 
 	if (workplace.pond_socket.IsDefined()) {
 		const auto message = fmt::format("Finished cron job {:?}"sv,
-						 job.id, job.command);
+						 job.command);
 		Net::Log::Datagram d{
 			.timestamp = Net::Log::FromSystem(GetEventLoop().SystemNow()),
 			.site = site.empty() ? job.account_id.c_str() : site.c_str(),
