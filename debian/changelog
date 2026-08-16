@@ -1,7 +1,7 @@
 cm4all-workshop (7.14) unstable; urgency=low
 
   * cron: fix job completion message
-  * translation: add packet SIGKILL
+  * translation: add packets SIGKILL, MAX_INOTIFY
   * libfmt 12.2.0 compatibility
 
  --   
