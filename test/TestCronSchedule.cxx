@@ -1,7 +1,7 @@
 #include "cron/Schedule.hxx"
 #include "time/ISO8601.hxx"
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 #include <gtest/gtest.h>
 
 #include <stdexcept>

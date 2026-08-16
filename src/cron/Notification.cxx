@@ -14,7 +14,7 @@
 #include "NsQrelayConnect.hxx"
 #include "version.h"
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 using std::string_view_literals::operator""sv;
 
