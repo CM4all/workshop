@@ -241,6 +241,9 @@ MakeSpawnOperator(EventLoop &event_loop, SpawnService &spawn_service,
 		}
 	}
 
+	if (options.process_name != nullptr)
+		p.SetProcessName(options.process_name);
+
 	options.child_options.CopyTo(p, close_fds);
 
 	if (p.cgroup != nullptr && p.cgroup->name != nullptr)

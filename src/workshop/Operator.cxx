@@ -170,6 +170,9 @@ PrepareChildProcess(AllocatorPtr alloc,
 		p.args.push_back(alloc.Dup(arg));
 	}
 
+	if (options.process_name != nullptr)
+		p.SetProcessName(options.process_name);
+
 	options.child_options.CopyTo(p, close_fds);
 
 	p.no_new_privs = true;
