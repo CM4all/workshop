@@ -4,7 +4,7 @@ cm4all-workshop (7.14) unstable; urgency=low
   * translation: add packets SIGKILL, MAX_INOTIFY, PROCESS_NAME
   * libfmt 12.2.0 compatibility
 
- --   
+ -- Max Kellermann <max.kellermann@ionos.com>  Mon, 17 Aug 2026 21:31:51 +0200
 
 cm4all-workshop (7.13) unstable; urgency=low
 
