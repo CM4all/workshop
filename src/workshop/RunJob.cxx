@@ -185,6 +185,8 @@ RunJobInstance::Start(RunJobCommandLine &&cmdline)
 inline Co::InvokeTask
 RunJobInstance::Start(PreparedChildProcess &&p)
 {
+	ResourceLimits current_rlimits;
+	current_rlimits.Load(0);
 
 #ifdef HAVE_LIBCAP
 	const bool is_sys_admin = IsSysAdmin();
@@ -194,7 +196,9 @@ RunJobInstance::Start(PreparedChildProcess &&p)
 
 	ExitListener &exit_listener = *this;
 	pid.emplace(event_loop,
-		    std::move((co_await SpawnChildProcess(event_loop, std::move(p), {}, false, is_sys_admin)).pidfd),
+		    std::move((co_await SpawnChildProcess(event_loop, std::move(p),
+							  current_rlimits, {}, false,
+							  is_sys_admin)).pidfd),
 		    "foo", exit_listener);
 }
 
