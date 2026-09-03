@@ -132,6 +132,7 @@ subdir('libcommon/src/io')
 subdir('libcommon/src/io/linux')
 subdir('libcommon/src/io/config')
 subdir('libcommon/src/system')
+subdir('libcommon/src/system/linux')
 
 system2 = static_library(
   'system2',
