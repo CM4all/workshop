@@ -1,4 +1,4 @@
-project('CM4all Workshop', 'cpp', version: '7.16',
+project('CM4all Workshop', 'cpp', version: '7.17',
   meson_version: '>= 1.2',
   default_options: [
     'cpp_std=c++23',
