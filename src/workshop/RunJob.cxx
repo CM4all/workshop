@@ -6,6 +6,7 @@
 #include "ControlChannelHandler.hxx"
 #include "ControlChannelServer.hxx"
 #include "spawn/CgroupState.hxx"
+#include "spawn/Context.hxx"
 #include "spawn/Direct.hxx"
 #include "spawn/ExitListener.hxx"
 #include "spawn/Prepared.hxx"
@@ -23,10 +24,6 @@
 #include "config.h"
 
 #include <span>
-
-#ifdef HAVE_LIBCAP
-#include "lib/cap/Glue.hxx"
-#endif
 
 #include <memory>
 #include <optional>
@@ -188,17 +185,11 @@ RunJobInstance::Start(PreparedChildProcess &&p)
 	ResourceLimits current_rlimits;
 	current_rlimits.Load(0);
 
-#ifdef HAVE_LIBCAP
-	const bool is_sys_admin = IsSysAdmin();
-#else
-	const bool is_sys_admin = true;
-#endif
-
 	ExitListener &exit_listener = *this;
 	pid.emplace(event_loop,
 		    std::move((co_await SpawnChildProcess(event_loop, std::move(p),
 							  current_rlimits, {}, false,
-							  is_sys_admin)).pidfd),
+							  SpawnContext{})).pidfd),
 		    "foo", exit_listener);
 }
 
