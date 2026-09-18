@@ -104,16 +104,14 @@ StickyManager::OnAvahiNewObject(const std::string &key,
 {
 	auto [it, inserted] = nodes.try_emplace(key, host_name);
 	it->second.Update(address, txt, flags);
+
+	changed_callback();
 }
 
 void
 StickyManager::OnAvahiRemoveObject(const std::string &key) noexcept
 {
 	nodes.erase(key);
-}
 
-void
-StickyManager::OnAvahiAllForNow() noexcept
-{
 	changed_callback();
 }

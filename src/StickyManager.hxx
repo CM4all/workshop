@@ -75,5 +75,4 @@ private:
 			      AvahiStringList *txt,
 			      Avahi::ObjectFlags flags) noexcept override;
 	void OnAvahiRemoveObject(const std::string &key) noexcept override;
-	void OnAvahiAllForNow() noexcept override;
 };
