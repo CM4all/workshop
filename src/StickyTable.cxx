@@ -22,16 +22,23 @@ CREATE UNIQUE INDEX sticky_non_local_sticky_id ON sticky_non_local(sticky_id)
 INSERT INTO sticky_non_local(sticky_id) VALUES($1)
 )SQL",
 		  1);
+
+	empty = true;
 }
 
 void
 StickyTable::InsertNonLocal(Pg::Connection &c, const char *sticky_id)
 {
 	c.ExecutePrepared("insert_sticky_non_local", sticky_id);
+	empty = false;
 }
 
 void
 StickyTable::Flush(Pg::Connection &c)
 {
+	if (empty)
+		return;
+
 	c.Execute("TRUNCATE sticky_non_local");
+	empty = true;
 }

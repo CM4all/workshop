@@ -7,6 +7,12 @@
 namespace Pg { class Connection; }
 
 class StickyTable {
+	/**
+	 * Tracks whether the table is empty.  Will be initialized by
+	 * Init().
+	 */
+	bool empty;
+
 public:
 	void Init(Pg::Connection &c);
 	void InsertNonLocal(Pg::Connection &c, const char *sticky_id);
