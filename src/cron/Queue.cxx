@@ -6,7 +6,6 @@
 #include "Job.hxx"
 #include "Result.hxx"
 #include "CalculateNextRun.hxx"
-#include "StickyTable.hxx"
 #include "pg/Reflection.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "event/Loop.hxx"
@@ -44,7 +43,7 @@ CronQueue::Prepare()
 	const bool have_sticky_id = sticky && Pg::ColumnExists(db, schema, "cronjobs", "sticky_id");
 
 	if (have_sticky_id)
-		StickyTable::Init(db);
+		sticky_table.Init(db);
 
 	db.Prepare("release_stale", R"SQL(
 UPDATE cronjobs
@@ -183,7 +182,7 @@ try {
 	if (!db.IsReady())
 		return;
 
-	StickyTable::InsertNonLocal(db, sticky_id);
+	sticky_table.InsertNonLocal(db, sticky_id);
 } catch (...) {
 	db.CheckError(std::current_exception());
 }
@@ -194,7 +193,7 @@ try {
 	if (!db.IsReady())
 		return;
 
-	StickyTable::Flush(db);
+	sticky_table.Flush(db);
 } catch (...) {
 	db.CheckError(std::current_exception());
 }

@@ -6,7 +6,6 @@
 #include "PGQueue.hxx"
 #include "Job.hxx"
 #include "Plan.hxx"
-#include "StickyTable.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "pg/Array.hxx"
 #include "pg/Hex.hxx"
@@ -360,7 +359,7 @@ try {
 	if (!db.IsReady())
 		return;
 
-	StickyTable::InsertNonLocal(db, sticky_id);
+	sticky_table.InsertNonLocal(db, sticky_id);
 } catch (...) {
 	db.CheckError(std::current_exception());
 }
@@ -371,7 +370,7 @@ try {
 	if (!db.IsReady())
 		return;
 
-	StickyTable::Flush(db);
+	sticky_table.Flush(db);
 } catch (...) {
 	db.CheckError(std::current_exception());
 }
@@ -511,7 +510,7 @@ WorkshopQueue::OnConnect()
 
 	const bool have_sticky_id = sticky && Pg::ColumnExists(db, schema, "jobs", "sticky_id");
 	if (have_sticky_id)
-		StickyTable::Init(db);
+		sticky_table.Init(db);
 
 	pg_init(db, schema, have_sticky_id);
 

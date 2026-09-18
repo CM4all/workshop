@@ -5,10 +5,8 @@
 #include "StickyTable.hxx"
 #include "pg/Connection.hxx"
 
-namespace StickyTable {
-
 void
-Init(Pg::Connection &c)
+StickyTable::Init(Pg::Connection &c)
 {
 	c.Execute(R"SQL(
 CREATE TEMPORARY TABLE sticky_non_local (
@@ -27,15 +25,13 @@ INSERT INTO sticky_non_local(sticky_id) VALUES($1)
 }
 
 void
-InsertNonLocal(Pg::Connection &c, const char *sticky_id)
+StickyTable::InsertNonLocal(Pg::Connection &c, const char *sticky_id)
 {
 	c.ExecutePrepared("insert_sticky_non_local", sticky_id);
 }
 
 void
-Flush(Pg::Connection &c)
+StickyTable::Flush(Pg::Connection &c)
 {
 	c.Execute("TRUNCATE sticky_non_local");
 }
-
-} // namespace StickyTable

@@ -6,15 +6,9 @@
 
 namespace Pg { class Connection; }
 
-namespace StickyTable {
-
-void
-Init(Pg::Connection &c);
-
-void
-InsertNonLocal(Pg::Connection &c, const char *sticky_id);
-
-void
-Flush(Pg::Connection &c);
-
-} // namespace StickyTable
+class StickyTable {
+public:
+	void Init(Pg::Connection &c);
+	void InsertNonLocal(Pg::Connection &c, const char *sticky_id);
+	void Flush(Pg::Connection &c);
+};

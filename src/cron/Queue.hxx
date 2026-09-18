@@ -8,6 +8,7 @@
 #include "event/FineTimerEvent.hxx"
 #include "pg/AsyncConnection.hxx"
 #include "io/Logger.hxx"
+#include "StickyTable.hxx"
 
 #include <string>
 #include <functional>
@@ -24,6 +25,8 @@ class CronQueue final : private Pg::AsyncConnectionHandler {
 	const ChildLogger logger;
 
 	Pg::AsyncConnection db;
+
+	StickyTable sticky_table;
 
 	const Callback callback;
 

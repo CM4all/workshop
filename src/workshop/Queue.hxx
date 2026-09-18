@@ -8,6 +8,7 @@
 #include "event/FineTimerEvent.hxx"
 #include "pg/AsyncConnection.hxx"
 #include "io/Logger.hxx"
+#include "StickyTable.hxx"
 
 #include <set>
 #include <string>
@@ -38,6 +39,8 @@ class WorkshopQueue final : private Pg::AsyncConnectionHandler {
 	const std::string node_name;
 
 	Pg::AsyncConnection db;
+
+	StickyTable sticky_table;
 
 	const bool sticky;
 
