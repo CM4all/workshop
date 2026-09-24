@@ -1,5 +1,7 @@
 cm4all-workshop (7.18) unstable; urgency=low
 
+  * workshop: fix crash on pipe error
+  * fix crash on PostgreSQL error
   * spawn: don't follow symlinks while building the mount namespace
   * spawn: verify the sender of JobRemoved/UnitRemoved DBus signals
   * zeroconf: fix leak bug
