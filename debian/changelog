@@ -8,6 +8,7 @@ cm4all-workshop (7.18) unstable; urgency=low
   * spawn: verify the sender of JobRemoved/UnitRemoved DBus signals
   * spawn: force chdir() after CHROOT
   * spawn: require the "@cm4all-spawn" daemon to be root
+  * spawn: forbid more multicast socket options
   * spawn: fail on truncated packet
   * zeroconf: fix leak bug
 
