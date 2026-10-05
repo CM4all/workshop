@@ -13,6 +13,7 @@ cm4all-workshop (7.18) unstable; urgency=low
   * spawn: validate CGROUP_SET and CGROUP_XATTR again
   * spawn: fail on truncated packet
   * spawn: larger receive buffer
+  * spawn: make a dropped forbidden-syscall rule fatal
   * translation: stricter SITE validation
   * zeroconf: fix leak bug
   * require libseccomp 2.5.5
