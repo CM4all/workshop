@@ -11,7 +11,7 @@ Build-Depends: debhelper (>= 13.3~),
  libcap-dev, libseccomp-dev,
  libfmt-dev (>= 9),
  libpq-dev (>= 9.6),
- libcurl4-openssl-dev (>= 7.38),
+ libcurl4-openssl-dev (>= 7.85),
  libgtest-dev,
  pkg-config,
  python3-sphinx
