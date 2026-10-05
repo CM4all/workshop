@@ -11,6 +11,7 @@ cm4all-workshop (7.18) unstable; urgency=low
   * spawn: forbid more multicast socket options
   * spawn: validate CGROUP_SET and CGROUP_XATTR again
   * spawn: fail on truncated packet
+  * spawn: larger receive buffer
   * zeroconf: fix leak bug
 
  --   
