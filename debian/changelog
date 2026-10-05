@@ -9,6 +9,7 @@ cm4all-workshop (7.18) unstable; urgency=low
   * spawn: force chdir() after CHROOT
   * spawn: require the "@cm4all-spawn" daemon to be root
   * spawn: forbid more multicast socket options
+  * spawn: validate CGROUP_SET and CGROUP_XATTR again
   * spawn: fail on truncated packet
   * zeroconf: fix leak bug
 
