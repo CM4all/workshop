@@ -5,6 +5,7 @@
 #pragma once
 
 #include "translation/Protocol.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/SpanCast.hxx"
 
 #include <algorithm>
@@ -14,7 +15,7 @@
 #include <utility>
 
 class TranslationMarshaller {
-	std::array<std::byte, 8192> buffer;
+	std::array<std::byte, 8_KiB> buffer;
 
 	std::byte *tail = buffer.data();
 

@@ -22,6 +22,7 @@
 #include "net/UniqueSocketDescriptor.hxx"
 #include "io/Iovec.hxx"
 #include "co/Task.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/Exception.hxx"
 #include "util/SpanCast.hxx"
 #include "util/StringCompare.hxx"
@@ -49,7 +50,7 @@ class MyResponseHandler final : public CurlResponseHandler {
 	std::exception_ptr error;
 
 	std::size_t fill = 0;
-	std::array<std::byte, 8192> buffer;
+	std::array<std::byte, 8_KiB> buffer;
 
 	HttpStatus status{};
 
@@ -93,7 +94,7 @@ public:
 static CurlEasy
 ReadRequest(SocketDescriptor s)
 {
-	char url[4096];
+	char url[4_KiB];
 
 	if (const auto nbytes = s.Receive(std::as_writable_bytes(std::span{url}));
 	    nbytes < 0)
@@ -199,7 +200,7 @@ void
 CronCurlOperator::OnSocketReady(unsigned) noexcept
 {
 	HttpStatus status;
-	CaptureBuffer capture{8192};
+	CaptureBuffer capture{8_KiB};
 
 	const struct iovec v[] = {
 		MakeIovecT(status),

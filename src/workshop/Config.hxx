@@ -6,6 +6,7 @@
 
 #include "pg/Config.hxx"
 #include "net/LocalSocketAddress.hxx"
+#include "util/ByteSizes.hxx"
 #include "config.h"
 
 #ifdef HAVE_AVAHI
@@ -34,7 +35,7 @@ struct WorkshopPartitionConfig {
 	 */
 	std::string tag;
 
-	size_t max_log = 8192;
+	std::size_t max_log = 8_KiB;
 
 	bool enable_journal = false;
 

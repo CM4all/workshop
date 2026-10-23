@@ -4,6 +4,7 @@
 
 #include "PipeCaptureBuffer.hxx"
 #include "io/UniqueFileDescriptor.hxx"
+#include "util/ByteSizes.hxx"
 
 PipeCaptureBuffer::PipeCaptureBuffer(EventLoop &event_loop,
 				     UniqueFileDescriptor _fd,
@@ -36,7 +37,7 @@ PipeCaptureBuffer::OnSocket(unsigned) noexcept
 	} else {
 		/* buffer is full: discard data to keep the pipe from blocking
 		   the other end */
-		std::byte discard[4096];
+		std::byte discard[4_KiB];
 		if (fd.Read(discard) <= 0)
 			Close();
 	}

@@ -11,6 +11,7 @@
 #include "net/SocketDescriptor.hxx"
 #include "net/SocketProtocolError.hxx"
 #include "net/TimeoutError.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/StaticFifoBuffer.hxx"
 
 #include <stdexcept>
@@ -30,7 +31,7 @@ ReceiveTranslateResponse(AllocatorPtr alloc, SocketDescriptor s)
 	TranslateResponse response;
 	TranslateParser parser(alloc, response);
 
-	StaticFifoBuffer<std::byte, 8192> buffer;
+	StaticFifoBuffer<std::byte, 8_KiB> buffer;
 
 	while (true) {
 		auto w = buffer.Write();

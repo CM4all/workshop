@@ -14,6 +14,7 @@
 #include "io/Pipe.hxx"
 #include "io/UniqueFileDescriptor.hxx"
 #include "co/Task.hxx"
+#include "util/ByteSizes.hxx"
 #include "util/UTF8.hxx"
 #include "AllocatorPtr.hxx"
 
@@ -54,7 +55,7 @@ CronSpawnOperator::Spawn(EventLoop &event_loop, SpawnService &spawn_service,
 
 		output_capture = std::make_unique<PipePondAdapter>(event_loop,
 								   std::move(r),
-								   8192,
+								   8_KiB,
 								   pond_socket,
 								   site);
 	}
