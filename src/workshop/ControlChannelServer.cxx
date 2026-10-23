@@ -8,6 +8,7 @@
 #include "net/UniqueSocketDescriptor.hxx"
 #include "net/ScmRightsBuilder.hxx"
 #include "net/SendMessage.hxx"
+#include "net/SocketProtocolError.hxx"
 #include "io/Iovec.hxx"
 #include "io/UniqueFileDescriptor.hxx"
 #include "co/Task.hxx"
@@ -193,6 +194,13 @@ WorkshopControlChannelServer::OnUdpDatagram(std::span<const std::byte> payload,
 	}
 
 	return OnControl(SplitArgs(FirstLine(ToStringView(payload))));
+}
+
+bool
+WorkshopControlChannelServer::OnUdpTruncated() noexcept
+{
+	OnUdpError(std::make_exception_ptr(SocketMessageTooLargeError{"Truncated datagram"}));
+	return false;
 }
 
 void

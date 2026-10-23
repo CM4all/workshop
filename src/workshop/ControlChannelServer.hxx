@@ -47,5 +47,6 @@ private:
 	bool OnUdpDatagram(std::span<const std::byte> payload,
 			   std::span<UniqueFileDescriptor> fds,
 			   SocketAddress address, int uid) override;
+	bool OnUdpTruncated() noexcept override;
 	void OnUdpError(std::exception_ptr &&error) noexcept override;
 };
