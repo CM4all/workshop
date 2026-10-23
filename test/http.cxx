@@ -2,7 +2,7 @@
  * author: Max Kellermann <max.kellermann@ionos.com>
  */
 
-#include "lib/curl/Request.hxx"
+#include "lib/curl/AsyncRequest.hxx"
 #include "lib/curl/Handler.hxx"
 #include "lib/curl/Global.hxx"
 #include "lib/curl/Init.hxx"
@@ -53,7 +53,7 @@ try {
 	CurlGlobal curl_global(event_loop);;
 
 	MyResponseHandler handler;
-	CurlRequest request(curl_global, url, handler);
+	Curl::AsyncRequest request{curl_global, url, handler};
 
 	event_loop.Run();
 
