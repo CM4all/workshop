@@ -383,6 +383,29 @@ TEST(CronSchedule, Special)
 	EXPECT_THROW(CronSchedule{"@-1hourly"}, std::invalid_argument);
 }
 
+TEST(CronSchedule, RejectsImpossibleDates)
+{
+	EXPECT_THROW(CronSchedule{"0 0 31 2 *"}, std::invalid_argument);
+	EXPECT_THROW(CronSchedule{"0 0 30 2 *"}, std::invalid_argument);
+	EXPECT_THROW(CronSchedule{"0 0 31 4,6,9,11 *"}, std::invalid_argument);
+	EXPECT_THROW(CronSchedule{"0 0 30-31 feb *"}, std::invalid_argument);
+
+	/* possible if at least one day/month combination exists */
+	EXPECT_NO_THROW(CronSchedule{"0 0 31 2,3 *"});
+	EXPECT_NO_THROW(CronSchedule{"0 0 30,31 4,6,9,11 *"});
+
+	/* with "or" semantics, the day of week makes it possible */
+	EXPECT_NO_THROW(CronSchedule{"0 0 31 2 1"});
+}
+
+TEST(CronSchedule, NextLeapDay)
+{
+	const CronSchedule s("0 0 29 2 *");
+	const auto now = std::chrono::system_clock::from_time_t(1485800000);
+	EXPECT_EQ(s.Next(ParseTime("2016-02-29T00:00:00Z"), now), ParseTime("2020-02-29T00:00:00Z"));
+	EXPECT_EQ(s.Next(ParseTime("2096-02-29T00:00:00Z"), now), ParseTime("2104-02-29T00:00:00Z"));
+}
+
 TEST(CronSchedule, RejectsInvalidNamedFields)
 {
 	EXPECT_THROW(CronSchedule{"* * * nope *"}, std::invalid_argument);

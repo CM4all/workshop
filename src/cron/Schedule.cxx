@@ -4,6 +4,7 @@
 
 #include "Schedule.hxx"
 #include "lib/fmt/RuntimeError.hxx"
+#include "time/Calendar.hxx"
 #include "time/Convert.hxx"
 #include "time/Math.hxx"
 #include "util/StringAPI.hxx"
@@ -177,6 +178,28 @@ static constexpr CronSpecialSchedule cron_special_schedules[] = {
 	{ "hourly", "0 * * * *", std::chrono::hours(1) },
 };
 
+/**
+ * Does at least one of the given days of month occur in at least one
+ * of the given months?
+ */
+[[gnu::pure]]
+static bool
+CanOccur(const RangeBitSet<1, 31> &days_of_month,
+	 const RangeBitSet<1, 12> &months) noexcept
+{
+	for (unsigned month = 1; month <= 12; ++month) {
+		if (!months[month])
+			continue;
+
+		const unsigned n_days = MaxDaysInMonth(month);
+		for (unsigned day = 1; day <= n_days; ++day)
+			if (days_of_month[day])
+				return true;
+	}
+
+	return false;
+}
+
 static const CronSpecialSchedule *
 TranslateSpecial(const char *s)
 {
@@ -258,6 +281,12 @@ try {
 	s = StripLeft(s);
 	if (*s != 0)
 		throw std::runtime_error("Garbage at end of schedule");
+
+	if (days_any_wildcard && !CanOccur(days_of_month, months))
+		/* with "and" semantics, a day of month which never
+		   occurs in any of the months would make this schedule
+		   impossible */
+		throw std::runtime_error("Day of month never occurs in the given months");
 } catch (...) {
 	std::throw_with_nested(FmtInvalidArgument("Failed to parse cron schedule {:?}", _s));
 }
@@ -323,8 +352,14 @@ CronSchedule::Next(std::chrono::system_clock::time_point _last,
 			IncrementDay(next);
 	}
 
-	while (!CheckDate(next))
+	while (!CheckDate(next)) {
+		/* the parser guarantees that there is a matching date;
+		   the rarest one is February 29th which occurs at
+		   least once every 8 years */
+		assert(next.tm_year <= last.tm_year + 8);
+
 		IncrementDay(next);
+	}
 
 	return TimeGm(next);
 }
