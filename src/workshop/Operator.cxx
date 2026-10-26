@@ -32,7 +32,6 @@
 #include "co/Task.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "util/Exception.hxx" // for GetFullMessage()
-#include "util/StringCompare.hxx"
 #include "util/StringList.hxx"
 #include "util/UTF8.hxx"
 #include "AllocatorPtr.hxx"
@@ -330,7 +329,7 @@ WorkshopOperator::Start2(std::size_t max_log_buffer,
 		if (p.env.size() >= 64)
 			throw std::runtime_error("Too many environment variables");
 
-		if (StringStartsWith(i.c_str(), "LD_"))
+		if (i.starts_with("LD_"sv))
 			/* reject - too dangerous */
 			continue;
 
