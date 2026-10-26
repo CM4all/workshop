@@ -233,7 +233,14 @@ WorkshopOperator::Start(std::size_t max_log_buffer,
 static constexpr bool
 CheckEnv(std::string_view env) noexcept
 {
-	if (env.starts_with("LD_"sv))
+	if (env.contains('\0'))
+		return false;
+
+	const auto [name, value] = Split(env, '=');
+	if (name.empty() || value.data() == nullptr)
+		return false;
+
+	if (name.starts_with("LD_"sv))
 		/* reject - too dangerous */
 		return false;
 
