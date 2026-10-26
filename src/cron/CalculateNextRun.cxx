@@ -107,6 +107,57 @@ MakeRandomDelay(Pg::Connection &db, const char *id, const char *schedule,
 	return delay;
 }
 
+/**
+ * Calculate the "next_run" column for one job and write it to the
+ * database.
+ *
+ * Throws on error.
+ */
+static void
+ScheduleJob(Pg::Connection &db, const Pg::Result::Row &row)
+{
+	const char *id = row.GetValue(0), *_schedule = row.GetValue(1),
+		*_last_run = row.GetValueOrNull(2),
+		*_delay = row.GetValueOrNull(3),
+		*_delay_range = row.GetValueOrNull(4),
+		*_now = row.GetValue(5);
+
+	auto delay = _delay != nullptr
+		? Pg::ParseIntervalS(_delay)
+		: std::chrono::seconds(0);
+
+	std::chrono::system_clock::time_point last_run =
+		_last_run != nullptr
+		/* note: subtracting the old delay, because it has
+		   been added previously (and will be re-added later),
+		   to get a consistent view */
+		? Pg::ParseTimestamp(_last_run) - delay
+		: std::chrono::system_clock::time_point::min();
+
+	const auto now = Pg::ParseTimestamp(_now);
+
+	const CronSchedule schedule(_schedule);
+
+	/* generate a random delay if there is none yet (or if the
+	   range has changed, i.e. the schedule has been
+	   modified) */
+	if (_delay == nullptr ||
+	    !IsSameInterval(_delay_range, schedule.delay_range))
+		delay = MakeRandomDelay(db, id, _schedule,
+					schedule.delay_range);
+
+	const auto next_run = schedule.Next(last_run, now) + delay;
+	std::string next_run_buffer;
+	const char *next_run_string = next_run == std::chrono::system_clock::time_point::max()
+		? "infinity" /* never again execute the "@once" job */
+		: (next_run_buffer = Pg::FormatTimestamp(next_run)).c_str();
+
+	auto r = db.ExecutePrepared("update_next_run", id, _schedule, _last_run,
+				    next_run_string);
+	if (r.GetAffectedRows() == 0)
+		throw LostRace{};
+}
+
 bool
 CalculateNextRun(const ChildLogger &logger, Pg::Connection &db)
 {
@@ -115,47 +166,10 @@ CalculateNextRun(const ChildLogger &logger, Pg::Connection &db)
 		return true;
 
 	for (const auto &row : result) {
-		const char *id = row.GetValue(0), *_schedule = row.GetValue(1),
-			*_last_run = row.GetValueOrNull(2),
-			*_delay = row.GetValueOrNull(3),
-			*_delay_range = row.GetValueOrNull(4),
-			*_now = row.GetValue(5);
+		const char *id = row.GetValue(0);
 
 		try {
-			auto delay = _delay != nullptr
-				? Pg::ParseIntervalS(_delay)
-				: std::chrono::seconds(0);
-
-			std::chrono::system_clock::time_point last_run =
-				_last_run != nullptr
-				/* note: subtracting the old delay, because it has
-				   been added previously (and will be re-added later),
-				   to get a consistent view */
-				? Pg::ParseTimestamp(_last_run) - delay
-				: std::chrono::system_clock::time_point::min();
-
-			const auto now = Pg::ParseTimestamp(_now);
-
-			const CronSchedule schedule(_schedule);
-
-			/* generate a random delay if there is none yet (or if the
-			   range has changed, i.e. the schedule has been
-			   modified) */
-			if (_delay == nullptr ||
-			    !IsSameInterval(_delay_range, schedule.delay_range))
-				delay = MakeRandomDelay(db, id, _schedule,
-							schedule.delay_range);
-
-			const auto next_run = schedule.Next(last_run, now) + delay;
-			std::string next_run_buffer;
-			const char *next_run_string = next_run == std::chrono::system_clock::time_point::max()
-				? "infinity" /* never again execute the "@once" job */
-				: (next_run_buffer = Pg::FormatTimestamp(next_run)).c_str();
-
-			auto r = db.ExecutePrepared("update_next_run", id, _schedule, _last_run,
-						    next_run_string);
-			if (r.GetAffectedRows() == 0)
-				throw LostRace{};
+			ScheduleJob(db, row);
 		} catch (LostRace) {
 			logger(3, "Lost race to schedule job '", id, "'");
 		} catch (...) {
