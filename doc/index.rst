@@ -572,9 +572,10 @@ The `jobs` table
 * ``plan_name``: The name of the plan which is used to execute
   this job.
 * ``args``: Additional command-line arguments for the plan.
-* ``env``: Additional environment variables.  Some dangerous
-  environment variables cannot be set, though, for example
-  ``LD_PRELOAD``.
+* ``env``: Additional environment variables.  Dangerous environment
+  variables which can be used to inject code (e.g. ``LD_PRELOAD``,
+  ``PATH``, ``BASH_ENV``, ``PYTHONPATH``, ``PERL5OPT``,
+  ``NODE_OPTIONS``) cannot be set, though; they are ignored silently.
 * ``stdin``: If not ``NULL``, then the process is started with a file
   handle on standard input that reads this data.
 * ``node_name``: Name of the node which is currently executing

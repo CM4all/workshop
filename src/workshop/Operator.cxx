@@ -230,6 +230,65 @@ WorkshopOperator::Start(std::size_t max_log_buffer,
 	task.Start(BIND_THIS_METHOD(OnTaskCompletion));
 }
 
+/**
+ * Environment variables which can be used to make the C library, the
+ * shell or an interpreter load and execute arbitrary code.
+ */
+static constexpr std::string_view forbidden_env_names[] = {
+	/* glibc */
+	"GCONV_PATH"sv,
+	"GETCONF_DIR"sv,
+	"GLIBC_TUNABLES"sv,
+	"HOSTALIASES"sv,
+	"LOCALDOMAIN"sv,
+	"LOCPATH"sv,
+	"NIS_PATH"sv,
+	"NLSPATH"sv,
+	"RESOLV_HOST_CONF"sv,
+	"RES_OPTIONS"sv,
+
+	/* shell */
+	"BASHOPTS"sv,
+	"ENV"sv,
+	"IFS"sv,
+	"PATH"sv,
+	"PS4"sv,
+	"SHELLOPTS"sv,
+
+	/* Java */
+	"CLASSPATH"sv,
+	"JAVA_TOOL_OPTIONS"sv,
+	"JDK_JAVA_OPTIONS"sv,
+	"_JAVA_OPTIONS"sv,
+
+	/* OpenSSL */
+	"OPENSSL_CONF"sv,
+	"OPENSSL_ENGINES"sv,
+	"OPENSSL_MODULES"sv,
+
+	/* PHP */
+	"PHPRC"sv,
+	"PHP_INI_SCAN_DIR"sv,
+
+	/* Tcl */
+	"TCLLIBPATH"sv,
+};
+
+/**
+ * Like #forbidden_env_names, but these are name prefixes.
+ */
+static constexpr std::string_view forbidden_env_prefixes[] = {
+	"LD_"sv, // dynamic loader
+	"MALLOC_"sv, // glibc
+	"BASH_"sv, // e.g. BASH_ENV, BASH_FUNC_*
+	"GIT_"sv,
+	"LUA_"sv,
+	"NODE_"sv,
+	"PERL"sv,
+	"PYTHON"sv,
+	"RUBY"sv,
+};
+
 static constexpr bool
 CheckEnv(std::string_view env) noexcept
 {
@@ -240,12 +299,30 @@ CheckEnv(std::string_view env) noexcept
 	if (name.empty() || value.data() == nullptr)
 		return false;
 
-	if (name.starts_with("LD_"sv))
-		/* reject - too dangerous */
-		return false;
+	/* reject - too dangerous */
+
+	for (const auto i : forbidden_env_names)
+		if (name == i)
+			return false;
+
+	for (const auto i : forbidden_env_prefixes)
+		if (name.starts_with(i))
+			return false;
 
 	return true;
 }
+
+static_assert(CheckEnv("FOO=bar"sv));
+static_assert(CheckEnv("FOO="sv));
+static_assert(CheckEnv("MYPATH=/"sv));
+static_assert(!CheckEnv("LD_PRELOAD=/x.so"sv));
+static_assert(!CheckEnv("BASH_ENV=/proc/self/fd/0"sv));
+static_assert(!CheckEnv("BASH_FUNC_ls%%=() { :; }"sv));
+static_assert(!CheckEnv("PATH=/tmp"sv));
+static_assert(!CheckEnv("PYTHONPATH=/proc/self/fd/0"sv));
+static_assert(!CheckEnv("PERL5OPT=-d"sv));
+static_assert(!CheckEnv("NODE_OPTIONS=--import=x"sv));
+static_assert(!CheckEnv("GCONV_PATH=/tmp"sv));
 
 inline Co::InvokeTask
 WorkshopOperator::Start2(std::size_t max_log_buffer,
