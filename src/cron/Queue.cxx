@@ -86,9 +86,10 @@ VALUES($1, $2, $3, $4, $5)
 		: "TRUE"sv;
 
 	db.Prepare("find_earliest_pending", fmt::format(R"SQL(
-SELECT EXTRACT(EPOCH FROM (MIN(next_run) - now())) FROM cronjobs
+SELECT EXTRACT(EPOCH FROM (GREATEST(MIN(next_run), now()) - now())) FROM cronjobs
 WHERE enabled AND next_run IS NOT NULL AND next_run != 'infinity' AND node_name IS NULL
  AND {}
+HAVING MIN(next_run) IS NOT NULL
 )SQL", sticky_id_check).c_str(),
 		   0);
 

@@ -4,6 +4,7 @@ cm4all-workshop (7.19) unstable; urgency=low
   * cron: reject impossible day-of-month/month combinations
   * cron: remove unschedulable jobs from the scheduler
   * cron: an invalid time zone affects only its own job
+  * cron: fix claim stall on next_run='-infinity'
 
  --   
 
