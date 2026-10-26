@@ -38,7 +38,15 @@ public:
 				     UniqueSocketDescriptor &&_socket,
 				     WorkshopControlChannelHandler &_handler) noexcept;
 
+	/**
+	 * Receive and handle all pending datagrams.  This is called
+	 * after the job process has exited.
+	 */
 	bool ReceiveAll() {
+		/* cancel pending tasks (e.g. "spawn") - nobody will
+		   receive its reply anyway */
+		CancelTask();
+
 		return socket.ReceiveAll();
 	}
 
@@ -48,6 +56,11 @@ private:
 	void StartTask(Co::InvokeTask &&_task) noexcept;
 	void OnDeferredStart() noexcept;
 	void OnTaskFinished(std::exception_ptr &&error) noexcept;
+
+	void CancelTask() noexcept {
+		defer_start.Cancel();
+		task = {};
+	}
 
 	Co::InvokeTask OnSpawn(std::vector<std::string> args);
 	bool OnControl(std::vector<std::string> &&args) noexcept;

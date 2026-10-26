@@ -6,6 +6,7 @@ cm4all-workshop (7.19) unstable; urgency=low
   * cron: an invalid time zone affects only its own job
   * cron: fix claim stall on next_run='-infinity'
   * workshop: fix use-after-free after failed spawn reply
+  * workshop: fix assertion failure on spawn after job exit
 
  --   
 
