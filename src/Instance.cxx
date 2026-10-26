@@ -206,8 +206,8 @@ Instance::OnControlPacket(BengControl::Command command,
 {
 	using namespace BengControl;
 
-	/* only local clients are allowed to use most commands */
-	const bool is_privileged = uid >= 0;
+	/* only local root clients are allowed to use most commands */
+	const bool is_privileged = uid == 0;
 
 	switch (command) {
 	case Command::NOP:
