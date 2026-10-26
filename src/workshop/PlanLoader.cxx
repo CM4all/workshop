@@ -196,8 +196,10 @@ PlanLoader::Finish()
 			throw std::runtime_error("no 'exec'");
 	}
 
-	if (plan.timeout.empty())
+	if (plan.timeout.empty()) {
 		plan.timeout = "10 minutes";
+		plan.parsed_timeout = std::chrono::minutes{10};
+	}
 }
 
 Plan
