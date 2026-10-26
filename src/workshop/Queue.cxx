@@ -127,14 +127,15 @@ MakeJob(WorkshopQueue &queue, const Pg::Result::Row &row)
 }
 
 static bool
-get_and_claim_job(const ChildLogger &logger, const WorkshopJob &job,
+get_and_claim_job(const ChildLogger &logger, WorkshopJob &job,
 		  const char *node_name,
 		  Pg::Connection &db,
 		  const char *timeout)
 {
 	logger(6, "attempting to claim job ", job.id);
 
-	if (!pg_claim_job(db, job.id.c_str(), node_name, timeout)) {
+	job.time_started = pg_claim_job(db, job.id.c_str(), node_name, timeout);
+	if (job.time_started.empty()) {
 		logger(6, "job ", job.id, " was not claimed");
 		return false;
 	}

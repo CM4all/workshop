@@ -30,6 +30,13 @@ struct WorkshopJob {
 
 	AllocatedArray<std::byte> stdin;
 
+	/**
+	 * The "time_started" value written when this node claimed
+	 * the job.  It is used to verify that this node still holds
+	 * the claim.
+	 */
+	std::string time_started;
+
 	explicit WorkshopJob(WorkshopQueue &_queue):queue(_queue) {}
 
 	WorkshopJob(WorkshopQueue &_queue, const char *_id, const char *_plan_name)

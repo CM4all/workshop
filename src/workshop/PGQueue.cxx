@@ -78,6 +78,7 @@ UPDATE jobs
 SET node_name=$1, node_timeout=now()+$3::INTERVAL, time_started=now()
  {}
 WHERE id=$2 AND node_name IS NULL AND enabled
+RETURNING time_started
 )SQL", set_time_modified).c_str(),
 		   3);
 
@@ -224,13 +225,13 @@ PgCheckRateLimit(Pg::Connection &db, const char *plan_name,
 	return std::chrono::seconds(strtoul(value.c_str(), nullptr, 10));
 }
 
-bool
+std::string
 pg_claim_job(Pg::Connection &db,
 	     const char *job_id, const char *node_name,
 	     const char *timeout)
 {
 	const auto result = db.ExecutePrepared("claim_job", node_name, job_id, timeout);
-	return result.GetAffectedRows() > 0;
+	return result.GetOnlyStringChecked();
 }
 
 void

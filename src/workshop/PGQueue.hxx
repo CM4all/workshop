@@ -9,6 +9,7 @@
 #pragma once
 
 #include <chrono>
+#include <string>
 
 namespace Pg {
 class Connection;
@@ -72,10 +73,10 @@ PgCheckRateLimit(Pg::Connection &db, const char *plan_name,
 /**
  * Throws on error.
  *
- * @return true on success, false if another node has claimed the job
- * earlier
+ * @return the new "time_started" value on success, an empty string
+ * if another node has claimed the job earlier
  */
-bool
+std::string
 pg_claim_job(Pg::Connection &db,
 	     const char *job_id, const char *node_name,
 	     const char *timeout);
