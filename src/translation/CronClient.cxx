@@ -15,6 +15,19 @@
 
 #include <stdexcept>
 
+static constexpr std::size_t MAX_PARTITION_NAME = 256;
+static constexpr std::size_t MAX_LISTENER_TAG = 256;
+static constexpr std::size_t MAX_USER = 256;
+static constexpr std::size_t MAX_URI = 2048;
+static constexpr std::size_t MAX_PARAM = 4096;
+
+/* the largest possible request must fit into the
+   TranslationMarshaller buffer (8 KiB); there are 7 packets
+   (BEGIN, CRON, LISTENER_TAG, USER, URI, PARAM, END) */
+static_assert(7 * sizeof(TranslationHeader) +
+	      MAX_PARTITION_NAME + MAX_LISTENER_TAG + MAX_USER +
+	      MAX_URI + MAX_PARAM <= 8_KiB);
+
 static void
 SendTranslateCron(SocketDescriptor s,
 		  std::string_view partition_name,
@@ -23,10 +36,19 @@ SendTranslateCron(SocketDescriptor s,
 {
 	assert(user != nullptr);
 
-	if (strlen(user) > 256)
+	if (partition_name.size() > MAX_PARTITION_NAME)
+		throw std::runtime_error("Partition name too long");
+
+	if (listener_tag != nullptr && strlen(listener_tag) > MAX_LISTENER_TAG)
+		throw std::runtime_error("Listener tag too long");
+
+	if (strlen(user) > MAX_USER)
 		throw std::runtime_error("User name too long");
 
-	if (param != nullptr && strlen(param) > 4096)
+	if (uri != nullptr && strlen(uri) > MAX_URI)
+		throw std::runtime_error("URI too long");
+
+	if (param != nullptr && strlen(param) > MAX_PARAM)
 		throw std::runtime_error("Translation parameter too long");
 
 	TranslationMarshaller m;

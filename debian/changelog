@@ -11,6 +11,7 @@ cm4all-workshop (7.19) unstable; urgency=low
   * workshop: verify the claim when updating a job
   * control: allow privileged commands only for root
   * workshop: reject more dangerous environment variables
+  * translation: fix stack buffer overflow with long requests
 
  --   
 
