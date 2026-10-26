@@ -50,7 +50,8 @@ struct WorkshopJob {
 	 * @param progress a percent value (0 .. 100)
 	 * @param timeout the timeout for the next feedback (an interval
 	 * string that is understood by PostgreSQL)
-	 * @return true on success
+	 * @return true on success, false on error or if this node
+	 * does not hold the claim on this job anymore
 	 */
 	bool SetProgress(unsigned progress, const char *timeout, bool notify) noexcept;
 

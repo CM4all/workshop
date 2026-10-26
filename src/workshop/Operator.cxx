@@ -414,7 +414,15 @@ WorkshopOperator::OnProgress(unsigned progress) noexcept
 		   LogBridge::Flush() call */
 		return;
 
-	job.SetProgress(progress, plan->timeout.c_str(), plan->notify_progress);
+	if (!job.SetProgress(progress, plan->timeout.c_str(), plan->notify_progress)) {
+		/* the claim could not be renewed, and another node
+		   may already be running this job: kill the process
+		   (deferred via the timeout timer, because this may
+		   be called from inside the control channel) */
+		logger(1, "failed to renew the claim on this job");
+		timeout_event.Schedule(Event::Duration::zero());
+		return;
+	}
 
 	/* refresh the timeout */
 	ScheduleTimeout();

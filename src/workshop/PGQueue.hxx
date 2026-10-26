@@ -81,18 +81,27 @@ pg_claim_job(Pg::Connection &db,
 	     const char *job_id, const char *node_name,
 	     const char *timeout);
 
-/**
- * Throws on error.
+/*
+ * The following functions which update a claimed job only have an
+ * effect if the given node still holds the claim, i.e. if the
+ * "node_name" and "time_started" columns match.
  */
-void
-pg_set_job_progress(Pg::Connection &db, const char *job_id, unsigned progress,
-		    const char *timeout);
 
 /**
  * Throws on error.
  */
 void
-PgSetEnv(Pg::Connection &db, const char *job_id, const char *more_env);
+pg_set_job_progress(Pg::Connection &db, const char *job_id,
+		    const char *node_name, const char *time_started,
+		    unsigned progress, const char *timeout);
+
+/**
+ * Throws on error.
+ */
+void
+PgSetEnv(Pg::Connection &db, const char *job_id,
+	 const char *node_name, const char *time_started,
+	 const char *more_env);
 
 /**
  * Disassociate from the job, act as if this node had never claimed
@@ -101,7 +110,8 @@ PgSetEnv(Pg::Connection &db, const char *job_id, const char *more_env);
  * Throws on error.
  */
 void
-pg_rollback_job(Pg::Connection &db, const char *id);
+pg_rollback_job(Pg::Connection &db, const char *id,
+		const char *node_name, const char *time_started);
 
 /**
  * Like pg_rollback_job(), but also update the "scheduled_time"
@@ -110,18 +120,21 @@ pg_rollback_job(Pg::Connection &db, const char *id);
  * Throws on error.
  */
 void
-pg_again_job(Pg::Connection &db, const char *id, const char *log,
-	     std::chrono::seconds delay);
+pg_again_job(Pg::Connection &db, const char *id,
+	     const char *node_name, const char *time_started,
+	     const char *log, std::chrono::seconds delay);
 
 /**
  * Throws on error.
  */
 void
-pg_set_job_done(Pg::Connection &db, const char *id, int status,
-		const char *log);
+pg_set_job_done(Pg::Connection &db, const char *id,
+		const char *node_name, const char *time_started,
+		int status, const char *log);
 
 void
 PgAddJobCpuUsage(Pg::Connection &db, const char *id,
+		 const char *node_name, const char *time_started,
 		 std::chrono::microseconds cpu_usage);
 
 unsigned

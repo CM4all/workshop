@@ -405,7 +405,9 @@ WorkshopQueue::SetJobProgress(const WorkshopJob &job, unsigned progress,
 			progress_notify_timer.Schedule(std::chrono::milliseconds{250});
 
 	try {
-		pg_set_job_progress(db, job.id.c_str(), progress, timeout);
+		pg_set_job_progress(db, job.id.c_str(),
+				    node_name.c_str(), job.time_started.c_str(),
+				    progress, timeout);
 		return true;
 	} catch (...) {
 		db.CheckError(std::current_exception());
@@ -420,7 +422,9 @@ WorkshopQueue::SetJobEnv(const WorkshopJob &job, const char *more_env)
 
 	ScheduleCheckNotify();
 
-	PgSetEnv(db, job.id.c_str(), more_env);
+	PgSetEnv(db, job.id.c_str(),
+		 node_name.c_str(), job.time_started.c_str(),
+		 more_env);
 }
 
 void
@@ -434,9 +438,12 @@ WorkshopQueue::AgainJob(const WorkshopJob &job,
 
 	try {
 		if (delay > std::chrono::seconds())
-			pg_again_job(db, job.id.c_str(), log, delay);
+			pg_again_job(db, job.id.c_str(),
+				     node_name.c_str(), job.time_started.c_str(),
+				     log, delay);
 		else
-			pg_rollback_job(db, job.id.c_str());
+			pg_rollback_job(db, job.id.c_str(),
+					node_name.c_str(), job.time_started.c_str());
 		pg_notify(db);
 		ScheduleCheckNotify();
 	} catch (...) {
@@ -453,7 +460,9 @@ WorkshopQueue::SetJobDone(const WorkshopJob &job, int status,
 	logger(6, "job ", job.id, " done with status ", status);
 
 	try {
-		pg_set_job_done(db, job.id.c_str(), status, log);
+		pg_set_job_done(db, job.id.c_str(),
+				node_name.c_str(), job.time_started.c_str(),
+				status, log);
 		ScheduleCheckNotify();
 	} catch (...) {
 		db.CheckError(std::current_exception());
@@ -467,7 +476,9 @@ WorkshopQueue::AddJobCpuUsage(const WorkshopJob &job,
 	assert(&job.queue == this);
 
 	try {
-		PgAddJobCpuUsage(db, job.id.c_str(), cpu_usage);
+		PgAddJobCpuUsage(db, job.id.c_str(),
+				 node_name.c_str(), job.time_started.c_str(),
+				 cpu_usage);
 	} catch (...) {
 		db.CheckError(std::current_exception());
 	}

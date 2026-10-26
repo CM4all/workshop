@@ -175,7 +175,8 @@ public:
 
 	/**
 	 * @param notify send a PostgreSQL NOTIFY?
-	 * @return true on success
+	 * @return true on success, false on error or if this node
+	 * does not hold the claim on this job anymore
 	 */
 	bool SetJobProgress(const WorkshopJob &job, unsigned progress,
 			    const char *timeout, bool notify) noexcept;

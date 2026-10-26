@@ -8,6 +8,7 @@ cm4all-workshop (7.19) unstable; urgency=low
   * workshop: fix use-after-free after failed spawn reply
   * workshop: fix assertion failure on spawn after job exit
   * workshop: apply the default timeout to the local kill timer
+  * workshop: verify the claim when updating a job
 
  --   
 

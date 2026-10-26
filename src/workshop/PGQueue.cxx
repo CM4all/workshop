@@ -86,24 +86,24 @@ RETURNING time_started
 UPDATE jobs
 SET progress=$2, node_timeout=now()+$3::INTERVAL
  {}
-WHERE id=$1
+WHERE id=$1 AND node_name=$4 AND time_started=$5::timestamp
 )SQL", set_time_modified).c_str(),
-		   3);
+		   5);
 
 	db.Prepare("set_job_done", fmt::format(R"SQL(
 UPDATE jobs
 SET time_done=now(), progress=100, exit_status=$2, log=$3
  {}
-WHERE id=$1
+WHERE id=$1 AND node_name=$4 AND time_started=$5::timestamp
 )SQL", set_time_modified).c_str(),
-		   3);
+		   5);
 
 	db.Prepare("add_cpu_usage", R"SQL(
 UPDATE jobs
 SET cpu_usage=COALESCE(cpu_usage, '0'::interval)+$2::interval
-WHERE id=$1
+WHERE id=$1 AND node_name=$3 AND time_started=$4::timestamp
 )SQL",
-		   2);
+		   4);
 
 	db.Prepare("release_jobs", fmt::format(R"SQL(
 UPDATE jobs
@@ -126,18 +126,18 @@ node_timeout IS NOT NULL AND now() > node_timeout
 	db.Prepare("set_env", R"SQL(
 UPDATE jobs
 SET env=ARRAY(SELECT x FROM (SELECT unnest(env) as x) AS y WHERE x NOT LIKE $3)||ARRAY[$2]::varchar[]
-WHERE id=$1
+WHERE id=$1 AND node_name=$4 AND time_started=$5::timestamp
 )SQL",
-		   3);
+		   5);
 
 	db.Prepare("rollback_job", fmt::format(R"SQL(
 UPDATE jobs
 SET node_name=NULL, node_timeout=NULL, progress=0
  {}
-WHERE id=$1 AND node_name IS NOT NULL
+WHERE id=$1 AND node_name=$2 AND time_started=$3::timestamp
 AND time_done IS NULL
 )SQL", set_time_modified).c_str(),
-		   1);
+		   3);
 
 	db.Prepare("again_job", fmt::format(R"SQL(
 UPDATE jobs
@@ -145,10 +145,10 @@ SET node_name=NULL, node_timeout=NULL, progress=0
 , log=$3
 , scheduled_time=NOW() + $2 * '1 second'::interval
  {}
-WHERE id=$1 AND node_name IS NOT NULL
+WHERE id=$1 AND node_name=$4 AND time_started=$5::timestamp
 AND time_done IS NULL
 )SQL", set_time_modified).c_str(),
-		   3);
+		   5);
 
 	db.Prepare("reap_finished_jobs", R"SQL(
 DELETE FROM jobs
@@ -236,17 +236,21 @@ pg_claim_job(Pg::Connection &db,
 
 void
 pg_set_job_progress(Pg::Connection &db, const char *job_id,
+		    const char *node_name, const char *time_started,
 		    unsigned progress, const char *timeout)
 {
 	const auto result =
 		db.ExecutePrepared("set_job_progress",
-				   job_id, progress, timeout);
+				   job_id, progress, timeout,
+				   node_name, time_started);
 	if (result.GetAffectedRows() < 1)
 		throw std::runtime_error("No matching job");
 }
 
 void
-PgSetEnv(Pg::Connection &db, const char *job_id, const char *more_env)
+PgSetEnv(Pg::Connection &db, const char *job_id,
+	 const char *node_name, const char *time_started,
+	 const char *more_env)
 {
 	const char *eq = strchr(more_env, '=');
 	if (eq == nullptr || eq == more_env)
@@ -258,45 +262,54 @@ PgSetEnv(Pg::Connection &db, const char *job_id, const char *more_env)
 	   name */
 	const auto like = fmt::format("{}=%"sv, name);
 
-	const auto result = db.ExecutePrepared("set_env", job_id, more_env, like.c_str());
+	const auto result = db.ExecutePrepared("set_env", job_id, more_env, like.c_str(),
+					       node_name, time_started);
 	if (result.GetAffectedRows() < 1)
 		throw std::runtime_error("No matching job");
 }
 
 void
-pg_rollback_job(Pg::Connection &db, const char *id)
+pg_rollback_job(Pg::Connection &db, const char *id,
+		const char *node_name, const char *time_started)
 {
-	const auto result = db.ExecutePrepared("rollback_job", id);
+	const auto result = db.ExecutePrepared("rollback_job", id,
+					       node_name, time_started);
 	if (result.GetAffectedRows() < 1)
 		throw std::runtime_error("No matching job");
 }
 
 void
-pg_again_job(Pg::Connection &db, const char *id, const char *log,
-	     std::chrono::seconds delay)
+pg_again_job(Pg::Connection &db, const char *id,
+	     const char *node_name, const char *time_started,
+	     const char *log, std::chrono::seconds delay)
 {
-	const auto result = db.ExecutePrepared("again_job", id, delay.count(), log);
+	const auto result = db.ExecutePrepared("again_job", id, delay.count(), log,
+					       node_name, time_started);
 	if (result.GetAffectedRows() < 1)
 		throw std::runtime_error("No matching job");
 }
 
 void
-pg_set_job_done(Pg::Connection &db, const char *id, int status,
-		const char *log)
+pg_set_job_done(Pg::Connection &db, const char *id,
+		const char *node_name, const char *time_started,
+		int status, const char *log)
 {
-	const auto result = db.ExecutePrepared("set_job_done", id, status, log);
+	const auto result = db.ExecutePrepared("set_job_done", id, status, log,
+					       node_name, time_started);
 	if (result.GetAffectedRows() < 1)
 		throw std::runtime_error("No matching job");
 }
 
 void
 PgAddJobCpuUsage(Pg::Connection &db, const char *id,
+		 const char *node_name, const char *time_started,
 		 std::chrono::microseconds cpu_usage)
 {
 	const auto cpu_usage_s = FmtBuffer<64>("{} microseconds", cpu_usage.count());
 
 	const auto result = db.ExecutePrepared("add_cpu_usage",
-					       id, cpu_usage_s.c_str());
+					       id, cpu_usage_s.c_str(),
+					       node_name, time_started);
 	if (result.GetAffectedRows() < 1)
 		throw std::runtime_error("No matching job");
 }
