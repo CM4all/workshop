@@ -741,7 +741,9 @@ The client is allowed to execute the following operations:
   ``next_run`` column so the scheduler reevaluates the new
   schedule without waiting for the previous schedule to fire
   next time.  This is strictly necessary for ":samp:`@once`"
-  schedules.
+  schedules and for jobs which could not be scheduled (e.g. because
+  the schedule or the time zone was invalid); those get
+  :samp:`next_run='infinity'`.
 * Enable/disable jobs by modifying the ``enabled`` flag.  This
   does not cancel any running process, it only affects future
   scheduling.

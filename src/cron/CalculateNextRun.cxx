@@ -5,6 +5,7 @@
 #include "CalculateNextRun.hxx"
 #include "Schedule.hxx"
 #include "pg/Connection.hxx"
+#include "pg/Error.hxx"
 #include "pg/Interval.hxx"
 #include "pg/Timestamp.hxx"
 #include "io/Logger.hxx"
@@ -61,6 +62,12 @@ UPDATE cronjobs
  WHERE id=$1 AND schedule=$2 AND enabled AND next_run IS NULL
 )SQL",
 		   4);
+
+	db.Prepare("disable_scheduling", R"SQL(
+UPDATE cronjobs SET next_run='infinity'
+WHERE id=$1 AND schedule=$2 AND enabled AND next_run IS NULL
+)SQL",
+		   2);
 
 	db.Prepare("update_next_run", R"SQL(
 UPDATE cronjobs SET
@@ -158,6 +165,24 @@ ScheduleJob(Pg::Connection &db, const Pg::Result::Row &row)
 		throw LostRace{};
 }
 
+/**
+ * Scheduling this job has failed.  Log the error and remove the job
+ * from the scheduler by setting "next_run" to "infinity", so it does
+ * not get selected again and again.  The client needs to clear
+ * "next_run" after fixing the job.
+ *
+ * Throws on error.
+ */
+static void
+DisableScheduling(const ChildLogger &logger, Pg::Connection &db,
+		  const char *id, const char *schedule,
+		  std::exception_ptr &&error)
+{
+	logger(1, "Failed to schedule job '", id, "': ", std::move(error));
+
+	db.ExecutePrepared("disable_scheduling", id, schedule);
+}
+
 bool
 CalculateNextRun(const ChildLogger &logger, Pg::Connection &db)
 {
@@ -166,15 +191,23 @@ CalculateNextRun(const ChildLogger &logger, Pg::Connection &db)
 		return true;
 
 	for (const auto &row : result) {
-		const char *id = row.GetValue(0);
+		const char *id = row.GetValue(0), *schedule = row.GetValue(1);
 
 		try {
 			ScheduleJob(db, row);
 		} catch (LostRace) {
 			logger(3, "Lost race to schedule job '", id, "'");
+		} catch (const Pg::Error &e) {
+			if (!e.IsDataException())
+				/* this is not a problem with this job's
+				   data, but with the database */
+				throw;
+
+			DisableScheduling(logger, db, id, schedule,
+					  std::current_exception());
 		} catch (...) {
-			logger(1, "Failed to schedule job '", id, "': ",
-			       std::current_exception());
+			DisableScheduling(logger, db, id, schedule,
+					  std::current_exception());
 		}
 	}
 
