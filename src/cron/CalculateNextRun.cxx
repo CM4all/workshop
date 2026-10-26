@@ -65,9 +65,10 @@ UPDATE cronjobs
 
 	db.Prepare("disable_scheduling", R"SQL(
 UPDATE cronjobs SET next_run='infinity'
-WHERE id=$1 AND schedule=$2 AND enabled AND next_run IS NULL
+WHERE id=$1 AND schedule=$2 AND COALESCE(tz, 'UTC')=$3
+ AND enabled AND next_run IS NULL
 )SQL",
-		   2);
+		   3);
 
 	db.Prepare("update_next_run", R"SQL(
 UPDATE cronjobs SET
@@ -80,14 +81,20 @@ WHERE id=$1 AND schedule=$2 AND
 		   4);
 
 	db.Prepare("select_jobs_for_scheduling", R"SQL(
-SELECT id, schedule,
- last_run AT TIME ZONE COALESCE(tz, 'UTC'),
- delay, delay_range,
- NOW() AT TIME ZONE COALESCE(tz, 'UTC')
+SELECT id, schedule, COALESCE(tz, 'UTC'), last_run,
+ delay, delay_range
 FROM cronjobs WHERE enabled AND next_run IS NULL
 LIMIT 1000
 )SQL",
 		   0);
+
+	/* this is a separate query (and not part of
+	   "select_jobs_for_scheduling") because an invalid time zone
+	   would make the whole query fail */
+	db.Prepare("convert_time_zone", R"SQL(
+SELECT $1::timestamptz AT TIME ZONE $2, NOW() AT TIME ZONE $2
+)SQL",
+		   2);
 }
 
 static std::chrono::seconds
@@ -124,10 +131,14 @@ static void
 ScheduleJob(Pg::Connection &db, const Pg::Result::Row &row)
 {
 	const char *id = row.GetValue(0), *_schedule = row.GetValue(1),
-		*_last_run = row.GetValueOrNull(2),
-		*_delay = row.GetValueOrNull(3),
-		*_delay_range = row.GetValueOrNull(4),
-		*_now = row.GetValue(5);
+		*tz = row.GetValue(2),
+		*_delay = row.GetValueOrNull(4),
+		*_delay_range = row.GetValueOrNull(5);
+
+	const auto times = db.ExecutePrepared("convert_time_zone",
+					      row.GetValueOrNull(3), tz);
+	const char *_last_run = times.GetValueOrNull(0, 0),
+		*_now = times.GetValue(0, 1);
 
 	auto delay = _delay != nullptr
 		? Pg::ParseIntervalS(_delay)
@@ -175,12 +186,12 @@ ScheduleJob(Pg::Connection &db, const Pg::Result::Row &row)
  */
 static void
 DisableScheduling(const ChildLogger &logger, Pg::Connection &db,
-		  const char *id, const char *schedule,
+		  const char *id, const char *schedule, const char *tz,
 		  std::exception_ptr &&error)
 {
 	logger(1, "Failed to schedule job '", id, "': ", std::move(error));
 
-	db.ExecutePrepared("disable_scheduling", id, schedule);
+	db.ExecutePrepared("disable_scheduling", id, schedule, tz);
 }
 
 bool
@@ -191,7 +202,8 @@ CalculateNextRun(const ChildLogger &logger, Pg::Connection &db)
 		return true;
 
 	for (const auto &row : result) {
-		const char *id = row.GetValue(0), *schedule = row.GetValue(1);
+		const char *id = row.GetValue(0), *schedule = row.GetValue(1),
+			*tz = row.GetValue(2);
 
 		try {
 			ScheduleJob(db, row);
@@ -203,10 +215,10 @@ CalculateNextRun(const ChildLogger &logger, Pg::Connection &db)
 				   data, but with the database */
 				throw;
 
-			DisableScheduling(logger, db, id, schedule,
+			DisableScheduling(logger, db, id, schedule, tz,
 					  std::current_exception());
 		} catch (...) {
-			DisableScheduling(logger, db, id, schedule,
+			DisableScheduling(logger, db, id, schedule, tz,
 					  std::current_exception());
 		}
 	}
