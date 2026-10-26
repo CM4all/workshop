@@ -26,7 +26,8 @@ WorkshopControlChannelServer::WorkshopControlChannelServer(EventLoop &_event_loo
 							   UniqueSocketDescriptor &&_socket,
 							   WorkshopControlChannelHandler &_handler) noexcept
 	:socket(_event_loop, std::move(_socket), *this),
-	 handler(_handler) {}
+	 handler(_handler),
+	 defer_start(_event_loop, BIND_THIS_METHOD(OnDeferredStart)) {}
 
 void
 WorkshopControlChannelServer::InvokeTemporaryError(const char *msg) noexcept
@@ -40,6 +41,16 @@ WorkshopControlChannelServer::StartTask(Co::InvokeTask &&_task) noexcept
 	assert(!task);
 
 	task = std::move(_task);
+	defer_start.Schedule();
+}
+
+void
+WorkshopControlChannelServer::OnDeferredStart() noexcept
+{
+	assert(task);
+
+	/* this may finish the task synchronously, and
+	   OnTaskFinished() may destroy this object */
 	task.Start(BIND_THIS_METHOD(OnTaskFinished));
 }
 
@@ -152,14 +163,10 @@ WorkshopControlChannelServer::OnControl(std::vector<std::string> &&args) noexcep
 	} else if (cmd == "spawn"sv) {
 		StartTask(OnSpawn(std::move(args)));
 
-		if (task) {
-			/* the task is still running - wait for it to
-			   finish before we handle more requests */
-			socket.Disable();
-			return false;
-		}
-
-		return true;
+		/* wait for the task to finish before we handle more
+		   requests */
+		socket.Disable();
+		return false;
 	} else {
 		InvokeTemporaryError("unknown command on control channel");
 		return true;

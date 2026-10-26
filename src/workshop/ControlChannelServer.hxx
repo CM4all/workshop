@@ -6,6 +6,7 @@
 
 #include "event/net/UdpHandler.hxx"
 #include "event/net/UdpListener.hxx"
+#include "event/DeferEvent.hxx"
 #include "co/InvokeTask.hxx"
 
 #include <string>
@@ -23,6 +24,13 @@ class WorkshopControlChannelServer final : UdpHandler {
 
 	WorkshopControlChannelHandler &handler;
 
+	/**
+	 * Starts the #task.  This moves the InvokeTask::Start() call
+	 * out of the OnControl() stack frame, because the task may
+	 * finish synchronously and destroy this object.
+	 */
+	DeferEvent defer_start;
+
 	Co::InvokeTask task;
 
 public:
@@ -38,6 +46,7 @@ private:
 	void InvokeTemporaryError(const char *msg) noexcept;
 
 	void StartTask(Co::InvokeTask &&_task) noexcept;
+	void OnDeferredStart() noexcept;
 	void OnTaskFinished(std::exception_ptr &&error) noexcept;
 
 	Co::InvokeTask OnSpawn(std::vector<std::string> args);
