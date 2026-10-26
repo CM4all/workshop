@@ -33,6 +33,7 @@
 #include "util/DeleteDisposer.hxx"
 #include "util/Exception.hxx" // for GetFullMessage()
 #include "util/StringList.hxx"
+#include "util/StringSplit.hxx"
 #include "util/UTF8.hxx"
 #include "AllocatorPtr.hxx"
 #include "CgroupAccounting.hxx"
@@ -229,6 +230,16 @@ WorkshopOperator::Start(std::size_t max_log_buffer,
 	task.Start(BIND_THIS_METHOD(OnTaskCompletion));
 }
 
+static constexpr bool
+CheckEnv(std::string_view env) noexcept
+{
+	if (env.starts_with("LD_"sv))
+		/* reject - too dangerous */
+		return false;
+
+	return true;
+}
+
 inline Co::InvokeTask
 WorkshopOperator::Start2(std::size_t max_log_buffer,
 			 bool enable_journal)
@@ -329,11 +340,8 @@ WorkshopOperator::Start2(std::size_t max_log_buffer,
 		if (p.env.size() >= 64)
 			throw std::runtime_error("Too many environment variables");
 
-		if (i.starts_with("LD_"sv))
-			/* reject - too dangerous */
-			continue;
-
-		p.env.push_back(i.c_str());
+		if (CheckEnv(i))
+			p.env.push_back(i.c_str());
 	}
 
 	/* fork */
