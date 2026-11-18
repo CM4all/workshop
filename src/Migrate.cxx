@@ -17,8 +17,6 @@
 static void
 MigrateWorkshopDatabase(Pg::Connection &c, const char *schema)
 {
-	(void)schema;
-
 	/* since Workshop 2.0.13 */
 	c.Execute("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS log text NULL");
 
@@ -61,6 +59,36 @@ MigrateWorkshopDatabase(Pg::Connection &c, const char *schema)
 
 	// since Workshop 7.7
 	c.Execute("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS sticky_id varchar(256) NULL");
+
+	// since Workshop 7.19
+	if (Pg::GetColumnType(c, schema, "jobs", "time_created") == "timestamp without time zone") {
+		c.DoSerializable([&c]{
+			/* PostgreSQL refuses to change the type of a
+			   column used by a rule */
+			c.Execute("DROP RULE IF EXISTS job_enabled ON jobs");
+			c.Execute("DROP RULE IF EXISTS job_done ON jobs");
+
+			/* add time zones to timestamps; the old values
+			   are read in this session's time zone */
+			c.Execute("ALTER TABLE jobs"
+				  " ALTER COLUMN time_created TYPE timestamp with time zone,"
+				  " ALTER COLUMN time_modified TYPE timestamp with time zone,"
+				  " ALTER COLUMN scheduled_time TYPE timestamp with time zone,"
+				  " ALTER COLUMN node_timeout TYPE timestamp with time zone,"
+				  " ALTER COLUMN time_started TYPE timestamp with time zone,"
+				  " ALTER COLUMN time_done TYPE timestamp with time zone");
+
+			/* recreate the rules */
+			c.Execute("CREATE RULE job_enabled AS ON UPDATE TO jobs"
+				  " WHERE NOT OLD.enabled AND NEW.enabled"
+				  " AND NEW.node_name IS NULL AND NEW.time_done IS NULL AND NEW.exit_status IS NULL"
+				  " DO SELECT pg_notify('new_job', NULL)");
+			c.Execute("CREATE RULE job_done AS ON UPDATE TO jobs"
+				  " WHERE OLD.time_done IS NULL AND OLD.exit_status IS NULL"
+				  " AND NEW.time_done IS NOT NULL AND NEW.exit_status IS NOT NULL"
+				  " DO SELECT pg_notify('job_done', NEW.id::text)");
+		});
+	}
 }
 
 static void

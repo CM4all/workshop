@@ -12,6 +12,7 @@ cm4all-workshop (7.19) unstable; urgency=low
   * control: allow privileged commands only for root
   * workshop: reject more dangerous environment variables
   * translation: fix stack buffer overflow with long requests
+  * workshop: store time stamps with time zone
 
  --   
 

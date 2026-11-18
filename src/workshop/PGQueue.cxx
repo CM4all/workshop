@@ -86,7 +86,7 @@ RETURNING time_started
 UPDATE jobs
 SET progress=$2, node_timeout=now()+$3::INTERVAL
  {}
-WHERE id=$1 AND node_name=$4 AND time_started=$5::timestamp
+WHERE id=$1 AND node_name=$4 AND time_started=$5::timestamptz
 )SQL", set_time_modified).c_str(),
 		   5);
 
@@ -94,14 +94,14 @@ WHERE id=$1 AND node_name=$4 AND time_started=$5::timestamp
 UPDATE jobs
 SET time_done=now(), progress=100, exit_status=$2, log=$3
  {}
-WHERE id=$1 AND node_name=$4 AND time_started=$5::timestamp
+WHERE id=$1 AND node_name=$4 AND time_started=$5::timestamptz
 )SQL", set_time_modified).c_str(),
 		   5);
 
 	db.Prepare("add_cpu_usage", R"SQL(
 UPDATE jobs
 SET cpu_usage=COALESCE(cpu_usage, '0'::interval)+$2::interval
-WHERE id=$1 AND node_name=$3 AND time_started=$4::timestamp
+WHERE id=$1 AND node_name=$3 AND time_started=$4::timestamptz
 )SQL",
 		   4);
 
@@ -126,7 +126,7 @@ node_timeout IS NOT NULL AND now() > node_timeout
 	db.Prepare("set_env", R"SQL(
 UPDATE jobs
 SET env=ARRAY(SELECT x FROM (SELECT unnest(env) as x) AS y WHERE x NOT LIKE $3)||ARRAY[$2]::varchar[]
-WHERE id=$1 AND node_name=$4 AND time_started=$5::timestamp
+WHERE id=$1 AND node_name=$4 AND time_started=$5::timestamptz
 )SQL",
 		   5);
 
@@ -134,7 +134,7 @@ WHERE id=$1 AND node_name=$4 AND time_started=$5::timestamp
 UPDATE jobs
 SET node_name=NULL, node_timeout=NULL, progress=0
  {}
-WHERE id=$1 AND node_name=$2 AND time_started=$3::timestamp
+WHERE id=$1 AND node_name=$2 AND time_started=$3::timestamptz
 AND time_done IS NULL
 )SQL", set_time_modified).c_str(),
 		   3);
@@ -145,7 +145,7 @@ SET node_name=NULL, node_timeout=NULL, progress=0
 , log=$3
 , scheduled_time=NOW() + $2 * '1 second'::interval
  {}
-WHERE id=$1 AND node_name=$4 AND time_started=$5::timestamp
+WHERE id=$1 AND node_name=$4 AND time_started=$5::timestamptz
 AND time_done IS NULL
 )SQL", set_time_modified).c_str(),
 		   5);

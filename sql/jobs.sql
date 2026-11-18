@@ -38,11 +38,11 @@ CREATE TABLE IF NOT EXISTS jobs (
     --------------------------------
 
     -- the time this job was created
-    time_created timestamp NOT NULL DEFAULT now(),
+    time_created timestamp with time zone NOT NULL DEFAULT now(),
     -- the time this record was last modified
-    time_modified timestamp NOT NULL DEFAULT now(),
+    time_modified timestamp with time zone NOT NULL DEFAULT now(),
     -- the job will not be executed before this time
-    scheduled_time timestamp NULL,
+    scheduled_time timestamp with time zone NULL,
     -- is this job enabled?
     enabled boolean NOT NULL DEFAULT TRUE,
     -- priority of this job; negative value means higher priority
@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS jobs (
     -- which cm4all-workshop node is executing this job?
     node_name varchar(256) NULL,
     -- which time can we assume the node is dead?
-    node_timeout timestamp NULL,
+    node_timeout timestamp with time zone NULL,
 
     --------------------------------
     -- State / Result / Completion
@@ -74,9 +74,9 @@ CREATE TABLE IF NOT EXISTS jobs (
     progress int NOT NULL DEFAULT 0,
 
     -- the time this job was most recently started
-    time_started timestamp NULL,
+    time_started timestamp with time zone NULL,
     -- the time this job was completed
-    time_done timestamp NULL,
+    time_done timestamp with time zone NULL,
     -- CPU usage in microseconds
     cpu_usage interval NULL,
     -- the output logged by the process to stderr
