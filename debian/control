@@ -1,5 +1,5 @@
 Source: cm4all-workshop
-Section: non-free/admin
+Section: admin
 Priority: optional
 Maintainer: Max Kellermann <max.kellermann@ionos.com>
 Build-Depends: debhelper (>= 13.3~),
@@ -73,7 +73,7 @@ Description: Development tools for Workshop
  This package contains development tools.
 
 Package: cm4all-workshop-doc
-Section: non-free/doc
+Section: doc
 Architecture: all
 Depends: ${misc:Depends}, ${sphinxdoc:Depends}
 Built-Using: ${sphinxdoc:Built-Using}

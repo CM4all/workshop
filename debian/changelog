@@ -14,6 +14,7 @@ cm4all-workshop (7.19) unstable; urgency=low
   * translation: fix stack buffer overflow with long requests
   * workshop: store time stamps with time zone
   * debian: add source/format file
+  * debian/control: move from "non-free" to "main"
 
  --   
 
