@@ -3,5 +3,5 @@ etc/cm4all/workshop/plans
 usr/share/cm4all/workshop/plans
 
 etc/cm4all/state/workshop
-lib/cm4all/state/workshop
+usr/lib/cm4all/state/workshop
 var/lib/cm4all/state/workshop
