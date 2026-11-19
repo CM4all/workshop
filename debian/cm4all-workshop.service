@@ -1,5 +1,7 @@
 [Unit]
 Description=CM4all Workshop
+Documentation=https://cm4all-workshop.readthedocs.io/en/latest/
+
 Wants=network-online.target
 After=network-online.target
 After=postgresql.service
