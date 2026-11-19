@@ -1,0 +1,11 @@
+# no manpages here; the documentation is in the "-doc" package
+no-manual-page
+
+# empty state directory is fine
+package-contains-empty-directory
+
+# the configuration file may contain secrets and is thus not world-readable
+non-standard-file-perm
+
+# we require systemd
+maintainer-script-calls-systemctl
