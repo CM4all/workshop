@@ -196,10 +196,10 @@ Configures the process spawner. Example::
   group.
 
 - ``CPUWeight``: CPU weight for all spawned processes combined
-  (:math:`1..10000`).  :program:`systemd`'s default is 100.
+  (``1..10000``).  :program:`systemd`'s default is 100.
 
 - ``TasksMax``: maximum number of tasks
-  (:math:`1..`). :program:`systemd` sets no limit by default.
+  (``1..``). :program:`systemd` sets no limit by default.
 
 - ``MemoryMin``: "If the memory usage of a cgroup is within its
   effective min boundary, the cgroup’s memory won’t be reclaimed under
@@ -231,7 +231,7 @@ Configures the process spawner. Example::
   (https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v2.html#memory-interface-files)
 
 - ``IOWeight``: IO weight for all spawned processes combined
-  (:math:`1..10000`).  :program:`systemd`'s default is 100.
+  (``1..10000``).  :program:`systemd`'s default is 100.
 
 Memory limits are in bytes and may be postfixed with ``kB``, ``MB``,
 ``GB`` or ``TB``.  Percent values are relative to total physical
@@ -429,7 +429,7 @@ Example::
   cm4all-workshop-run-job /usr/bin/my-plan --foo
   cm4all-workshop-run-job --control-channel /usr/bin/my-plan --foo
 
-The option :option:`--control-channel` enables the control channel
+The option ``--control-channel`` enables the control channel
 which behaves like the plan option :samp:`control_channel`; without
 it, the legacy protocol is enabled which reads progress values from a
 pipe connected to the child's ``stdout``.

@@ -13,6 +13,7 @@ cm4all-workshop (7.19) unstable; urgency=low
   * workshop: reject more dangerous environment variables
   * translation: fix stack buffer overflow with long requests
   * workshop: store time stamps with time zone
+  * doc: disable MathJax
   * debian: add source/format file
   * debian: use "debhelper-compat" instead of "debian/compat"
   * debian/control: build-depend on pkgconf instead of pkg-config
